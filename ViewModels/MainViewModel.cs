@@ -93,6 +93,9 @@ public partial class MainViewModel : ViewModelBase
         _templateService = templateService;
         _persistenceService = persistenceService;
 
+        // Connect undo/redo service to inspector
+        Inspector.UndoRedo = UndoRedo;
+
         // Initialize document with default Annual Report template
         var defaultDoc = _templateService.CreateAnnualReportTemplate();
         LoadFromDocumentModel(defaultDoc);
@@ -167,8 +170,8 @@ public partial class MainViewModel : ViewModelBase
     {
         if (UndoRedo.CanUndo)
         {
-            UndoRedo.Undo();
-            ShowToast("Undo performed", "Undo");
+            var desc = UndoRedo.Undo();
+            ShowToast($"Undone: {desc ?? "Action"}", "Undo");
         }
         else
         {
@@ -181,8 +184,8 @@ public partial class MainViewModel : ViewModelBase
     {
         if (UndoRedo.CanRedo)
         {
-            UndoRedo.Redo();
-            ShowToast("Redo performed", "Redo");
+            var desc = UndoRedo.Redo();
+            ShowToast($"Redone: {desc ?? "Action"}", "Redo");
         }
         else
         {

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels;
+using PdfEditorApp.ViewModels.ElementViewModels;
 using Xunit;
 
 namespace PdfEditorApp.Tests;
@@ -572,5 +573,177 @@ public class PdfEngineTests
 
         vm.SetToolMode("Select");
         Assert.Equal(ToolMode.Select, vm.ActiveToolMode);
+    }
+
+    [Fact]
+    public void UndoRedo_InspectorTypography_RevertsAndRedoes()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        var page = vm.CurrentPage!;
+
+        var textEl = new TextElementViewModel
+        {
+            Text = "Sample Headline",
+            FontFamily = "Segoe UI",
+            FontSize = 14,
+            IsBold = false,
+            TextColorHex = "#201F1E",
+            Alignment = TextAlignmentMode.Left
+        };
+        page.AddElement(textEl);
+        vm.Inspector.UpdateSelection(textEl, page);
+
+        // 1. Text Color change
+        vm.Inspector.SetTextColorCommand.Execute("#DC2626");
+        Assert.Equal("#DC2626", textEl.TextColorHex);
+        Assert.Equal("Change Text Color", vm.UndoRedo.NextUndoDescription);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal("#201F1E", textEl.TextColorHex);
+
+        vm.RedoCommand.Execute(null);
+        Assert.Equal("#DC2626", textEl.TextColorHex);
+
+        // 2. Bold toggle
+        vm.Inspector.ToggleBoldCommand.Execute(null);
+        Assert.True(textEl.IsBold);
+        Assert.Equal("Format Bold", vm.UndoRedo.NextUndoDescription);
+
+        vm.UndoCommand.Execute(null);
+        Assert.False(textEl.IsBold);
+
+        vm.RedoCommand.Execute(null);
+        Assert.True(textEl.IsBold);
+
+        // 3. Text Alignment
+        vm.Inspector.SetAlignmentCommand.Execute("Center");
+        Assert.Equal(TextAlignmentMode.Center, textEl.Alignment);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(TextAlignmentMode.Left, textEl.Alignment);
+
+        vm.RedoCommand.Execute(null);
+        Assert.Equal(TextAlignmentMode.Center, textEl.Alignment);
+    }
+
+    [Fact]
+    public void UndoRedo_InspectorShapeFormatting_RevertsAndRedoes()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        var page = vm.CurrentPage!;
+
+        var shapeEl = new ShapeElementViewModel
+        {
+            ShapeType = ShapeType.Rectangle,
+            FillColorHex = "#F0F7FD",
+            StrokeColorHex = "#0F6CBD"
+        };
+        page.AddElement(shapeEl);
+        vm.Inspector.UpdateSelection(shapeEl, page);
+
+        // Fill Color
+        vm.Inspector.SetShapeFillColorCommand.Execute("#16A34A");
+        Assert.Equal("#16A34A", shapeEl.FillColorHex);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal("#F0F7FD", shapeEl.FillColorHex);
+
+        vm.RedoCommand.Execute(null);
+        Assert.Equal("#16A34A", shapeEl.FillColorHex);
+
+        // Stroke Color
+        vm.Inspector.SetShapeStrokeColorCommand.Execute("#EA580C");
+        Assert.Equal("#EA580C", shapeEl.StrokeColorHex);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal("#0F6CBD", shapeEl.StrokeColorHex);
+
+        vm.RedoCommand.Execute(null);
+        Assert.Equal("#EA580C", shapeEl.StrokeColorHex);
+
+        // Shape Type
+        vm.Inspector.SetShapeTypeCommand.Execute("Circle");
+        Assert.Equal(ShapeType.Circle, shapeEl.ShapeType);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(ShapeType.Rectangle, shapeEl.ShapeType);
+
+        vm.RedoCommand.Execute(null);
+        Assert.Equal(ShapeType.Circle, shapeEl.ShapeType);
+    }
+
+    [Fact]
+    public void UndoRedo_InspectorAlignment_And_Layering_RevertsAndRedoes()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        var page = vm.CurrentPage!;
+
+        var shapeEl = new ShapeElementViewModel
+        {
+            X = 200,
+            Y = 300,
+            Width = 100,
+            Height = 100,
+            ZIndex = 1
+        };
+        page.AddElement(shapeEl);
+        vm.Inspector.UpdateSelection(shapeEl, page);
+
+        // Align Left
+        vm.Inspector.AlignLeftCommand.Execute(null);
+        Assert.Equal(60, shapeEl.X);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(200, shapeEl.X);
+
+        vm.RedoCommand.Execute(null);
+        Assert.Equal(60, shapeEl.X);
+
+        // Align Center
+        vm.Inspector.AlignCenterCommand.Execute(null);
+        double expectedCenter = (page.Width - shapeEl.Width) / 2;
+        Assert.Equal(expectedCenter, shapeEl.X);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(60, shapeEl.X);
+
+        // Layering Z-Order
+        int oldZ = shapeEl.ZIndex;
+        vm.Inspector.BringToFrontCommand.Execute(null);
+        Assert.True(shapeEl.ZIndex > oldZ);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(oldZ, shapeEl.ZIndex);
+    }
+
+    [Fact]
+    public void UndoRedo_ElementDeleteAndDuplicate_WorksAccurately()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        var page = vm.CurrentPage!;
+        int initialCount = page.Elements.Count;
+
+        var textEl = new TextElementViewModel { Text = "Target Element" };
+        page.AddElement(textEl);
+        Assert.Equal(initialCount + 1, page.Elements.Count);
+
+        vm.Inspector.UpdateSelection(textEl, page);
+
+        // Duplicate
+        vm.Inspector.DuplicateSelectedElementCommand.Execute(null);
+        Assert.Equal(initialCount + 2, page.Elements.Count);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(initialCount + 1, page.Elements.Count);
+
+        vm.RedoCommand.Execute(null);
+        Assert.Equal(initialCount + 2, page.Elements.Count);
+
+        // Delete
+        vm.Inspector.DeleteSelectedElementCommand.Execute(null);
+        Assert.Equal(initialCount + 1, page.Elements.Count);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(initialCount + 2, page.Elements.Count);
     }
 }

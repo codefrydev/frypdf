@@ -7,11 +7,13 @@ public interface IUndoRedoService
 {
     bool CanUndo { get; }
     bool CanRedo { get; }
+    string? NextUndoDescription { get; }
+    string? NextRedoDescription { get; }
     event EventHandler? StateChanged;
 
     void RecordAction(string description, Action undoAction, Action redoAction);
-    void Undo();
-    void Redo();
+    string? Undo();
+    string? Redo();
     void Clear();
 }
 
@@ -26,10 +28,13 @@ public class UndoRedoService : IUndoRedoService
 {
     private readonly Stack<UndoRedoAction> _undoStack = new();
     private readonly Stack<UndoRedoAction> _redoStack = new();
-    private const int MaxHistorySize = 50;
+    private const int MaxHistorySize = 100;
 
     public bool CanUndo => _undoStack.Count > 0;
     public bool CanRedo => _redoStack.Count > 0;
+
+    public string? NextUndoDescription => _undoStack.Count > 0 ? _undoStack.Peek().Description : null;
+    public string? NextRedoDescription => _redoStack.Count > 0 ? _redoStack.Peek().Description : null;
 
     public event EventHandler? StateChanged;
 
@@ -57,9 +62,9 @@ public class UndoRedoService : IUndoRedoService
         StateChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    public void Undo()
+    public string? Undo()
     {
-        if (_undoStack.Count == 0) return;
+        if (_undoStack.Count == 0) return null;
 
         var action = _undoStack.Pop();
         try
@@ -70,11 +75,12 @@ public class UndoRedoService : IUndoRedoService
 
         _redoStack.Push(action);
         StateChanged?.Invoke(this, EventArgs.Empty);
+        return action.Description;
     }
 
-    public void Redo()
+    public string? Redo()
     {
-        if (_redoStack.Count == 0) return;
+        if (_redoStack.Count == 0) return null;
 
         var action = _redoStack.Pop();
         try
@@ -85,6 +91,7 @@ public class UndoRedoService : IUndoRedoService
 
         _undoStack.Push(action);
         StateChanged?.Invoke(this, EventArgs.Empty);
+        return action.Description;
     }
 
     public void Clear()

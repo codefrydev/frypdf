@@ -16,6 +16,15 @@ public partial class DocumentCanvasView : UserControl
     private Point _lastPointerPosition;
     private ElementViewModelBase? _draggedElement;
 
+    // Movement & Resize Undo Tracking
+    private double _dragStartElementX;
+    private double _dragStartElementY;
+    private double _resizeStartX;
+    private double _resizeStartY;
+    private double _resizeStartW;
+    private double _resizeStartH;
+    private string _initialTextEditContent = "";
+
     // Pan state
     private bool _isSpacePressed;
     private bool _isPanning;
@@ -95,6 +104,10 @@ public partial class DocumentCanvasView : UserControl
             _isResizingHandle = true;
             _activeResizeHandle = "bottomright";
             _draggedElement = ink;
+            _resizeStartX = ink.X;
+            _resizeStartY = ink.Y;
+            _resizeStartW = ink.Width;
+            _resizeStartH = ink.Height;
             _lastPointerPosition = pos;
             e.Handled = true;
             return;
@@ -129,6 +142,8 @@ public partial class DocumentCanvasView : UserControl
             {
                 _isDraggingElement = true;
                 _draggedElement = elementVm;
+                _dragStartElementX = elementVm.X;
+                _dragStartElementY = elementVm.Y;
                 _lastPointerPosition = e.GetPosition(PageElementsCanvas);
                 e.Handled = true;
             }
@@ -142,6 +157,10 @@ public partial class DocumentCanvasView : UserControl
             _isResizingHandle = true;
             _activeResizeHandle = handleName;
             _draggedElement = elementVm;
+            _resizeStartX = elementVm.X;
+            _resizeStartY = elementVm.Y;
+            _resizeStartW = elementVm.Width;
+            _resizeStartH = elementVm.Height;
             _lastPointerPosition = e.GetPosition(PageElementsCanvas);
             e.Handled = true;
         }
@@ -151,6 +170,7 @@ public partial class DocumentCanvasView : UserControl
     {
         if (sender is Control control && control.DataContext is TextElementViewModel textVm)
         {
+            _initialTextEditContent = textVm.Text;
             textVm.IsInEditMode = true;
             e.Handled = true;
         }
@@ -160,6 +180,16 @@ public partial class DocumentCanvasView : UserControl
     {
         if (sender is Control control && control.DataContext is TextElementViewModel textVm)
         {
+            if (textVm.Text != _initialTextEditContent)
+            {
+                string oldTxt = _initialTextEditContent;
+                string newTxt = textVm.Text;
+                ViewModel?.UndoRedo.RecordAction(
+                    "Edit Text",
+                    () => textVm.Text = oldTxt,
+                    () => textVm.Text = newTxt
+                );
+            }
             textVm.IsInEditMode = false;
         }
     }
@@ -201,6 +231,35 @@ public partial class DocumentCanvasView : UserControl
 
     private void OnGlobalPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
+        if (_isResizingHandle && _draggedElement != null)
+        {
+            var el = _draggedElement;
+            double fromX = _resizeStartX, fromY = _resizeStartY, fromW = _resizeStartW, fromH = _resizeStartH;
+            double toX = el.X, toY = el.Y, toW = el.Width, toH = el.Height;
+            if (Math.Abs(toW - fromW) > 0.5 || Math.Abs(toH - fromH) > 0.5 || Math.Abs(toX - fromX) > 0.5 || Math.Abs(toY - fromY) > 0.5)
+            {
+                ViewModel?.UndoRedo.RecordAction(
+                    $"Resize {el.DisplayName}",
+                    () => { el.X = fromX; el.Y = fromY; el.Width = fromW; el.Height = fromH; },
+                    () => { el.X = toX; el.Y = toY; el.Width = toW; el.Height = toH; }
+                );
+            }
+        }
+        else if (_isDraggingElement && _draggedElement != null)
+        {
+            var el = _draggedElement;
+            double fromX = _dragStartElementX, fromY = _dragStartElementY;
+            double toX = el.X, toY = el.Y;
+            if (Math.Abs(toX - fromX) > 0.5 || Math.Abs(toY - fromY) > 0.5)
+            {
+                ViewModel?.UndoRedo.RecordAction(
+                    $"Move {el.DisplayName}",
+                    () => { el.X = fromX; el.Y = fromY; },
+                    () => { el.X = toX; el.Y = toY; }
+                );
+            }
+        }
+
         _isDraggingElement = false;
         _isResizingHandle = false;
         _activeResizeHandle = null;
@@ -278,12 +337,10 @@ public partial class DocumentCanvasView : UserControl
                     break;
                 case Key.OemCloseBrackets:
                     ViewModel.Inspector.BringToFrontCommand.Execute(null);
-                    ViewModel.ShowToast("Brought to Front", "ArrowUpBold");
                     e.Handled = true;
                     break;
                 case Key.OemOpenBrackets:
                     ViewModel.Inspector.SendToBackCommand.Execute(null);
-                    ViewModel.ShowToast("Sent to Back", "ArrowDownBold");
                     e.Handled = true;
                     break;
             }
@@ -294,15 +351,7 @@ public partial class DocumentCanvasView : UserControl
             {
                 case Key.Delete:
                 case Key.Back:
-                    var elToDelete = selected;
-                    var page = ViewModel.CurrentPage;
                     ViewModel.Inspector.DeleteSelectedElementCommand.Execute(null);
-                    ViewModel.UndoRedo.RecordAction(
-                        $"Delete {elToDelete.DisplayName}",
-                        () => page.AddElement(elToDelete),
-                        () => page.RemoveElement(elToDelete)
-                    );
-                    ViewModel.ShowToast($"Deleted {elToDelete.DisplayName}", "DeleteOutline");
                     e.Handled = true;
                     break;
                 case Key.Escape:
@@ -310,29 +359,33 @@ public partial class DocumentCanvasView : UserControl
                     e.Handled = true;
                     break;
                 case Key.Left:
-                    selected.X = Math.Max(0, selected.X - step);
-                    e.Handled = true;
-                    break;
                 case Key.Right:
-                    selected.X = Math.Min(ViewModel.CurrentPage.Width - selected.Width, selected.X + step);
-                    e.Handled = true;
-                    break;
                 case Key.Up:
-                    selected.Y = Math.Max(0, selected.Y - step);
-                    e.Handled = true;
-                    break;
                 case Key.Down:
-                    selected.Y = Math.Min(ViewModel.CurrentPage.Height - selected.Height, selected.Y + step);
+                    double oldX = selected.X;
+                    double oldY = selected.Y;
+
+                    if (e.Key == Key.Left) selected.X = Math.Max(0, selected.X - step);
+                    else if (e.Key == Key.Right) selected.X = Math.Min(ViewModel.CurrentPage.Width - selected.Width, selected.X + step);
+                    else if (e.Key == Key.Up) selected.Y = Math.Max(0, selected.Y - step);
+                    else if (e.Key == Key.Down) selected.Y = Math.Min(ViewModel.CurrentPage.Height - selected.Height, selected.Y + step);
+
+                    double newX = selected.X;
+                    double newY = selected.Y;
+                    var el = selected;
+                    ViewModel.UndoRedo.RecordAction(
+                        $"Nudge {el.DisplayName}",
+                        () => { el.X = oldX; el.Y = oldY; },
+                        () => { el.X = newX; el.Y = newY; }
+                    );
                     e.Handled = true;
                     break;
                 case Key.OemCloseBrackets:
                     ViewModel.Inspector.BringToFrontCommand.Execute(null);
-                    ViewModel.ShowToast("Brought to Front", "ArrowUpBold");
                     e.Handled = true;
                     break;
                 case Key.OemOpenBrackets:
                     ViewModel.Inspector.SendToBackCommand.Execute(null);
-                    ViewModel.ShowToast("Sent to Back", "ArrowDownBold");
                     e.Handled = true;
                     break;
             }

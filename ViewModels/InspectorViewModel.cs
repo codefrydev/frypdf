@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
+using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
 namespace PdfEditorApp.ViewModels;
@@ -15,6 +16,8 @@ public class ColorSwatchItem
 
 public partial class InspectorViewModel : ViewModelBase
 {
+    public UndoRedoService? UndoRedo { get; set; }
+
     [ObservableProperty]
     private ElementViewModelBase? _selectedElement;
 
@@ -65,9 +68,16 @@ public partial class InspectorViewModel : ViewModelBase
 
     partial void OnSelectedFontFamilyChanged(string value)
     {
-        if (TextElement != null && !string.IsNullOrEmpty(value))
+        if (TextElement != null && !string.IsNullOrEmpty(value) && TextElement.FontFamily != value)
         {
-            TextElement.FontFamily = value;
+            var el = TextElement;
+            string oldFont = el.FontFamily;
+            el.FontFamily = value;
+            UndoRedo?.RecordAction(
+                $"Font: {value}",
+                () => { el.FontFamily = oldFont; SelectedFontFamily = oldFont; },
+                () => { el.FontFamily = value; SelectedFontFamily = value; }
+            );
         }
     }
 
@@ -76,9 +86,16 @@ public partial class InspectorViewModel : ViewModelBase
 
     partial void OnSelectedFontSizeChanged(double value)
     {
-        if (TextElement != null && value > 0)
+        if (TextElement != null && value > 0 && Math.Abs(TextElement.FontSize - value) > 0.1)
         {
-            TextElement.FontSize = value;
+            var el = TextElement;
+            double oldSize = el.FontSize;
+            el.FontSize = value;
+            UndoRedo?.RecordAction(
+                $"Font Size: {value}pt",
+                () => { el.FontSize = oldSize; SelectedFontSize = oldSize; },
+                () => { el.FontSize = value; SelectedFontSize = value; }
+            );
         }
     }
 
@@ -180,36 +197,64 @@ public partial class InspectorViewModel : ViewModelBase
     [RelayCommand]
     public void SetTextColor(string hex)
     {
-        if (TextElement != null)
+        if (TextElement != null && TextElement.TextColorHex != hex)
         {
-            TextElement.TextColorHex = hex;
+            var el = TextElement;
+            string oldHex = el.TextColorHex;
+            el.TextColorHex = hex;
+            UndoRedo?.RecordAction(
+                "Change Text Color",
+                () => el.TextColorHex = oldHex,
+                () => el.TextColorHex = hex
+            );
         }
     }
 
     [RelayCommand]
     public void SetShapeFillColor(string hex)
     {
-        if (ShapeElement != null)
+        if (ShapeElement != null && ShapeElement.FillColorHex != hex)
         {
-            ShapeElement.FillColorHex = hex;
+            var el = ShapeElement;
+            string oldHex = el.FillColorHex;
+            el.FillColorHex = hex;
+            UndoRedo?.RecordAction(
+                "Change Fill Color",
+                () => el.FillColorHex = oldHex,
+                () => el.FillColorHex = hex
+            );
         }
     }
 
     [RelayCommand]
     public void SetShapeStrokeColor(string hex)
     {
-        if (ShapeElement != null)
+        if (ShapeElement != null && ShapeElement.StrokeColorHex != hex)
         {
-            ShapeElement.StrokeColorHex = hex;
+            var el = ShapeElement;
+            string oldHex = el.StrokeColorHex;
+            el.StrokeColorHex = hex;
+            UndoRedo?.RecordAction(
+                "Change Stroke Color",
+                () => el.StrokeColorHex = oldHex,
+                () => el.StrokeColorHex = hex
+            );
         }
     }
 
     [RelayCommand]
     public void SetAlignment(string alignmentStr)
     {
-        if (TextElement != null && Enum.TryParse<TextAlignmentMode>(alignmentStr, true, out var mode))
+        if (TextElement != null && Enum.TryParse<TextAlignmentMode>(alignmentStr, true, out var mode) && TextElement.Alignment != mode)
         {
-            TextElement.Alignment = mode;
+            var el = TextElement;
+            var oldMode = el.Alignment;
+            el.Alignment = mode;
+            UndoRedo?.RecordAction(
+                $"Align Text {mode}",
+                () => el.Alignment = oldMode,
+                () => el.Alignment = mode
+            );
         }
     }
 
@@ -218,7 +263,15 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (TextElement != null)
         {
-            TextElement.IsBold = !TextElement.IsBold;
+            var el = TextElement;
+            bool oldVal = el.IsBold;
+            bool newVal = !oldVal;
+            el.IsBold = newVal;
+            UndoRedo?.RecordAction(
+                newVal ? "Format Bold" : "Remove Bold",
+                () => el.IsBold = oldVal,
+                () => el.IsBold = newVal
+            );
         }
     }
 
@@ -227,7 +280,15 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (TextElement != null)
         {
-            TextElement.IsItalic = !TextElement.IsItalic;
+            var el = TextElement;
+            bool oldVal = el.IsItalic;
+            bool newVal = !oldVal;
+            el.IsItalic = newVal;
+            UndoRedo?.RecordAction(
+                newVal ? "Format Italic" : "Remove Italic",
+                () => el.IsItalic = oldVal,
+                () => el.IsItalic = newVal
+            );
         }
     }
 
@@ -236,7 +297,15 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (TextElement != null)
         {
-            TextElement.IsUnderline = !TextElement.IsUnderline;
+            var el = TextElement;
+            bool oldVal = el.IsUnderline;
+            bool newVal = !oldVal;
+            el.IsUnderline = newVal;
+            UndoRedo?.RecordAction(
+                newVal ? "Format Underline" : "Remove Underline",
+                () => el.IsUnderline = oldVal,
+                () => el.IsUnderline = newVal
+            );
         }
     }
 
@@ -245,8 +314,16 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (SelectedElement != null && SelectedPage != null)
         {
-            SelectedPage.RemoveElement(SelectedElement);
-            UpdateSelection(null, SelectedPage);
+            var el = SelectedElement;
+            var page = SelectedPage;
+            page.RemoveElement(el);
+            UpdateSelection(null, page);
+
+            UndoRedo?.RecordAction(
+                $"Delete {el.DisplayName}",
+                () => { page.AddElement(el); UpdateSelection(el, page); },
+                () => { page.RemoveElement(el); UpdateSelection(null, page); }
+            );
         }
     }
 
@@ -281,8 +358,15 @@ public partial class InspectorViewModel : ViewModelBase
             };
 
             newVm.LoadFromModel(clone);
-            SelectedPage.AddElement(newVm);
-            UpdateSelection(newVm, SelectedPage);
+            var page = SelectedPage;
+            page.AddElement(newVm);
+            UpdateSelection(newVm, page);
+
+            UndoRedo?.RecordAction(
+                $"Duplicate {newVm.DisplayName}",
+                () => { page.RemoveElement(newVm); UpdateSelection(null, page); },
+                () => { page.AddElement(newVm); UpdateSelection(newVm, page); }
+            );
         }
     }
 
@@ -291,7 +375,17 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (SelectedElement != null && SelectedPage != null)
         {
-            SelectedPage.BringToFront(SelectedElement);
+            var el = SelectedElement;
+            var page = SelectedPage;
+            int oldZ = el.ZIndex;
+            page.BringToFront(el);
+            int newZ = el.ZIndex;
+
+            UndoRedo?.RecordAction(
+                $"Bring {el.DisplayName} to Front",
+                () => el.ZIndex = oldZ,
+                () => el.ZIndex = newZ
+            );
         }
     }
 
@@ -300,37 +394,54 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (SelectedElement != null && SelectedPage != null)
         {
-            SelectedPage.SendToBack(SelectedElement);
+            var el = SelectedElement;
+            var page = SelectedPage;
+            int oldZ = el.ZIndex;
+            page.SendToBack(el);
+            int newZ = el.ZIndex;
+
+            UndoRedo?.RecordAction(
+                $"Send {el.DisplayName} to Back",
+                () => el.ZIndex = oldZ,
+                () => el.ZIndex = newZ
+            );
         }
     }
 
     [RelayCommand]
     public void SetShapeType(string shapeTypeStr)
     {
-        if (ShapeElement != null && Enum.TryParse<ShapeType>(shapeTypeStr, true, out var type))
+        if (ShapeElement != null && Enum.TryParse<ShapeType>(shapeTypeStr, true, out var type) && ShapeElement.ShapeType != type)
         {
-            ShapeElement.ShapeType = type;
-            if (type == ShapeType.Circle)
-            {
-                ShapeElement.CornerRadius = ShapeElement.Width / 2;
-            }
-            else if (type == ShapeType.RoundedRectangle)
-            {
-                ShapeElement.CornerRadius = 12;
-            }
-            else
-            {
-                ShapeElement.CornerRadius = 0;
-            }
+            var el = ShapeElement;
+            var oldType = el.ShapeType;
+            double oldRadius = el.CornerRadius;
+            double newRadius = type == ShapeType.Circle ? el.Width / 2 : (type == ShapeType.RoundedRectangle ? 12 : 0);
+
+            el.ShapeType = type;
+            el.CornerRadius = newRadius;
+
+            UndoRedo?.RecordAction(
+                $"Shape: {type}",
+                () => { el.ShapeType = oldType; el.CornerRadius = oldRadius; },
+                () => { el.ShapeType = type; el.CornerRadius = newRadius; }
+            );
         }
     }
 
     [RelayCommand]
     public void SetWatermarkColor(string hex)
     {
-        if (WatermarkElement != null)
+        if (WatermarkElement != null && WatermarkElement.ColorHex != hex)
         {
-            WatermarkElement.ColorHex = hex;
+            var el = WatermarkElement;
+            string oldHex = el.ColorHex;
+            el.ColorHex = hex;
+            UndoRedo?.RecordAction(
+                "Change Watermark Color",
+                () => el.ColorHex = oldHex,
+                () => el.ColorHex = hex
+            );
         }
     }
 
@@ -339,7 +450,15 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (SelectedElement != null)
         {
-            SelectedElement.X = 60;
+            var el = SelectedElement;
+            double oldX = el.X;
+            el.X = 60;
+            double newX = el.X;
+            UndoRedo?.RecordAction(
+                "Align Left",
+                () => el.X = oldX,
+                () => el.X = newX
+            );
         }
     }
 
@@ -348,7 +467,15 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (SelectedElement != null && SelectedPage != null)
         {
-            SelectedElement.X = Math.Max(0, (SelectedPage.Width - SelectedElement.Width) / 2);
+            var el = SelectedElement;
+            double oldX = el.X;
+            el.X = Math.Max(0, (SelectedPage.Width - el.Width) / 2);
+            double newX = el.X;
+            UndoRedo?.RecordAction(
+                "Align Center",
+                () => el.X = oldX,
+                () => el.X = newX
+            );
         }
     }
 
@@ -357,7 +484,15 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (SelectedElement != null && SelectedPage != null)
         {
-            SelectedElement.X = Math.Max(0, SelectedPage.Width - SelectedElement.Width - 60);
+            var el = SelectedElement;
+            double oldX = el.X;
+            el.X = Math.Max(0, SelectedPage.Width - el.Width - 60);
+            double newX = el.X;
+            UndoRedo?.RecordAction(
+                "Align Right",
+                () => el.X = oldX,
+                () => el.X = newX
+            );
         }
     }
 
@@ -366,7 +501,15 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (SelectedElement != null)
         {
-            SelectedElement.Y = 60;
+            var el = SelectedElement;
+            double oldY = el.Y;
+            el.Y = 60;
+            double newY = el.Y;
+            UndoRedo?.RecordAction(
+                "Align Top",
+                () => el.Y = oldY,
+                () => el.Y = newY
+            );
         }
     }
 
@@ -375,7 +518,15 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (SelectedElement != null && SelectedPage != null)
         {
-            SelectedElement.Y = Math.Max(0, (SelectedPage.Height - SelectedElement.Height) / 2);
+            var el = SelectedElement;
+            double oldY = el.Y;
+            el.Y = Math.Max(0, (SelectedPage.Height - el.Height) / 2);
+            double newY = el.Y;
+            UndoRedo?.RecordAction(
+                "Align Middle",
+                () => el.Y = oldY,
+                () => el.Y = newY
+            );
         }
     }
 
@@ -384,7 +535,15 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (SelectedElement != null && SelectedPage != null)
         {
-            SelectedElement.Y = Math.Max(0, SelectedPage.Height - SelectedElement.Height - 60);
+            var el = SelectedElement;
+            double oldY = el.Y;
+            el.Y = Math.Max(0, SelectedPage.Height - el.Height - 60);
+            double newY = el.Y;
+            UndoRedo?.RecordAction(
+                "Align Bottom",
+                () => el.Y = oldY,
+                () => el.Y = newY
+            );
         }
     }
 
@@ -393,31 +552,91 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (SelectedElement != null)
         {
-            SelectedElement.IsLocked = !SelectedElement.IsLocked;
+            var el = SelectedElement;
+            bool oldLock = el.IsLocked;
+            bool newLock = !oldLock;
+            el.IsLocked = newLock;
+            UndoRedo?.RecordAction(
+                newLock ? "Lock Element" : "Unlock Element",
+                () => el.IsLocked = oldLock,
+                () => el.IsLocked = newLock
+            );
         }
     }
 
     [RelayCommand]
     public void ApplyTableStyle(string styleStr)
     {
-        TableElement?.ApplyPresetStyle(styleStr);
+        if (TableElement != null)
+        {
+            var el = TableElement;
+            string oldHeader = el.HeaderBackgroundHex;
+            string oldAlt = el.AlternateRowBackgroundHex;
+            string oldBorder = el.BorderColorHex;
+
+            el.ApplyPresetStyle(styleStr);
+
+            string newHeader = el.HeaderBackgroundHex;
+            string newAlt = el.AlternateRowBackgroundHex;
+            string newBorder = el.BorderColorHex;
+
+            UndoRedo?.RecordAction(
+                $"Apply Table Style ({styleStr})",
+                () => { el.HeaderBackgroundHex = oldHeader; el.AlternateRowBackgroundHex = oldAlt; el.BorderColorHex = oldBorder; },
+                () => { el.HeaderBackgroundHex = newHeader; el.AlternateRowBackgroundHex = newAlt; el.BorderColorHex = newBorder; }
+            );
+        }
     }
 
     [RelayCommand]
     public void SetChartType(string typeStr)
     {
-        ChartElement?.SetChartType(typeStr);
+        if (ChartElement != null && Enum.TryParse<ChartType>(typeStr, true, out var parsed) && ChartElement.ChartType != parsed)
+        {
+            var el = ChartElement;
+            var oldType = el.ChartType;
+            el.SetChartType(typeStr);
+            UndoRedo?.RecordAction(
+                $"Change Chart to {parsed}",
+                () => el.ChartType = oldType,
+                () => el.ChartType = parsed
+            );
+        }
     }
 
     [RelayCommand]
     public void SetBarcodeFormat(string formatStr)
     {
-        BarcodeElement?.SetFormat(formatStr);
+        if (BarcodeElement != null && BarcodeElement.BarcodeFormat != formatStr)
+        {
+            var el = BarcodeElement;
+            string oldFmt = el.BarcodeFormat;
+            el.SetFormat(formatStr);
+            UndoRedo?.RecordAction(
+                $"Barcode Format: {formatStr}",
+                () => el.BarcodeFormat = oldFmt,
+                () => el.BarcodeFormat = formatStr
+            );
+        }
     }
 
     [RelayCommand]
     public void ApplyQrPreset(string presetStr)
     {
-        QrCodeElement?.ApplyPresetType(presetStr);
+        if (QrCodeElement != null)
+        {
+            var el = QrCodeElement;
+            string oldContent = el.Content;
+            string oldLabel = el.Label;
+            el.ApplyPresetType(presetStr);
+            string newContent = el.Content;
+            string newLabel = el.Label;
+
+            UndoRedo?.RecordAction(
+                $"QR Preset: {presetStr}",
+                () => { el.Content = oldContent; el.Label = oldLabel; },
+                () => { el.Content = newContent; el.Label = newLabel; }
+            );
+        }
     }
 }

@@ -249,3 +249,30 @@ public class BooleanToTextDecorationsConverter : IValueConverter
         return value is TextDecorationCollection decs && decs.Count > 0;
     }
 }
+
+public class StringToFontFamilyConverter : IValueConverter
+{
+    public static readonly StringToFontFamilyConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is string fontName && !string.IsNullOrWhiteSpace(fontName))
+        {
+            return PdfEditorApp.Services.FontHelper.CreateFontFamily(fontName);
+        }
+        if (value is FontFamily ff)
+        {
+            return ff;
+        }
+        return FontFamily.Default;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is FontFamily ff)
+        {
+            return ff.Name;
+        }
+        return value?.ToString();
+    }
+}

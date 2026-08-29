@@ -939,6 +939,28 @@ public class PdfEngineTests
         vm.Inspector.SetAlignmentCommand.Execute("Center");
         Assert.Equal(TextAlignmentMode.Center, textEl.Alignment);
 
+        // Switch Font Family
+        vm.Inspector.SelectedFontFamily = "Georgia";
+        Assert.Equal("Georgia", textEl.FontFamily);
+
+        vm.Inspector.SelectedFontFamily = "Roboto";
+        Assert.Equal("Roboto", textEl.FontFamily);
+        Assert.NotNull(textEl.AvaloniaFontFamily);
+
+        vm.Inspector.SelectedFontFamily = "Playfair Display";
+        Assert.Equal("Playfair Display", textEl.FontFamily);
+        Assert.NotNull(textEl.AvaloniaFontFamily);
+
+        vm.Inspector.SelectedFontFamily = "Dancing Script";
+        Assert.Equal("Dancing Script", textEl.FontFamily);
+        Assert.NotNull(textEl.AvaloniaFontFamily);
+
+        vm.Inspector.SelectedFontFamily = "Courier New";
+        Assert.Equal("Courier New", textEl.FontFamily);
+
+        vm.Inspector.SelectedFontFamily = "Impact";
+        Assert.Equal("Impact", textEl.FontFamily);
+
         // Computed line height
         textEl.LineHeight = 1.5;
         Assert.Equal(16 * 1.5, textEl.ComputedLineHeight);

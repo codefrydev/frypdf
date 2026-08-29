@@ -11,7 +11,10 @@ public partial class TextElementViewModel : ElementViewModelBase
     private string _text = "Enter text here";
 
     [ObservableProperty]
-    private string _fontFamily = "Segoe UI";
+    [NotifyPropertyChangedFor(nameof(AvaloniaFontFamily))]
+    private string _fontFamily = "Arial";
+
+    public Avalonia.Media.FontFamily AvaloniaFontFamily => PdfEditorApp.Services.FontHelper.CreateFontFamily(FontFamily);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ComputedLineHeight))]

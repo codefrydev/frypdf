@@ -65,7 +65,7 @@ public partial class InspectorViewModel : ViewModelBase
     private bool _isStickyNoteElement;
 
     [ObservableProperty]
-    private string _selectedFontFamily = "Segoe UI";
+    private string _selectedFontFamily = "Arial";
 
     partial void OnSelectedFontFamilyChanged(string value)
     {
@@ -102,16 +102,39 @@ public partial class InspectorViewModel : ViewModelBase
 
     public ObservableCollection<string> AvailableFontFamilies { get; } = new()
     {
-        "Segoe UI",
-        "Arial",
-        "Times New Roman",
-        "Georgia",
         "Roboto",
+        "Inter",
+        "Open Sans",
+        "Montserrat",
+        "Source Sans 3",
+        "Arial",
         "Helvetica",
-        "Courier New",
         "Verdana",
         "Trebuchet MS",
-        "Consolas"
+        "Segoe UI",
+        "Playfair Display",
+        "Merriweather",
+        "Lora",
+        "Times New Roman",
+        "Georgia",
+        "Cinzel",
+        "Palatino",
+        "Fira Code",
+        "Roboto Mono",
+        "Courier New",
+        "Menlo",
+        "Consolas",
+        "Comic Neue",
+        "Dancing Script",
+        "Pacifico",
+        "Caveat",
+        "Great Vibes",
+        "Lobster",
+        "Bebas Neue",
+        "Oswald",
+        "Orbitron",
+        "Impact",
+        "Comic Sans MS"
     };
 
     public ObservableCollection<double> AvailableFontSizes { get; } = new()

@@ -165,7 +165,7 @@
 
                                             <!-- Normal Text View -->
                                             <TextBlock Text="{Binding Text}"
-                                                       FontFamily="{Binding FontFamily}"
+                                                       FontFamily="{Binding AvaloniaFontFamily}"
                                                        FontSize="{Binding FontSize}"
                                                        FontWeight="{Binding IsBold, Converter={x:Static converters:BooleanToFontWeightConverter.Instance}}"
                                                        FontStyle="{Binding IsItalic, Converter={x:Static converters:BooleanToFontStyleConverter.Instance}}"
@@ -181,7 +181,7 @@
 
                                         <!-- In-place Editable TextBox -->
                                         <TextBox Text="{Binding Text, Mode=TwoWay}"
-                                                 FontFamily="{Binding FontFamily}"
+                                                 FontFamily="{Binding AvaloniaFontFamily}"
                                                  FontSize="{Binding FontSize}"
                                                  FontWeight="{Binding IsBold, Converter={x:Static converters:BooleanToFontWeightConverter.Instance}}"
                                                  FontStyle="{Binding IsItalic, Converter={x:Static converters:BooleanToFontStyleConverter.Instance}}"

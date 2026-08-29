@@ -95,7 +95,13 @@
                                     <TextBlock Text="Font Family" Classes="inspector-label" />
                                     <ComboBox ItemsSource="{Binding AvailableFontFamilies}"
                                               SelectedItem="{Binding SelectedFontFamily, Mode=TwoWay}"
-                                              HorizontalAlignment="Stretch" Height="30" FontSize="12" />
+                                              HorizontalAlignment="Stretch" Height="30" FontSize="12">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate DataType="x:String">
+                                                <TextBlock Text="{Binding}" FontFamily="{Binding}" FontSize="12" VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Spacing="3">

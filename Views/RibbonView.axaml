@@ -261,9 +261,15 @@
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" VerticalAlignment="Center" Spacing="4" HorizontalAlignment="Center">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <ComboBox Width="136" Height="28" FontSize="12" Padding="8,2"
+                                        <ComboBox Width="144" Height="28" FontSize="12" Padding="8,2"
                                                   ItemsSource="{Binding Inspector.AvailableFontFamilies}"
-                                                  SelectedItem="{Binding Inspector.SelectedFontFamily, Mode=TwoWay}" />
+                                                  SelectedItem="{Binding Inspector.SelectedFontFamily, Mode=TwoWay}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate DataType="x:String">
+                                                    <TextBlock Text="{Binding}" FontFamily="{Binding}" FontSize="12" VerticalAlignment="Center" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
 
                                         <ComboBox Width="66" Height="28" FontSize="12" Padding="6,2"
                                                   ItemsSource="{Binding Inspector.AvailableFontSizes}"

@@ -266,6 +266,23 @@
         <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
     </Style>
 
+    <Style Selector="ButtonSpinner /template/ RepeatButton Path">
+        <Setter Property="Width" Value="8" />
+        <Setter Property="Height" Value="5" />
+        <Setter Property="Stretch" Value="Uniform" />
+    </Style>
+
+    <!-- Inspector ColorPicker Compact Styling -->
+    <Style Selector="ColorPicker">
+        <Setter Property="MinHeight" Value="24" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="IsAlphaEnabled" Value="True" />
+        <Setter Property="IsHexInputVisible" Value="True" />
+    </Style>
+
     <!-- Input Prefix Badge (e.g., [X], [Y], [W], [H], [∠]) -->
     <Style Selector="Border.input-badge">
         <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />

@@ -227,6 +227,7 @@ public partial class InspectorViewModel : ViewModelBase
         OnPropertyChanged(nameof(RedactionElement));
         OnPropertyChanged(nameof(InkElement));
         OnPropertyChanged(nameof(StickyNoteElement));
+        OnPropertyChanged(nameof(MeasurementElement));
         OnPropertyChanged(nameof(ActiveCategoryName));
     }
 
@@ -1075,6 +1076,18 @@ public partial class InspectorViewModel : ViewModelBase
             el.CalculationFormula = calc;
             SelectedPage?.RecalculateFormFields();
             UndoRedo?.RecordAction($"Set Formula to {calc}", () => { el.CalculationFormula = oldCalc; SelectedPage?.RecalculateFormFields(); }, () => { el.CalculationFormula = calc; SelectedPage?.RecalculateFormFields(); });
+        }
+    }
+
+    [RelayCommand]
+    public void SetMeasurementColor(string hex)
+    {
+        if (MeasurementElement != null)
+        {
+            var el = MeasurementElement;
+            string oldHex = el.StrokeColorHex;
+            el.StrokeColorHex = hex;
+            UndoRedo?.RecordAction("Change Measurement Color", () => el.StrokeColorHex = oldHex, () => el.StrokeColorHex = hex);
         }
     }
 }

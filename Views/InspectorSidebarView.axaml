@@ -9,6 +9,7 @@
 
     <UserControl.Resources>
         <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:HexToColorConverter x:Key="HexToColorConverter" />
         <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
         <converters:DoubleToThicknessConverter x:Key="DoubleToThickness" />
         <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
@@ -107,7 +108,7 @@
                                 <StackPanel Grid.Column="1" Spacing="3">
                                     <TextBlock Text="Size (pt)" Classes="inspector-label" />
                                     <NumericUpDown Value="{Binding TextElement.FontSize, Mode=TwoWay}"
-                                                   Minimum="6" Maximum="144" Increment="1"
+                                                   Minimum="6" Maximum="144" Increment="1" FormatString="0"
                                                    HorizontalAlignment="Stretch" Height="30" FontSize="12" />
                                 </StackPanel>
                             </Grid>
@@ -185,35 +186,45 @@
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
                                 <StackPanel Grid.Column="0" Spacing="3">
                                     <TextBlock Text="Letter Spacing" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding TextElement.CharacterSpacing, Mode=TwoWay}" Minimum="-2" Maximum="10" Increment="0.5" Height="28" FontSize="11.5" />
+                                    <NumericUpDown Value="{Binding TextElement.CharacterSpacing, Mode=TwoWay}"
+                                                   Minimum="-2" Maximum="10" Increment="0.5" FormatString="0.0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="11.5" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Spacing="3">
                                     <TextBlock Text="Line Spacing" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding TextElement.LineHeight, Mode=TwoWay}" Minimum="0.8" Maximum="3.0" Increment="0.1" Height="28" FontSize="11.5" />
+                                    <NumericUpDown Value="{Binding TextElement.LineHeight, Mode=TwoWay}"
+                                                   Minimum="0.8" Maximum="3.0" Increment="0.1" FormatString="0.0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="11.5" />
                                 </StackPanel>
                             </Grid>
 
-                            <!-- Text Color Swatches -->
+                            <!-- Text Color Swatches & Custom ColorPicker -->
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Text Color" Classes="inspector-label" />
-                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="vm:ColorSwatchItem">
-                                            <Button Width="22" Height="22" Margin="2" CornerRadius="11" BorderBrush="#CBD5E1" BorderThickness="1"
-                                                    Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
-                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetTextColorCommand}"
-                                                    CommandParameter="{Binding Hex}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding TextElement.TextColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="24" Height="24" CornerRadius="12" ToolTip.Tip="Custom Color Palette &amp; Hex" />
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="22" Height="22" Margin="1.5" CornerRadius="11" BorderBrush="#CBD5E1" BorderThickness="1"
+                                                        Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetTextColorCommand}"
+                                                        CommandParameter="{Binding Hex}" ToolTip.Tip="{Binding Name}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
 
-                            <!-- Text Background Color Swatches -->
+                            <!-- Text Background Color Swatches & Custom ColorPicker -->
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Highlight / Background Color" Classes="inspector-label" />
-                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="secondary-btn" Height="22" Padding="6,1" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#00000000"><TextBlock Text="None" FontSize="9.5" /></Button>
+                                    <ColorPicker Color="{Binding TextElement.BackgroundColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="22" Height="22" CornerRadius="4" ToolTip.Tip="Custom Highlight Color" />
                                     <Button Width="22" Height="22" CornerRadius="4" Background="#FEF08A" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#FEF08A" ToolTip.Tip="Yellow Highlight" />
                                     <Button Width="22" Height="22" CornerRadius="4" Background="#BAE6FD" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#BAE6FD" ToolTip.Tip="Blue Highlight" />
                                     <Button Width="22" Height="22" CornerRadius="4" Background="#BBF7D0" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#BBF7D0" ToolTip.Tip="Green Highlight" />
@@ -260,36 +271,44 @@
                                 </WrapPanel>
                             </StackPanel>
 
-                            <!-- Fill Color Swatches -->
+                            <!-- Fill Color Swatches & Custom ColorPicker -->
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Fill Color" Classes="inspector-label" />
-                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="vm:ColorSwatchItem">
-                                            <Button Width="22" Height="22" Margin="2" CornerRadius="4" BorderBrush="#CBD5E1" BorderThickness="1"
-                                                    Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
-                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}"
-                                                    CommandParameter="{Binding Hex}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding ShapeElement.FillColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="24" Height="24" CornerRadius="4" ToolTip.Tip="Custom Fill Color (Hex/RGB/Palette)" />
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" BorderBrush="#CBD5E1" BorderThickness="1"
+                                                        Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}"
+                                                        CommandParameter="{Binding Hex}" ToolTip.Tip="{Binding Name}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
 
-                            <!-- Stroke / Border Color Swatches -->
+                            <!-- Stroke / Border Color Swatches & Custom ColorPicker -->
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Border / Stroke Color" Classes="inspector-label" />
-                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="vm:ColorSwatchItem">
-                                            <Button Width="22" Height="22" Margin="2" CornerRadius="4" BorderBrush="#CBD5E1" BorderThickness="1"
-                                                    Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
-                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeStrokeColorCommand}"
-                                                    CommandParameter="{Binding Hex}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding ShapeElement.StrokeColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="24" Height="24" CornerRadius="4" ToolTip.Tip="Custom Stroke Color (Hex/RGB/Palette)" />
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" BorderBrush="#CBD5E1" BorderThickness="1"
+                                                        Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeStrokeColorCommand}"
+                                                        CommandParameter="{Binding Hex}" ToolTip.Tip="{Binding Name}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
 
                             <!-- Corner Radius & Border Thickness -->
@@ -297,13 +316,15 @@
                                 <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
                                     <TextBlock Text="Corner Radius" Classes="inspector-label" />
                                     <NumericUpDown Value="{Binding ShapeElement.CornerRadius, Mode=TwoWay}"
-                                                   Minimum="0" Maximum="100" Height="28" FontSize="12" />
+                                                   Minimum="0" Maximum="100" Increment="1" FormatString="0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
                                     <TextBlock Text="Border Width" Classes="inspector-label" />
                                     <NumericUpDown Value="{Binding ShapeElement.StrokeThickness, Mode=TwoWay}"
-                                                   Minimum="0" Maximum="20" Height="28" FontSize="12" />
+                                                   Minimum="0" Maximum="20" Increment="0.5" FormatString="0.0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
                                 </StackPanel>
                             </Grid>
 
@@ -316,11 +337,15 @@
                             <Grid ColumnDefinitions="*,*" IsVisible="{Binding ShapeElement.Label, Converter={StaticResource NullToBooleanConverter}}">
                                 <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
                                     <TextBlock Text="Label Size" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding ShapeElement.LabelFontSize, Mode=TwoWay}" Minimum="8" Maximum="72" Height="28" FontSize="12" />
+                                    <NumericUpDown Value="{Binding ShapeElement.LabelFontSize, Mode=TwoWay}"
+                                                   Minimum="8" Maximum="72" Increment="1" FormatString="0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
                                     <TextBlock Text="Label Color" Classes="inspector-label" />
-                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <ColorPicker Color="{Binding ShapeElement.LabelColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                     Width="20" Height="20" CornerRadius="10" ToolTip.Tip="Custom Label Color" />
                                         <Button Width="20" Height="20" CornerRadius="10" Background="#FFFFFF" BorderBrush="#94A3B8" BorderThickness="1" Command="{Binding SetShapeLabelColorCommand}" CommandParameter="#FFFFFF" />
                                         <Button Width="20" Height="20" CornerRadius="10" Background="#201F1E" Command="{Binding SetShapeLabelColorCommand}" CommandParameter="#201F1E" />
                                         <Button Width="20" Height="20" CornerRadius="10" Background="#0F6CBD" Command="{Binding SetShapeLabelColorCommand}" CommandParameter="#0F6CBD" />
@@ -353,11 +378,15 @@
                             <Grid ColumnDefinitions="*,*">
                                 <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
                                     <TextBlock Text="Corner Radius" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding ImageElement.CornerRadius, Mode=TwoWay}" Minimum="0" Maximum="60" Height="28" FontSize="12" />
+                                    <NumericUpDown Value="{Binding ImageElement.CornerRadius, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="60" Increment="1" FormatString="0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
                                     <TextBlock Text="Border Width" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding ImageElement.BorderThickness, Mode=TwoWay}" Minimum="0" Maximum="10" Height="28" FontSize="12" />
+                                    <NumericUpDown Value="{Binding ImageElement.BorderThickness, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="10" Increment="0.5" FormatString="0.0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
                                 </StackPanel>
                             </Grid>
 
@@ -368,15 +397,19 @@
 
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Border Color" Classes="inspector-label" />
-                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="vm:ColorSwatchItem">
-                                            <Button Width="20" Height="20" Margin="2" CornerRadius="3" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
-                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetImageBorderColorCommand}" CommandParameter="{Binding Hex}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding ImageElement.BorderColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="22" Height="22" CornerRadius="4" ToolTip.Tip="Custom Border Color" />
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="20" Height="20" Margin="1.5" CornerRadius="3" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetImageBorderColorCommand}" CommandParameter="{Binding Hex}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -392,7 +425,9 @@
 
                             <StackPanel Spacing="3">
                                 <TextBlock Text="Line Thickness (pt)" Classes="inspector-label" />
-                                <NumericUpDown Value="{Binding DividerElement.Thickness, Mode=TwoWay}" Minimum="0.5" Maximum="20" Increment="0.5" Height="28" FontSize="12" />
+                                <NumericUpDown Value="{Binding DividerElement.Thickness, Mode=TwoWay}"
+                                               Minimum="0.5" Maximum="20" Increment="0.5" FormatString="0.0"
+                                               HorizontalAlignment="Stretch" Height="28" FontSize="12" />
                             </StackPanel>
 
                             <Grid ColumnDefinitions="*,Auto">
@@ -402,15 +437,19 @@
 
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Line Color" Classes="inspector-label" />
-                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="vm:ColorSwatchItem">
-                                            <Button Width="20" Height="20" Margin="2" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
-                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetDividerColorCommand}" CommandParameter="{Binding Hex}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding DividerElement.ColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="22" Height="22" CornerRadius="4" ToolTip.Tip="Custom Line Color" />
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="20" Height="20" Margin="1.5" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetDividerColorCommand}" CommandParameter="{Binding Hex}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -547,11 +586,15 @@
                             <Grid ColumnDefinitions="*,*">
                                 <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
                                     <TextBlock Text="Font Size" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding WatermarkElement.FontSize, Mode=TwoWay}" Minimum="20" Maximum="120" Height="28" FontSize="12" />
+                                    <NumericUpDown Value="{Binding WatermarkElement.FontSize, Mode=TwoWay}"
+                                                   Minimum="20" Maximum="120" Increment="1" FormatString="0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
                                     <TextBlock Text="Angle (°)" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding WatermarkElement.Angle, Mode=TwoWay}" Minimum="-90" Maximum="90" Height="28" FontSize="12" />
+                                    <NumericUpDown Value="{Binding WatermarkElement.Angle, Mode=TwoWay}"
+                                                   Minimum="-90" Maximum="90" Increment="5" FormatString="0°"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
                                 </StackPanel>
                             </Grid>
 
@@ -562,15 +605,19 @@
 
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Watermark Color" Classes="inspector-label" />
-                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="vm:ColorSwatchItem">
-                                            <Button Width="20" Height="20" Margin="2" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
-                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetWatermarkColorCommand}" CommandParameter="{Binding Hex}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding WatermarkElement.ColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="22" Height="22" CornerRadius="4" ToolTip.Tip="Custom Watermark Color" />
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="20" Height="20" Margin="1.5" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetWatermarkColorCommand}" CommandParameter="{Binding Hex}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -650,15 +697,19 @@
 
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Border Color" Classes="inspector-label" />
-                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="vm:ColorSwatchItem">
-                                            <Button Width="20" Height="20" Margin="2" CornerRadius="3" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
-                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetFormFieldBorderColorCommand}" CommandParameter="{Binding Hex}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding FormFieldElement.BorderColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="22" Height="22" CornerRadius="4" ToolTip.Tip="Custom Border Color" />
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="20" Height="20" Margin="1.5" CornerRadius="3" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetFormFieldBorderColorCommand}" CommandParameter="{Binding Hex}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -696,15 +747,19 @@
 
                             <StackPanel Spacing="4">
                                 <TextBlock Text="QR Code Color" Classes="inspector-label" />
-                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="vm:ColorSwatchItem">
-                                            <Button Width="20" Height="20" Margin="2" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
-                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetQrCodeDarkColorCommand}" CommandParameter="{Binding Hex}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding QrCodeElement.DarkColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="22" Height="22" CornerRadius="11" ToolTip.Tip="Custom QR Color" />
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="20" Height="20" Margin="1.5" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetQrCodeDarkColorCommand}" CommandParameter="{Binding Hex}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -743,15 +798,19 @@
 
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Barcode Color" Classes="inspector-label" />
-                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="vm:ColorSwatchItem">
-                                            <Button Width="20" Height="20" Margin="2" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
-                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetBarcodeColorCommand}" CommandParameter="{Binding Hex}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding BarcodeElement.BarColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="22" Height="22" CornerRadius="11" ToolTip.Tip="Custom Barcode Color" />
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="20" Height="20" Margin="1.5" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetBarcodeColorCommand}" CommandParameter="{Binding Hex}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -777,7 +836,9 @@
 
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Redaction Fill Style" Classes="inspector-label" />
-                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding RedactionElement.FillColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="24" Height="24" CornerRadius="4" ToolTip.Tip="Custom Redaction Color" />
                                     <Button Width="24" Height="24" CornerRadius="4" Background="#0F172A" Command="{Binding SetRedactionFillColorCommand}" CommandParameter="#0F172A" ToolTip.Tip="Blackout" />
                                     <Button Width="24" Height="24" CornerRadius="4" Background="#FFFFFF" BorderBrush="#94A3B8" BorderThickness="1" Command="{Binding SetRedactionFillColorCommand}" CommandParameter="#FFFFFF" ToolTip.Tip="Whiteout" />
                                     <Button Width="24" Height="24" CornerRadius="4" Background="#475569" Command="{Binding SetRedactionFillColorCommand}" CommandParameter="#475569" ToolTip.Tip="Grayout" />
@@ -798,7 +859,9 @@
 
                             <StackPanel Spacing="3">
                                 <TextBlock Text="Stroke Width (pt)" Classes="inspector-label" />
-                                <NumericUpDown Value="{Binding InkElement.StrokeThickness, Mode=TwoWay}" Minimum="1" Maximum="30" Increment="1" Height="28" FontSize="12" />
+                                <NumericUpDown Value="{Binding InkElement.StrokeThickness, Mode=TwoWay}"
+                                               Minimum="1" Maximum="30" Increment="1" FormatString="0.0"
+                                               HorizontalAlignment="Stretch" Height="28" FontSize="12" />
                             </StackPanel>
 
                             <Grid ColumnDefinitions="*,Auto">
@@ -808,15 +871,19 @@
 
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Ink Color" Classes="inspector-label" />
-                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="vm:ColorSwatchItem">
-                                            <Button Width="20" Height="20" Margin="2" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
-                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetInkColorCommand}" CommandParameter="{Binding Hex}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding InkElement.StrokeColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="22" Height="22" CornerRadius="11" ToolTip.Tip="Custom Ink Color" />
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="20" Height="20" Margin="1.5" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetInkColorCommand}" CommandParameter="{Binding Hex}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -848,7 +915,9 @@
 
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Sticky Color" Classes="inspector-label" />
-                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding StickyNoteElement.ColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="24" Height="24" CornerRadius="4" ToolTip.Tip="Custom Note Color" />
                                     <Button Width="24" Height="24" CornerRadius="4" Background="#FEF3C7" Command="{Binding SetStickyNoteColorCommand}" CommandParameter="#FEF3C7" ToolTip.Tip="Yellow Note" />
                                     <Button Width="24" Height="24" CornerRadius="4" Background="#DBEAFE" Command="{Binding SetStickyNoteColorCommand}" CommandParameter="#DBEAFE" ToolTip.Tip="Blue Note" />
                                     <Button Width="24" Height="24" CornerRadius="4" Background="#DCFCE7" Command="{Binding SetStickyNoteColorCommand}" CommandParameter="#DCFCE7" ToolTip.Tip="Green Note" />
@@ -877,13 +946,32 @@
                                     <TextBlock Text="Dimension Units" Classes="inspector-label" />
                                     <ComboBox ItemsSource="{Binding MeasurementUnits}"
                                               SelectedItem="{Binding MeasurementElement.Unit, Mode=TwoWay}"
-                                              Height="28" FontSize="11.5" />
+                                              Height="28" FontSize="11.5" HorizontalAlignment="Stretch" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
                                     <TextBlock Text="Stroke Width (pt)" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding MeasurementElement.StrokeThickness, Mode=TwoWay}" Minimum="0.5" Maximum="10" Increment="0.5" Height="28" FontSize="11.5" />
+                                    <NumericUpDown Value="{Binding MeasurementElement.StrokeThickness, Mode=TwoWay}"
+                                                   Minimum="0.5" Maximum="10" Increment="0.5" FormatString="0.0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="11.5" />
                                 </StackPanel>
                             </Grid>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Dimension Line Color" Classes="inspector-label" />
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <ColorPicker Color="{Binding MeasurementElement.StrokeColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                 Width="22" Height="22" CornerRadius="4" ToolTip.Tip="Custom Dimension Line Color" />
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="20" Height="20" Margin="1.5" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetMeasurementColorCommand}" CommandParameter="{Binding Hex}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
 
                             <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="8">
                                 <StackPanel Orientation="Horizontal" Spacing="6">

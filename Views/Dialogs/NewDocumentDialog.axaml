@@ -150,7 +150,7 @@
                             Command="{Binding OpenProjectCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                            <TextBlock Text="Open Existing Project (.pdfproj)" FontSize="12" FontWeight="Medium" Foreground="{StaticResource WinAccentBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="Open Existing Project (.frypdf)" FontSize="12" FontWeight="Medium" Foreground="{StaticResource WinAccentBrush}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
 

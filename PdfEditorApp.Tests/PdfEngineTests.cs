@@ -82,7 +82,7 @@ public class PdfEngineTests
     public async Task ProjectPersistence_RoundTripMatches()
     {
         var original = _templateService.CreateAnnualReportTemplate();
-        string tempPath = Path.Combine(Path.GetTempPath(), $"test_project_{Guid.NewGuid():N}.pdfproj");
+        string tempPath = Path.Combine(Path.GetTempPath(), $"test_project_{Guid.NewGuid():N}.frypdf");
 
         try
         {

@@ -859,13 +859,13 @@
 
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                    <Button Classes="secondary-btn" Height="34" Padding="12,6" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save Document Project (.pdfproj)">
+                                    <Button Classes="secondary-btn" Height="34" Padding="12,6" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save Document Project (.frypdf)">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
-                                            <TextBlock Text="Save Project (.pdfproj)" FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
+                                            <TextBlock Text="Save Project (.frypdf)" FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Classes="secondary-btn" Height="34" Padding="12,6" Command="{Binding OpenProjectCommand}" ToolTip.Tip="Open Project (.pdfproj)">
+                                    <Button Classes="secondary-btn" Height="34" Padding="12,6" Command="{Binding OpenProjectCommand}" ToolTip.Tip="Open Project (.frypdf)">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
                                             <TextBlock Text="Open Project" FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />

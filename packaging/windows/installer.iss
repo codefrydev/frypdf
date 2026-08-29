@@ -51,7 +51,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "fileassoc_proj"; Description: "Associate with FryPDF project files (.pdfproj)"; GroupDescription: "File Associations:"
+Name: "fileassoc_proj"; Description: "Associate with FryPDF project files (.frypdf)"; GroupDescription: "File Associations:"
 Name: "fileassoc_pdf"; Description: "Associate with Adobe / standard PDF documents (.pdf)"; GroupDescription: "File Associations:"; Flags: unchecked
 
 [Files]
@@ -63,7 +63,9 @@ Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Registry]
-; .pdfproj Association
+; .frypdf Association
+Root: HKA; Subkey: "Software\Classes\.frypdf"; ValueType: string; ValueName: ""; ValueData: "FryPDF.Project"; Flags: uninsdeletevalue; Tasks: fileassoc_proj
+; Legacy .pdfproj Association
 Root: HKA; Subkey: "Software\Classes\.pdfproj"; ValueType: string; ValueName: ""; ValueData: "FryPDF.Project"; Flags: uninsdeletevalue; Tasks: fileassoc_proj
 Root: HKA; Subkey: "Software\Classes\FryPDF.Project"; ValueType: string; ValueName: ""; ValueData: "FryPDF Project File"; Flags: uninsdeletekey; Tasks: fileassoc_proj
 Root: HKA; Subkey: "Software\Classes\FryPDF.Project\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey; Tasks: fileassoc_proj

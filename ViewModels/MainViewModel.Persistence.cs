@@ -83,20 +83,20 @@ public partial class MainViewModel
         try
         {
             string savePath = "";
-            string defaultFileName = Path.ChangeExtension(DocumentTitle, ".pdfproj");
+            string defaultFileName = Path.ChangeExtension(DocumentTitle, ".frypdf");
 
             if (StorageProvider != null)
             {
                 var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
-                    Title = "Save PDF Creator Project",
-                    DefaultExtension = "pdfproj",
+                    Title = "Save FryPDF Project",
+                    DefaultExtension = "frypdf",
                     SuggestedFileName = defaultFileName,
                     FileTypeChoices = new[]
                     {
-                        new FilePickerFileType("PDF Creator Project (*.pdfproj)")
+                        new FilePickerFileType("FryPDF Project (*.frypdf)")
                         {
-                            Patterns = new[] { "*.pdfproj", "*.json" }
+                            Patterns = new[] { "*.frypdf", "*.pdfproj", "*.json" }
                         }
                     }
                 });
@@ -131,13 +131,13 @@ public partial class MainViewModel
             {
                 var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
-                    Title = "Open PDF Creator Project",
+                    Title = "Open FryPDF Project",
                     AllowMultiple = false,
                     FileTypeFilter = new[]
                     {
-                        new FilePickerFileType("PDF Creator Project (*.pdfproj, *.json)")
+                        new FilePickerFileType("FryPDF Project (*.frypdf, *.pdfproj, *.json)")
                         {
-                            Patterns = new[] { "*.pdfproj", "*.json" }
+                            Patterns = new[] { "*.frypdf", "*.pdfproj", "*.json" }
                         }
                     }
                 });

@@ -122,9 +122,13 @@
 
                                             <!-- Live Scaled Page Canvas Viewbox -->
                                             <Viewbox Width="142" Height="202" Stretch="Uniform">
-                                                <Border Width="{Binding Width}" Height="{Binding Height}"
-                                                        Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                        BoxShadow="0 1 4 #08000000">
+                                                <LayoutTransformControl>
+                                                    <LayoutTransformControl.LayoutTransform>
+                                                        <RotateTransform Angle="{Binding RotationAngle, FallbackValue=0}" />
+                                                    </LayoutTransformControl.LayoutTransform>
+                                                    <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                            Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                            BoxShadow="0 1 4 #08000000">
 
                                                     <!-- Live Real Elements on Page -->
                                                     <ItemsControl ItemsSource="{Binding Elements}">
@@ -281,6 +285,7 @@
                                                     </ItemsControl>
 
                                                 </Border>
+                                                </LayoutTransformControl>
                                             </Viewbox>
                                         </Border>
 

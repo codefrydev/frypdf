@@ -40,35 +40,156 @@
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Margin="12" Spacing="12">
 
-                    <!-- EMPTY STATE: DOCUMENT & PAGE OVERVIEW (Visible when nothing is selected) -->
+                    <!-- EMPTY STATE: DOCUMENT & PAGE SETUP STUDIO (Visible when nothing is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14"
                             IsVisible="{Binding !HasSelectedElement}">
-                        <StackPanel Spacing="10">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Document Properties" FontWeight="SemiBold" FontSize="12.5" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                        <StackPanel Spacing="12">
+                            <!-- Header & Live Page Pill -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" />
+                                    <TextBlock Text="Page &amp; Canvas Setup" FontWeight="SemiBold" FontSize="12.5" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <Border Grid.Column="1" Background="{StaticResource WinHoverBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="{Binding SelectedPage.PageNumber, StringFormat='Page {0}'}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinAccentBrush}" />
+                                </Border>
+                            </Grid>
+
+                            <!-- Page Format Standards (Acrobat Feature) -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Paper Size Standard" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetPageFormatCommand}" CommandParameter="A4"><TextBlock Text="A4" FontSize="10.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetPageFormatCommand}" CommandParameter="Letter"><TextBlock Text="Letter" FontSize="10.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetPageFormatCommand}" CommandParameter="Legal"><TextBlock Text="Legal" FontSize="10.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetPageFormatCommand}" CommandParameter="A3"><TextBlock Text="A3" FontSize="10.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetPageFormatCommand}" CommandParameter="A5"><TextBlock Text="A5" FontSize="10.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetPageFormatCommand}" CommandParameter="Tabloid"><TextBlock Text="Tabloid" FontSize="10.5" /></Button>
+                                </WrapPanel>
                             </StackPanel>
-                            <TextBlock Text="Select any element on the page canvas to inspect and edit its typography, geometry, styles, or interactive form fields."
-                                       FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" />
 
-                            <Rectangle Height="1" Fill="{StaticResource WinBorderBrush}" Margin="0,4" />
-
-                            <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="Page Orientation" FontSize="11.5" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
-                                <Button Grid.Column="1" Classes="secondary-btn" Height="26" Padding="8,2"
-                                        Command="{Binding SelectedPage.RotateClockwiseCommand}">
-                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                        <materialIcons:MaterialIcon Kind="RotateRight" Width="13" Height="13" Foreground="{StaticResource WinMutedBrush}" />
-                                        <TextBlock Text="Rotate 90°" FontSize="10.5" />
+                            <!-- Orientation & Rotation Studio -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Orientation &amp; Rotation" Classes="inspector-label" />
+                                <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="4">
+                                    <Button Grid.Column="0" Classes="secondary-btn" Height="26" Padding="4,2" HorizontalAlignment="Stretch"
+                                            Command="{Binding SetPageOrientationCommand}" CommandParameter="Portrait">
+                                        <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="FileOutline" Width="13" Height="13" Foreground="{StaticResource WinMutedBrush}" />
+                                            <TextBlock Text="Portrait" FontSize="10.5" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Grid.Column="1" Classes="secondary-btn" Height="26" Padding="4,2" HorizontalAlignment="Stretch"
+                                            Command="{Binding SetPageOrientationCommand}" CommandParameter="Landscape">
+                                        <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="FileOutline" Width="13" Height="13" Foreground="{StaticResource WinMutedBrush}">
+                                                <materialIcons:MaterialIcon.RenderTransform>
+                                                    <RotateTransform Angle="90" />
+                                                </materialIcons:MaterialIcon.RenderTransform>
+                                            </materialIcons:MaterialIcon>
+                                            <TextBlock Text="Landscape" FontSize="10.5" />
+                                        </StackPanel>
+                                    </Button>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2">
+                                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding RotatePageCounterClockwiseCommand}" ToolTip.Tip="Rotate 90° Counter-Clockwise">
+                                            <materialIcons:MaterialIcon Kind="RotateLeft" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                                        </Button>
+                                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding RotatePageClockwiseCommand}" ToolTip.Tip="Rotate 90° Clockwise">
+                                            <materialIcons:MaterialIcon Kind="RotateRight" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                                        </Button>
                                     </StackPanel>
-                                </Button>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Custom Page Dimensions (Width & Height) -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                                <StackPanel Grid.Column="0" Spacing="3">
+                                    <TextBlock Text="Width (pt)" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding SelectedPage.Width, Mode=TwoWay}" Minimum="200" Maximum="4000" Increment="10" FormatString="0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="3">
+                                    <TextBlock Text="Height (pt)" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding SelectedPage.Height, Mode=TwoWay}" Minimum="200" Maximum="4000" Increment="10" FormatString="0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
+                                </StackPanel>
                             </Grid>
 
-                            <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="Show Footer Bar" FontSize="11.5" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
-                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedPage.ShowHeaderFooter, Mode=TwoWay}"
-                                              OnContent="" OffContent="" Margin="0" />
-                            </Grid>
+                            <!-- Page Canvas Background Color & ColorPicker -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Canvas Background Color" Classes="inspector-label" />
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Canvas Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding SelectedPage.BackgroundColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="False" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" />
+                                                        <GradientStop Color="#FFFF00" Offset="0.17" />
+                                                        <GradientStop Color="#00FF00" Offset="0.33" />
+                                                        <GradientStop Color="#00FFFF" Offset="0.50" />
+                                                        <GradientStop Color="#0000FF" Offset="0.67" />
+                                                        <GradientStop Color="#FF00FF" Offset="0.83" />
+                                                        <GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
+                                    <Button Width="22" Height="22" CornerRadius="3" Background="#FFFFFF" BorderBrush="#94A3B8" BorderThickness="1" Command="{Binding SetPageBackgroundColorCommand}" CommandParameter="#FFFFFF" ToolTip.Tip="Pure White" />
+                                    <Button Width="22" Height="22" CornerRadius="3" Background="#FFFDF7" BorderBrush="#E2E8F0" BorderThickness="1" Command="{Binding SetPageBackgroundColorCommand}" CommandParameter="#FFFDF7" ToolTip.Tip="Warm Cream" />
+                                    <Button Width="22" Height="22" CornerRadius="3" Background="#F8FAFC" Command="{Binding SetPageBackgroundColorCommand}" CommandParameter="#F8FAFC" ToolTip.Tip="Slate Tint" />
+                                    <Button Width="22" Height="22" CornerRadius="3" Background="#FEF3C7" Command="{Binding SetPageBackgroundColorCommand}" CommandParameter="#FEF3C7" ToolTip.Tip="Parchment Yellow" />
+                                    <Button Width="22" Height="22" CornerRadius="3" Background="#0F172A" Command="{Binding SetPageBackgroundColorCommand}" CommandParameter="#0F172A" ToolTip.Tip="Blueprint Dark" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <Rectangle Height="1" Fill="{StaticResource WinBorderBrush}" Margin="0,2" />
+
+                            <!-- Header & Footer Bar Settings -->
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="PageLayoutFooter" Width="14" Height="14" Foreground="{StaticResource WinAccentBrush}" />
+                                        <TextBlock Text="Header &amp; Footer Margins" FontWeight="SemiBold" FontSize="11.5" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedPage.ShowHeaderFooter, Mode=TwoWay}"
+                                                  OnContent="" OffContent="" Margin="0" />
+                                </Grid>
+
+                                <StackPanel Spacing="6" IsVisible="{Binding SelectedPage.ShowHeaderFooter}">
+                                    <StackPanel Spacing="3">
+                                        <TextBlock Text="Quick Header/Footer Preset" Classes="inspector-label" />
+                                        <WrapPanel Orientation="Horizontal">
+                                            <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="2" Command="{Binding ApplyHeaderFooterPresetCommand}" CommandParameter="Standard"><TextBlock Text="Standard" FontSize="10" /></Button>
+                                            <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="2" Command="{Binding ApplyHeaderFooterPresetCommand}" CommandParameter="Minimal"><TextBlock Text="Page Only" FontSize="10" /></Button>
+                                            <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="2" Command="{Binding ApplyHeaderFooterPresetCommand}" CommandParameter="Corporate"><TextBlock Text="Corporate" FontSize="10" /></Button>
+                                        </WrapPanel>
+                                    </StackPanel>
+
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="Footer Left" Classes="inspector-label" FontSize="10" />
+                                            <TextBox Text="{Binding SelectedPage.FooterLeft, Mode=TwoWay}" Height="26" FontSize="11" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="2">
+                                            <TextBlock Text="Footer Right" Classes="inspector-label" FontSize="10" />
+                                            <TextBox Text="{Binding SelectedPage.FooterRight, Mode=TwoWay}" Height="26" FontSize="11" />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
@@ -202,8 +323,34 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Text Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding TextElement.TextColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="24" Height="24" CornerRadius="12" ToolTip.Tip="Custom Color Palette &amp; Hex" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Color Studio (Spectrum, RGB/HSV, Palette &amp; Hex)">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding TextElement.TextColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" />
+                                                        <GradientStop Color="#FFFF00" Offset="0.17" />
+                                                        <GradientStop Color="#00FF00" Offset="0.33" />
+                                                        <GradientStop Color="#00FFFF" Offset="0.50" />
+                                                        <GradientStop Color="#0000FF" Offset="0.67" />
+                                                        <GradientStop Color="#FF00FF" Offset="0.83" />
+                                                        <GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <ItemsControl ItemsSource="{Binding ColorSwatches}">
                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
@@ -223,8 +370,28 @@
                                 <TextBlock Text="Highlight / Background Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="secondary-btn" Height="22" Padding="6,1" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#00000000"><TextBlock Text="None" FontSize="9.5" /></Button>
-                                    <ColorPicker Color="{Binding TextElement.BackgroundColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="22" Height="22" CornerRadius="4" ToolTip.Tip="Custom Highlight Color" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Highlight Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding TextElement.BackgroundColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <Button Width="22" Height="22" CornerRadius="4" Background="#FEF08A" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#FEF08A" ToolTip.Tip="Yellow Highlight" />
                                     <Button Width="22" Height="22" CornerRadius="4" Background="#BAE6FD" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#BAE6FD" ToolTip.Tip="Blue Highlight" />
                                     <Button Width="22" Height="22" CornerRadius="4" Background="#BBF7D0" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#BBF7D0" ToolTip.Tip="Green Highlight" />
@@ -275,8 +442,28 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Fill Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding ShapeElement.FillColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="24" Height="24" CornerRadius="4" ToolTip.Tip="Custom Fill Color (Hex/RGB/Palette)" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Shape Fill Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding ShapeElement.FillColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <ItemsControl ItemsSource="{Binding ColorSwatches}">
                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
@@ -295,8 +482,28 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Border / Stroke Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding ShapeElement.StrokeColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="24" Height="24" CornerRadius="4" ToolTip.Tip="Custom Stroke Color (Hex/RGB/Palette)" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Stroke Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding ShapeElement.StrokeColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <ItemsControl ItemsSource="{Binding ColorSwatches}">
                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
@@ -344,8 +551,28 @@
                                 <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
                                     <TextBlock Text="Label Color" Classes="inspector-label" />
                                     <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                        <ColorPicker Color="{Binding ShapeElement.LabelColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                     Width="20" Height="20" CornerRadius="10" ToolTip.Tip="Custom Label Color" />
+                                        <Button Classes="color-studio-btn" ToolTip.Tip="Custom Label Color Studio">
+                                            <Button.Flyout>
+                                                <Flyout Placement="BottomEdgeAlignedLeft">
+                                                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                        <ColorView Color="{Binding ShapeElement.LabelColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                                   IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                    </Border>
+                                                </Flyout>
+                                            </Button.Flyout>
+                                            <Grid Width="20" Height="20">
+                                                <Border CornerRadius="10" Width="20" Height="20">
+                                                    <Border.Background>
+                                                        <ConicGradientBrush Center="0.5,0.5">
+                                                            <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                        </ConicGradientBrush>
+                                                    </Border.Background>
+                                                </Border>
+                                                <Border Margin="2.5" CornerRadius="8" Background="White">
+                                                    <materialIcons:MaterialIcon Kind="Palette" Width="9" Height="9" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                            </Grid>
+                                        </Button>
                                         <Button Width="20" Height="20" CornerRadius="10" Background="#FFFFFF" BorderBrush="#94A3B8" BorderThickness="1" Command="{Binding SetShapeLabelColorCommand}" CommandParameter="#FFFFFF" />
                                         <Button Width="20" Height="20" CornerRadius="10" Background="#201F1E" Command="{Binding SetShapeLabelColorCommand}" CommandParameter="#201F1E" />
                                         <Button Width="20" Height="20" CornerRadius="10" Background="#0F6CBD" Command="{Binding SetShapeLabelColorCommand}" CommandParameter="#0F6CBD" />
@@ -398,8 +625,28 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Border Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding ImageElement.BorderColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="22" Height="22" CornerRadius="4" ToolTip.Tip="Custom Border Color" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Border Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding ImageElement.BorderColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <ItemsControl ItemsSource="{Binding ColorSwatches}">
                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
@@ -438,8 +685,28 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Line Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding DividerElement.ColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="22" Height="22" CornerRadius="4" ToolTip.Tip="Custom Line Color" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Line Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding DividerElement.ColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <ItemsControl ItemsSource="{Binding ColorSwatches}">
                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
@@ -606,8 +873,28 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Watermark Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding WatermarkElement.ColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="22" Height="22" CornerRadius="4" ToolTip.Tip="Custom Watermark Color" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Watermark Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding WatermarkElement.ColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <ItemsControl ItemsSource="{Binding ColorSwatches}">
                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
@@ -698,8 +985,28 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Border Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding FormFieldElement.BorderColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="22" Height="22" CornerRadius="4" ToolTip.Tip="Custom Border Color" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Field Border Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding FormFieldElement.BorderColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <ItemsControl ItemsSource="{Binding ColorSwatches}">
                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
@@ -748,8 +1055,28 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="QR Code Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding QrCodeElement.DarkColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="22" Height="22" CornerRadius="11" ToolTip.Tip="Custom QR Color" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom QR Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding QrCodeElement.DarkColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <ItemsControl ItemsSource="{Binding ColorSwatches}">
                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
@@ -763,6 +1090,7 @@
                             </StackPanel>
                         </StackPanel>
                     </Border>
+
 
                     <!-- 10. BARCODE CARD (Visible when Barcode is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
@@ -799,8 +1127,28 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Barcode Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding BarcodeElement.BarColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="22" Height="22" CornerRadius="11" ToolTip.Tip="Custom Barcode Color" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Barcode Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding BarcodeElement.BarColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <ItemsControl ItemsSource="{Binding ColorSwatches}">
                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
@@ -837,8 +1185,28 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Redaction Fill Style" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding RedactionElement.FillColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="24" Height="24" CornerRadius="4" ToolTip.Tip="Custom Redaction Color" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Redaction Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding RedactionElement.FillColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <Button Width="24" Height="24" CornerRadius="4" Background="#0F172A" Command="{Binding SetRedactionFillColorCommand}" CommandParameter="#0F172A" ToolTip.Tip="Blackout" />
                                     <Button Width="24" Height="24" CornerRadius="4" Background="#FFFFFF" BorderBrush="#94A3B8" BorderThickness="1" Command="{Binding SetRedactionFillColorCommand}" CommandParameter="#FFFFFF" ToolTip.Tip="Whiteout" />
                                     <Button Width="24" Height="24" CornerRadius="4" Background="#475569" Command="{Binding SetRedactionFillColorCommand}" CommandParameter="#475569" ToolTip.Tip="Grayout" />
@@ -872,8 +1240,28 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Ink Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding InkElement.StrokeColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="22" Height="22" CornerRadius="11" ToolTip.Tip="Custom Ink Color" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Ink Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding InkElement.StrokeColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <ItemsControl ItemsSource="{Binding ColorSwatches}">
                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
@@ -916,8 +1304,28 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Sticky Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding StickyNoteElement.ColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="24" Height="24" CornerRadius="4" ToolTip.Tip="Custom Note Color" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Sticky Note Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding StickyNoteElement.ColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <Button Width="24" Height="24" CornerRadius="4" Background="#FEF3C7" Command="{Binding SetStickyNoteColorCommand}" CommandParameter="#FEF3C7" ToolTip.Tip="Yellow Note" />
                                     <Button Width="24" Height="24" CornerRadius="4" Background="#DBEAFE" Command="{Binding SetStickyNoteColorCommand}" CommandParameter="#DBEAFE" ToolTip.Tip="Blue Note" />
                                     <Button Width="24" Height="24" CornerRadius="4" Background="#DCFCE7" Command="{Binding SetStickyNoteColorCommand}" CommandParameter="#DCFCE7" ToolTip.Tip="Green Note" />
@@ -959,8 +1367,28 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Dimension Line Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <ColorPicker Color="{Binding MeasurementElement.StrokeColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                 Width="22" Height="22" CornerRadius="4" ToolTip.Tip="Custom Dimension Line Color" />
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Dimension Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding MeasurementElement.StrokeColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
                                     <ItemsControl ItemsSource="{Binding ColorSwatches}">
                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>

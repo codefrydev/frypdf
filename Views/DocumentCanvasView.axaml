@@ -136,13 +136,16 @@
         <Grid HorizontalAlignment="Center" VerticalAlignment="Top" Margin="36">
             <LayoutTransformControl>
                 <LayoutTransformControl.LayoutTransform>
-                    <ScaleTransform ScaleX="{Binding ZoomLevel}" ScaleY="{Binding ZoomLevel}" />
+                    <TransformGroup>
+                        <ScaleTransform ScaleX="{Binding ZoomLevel}" ScaleY="{Binding ZoomLevel}" />
+                        <RotateTransform Angle="{Binding CurrentPage.RotationAngle, FallbackValue=0}" />
+                    </TransformGroup>
                 </LayoutTransformControl.LayoutTransform>
 
                 <!-- PDF Paper Sheet Container (A4 / Letter) -->
                 <Border Width="{Binding CurrentPage.Width, FallbackValue=800}"
                         Height="{Binding CurrentPage.Height, FallbackValue=1131}"
-                        Background="White"
+                        Background="{Binding CurrentPage.BackgroundColorHex, FallbackValue=White, Converter={StaticResource HexToBrushConverter}}"
                         CornerRadius="2"
                         BoxShadow="0 6 24 #14000000, 0 1 4 #08000000, 0 0 1 #20000000"
                         ClipToBounds="True">
@@ -161,7 +164,7 @@
                                 <ItemsPanelTemplate>
                                     <Canvas Width="{Binding CurrentPage.Width, FallbackValue=800}"
                                             Height="{Binding CurrentPage.Height, FallbackValue=1131}"
-                                            Background="White" />
+                                            Background="Transparent" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
 

@@ -1090,4 +1090,136 @@ public partial class InspectorViewModel : ViewModelBase
             UndoRedo?.RecordAction("Change Measurement Color", () => el.StrokeColorHex = oldHex, () => el.StrokeColorHex = hex);
         }
     }
+
+    // --- DOCUMENT & PAGE LEVEL INSPECTOR COMMANDS ---
+
+    [RelayCommand]
+    public void RotatePageClockwise()
+    {
+        if (SelectedPage != null)
+        {
+            var page = SelectedPage;
+            int oldAngle = page.RotationAngle;
+            int newAngle = (oldAngle + 90) % 360;
+            page.RotationAngle = newAngle;
+            UndoRedo?.RecordAction("Rotate Page 90° CW", () => page.RotationAngle = oldAngle, () => page.RotationAngle = newAngle);
+        }
+    }
+
+    [RelayCommand]
+    public void RotatePageCounterClockwise()
+    {
+        if (SelectedPage != null)
+        {
+            var page = SelectedPage;
+            int oldAngle = page.RotationAngle;
+            int newAngle = (oldAngle + 270) % 360;
+            page.RotationAngle = newAngle;
+            UndoRedo?.RecordAction("Rotate Page 90° CCW", () => page.RotationAngle = oldAngle, () => page.RotationAngle = newAngle);
+        }
+    }
+
+    [RelayCommand]
+    public void SetPageFormat(string formatStr)
+    {
+        if (SelectedPage != null && Enum.TryParse<PageFormat>(formatStr, true, out var fmt))
+        {
+            var page = SelectedPage;
+            var oldFmt = page.Format;
+            double oldW = page.Width;
+            double oldH = page.Height;
+
+            (double w, double h) = fmt switch
+            {
+                PageFormat.A4 => (800.0, 1131.0),
+                PageFormat.Letter => (816.0, 1056.0),
+                PageFormat.Legal => (816.0, 1344.0),
+                PageFormat.A3 => (1131.0, 1600.0),
+                PageFormat.A5 => (565.0, 800.0),
+                PageFormat.Tabloid => (1056.0, 1632.0),
+                _ => (800.0, 1131.0)
+            };
+
+            if (page.Orientation == PageOrientation.Landscape)
+            {
+                (w, h) = (h, w);
+            }
+
+            page.Format = fmt;
+            page.Width = w;
+            page.Height = h;
+
+            UndoRedo?.RecordAction(
+                $"Page Format: {fmt}",
+                () => { page.Format = oldFmt; page.Width = oldW; page.Height = oldH; },
+                () => { page.Format = fmt; page.Width = w; page.Height = h; }
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void SetPageOrientation(string orientStr)
+    {
+        if (SelectedPage != null && Enum.TryParse<PageOrientation>(orientStr, true, out var orient))
+        {
+            var page = SelectedPage;
+            if (page.Orientation == orient) return;
+
+            var oldOrient = page.Orientation;
+            double oldW = page.Width;
+            double oldH = page.Height;
+
+            double newW = oldH;
+            double newH = oldW;
+
+            page.Orientation = orient;
+            page.Width = newW;
+            page.Height = newH;
+
+            UndoRedo?.RecordAction(
+                $"Orientation: {orient}",
+                () => { page.Orientation = oldOrient; page.Width = oldW; page.Height = oldH; },
+                () => { page.Orientation = orient; page.Width = newW; page.Height = newH; }
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void SetPageBackgroundColor(string hex)
+    {
+        if (SelectedPage != null && SelectedPage.BackgroundColorHex != hex)
+        {
+            var page = SelectedPage;
+            string oldHex = page.BackgroundColorHex;
+            page.BackgroundColorHex = hex;
+            UndoRedo?.RecordAction("Change Page Background Color", () => page.BackgroundColorHex = oldHex, () => page.BackgroundColorHex = hex);
+        }
+    }
+
+    [RelayCommand]
+    public void ApplyHeaderFooterPreset(string preset)
+    {
+        if (SelectedPage != null)
+        {
+            var page = SelectedPage;
+            page.ShowHeaderFooter = true;
+            if (preset == "Standard")
+            {
+                page.FooterLeft = "CONFIDENTIAL & PROPRIETARY";
+                page.FooterRight = $"Page {page.PageNumber}";
+            }
+            else if (preset == "Minimal")
+            {
+                page.FooterLeft = "";
+                page.FooterRight = $"{page.PageNumber}";
+            }
+            else if (preset == "Corporate")
+            {
+                page.HeaderLeft = "ACME CORPORATION";
+                page.HeaderRight = DateTime.Now.ToString("yyyy-MM-dd");
+                page.FooterLeft = "INTERNAL USE ONLY";
+                page.FooterRight = $"Page {page.PageNumber}";
+            }
+        }
+    }
 }

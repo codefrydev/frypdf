@@ -55,6 +55,24 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private PageViewModel? _currentPage;
 
+    partial void OnCurrentPageChanged(PageViewModel? oldValue, PageViewModel? newValue)
+    {
+        if (oldValue != null)
+        {
+            oldValue.SelectionChanged -= OnElementSelectionChanged;
+        }
+
+        if (newValue != null)
+        {
+            newValue.SelectionChanged += OnElementSelectionChanged;
+            Inspector.UpdateSelection(newValue.SelectedElement, newValue);
+        }
+        else
+        {
+            Inspector.UpdateSelection(null, null);
+        }
+    }
+
     // Canvas Grid & Snap-to-Grid
     [ObservableProperty]
     private bool _showGrid;

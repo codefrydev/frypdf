@@ -19,6 +19,9 @@ public partial class MainViewModel : ViewModelBase
     private readonly IProjectPersistenceService _persistenceService;
     private readonly IDocumentAuditService _auditService;
     private readonly ISignatureService _signatureService;
+    private readonly ISmartPlacementService _placementService;
+
+    public ISmartPlacementService SmartPlacement => _placementService;
 
     private ElementViewModelBase? _clipboardElement;
     private CancellationTokenSource? _toastCts;
@@ -268,7 +271,7 @@ public partial class MainViewModel : ViewModelBase
 
     // --- CONSTRUCTORS ---
 
-    public MainViewModel() : this(new PdfExportService(), new TemplateService(), new ProjectPersistenceService(), new DocumentAuditService(), new SignatureService())
+    public MainViewModel() : this(new PdfExportService(), new TemplateService(), new ProjectPersistenceService(), new DocumentAuditService(), new SignatureService(), new SmartPlacementService())
     {
     }
 
@@ -277,13 +280,15 @@ public partial class MainViewModel : ViewModelBase
         ITemplateService templateService,
         IProjectPersistenceService persistenceService,
         IDocumentAuditService? auditService = null,
-        ISignatureService? signatureService = null)
+        ISignatureService? signatureService = null,
+        ISmartPlacementService? placementService = null)
     {
         _exportService = exportService;
         _templateService = templateService;
         _persistenceService = persistenceService;
         _auditService = auditService ?? new DocumentAuditService();
         _signatureService = signatureService ?? new SignatureService();
+        _placementService = placementService ?? new SmartPlacementService();
 
         // Connect undo/redo service to inspector
         Inspector.UndoRedo = UndoRedo;
@@ -423,8 +428,10 @@ public partial class MainViewModel : ViewModelBase
             var model = _clipboardElement.ToModel();
             var clone = model.Clone();
             clone.Id = Guid.NewGuid().ToString();
-            clone.X += 20;
-            clone.Y += 20;
+
+            var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, clone.Width, clone.Height);
+            clone.X = posX;
+            clone.Y = posY;
 
             ElementViewModelBase? newVm = clone.Kind switch
             {
@@ -459,8 +466,10 @@ public partial class MainViewModel : ViewModelBase
             var model = CurrentPage.SelectedElement.ToModel();
             var clone = model.Clone();
             clone.Id = Guid.NewGuid().ToString();
-            clone.X += 20;
-            clone.Y += 20;
+
+            var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, clone.Width, clone.Height);
+            clone.X = posX;
+            clone.Y = posY;
 
             ElementViewModelBase? newVm = clone.Kind switch
             {

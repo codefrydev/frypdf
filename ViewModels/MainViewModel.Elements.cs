@@ -38,10 +38,11 @@ public partial class MainViewModel
     {
         if (CurrentPage == null) return;
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 400, 80);
         var textEl = new TextElementViewModel
         {
-            X = 100,
-            Y = 150,
+            X = posX,
+            Y = posY,
             Width = 400,
             Height = 80,
             Text = "New editable paragraph. Double-click or use inspector to customize text, fonts, colors, and alignments.",
@@ -57,10 +58,11 @@ public partial class MainViewModel
     {
         if (CurrentPage == null) return;
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 500, 45);
         var headingEl = new TextElementViewModel
         {
-            X = 100,
-            Y = 100,
+            X = posX,
+            Y = posY,
             Width = 500,
             Height = 45,
             Text = "Section Heading",
@@ -84,12 +86,16 @@ public partial class MainViewModel
             shapeType = parsed;
         }
 
+        double width = shapeType == ShapeType.Circle ? 120 : 240;
+        double height = 120;
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, width, height);
+
         var shapeEl = new ShapeElementViewModel
         {
-            X = 120,
-            Y = 200,
-            Width = shapeType == ShapeType.Circle ? 120 : 240,
-            Height = 120,
+            X = posX,
+            Y = posY,
+            Width = width,
+            Height = height,
             ShapeType = shapeType,
             FillColorHex = "#F0F7FD",
             StrokeColorHex = "#0F6CBD",
@@ -125,10 +131,11 @@ public partial class MainViewModel
                 if (files.Count > 0)
                 {
                     string filePath = files[0].Path.LocalPath;
+                    var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 260, 180);
                     var imgEl = new ImageElementViewModel
                     {
-                        X = 100,
-                        Y = 200,
+                        X = posX,
+                        Y = posY,
                         Width = 260,
                         Height = 180,
                         ImagePath = filePath
@@ -140,10 +147,11 @@ public partial class MainViewModel
             }
 
             // Fallback placeholder image element
+            var (fallbackX, fallbackY) = _placementService.GetPlacementPosition(CurrentPage, 260, 180);
             var fallbackImg = new ImageElementViewModel
             {
-                X = 100,
-                Y = 200,
+                X = fallbackX,
+                Y = fallbackY,
                 Width = 260,
                 Height = 180,
                 AltText = "Inserted Graphic"
@@ -181,10 +189,11 @@ public partial class MainViewModel
             _ => "#0F6CBD"
         };
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 180, 60);
         var stampEl = new ShapeElementViewModel
         {
-            X = 200,
-            Y = 200,
+            X = posX,
+            Y = posY,
             Width = 180,
             Height = 60,
             ShapeType = ShapeType.RoundedRectangle,
@@ -205,10 +214,11 @@ public partial class MainViewModel
     {
         if (CurrentPage == null) return;
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 200, 150);
         var noteEl = new StickyNoteElementViewModel
         {
-            X = 120,
-            Y = 180,
+            X = posX,
+            Y = posY,
             Width = 200,
             Height = 150,
             Author = "Lead Reviewer",
@@ -227,11 +237,13 @@ public partial class MainViewModel
     {
         if (CurrentPage == null) return;
 
+        double width = Math.Max(200, CurrentPage.Width - 80);
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, width, 16);
         var divEl = new DividerElementViewModel
         {
-            X = 60,
-            Y = 250,
-            Width = 680,
+            X = posX,
+            Y = posY,
+            Width = width,
             Height = 3,
             Thickness = 2,
             ColorHex = "#0F6CBD"
@@ -245,11 +257,13 @@ public partial class MainViewModel
     {
         if (CurrentPage == null) return;
 
+        double width = Math.Max(300, CurrentPage.Width - 80);
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, width, 180);
         var tableEl = new TableElementViewModel
         {
-            X = 60,
-            Y = 250,
-            Width = 680,
+            X = posX,
+            Y = posY,
+            Width = width,
             Height = 180
         };
 
@@ -267,10 +281,11 @@ public partial class MainViewModel
             chartType = parsed;
         }
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 400, 220);
         var chartEl = new ChartElementViewModel
         {
-            X = 100,
-            Y = 250,
+            X = posX,
+            Y = posY,
             Width = 400,
             Height = 220,
             ChartType = chartType,
@@ -285,10 +300,11 @@ public partial class MainViewModel
     {
         if (CurrentPage == null) return;
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 400, 100);
         var wmEl = new WatermarkElementViewModel
         {
-            X = 100,
-            Y = 350,
+            X = posX,
+            Y = posY,
             Text = "CONFIDENTIAL",
             FontSize = 56,
             ColorHex = "#DC2626",
@@ -310,12 +326,16 @@ public partial class MainViewModel
             fieldType = parsed;
         }
 
+        double width = fieldType == FormFieldType.Checkbox ? 180 : (fieldType == FormFieldType.Signature ? 260 : 340);
+        double height = fieldType == FormFieldType.Signature ? 90 : (fieldType == FormFieldType.MultilineText ? 80 : 42);
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, width, height);
+
         var formEl = new FormFieldElementViewModel
         {
-            X = 100,
-            Y = 220,
-            Width = fieldType == FormFieldType.Checkbox ? 180 : (fieldType == FormFieldType.Signature ? 260 : 340),
-            Height = fieldType == FormFieldType.Signature ? 90 : (fieldType == FormFieldType.MultilineText ? 80 : 42),
+            X = posX,
+            Y = posY,
+            Width = width,
+            Height = height,
             FieldType = fieldType,
             Label = fieldType switch
             {
@@ -338,10 +358,11 @@ public partial class MainViewModel
     {
         if (CurrentPage == null) return;
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 130, 150);
         var qrEl = new QrCodeElementViewModel
         {
-            X = 100,
-            Y = 220,
+            X = posX,
+            Y = posY,
             Width = 130,
             Height = 150,
             Content = "https://github.com/PrashantUnity/PDFCreator",
@@ -356,10 +377,11 @@ public partial class MainViewModel
     {
         if (CurrentPage == null) return;
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 240, 65);
         var barcodeEl = new BarcodeElementViewModel
         {
-            X = 100,
-            Y = 220,
+            X = posX,
+            Y = posY,
             Width = 240,
             Height = 65,
             CodeValue = $"DOC-2026-{Random.Shared.Next(100000, 999999)}"
@@ -373,10 +395,11 @@ public partial class MainViewModel
     {
         if (CurrentPage == null) return;
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 320, 36);
         var redEl = new RedactionElementViewModel
         {
-            X = 80,
-            Y = 200,
+            X = posX,
+            Y = posY,
             Width = 320,
             Height = 36,
             ExemptionCode = exemptionCode ?? "[REDACTED]"
@@ -397,12 +420,15 @@ public partial class MainViewModel
             _ => false
         };
 
+        double height = isHighlighter ? 24 : 12;
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 260, height);
+
         var inkEl = new InkElementViewModel
         {
-            X = 100,
-            Y = 250,
+            X = posX,
+            Y = posY,
             Width = 260,
-            Height = isHighlighter ? 24 : 12,
+            Height = height,
             StrokeColorHex = isHighlighter ? "#FEF08A" : "#0F6CBD",
             StrokeThickness = isHighlighter ? 14.0 : 3.0,
             Opacity = isHighlighter ? 0.45 : 1.0,
@@ -432,7 +458,8 @@ public partial class MainViewModel
         if (CurrentPage == null) return;
         string name = string.IsNullOrWhiteSpace(SignatureSignerName) ? "Jane Doe" : SignatureSignerName.Trim();
 
-        var sigEl = _signatureService.CreateCursiveSignatureElement(name, SelectedSignatureStyle, 120, 250);
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 260, 55);
+        var sigEl = _signatureService.CreateCursiveSignatureElement(name, SelectedSignatureStyle, posX, posY);
         var vm = new TextElementViewModel();
         vm.LoadFromModel(sigEl);
 
@@ -444,7 +471,8 @@ public partial class MainViewModel
     public void AddDateStamp()
     {
         if (CurrentPage == null) return;
-        var dateEl = _signatureService.CreateDateStampElement(120, 250);
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 180, 35);
+        var dateEl = _signatureService.CreateDateStampElement(posX, posY);
         var vm = new TextElementViewModel();
         vm.LoadFromModel(dateEl);
         AddElementWithUndo(vm, "Added Date Stamp");
@@ -454,7 +482,8 @@ public partial class MainViewModel
     public void AddInitialsBadge(string? initials = "JD")
     {
         if (CurrentPage == null) return;
-        var initEl = _signatureService.CreateInitialsElement(initials ?? "JD", 120, 250);
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 55, 55);
+        var initEl = _signatureService.CreateInitialsElement(initials ?? "JD", posX, posY);
         var vm = new ShapeElementViewModel();
         vm.LoadFromModel(initEl);
         AddElementWithUndo(vm, $"Added Initials ({initEl.Label})");
@@ -464,7 +493,8 @@ public partial class MainViewModel
     public void AddCheckmarkBadge()
     {
         if (CurrentPage == null) return;
-        var badge = _signatureService.CreateMarkupBadge("✓", "#16A34A", 120, 250);
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 42, 42);
+        var badge = _signatureService.CreateMarkupBadge("✓", "#16A34A", posX, posY);
         var vm = new ShapeElementViewModel();
         vm.LoadFromModel(badge);
         AddElementWithUndo(vm, "Added Checkmark (✓)");
@@ -474,7 +504,8 @@ public partial class MainViewModel
     public void AddCrossBadge()
     {
         if (CurrentPage == null) return;
-        var badge = _signatureService.CreateMarkupBadge("✕", "#DC2626", 120, 250);
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 42, 42);
+        var badge = _signatureService.CreateMarkupBadge("✕", "#DC2626", posX, posY);
         var vm = new ShapeElementViewModel();
         vm.LoadFromModel(badge);
         AddElementWithUndo(vm, "Added Cross Mark (✕)");
@@ -624,10 +655,11 @@ public partial class MainViewModel
         string text = string.IsNullOrWhiteSpace(CustomStampText) ? "RECEIVED" : CustomStampText.Trim().ToUpper();
         string color = string.IsNullOrWhiteSpace(CustomStampColorHex) ? "#0F6CBD" : CustomStampColorHex;
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 220, 65);
         var stampEl = new ShapeElementViewModel
         {
-            X = 150,
-            Y = 200,
+            X = posX,
+            Y = posY,
             Width = 220,
             Height = 65,
             ShapeType = ShapeType.RoundedRectangle,
@@ -1013,10 +1045,11 @@ public partial class MainViewModel
     {
         if (CurrentPage == null) return;
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 240, 36);
         var measureEl = new MeasurementElementViewModel
         {
-            X = 140,
-            Y = 220,
+            X = posX,
+            Y = posY,
             Width = 240,
             Height = 36,
             Unit = RulerUnit,
@@ -1033,10 +1066,11 @@ public partial class MainViewModel
     {
         if (CurrentPage == null) return;
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 220, 80);
         var callout = new ShapeElementViewModel
         {
-            X = 140,
-            Y = 180,
+            X = posX,
+            Y = posY,
             Width = 220,
             Height = 80,
             ShapeType = ShapeType.Callout,
@@ -1056,10 +1090,11 @@ public partial class MainViewModel
     {
         if (CurrentPage == null) return;
 
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 260, 140);
         var cloud = new ShapeElementViewModel
         {
-            X = 120,
-            Y = 160,
+            X = posX,
+            Y = posY,
             Width = 260,
             Height = 140,
             ShapeType = ShapeType.RevisionCloud,

@@ -42,6 +42,40 @@ public partial class DocumentCanvasView : UserControl
         AddHandler(KeyUpEvent, OnCanvasKeyUp, RoutingStrategies.Tunnel);
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (CanvasScrollViewer != null)
+        {
+            CanvasScrollViewer.PropertyChanged += (s, ev) =>
+            {
+                if (ev.Property == ScrollViewer.OffsetProperty || ev.Property == ScrollViewer.ViewportProperty)
+                {
+                    UpdateViewportOnPlacementService();
+                }
+            };
+        }
+    }
+
+    private void UpdateViewportOnPlacementService()
+    {
+        if (CanvasScrollViewer == null || PageElementsCanvas == null || ViewModel?.CurrentPage == null) return;
+
+        double zoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+        var scrollCenter = new Point(CanvasScrollViewer.Viewport.Width / 2.0, CanvasScrollViewer.Viewport.Height / 2.0);
+        var canvasCenter = CanvasScrollViewer.TranslatePoint(scrollCenter, PageElementsCanvas);
+
+        if (canvasCenter.HasValue)
+        {
+            double pageCenterX = canvasCenter.Value.X / zoom;
+            double pageCenterY = canvasCenter.Value.Y / zoom;
+            double visibleWidth = CanvasScrollViewer.Viewport.Width / zoom;
+            double visibleHeight = CanvasScrollViewer.Viewport.Height / zoom;
+
+            ViewModel.SmartPlacement.UpdateViewport(pageCenterX, pageCenterY, visibleWidth, visibleHeight);
+        }
+    }
+
     private MainViewModel? ViewModel => DataContext as MainViewModel;
 
     private void OnCanvasPointerWheelChanged(object? sender, PointerWheelEventArgs e)
@@ -57,6 +91,7 @@ public partial class DocumentCanvasView : UserControl
             {
                 ViewModel.ZoomOutCommand.Execute(null);
             }
+            UpdateViewportOnPlacementService();
             e.Handled = true;
         }
     }
@@ -84,6 +119,12 @@ public partial class DocumentCanvasView : UserControl
         double zoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
         double canvasX = pos.X / zoom;
         double canvasY = pos.Y / zoom;
+
+        // Register right-click point for context-menu placement (Adobe Acrobat / Photoshop standard)
+        if (pointerPoint.Properties.IsRightButtonPressed)
+        {
+            ViewModel.SmartPlacement.SetContextMenuPointer(canvasX, canvasY);
+        }
 
         if (ViewModel.ActiveToolMode == Models.ToolMode.Draw || ViewModel.ActiveToolMode == Models.ToolMode.Highlight)
         {
@@ -137,6 +178,13 @@ public partial class DocumentCanvasView : UserControl
         if (sender is Control control && control.DataContext is ElementViewModelBase elementVm)
         {
             ViewModel?.CurrentPage?.SelectElement(elementVm);
+
+            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed && PageElementsCanvas != null && ViewModel != null)
+            {
+                var pos = e.GetPosition(PageElementsCanvas);
+                double zoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+                ViewModel.SmartPlacement.SetContextMenuPointer(pos.X / zoom, pos.Y / zoom);
+            }
 
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {

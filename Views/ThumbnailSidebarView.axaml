@@ -133,11 +133,13 @@
 
                                                             <!-- Shape Element Mini Template -->
                                                             <DataTemplate DataType="elvm:ShapeElementViewModel">
-                                                                <Border Width="{Binding Width}" Height="{Binding Height}"
-                                                                        Background="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                        BorderBrush="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                        BorderThickness="{Binding StrokeThickness}"
-                                                                        CornerRadius="{Binding CornerRadius}" />
+                                                                <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                                                    <Path Data="{Binding PathData}"
+                                                                          Fill="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                          Stroke="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                          StrokeThickness="{Binding StrokeThickness}"
+                                                                          Stretch="Fill" />
+                                                                </Grid>
                                                             </DataTemplate>
 
                                                             <!-- Table Element Mini Template -->

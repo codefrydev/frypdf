@@ -172,15 +172,18 @@
                                     </Grid>
                                 </DataTemplate>
 
-                                <!-- 2. SHAPE ELEMENT TEMPLATE -->
+                                <!-- 2. SHAPE ELEMENT TEMPLATE (Supports all 15 Vector Shape Types) -->
                                 <DataTemplate DataType="elvm:ShapeElementViewModel">
                                     <Grid Width="{Binding Width}" Height="{Binding Height}">
-                                        <Border Background="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                BorderBrush="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                BorderThickness="{Binding StrokeThickness, Converter={StaticResource DoubleToThickness}}"
-                                                CornerRadius="{Binding CornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
-                                                Padding="4"
-                                                PointerPressed="OnElementPointerPressed">
+                                        <Panel PointerPressed="OnElementPointerPressed">
+                                            <!-- Dynamic Vector Path Geometry -->
+                                            <Path Data="{Binding PathData}"
+                                                  Fill="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                  Stroke="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                  StrokeThickness="{Binding StrokeThickness}"
+                                                  Stretch="Fill" />
+
+                                            <!-- Optional Centered Label -->
                                             <TextBlock Text="{Binding Label}"
                                                        FontSize="{Binding LabelFontSize}"
                                                        Foreground="{Binding LabelColorHex, Converter={StaticResource HexToBrushConverter}}"
@@ -188,7 +191,7 @@
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"
                                                        IsVisible="{Binding Label, Converter={StaticResource NullToBooleanConverter}}" />
-                                        </Border>
+                                        </Panel>
 
                                         <!-- Selection Adorner -->
                                         <Grid IsVisible="{Binding IsSelected}">
@@ -248,7 +251,9 @@
                                                     <ItemsControl ItemsSource="{Binding Rows}">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate DataType="elvm:TableRowItem">
-                                                                <Border BorderBrush="#F1F5F9" BorderThickness="0,0,0,1" Padding="10,6">
+                                                                <Border BorderBrush="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        Background="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).AlternateRowBackgroundHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderThickness="0,0,0,1" Padding="10,6">
                                                                     <ItemsControl ItemsSource="{Binding Cells}">
                                                                         <ItemsControl.ItemsPanel>
                                                                             <ItemsPanelTemplate>
@@ -279,7 +284,7 @@
                                     </Grid>
                                 </DataTemplate>
 
-                                <!-- 5. CHART ELEMENT TEMPLATE -->
+                                <!-- 5. CHART ELEMENT TEMPLATE (Supports all 13 Chart Types) -->
                                 <DataTemplate DataType="elvm:ChartElementViewModel">
                                     <Grid Width="{Binding Width}" Height="{Binding Height}">
                                         <Border Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
@@ -287,16 +292,21 @@
                                                 BorderThickness="1"
                                                 CornerRadius="8"
                                                 BoxShadow="0 1 4 #08000000"
-                                                Padding="14"
+                                                Padding="12"
                                                 PointerPressed="OnElementPointerPressed">
-                                            <Grid RowDefinitions="Auto,*,Auto">
-                                                <!-- Title -->
-                                                <TextBlock Grid.Row="0" Text="{Binding Title}"
-                                                           FontSize="11.5" FontWeight="Bold" Foreground="#334155"
-                                                           HorizontalAlignment="Center" Margin="0,0,0,10" />
+                                            <Grid RowDefinitions="Auto,*">
+                                                <!-- Header Title & Badge -->
+                                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                                                    <TextBlock Grid.Column="0" Text="{Binding Title}"
+                                                               FontSize="11.5" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" />
+                                                    <Border Grid.Column="1" Background="#E2E8F0" CornerRadius="4" Padding="5,1">
+                                                        <TextBlock Text="{Binding ChartTypeDescription}" FontSize="9" FontWeight="SemiBold" Foreground="#475569" />
+                                                    </Border>
+                                                </Grid>
 
-                                                <!-- Visual Bar Chart -->
-                                                <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="6,0">
+                                                <!-- 1. Vertical Column Chart View -->
+                                                <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="4,0"
+                                                              IsVisible="{Binding IsBarColumn}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <UniformGrid Rows="1" />
@@ -304,19 +314,107 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate DataType="elvm:ChartBarItem">
-                                                            <Grid RowDefinitions="Auto,*,Auto" Margin="5,0" VerticalAlignment="Bottom">
-                                                                <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="9.5" FontWeight="Bold"
-                                                                           Foreground="#334155" HorizontalAlignment="Center" Margin="0,0,0,3" />
+                                                            <Grid RowDefinitions="Auto,*,Auto" Margin="4,0" VerticalAlignment="Bottom">
+                                                                <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="9" FontWeight="Bold"
+                                                                           Foreground="#334155" HorizontalAlignment="Center" Margin="0,0,0,2" />
                                                                 <Border Grid.Row="1"
                                                                         Height="{Binding BarHeightPx}"
                                                                         Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                         CornerRadius="3,3,0,0" />
-                                                                <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="10" FontWeight="SemiBold"
-                                                                           Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                                                <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9.5" FontWeight="SemiBold"
+                                                                           Foreground="#64748B" HorizontalAlignment="Center" Margin="0,3,0,0" />
                                                             </Grid>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
+
+                                                <!-- 2. Horizontal Bar Chart View -->
+                                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsHorizontalBar}">
+                                                    <ItemsControl ItemsSource="{Binding Bars}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="elvm:ChartBarItem">
+                                                                <Grid ColumnDefinitions="45,*,45" Margin="0,3" VerticalAlignment="Center">
+                                                                    <TextBlock Grid.Column="0" Text="{Binding Category}" FontSize="10" FontWeight="SemiBold" Foreground="#475569" VerticalAlignment="Center" />
+                                                                    <Border Grid.Column="1" Background="#E2E8F0" Height="14" CornerRadius="3" Margin="4,0">
+                                                                        <Border HorizontalAlignment="Left" Width="{Binding BarHeightPx}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="3" />
+                                                                    </Border>
+                                                                    <TextBlock Grid.Column="2" Text="{Binding ValueLabel}" FontSize="9.5" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+
+                                                <!-- 3. Donut & Pie Chart View -->
+                                                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="6,0" IsVisible="{Binding IsDonutPie}">
+                                                    <Panel Grid.Column="0" Width="90" Height="90" VerticalAlignment="Center">
+                                                        <Ellipse Width="90" Height="90" Stroke="#0F6CBD" StrokeThickness="16" Fill="Transparent" />
+                                                        <Ellipse Width="58" Height="58" Fill="White" />
+                                                        <TextBlock Text="100%" FontWeight="Bold" FontSize="11" Foreground="#0F172A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    </Panel>
+                                                    <ScrollViewer Grid.Column="1" Margin="10,0,0,0" VerticalScrollBarVisibility="Auto">
+                                                        <ItemsControl ItemsSource="{Binding Bars}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate DataType="elvm:ChartBarItem">
+                                                                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                                                                        <Border Width="9" Height="9" CornerRadius="2" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" VerticalAlignment="Center" />
+                                                                        <TextBlock Text="{Binding Category}" FontSize="9.5" Foreground="#334155" VerticalAlignment="Center" />
+                                                                        <TextBlock Text="{Binding ValueLabel}" FontSize="9.5" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </ScrollViewer>
+                                                </Grid>
+
+                                                <!-- 4. Line & Area Graph View -->
+                                                <Grid Grid.Row="1" Margin="4,0" IsVisible="{Binding IsLine}">
+                                                    <ItemsControl ItemsSource="{Binding Bars}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <UniformGrid Rows="1" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="elvm:ChartBarItem">
+                                                                <Grid RowDefinitions="Auto,*,Auto" VerticalAlignment="Bottom">
+                                                                    <Border Grid.Row="0" Background="#0F6CBD" CornerRadius="10" Padding="4,1" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                                                        <TextBlock Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="White" />
+                                                                    </Border>
+                                                                    <Border Grid.Row="1" Width="8" Height="8" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="4" BorderBrush="White" BorderThickness="1.5" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                    <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9.5" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </Grid>
+
+                                                <!-- 5. Gauge / KPI Progress View -->
+                                                <Grid Grid.Row="1" RowDefinitions="*,Auto" IsVisible="{Binding IsGaugeProgress}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <Panel Grid.Row="0" Width="100" Height="55" Margin="0,6,0,0">
+                                                        <Border Width="100" Height="50" BorderBrush="#0F6CBD" BorderThickness="8,8,8,0" CornerRadius="50,50,0,0" Background="Transparent" />
+                                                        <TextBlock Text="88.4%" FontWeight="Bold" FontSize="14" Foreground="#0F172A" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                                                    </Panel>
+                                                    <TextBlock Grid.Row="1" Text="KPI Performance Score" FontSize="10" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                                </Grid>
+
+                                                <!-- 6. Funnel / Pyramid / Other Charts View -->
+                                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                                              IsVisible="{Binding IsFunnel}">
+                                                    <ItemsControl ItemsSource="{Binding Bars}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="elvm:ChartBarItem">
+                                                                <Border Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        Height="18" CornerRadius="4" Margin="10,2" HorizontalAlignment="Center" Width="{Binding BarHeightPx}">
+                                                                    <Grid ColumnDefinitions="*,Auto" Margin="8,0">
+                                                                        <TextBlock Grid.Column="0" Text="{Binding Category}" FontSize="9" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
+                                                                        <TextBlock Grid.Column="1" Text="{Binding ValueLabel}" FontSize="9" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
                                             </Grid>
                                         </Border>
 

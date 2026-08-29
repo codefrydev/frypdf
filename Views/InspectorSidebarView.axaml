@@ -213,14 +213,14 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Table Style Presets (8 Styles)" Classes="inspector-label" />
                                 <WrapPanel Orientation="Horizontal">
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="EnterpriseBlue"><TextBlock Text="Enterprise" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="ModernMinimal"><TextBlock Text="Minimal" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="DarkModeSlate"><TextBlock Text="Dark Slate" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="ZebraStriped"><TextBlock Text="Zebra" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="EmeraldGreen"><TextBlock Text="Emerald" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="AmberAccent"><TextBlock Text="Amber" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="FinancialBordered"><TextBlock Text="Financial" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="CompactClean"><TextBlock Text="Clean" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="EnterpriseBlue"><TextBlock Text="Enterprise" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="ModernMinimal"><TextBlock Text="Minimal" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="DarkModeSlate"><TextBlock Text="Dark Slate" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="ZebraStriped"><TextBlock Text="Zebra" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="EmeraldGreen"><TextBlock Text="Emerald" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="AmberAccent"><TextBlock Text="Amber" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="FinancialBordered"><TextBlock Text="Financial" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="CompactClean"><TextBlock Text="Clean" FontSize="10" /></Button>
                                 </WrapPanel>
                             </StackPanel>
 
@@ -273,18 +273,18 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Select Chart Kind" Classes="inspector-label" />
                                 <WrapPanel Orientation="Horizontal">
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="BarColumn"><TextBlock Text="Columns" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="HorizontalBar"><TextBlock Text="H-Bar" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="Line"><TextBlock Text="Line" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="Area"><TextBlock Text="Area" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="DonutPie"><TextBlock Text="Donut" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="StackedBar"><TextBlock Text="Stacked" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="Radar"><TextBlock Text="Radar" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="Funnel"><TextBlock Text="Funnel" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="Waterfall"><TextBlock Text="Waterfall" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="GaugeProgress"><TextBlock Text="Gauge" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="StepLine"><TextBlock Text="Step" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="Pyramid"><TextBlock Text="Pyramid" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="BarColumn"><TextBlock Text="Columns" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="HorizontalBar"><TextBlock Text="H-Bar" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Line"><TextBlock Text="Line" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Area"><TextBlock Text="Area" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="DonutPie"><TextBlock Text="Donut" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="StackedBar"><TextBlock Text="Stacked" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Radar"><TextBlock Text="Radar" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Funnel"><TextBlock Text="Funnel" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Waterfall"><TextBlock Text="Waterfall" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="GaugeProgress"><TextBlock Text="Gauge" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="StepLine"><TextBlock Text="Step" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Pyramid"><TextBlock Text="Pyramid" FontSize="10" /></Button>
                                 </WrapPanel>
                             </StackPanel>
 
@@ -383,12 +383,12 @@
                             <StackPanel Spacing="3">
                                 <TextBlock Text="Quick Payload Presets" Classes="inspector-label" />
                                 <WrapPanel Orientation="Horizontal">
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding QrCodeElement.ApplyPresetTypeCommand}" CommandParameter="Url"><TextBlock Text="🔗 URL" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding QrCodeElement.ApplyPresetTypeCommand}" CommandParameter="Wifi"><TextBlock Text="📶 Wi-Fi" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding QrCodeElement.ApplyPresetTypeCommand}" CommandParameter="VCard"><TextBlock Text="👤 vCard" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding QrCodeElement.ApplyPresetTypeCommand}" CommandParameter="Email"><TextBlock Text="✉ Email" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding QrCodeElement.ApplyPresetTypeCommand}" CommandParameter="PhoneCall"><TextBlock Text="📞 Phone" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding QrCodeElement.ApplyPresetTypeCommand}" CommandParameter="GeoLocation"><TextBlock Text="📍 GPS" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="Url"><TextBlock Text="🔗 URL" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="Wifi"><TextBlock Text="📶 Wi-Fi" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="VCard"><TextBlock Text="👤 vCard" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="Email"><TextBlock Text="✉ Email" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="PhoneCall"><TextBlock Text="📞 Phone" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="GeoLocation"><TextBlock Text="📍 GPS" FontSize="10" /></Button>
                                 </WrapPanel>
                             </StackPanel>
 
@@ -417,13 +417,13 @@
                             <StackPanel Spacing="3">
                                 <TextBlock Text="Select Barcode Standard" Classes="inspector-label" />
                                 <WrapPanel Orientation="Horizontal">
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="Code128"><TextBlock Text="Code128" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="Code39"><TextBlock Text="Code39" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="Ean13"><TextBlock Text="EAN-13" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="UpcA"><TextBlock Text="UPC-A" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="Itf14"><TextBlock Text="ITF-14" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="Codabar"><TextBlock Text="Codabar" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="Pdf417"><TextBlock Text="PDF417" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetBarcodeFormatCommand}" CommandParameter="Code128"><TextBlock Text="Code128" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetBarcodeFormatCommand}" CommandParameter="Code39"><TextBlock Text="Code39" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetBarcodeFormatCommand}" CommandParameter="Ean13"><TextBlock Text="EAN-13" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetBarcodeFormatCommand}" CommandParameter="UpcA"><TextBlock Text="UPC-A" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetBarcodeFormatCommand}" CommandParameter="Itf14"><TextBlock Text="ITF-14" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetBarcodeFormatCommand}" CommandParameter="Codabar"><TextBlock Text="Codabar" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetBarcodeFormatCommand}" CommandParameter="Pdf417"><TextBlock Text="PDF417" FontSize="10" /></Button>
                                 </WrapPanel>
                             </StackPanel>
 

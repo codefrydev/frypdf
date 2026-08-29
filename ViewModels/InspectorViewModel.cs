@@ -367,4 +367,28 @@ public partial class InspectorViewModel : ViewModelBase
             SelectedElement.IsLocked = !SelectedElement.IsLocked;
         }
     }
+
+    [RelayCommand]
+    public void ApplyTableStyle(string styleStr)
+    {
+        TableElement?.ApplyPresetStyle(styleStr);
+    }
+
+    [RelayCommand]
+    public void SetChartType(string typeStr)
+    {
+        ChartElement?.SetChartType(typeStr);
+    }
+
+    [RelayCommand]
+    public void SetBarcodeFormat(string formatStr)
+    {
+        BarcodeElement?.SetFormat(formatStr);
+    }
+
+    [RelayCommand]
+    public void ApplyQrPreset(string presetStr)
+    {
+        QrCodeElement?.ApplyPresetType(presetStr);
+    }
 }

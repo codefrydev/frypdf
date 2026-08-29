@@ -23,7 +23,35 @@ public partial class ChartElementViewModel : ElementViewModelBase
     private string _title = "Revenue Growth (Q1-Q4)";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsBarColumn))]
+    [NotifyPropertyChangedFor(nameof(IsHorizontalBar))]
+    [NotifyPropertyChangedFor(nameof(IsLine))]
+    [NotifyPropertyChangedFor(nameof(IsArea))]
+    [NotifyPropertyChangedFor(nameof(IsDonutPie))]
+    [NotifyPropertyChangedFor(nameof(IsStackedBar))]
+    [NotifyPropertyChangedFor(nameof(IsRadar))]
+    [NotifyPropertyChangedFor(nameof(IsFunnel))]
+    [NotifyPropertyChangedFor(nameof(IsWaterfall))]
+    [NotifyPropertyChangedFor(nameof(IsGaugeProgress))]
+    [NotifyPropertyChangedFor(nameof(IsStepLine))]
+    [NotifyPropertyChangedFor(nameof(IsPyramid))]
+    [NotifyPropertyChangedFor(nameof(ChartTypeDescription))]
     private ChartType _chartType = ChartType.BarColumn;
+
+    public bool IsBarColumn => ChartType == ChartType.BarColumn;
+    public bool IsHorizontalBar => ChartType == ChartType.HorizontalBar;
+    public bool IsLine => ChartType == ChartType.Line;
+    public bool IsArea => ChartType == ChartType.Area;
+    public bool IsDonutPie => ChartType == ChartType.DonutPie;
+    public bool IsStackedBar => ChartType == ChartType.StackedBar;
+    public bool IsRadar => ChartType == ChartType.Radar;
+    public bool IsFunnel => ChartType == ChartType.Funnel;
+    public bool IsWaterfall => ChartType == ChartType.Waterfall;
+    public bool IsGaugeProgress => ChartType == ChartType.GaugeProgress;
+    public bool IsStepLine => ChartType == ChartType.StepLine;
+    public bool IsPyramid => ChartType == ChartType.Pyramid;
+
+    public string ChartTypeDescription => ChartType.ToString();
 
     [ObservableProperty]
     private string _backgroundColorHex = "#FAFAFA";

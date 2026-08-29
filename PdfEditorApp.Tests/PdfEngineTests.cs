@@ -1202,4 +1202,38 @@ public class PdfEngineTests
         Assert.Contains("Apex International Corporation", txt1.Text);
         Assert.Contains("Apex International Leadership", txt2.Text);
     }
+
+    [Fact]
+    public void AboutDialog_OpenClose_AndSupportCommands_Work()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+
+        // Verify initial state
+        Assert.False(vm.IsAboutDialogOpen);
+
+        // Open About Dialog
+        vm.OpenAboutDialogCommand.Execute(null);
+        Assert.True(vm.IsAboutDialogOpen);
+
+        // Close About Dialog
+        vm.CloseAboutDialogCommand.Execute(null);
+        Assert.False(vm.IsAboutDialogOpen);
+
+        // Direct method call
+        vm.OpenAboutDialog();
+        Assert.True(vm.IsAboutDialogOpen);
+        vm.CloseAboutDialog();
+        Assert.False(vm.IsAboutDialogOpen);
+
+        // Verify Command Palette has About & Support commands
+        vm.OpenCommandPaletteCommand.Execute(null);
+        vm.FilterPaletteCommands("About");
+        Assert.True(vm.FilteredPaletteCommands.Count > 0);
+
+        vm.FilterPaletteCommands("codefrydev@gmail.com");
+        Assert.True(vm.FilteredPaletteCommands.Count > 0);
+
+        vm.FilterPaletteCommands("codefrydev.in");
+        Assert.True(vm.FilteredPaletteCommands.Count > 0);
+    }
 }

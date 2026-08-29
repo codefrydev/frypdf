@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
@@ -23,6 +24,9 @@ public partial class MainViewModel
 
     [ObservableProperty]
     private bool _isShortcutsHelpDialogOpen;
+
+    [ObservableProperty]
+    private bool _isAboutDialogOpen;
 
     public ObservableCollection<CommandPaletteItem> FilteredPaletteCommands { get; } = new();
     public List<CommandPaletteItem> AllPaletteCommands { get; } = new();
@@ -57,6 +61,86 @@ public partial class MainViewModel
     public void CloseShortcutsHelp()
     {
         IsShortcutsHelpDialogOpen = false;
+    }
+
+    [RelayCommand]
+    public void OpenAboutDialog()
+    {
+        IsAboutDialogOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseAboutDialog()
+    {
+        IsAboutDialogOpen = false;
+    }
+
+    [RelayCommand]
+    public async System.Threading.Tasks.Task CopySupportEmail()
+    {
+        const string email = "codefrydev@gmail.com";
+        try
+        {
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+            {
+                await desktop.MainWindow.Clipboard.SetTextAsync(email);
+            }
+        }
+        catch { }
+        ShowToast($"Copied support email: {email}", "EmailOutline");
+    }
+
+    [RelayCommand]
+    public async System.Threading.Tasks.Task OpenCompanyWebsite()
+    {
+        const string url = "https://codefrydev.in";
+        try
+        {
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Launcher != null)
+            {
+                await desktop.MainWindow.Launcher.LaunchUriAsync(new Uri(url));
+            }
+            else
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = url, UseShellExecute = true });
+            }
+        }
+        catch
+        {
+            try
+            {
+                if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+                {
+                    await desktop.MainWindow.Clipboard.SetTextAsync(url);
+                }
+            }
+            catch { }
+            ShowToast($"Copied website link: {url}", "Web");
+            return;
+        }
+        ShowToast("Opening codefrydev.in...", "Web");
+    }
+
+    [RelayCommand]
+    public async System.Threading.Tasks.Task CopyDiagnostics()
+    {
+        var diagnostics = $"FryPDF Open-Source Edition v1.0.0\n" +
+                          $"Developer: CodeFryDev (https://codefrydev.in)\n" +
+                          $"Support: codefrydev@gmail.com\n" +
+                          $"OS: {System.Runtime.InteropServices.RuntimeInformation.OSDescription} ({System.Runtime.InteropServices.RuntimeInformation.OSArchitecture})\n" +
+                          $"Runtime: .NET {Environment.Version}\n" +
+                          $"Avalonia UI: 12.1.1\n" +
+                          $"Engine: QuestPDF 2026.8.0 + SkiaSharp\n" +
+                          $"Timestamp: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC";
+        try
+        {
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+            {
+                await desktop.MainWindow.Clipboard.SetTextAsync(diagnostics);
+            }
+        }
+        catch { }
+        ShowToast("System diagnostics copied to clipboard", "InformationOutline");
     }
 
     public void SelectNextPaletteCommand()
@@ -165,6 +249,10 @@ public partial class MainViewModel
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Fit to Width", Subtitle = "Scale page to fill viewport width", Category = "View", IconKind = "ArrowExpandHorizontal", Shortcut = "⌘1", Action = () => FitToWidthCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Fit to Page", Subtitle = "Scale page to view whole sheet", Category = "View", IconKind = "FitToPageOutline", Shortcut = "⌘9", Action = () => FitToPageCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Keyboard Shortcuts Reference", Subtitle = "Open keyboard cheatsheet dialog", Category = "Help", IconKind = "KeyboardOutline", Shortcut = "F1", Action = () => OpenShortcutsHelpCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "About FryPDF & CodeFryDev", Subtitle = "Company info, open source licensing & support", Category = "Help", IconKind = "InformationOutline", Action = () => OpenAboutDialogCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Contact Support (codefrydev@gmail.com)", Subtitle = "Copy developer support email to clipboard", Category = "Help", IconKind = "EmailOutline", Action = () => CopySupportEmailCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Visit CodeFryDev Website", Subtitle = "Open official codefrydev.in developer portal", Category = "Help", IconKind = "Web", Action = () => OpenCompanyWebsiteCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Copy System Diagnostics", Subtitle = "Copy OS, framework, and app version report", Category = "Help", IconKind = "BugOutline", Action = () => CopyDiagnosticsCommand.Execute(null) });
 
         FilterPaletteCommands("");
     }

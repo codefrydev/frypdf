@@ -1,0 +1,39 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGradient" x1="48" y1="48" x2="976" y2="976" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E11D48"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+
+    <!-- Drop Shadow Filter -->
+    <filter id="docShadow" x="180" y="160" width="664" height="724" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- 1. Squircle Background -->
+  <rect x="48" y="48" width="928" height="928" rx="210" fill="url(#bgGradient)"/>
+  <rect x="52" y="52" width="920" height="920" rx="206" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="6"/>
+
+  <!-- 2. Document Sheet with Folded Corner -->
+  <g filter="url(#docShadow)">
+    <path d="M 268 180 L 664 180 L 804 320 L 804 796 A 48 48 0 0 1 756 844 L 268 844 A 48 48 0 0 1 220 796 L 220 228 A 48 48 0 0 1 268 180 Z" fill="#FFFFFF"/>
+    <!-- Folded Corner Triangle -->
+    <path d="M 664 180 L 664 320 L 804 320 Z" fill="#E2E8F0"/>
+    <path d="M 664 180 L 664 320 L 804 320" stroke="#CBD5E1" stroke-width="4"/>
+  </g>
+
+  <!-- 3. Tech Circle Badge -->
+  <circle cx="512" cy="440" r="130" fill="#0F172A" stroke="#38BDF8" stroke-width="6"/>
+
+  <!-- 4. CodeFryDev Flame & Pan -->
+  <path d="M 442 450 A 70 70 0 0 0 582 450 Z" fill="#38BDF8"/>
+  <polygon points="482,450 497,375 512,450" fill="#F59E0B"/>
+  <polygon points="502,450 512,355 527,450" fill="#EF4444"/>
+  <polygon points="512,450 532,385 547,450" fill="#F59E0B"/>
+
+  <!-- 5. FryPDF Typographic Badge -->
+  <rect x="290" y="640" width="444" height="120" rx="28" fill="#E11D48" stroke="#F43F5E" stroke-width="3"/>
+  <text x="512" y="726" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="74" font-weight="bold" text-anchor="middle">FryPDF</text>
+</svg>

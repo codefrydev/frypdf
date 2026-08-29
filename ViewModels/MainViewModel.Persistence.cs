@@ -160,11 +160,87 @@ public partial class MainViewModel
         }
     }
 
+    // --- TEMPLATE SELECTION & GALLERY DIALOG STATE ---
+
+    [ObservableProperty]
+    private string _templateSearchQuery = "";
+
+    [ObservableProperty]
+    private string _selectedTemplateCategory = "All";
+
+    [RelayCommand]
+    public void SetTemplateCategory(string? category)
+    {
+        SelectedTemplateCategory = string.IsNullOrWhiteSpace(category) ? "All" : category;
+    }
+
+    [RelayCommand]
+    public void ClearTemplateSearch()
+    {
+        TemplateSearchQuery = "";
+    }
+
+    partial void OnTemplateSearchQueryChanged(string value)
+    {
+        NotifyTemplateVisibilities();
+    }
+
+    partial void OnSelectedTemplateCategoryChanged(string value)
+    {
+        NotifyTemplateVisibilities();
+    }
+
+    private void NotifyTemplateVisibilities()
+    {
+        OnPropertyChanged(nameof(IsAnnualReportTemplateVisible));
+        OnPropertyChanged(nameof(IsInvoiceTemplateVisible));
+        OnPropertyChanged(nameof(IsResumeTemplateVisible));
+        OnPropertyChanged(nameof(IsAcademicPaperTemplateVisible));
+        OnPropertyChanged(nameof(IsCertificateTemplateVisible));
+        OnPropertyChanged(nameof(IsBlankTemplateVisible));
+        OnPropertyChanged(nameof(HasNoMatchingTemplates));
+    }
+
+    private bool CheckTemplateMatch(string templateId, string category, string name, string description)
+    {
+        if (SelectedTemplateCategory != "All" && !string.Equals(SelectedTemplateCategory, category, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(TemplateSearchQuery))
+        {
+            return true;
+        }
+
+        string q = TemplateSearchQuery.Trim();
+        return name.Contains(q, StringComparison.OrdinalIgnoreCase)
+            || description.Contains(q, StringComparison.OrdinalIgnoreCase)
+            || category.Contains(q, StringComparison.OrdinalIgnoreCase)
+            || templateId.Contains(q, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public bool IsAnnualReportTemplateVisible => CheckTemplateMatch("annualreport", "Corporate", "Annual Corporate Report", "Executive summary, financial metrics, and chart");
+    public bool IsInvoiceTemplateVisible => CheckTemplateMatch("invoice", "Finance", "Modern Service Invoice", "Itemized billing table and payment terms");
+    public bool IsResumeTemplateVisible => CheckTemplateMatch("resume", "Career", "Executive Resume / CV", "Complete CV with QR code, competencies, and verified metrics");
+    public bool IsAcademicPaperTemplateVisible => CheckTemplateMatch("academic", "Academic", "Academic Research Paper", "2-column formatted research paper layout");
+    public bool IsCertificateTemplateVisible => CheckTemplateMatch("certificate", "Certificates", "Certificate of Achievement", "Award of excellence and official recognition credential");
+    public bool IsBlankTemplateVisible => CheckTemplateMatch("blank", "General", "Blank Canvas", "Start fresh with a clean customizable canvas");
+
+    public bool HasNoMatchingTemplates => !IsAnnualReportTemplateVisible
+                                       && !IsInvoiceTemplateVisible
+                                       && !IsResumeTemplateVisible
+                                       && !IsAcademicPaperTemplateVisible
+                                       && !IsCertificateTemplateVisible
+                                       && !IsBlankTemplateVisible;
+
     // --- TEMPLATE SELECTION DIALOG COMMANDS ---
 
     [RelayCommand]
     public void OpenNewDocumentDialog()
     {
+        TemplateSearchQuery = "";
+        SelectedTemplateCategory = "All";
         IsNewDocumentDialogOpen = true;
     }
 
@@ -195,15 +271,9 @@ public partial class MainViewModel
     [RelayCommand]
     public void CreateNewFromTemplate(string? templateName)
     {
-        var model = templateName?.ToLower() switch
-        {
-            "invoice" => _templateService.CreateInvoiceTemplate(),
-            "resume" => _templateService.CreateResumeTemplate(),
-            "academic" => _templateService.CreateAcademicPaperTemplate(),
-            "certificate" => _templateService.CreateCertificateTemplate(),
-            "annualreport" => _templateService.CreateAnnualReportTemplate(),
-            _ => _templateService.CreateBlankDocument()
-        };
+        var model = string.IsNullOrWhiteSpace(templateName)
+            ? _templateService.CreateBlankDocument()
+            : _templateService.CreateTemplate(templateName);
 
         LoadFromDocumentModel(model);
         CloseNewDocumentDialog();

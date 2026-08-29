@@ -368,4 +368,61 @@
         <Setter Property="FontSize" Value="12" />
     </Style>
 
+    <!-- Template Gallery Interactive Card Style -->
+    <Style Selector="Button.template-card">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="BorderBrush" Value="#E2E8F0" />
+        <Setter Property="BorderThickness" Value="1.5" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.18" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Button.template-card:pointerover">
+        <Setter Property="BorderBrush" Value="#0F6CBD" />
+        <Setter Property="RenderTransform" Value="scale(1.015)" />
+    </Style>
+
+    <!-- Category Filter Chip Style -->
+    <Style Selector="Button.category-filter-chip">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#64748B" />
+        <Setter Property="BorderBrush" Value="#E2E8F0" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Padding" Value="12,4.5" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+                <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Button.category-filter-chip:pointerover">
+        <Setter Property="Background" Value="#F1F5F9" />
+        <Setter Property="Foreground" Value="#0F172A" />
+        <Setter Property="BorderBrush" Value="#CBD5E1" />
+    </Style>
+
+    <Style Selector="Button.category-filter-chip.active">
+        <Setter Property="Background" Value="#EFF6FF" />
+        <Setter Property="Foreground" Value="#0F6CBD" />
+        <Setter Property="BorderBrush" Value="#BFDBFE" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
 </Styles>

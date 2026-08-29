@@ -53,10 +53,25 @@ public class PdfEngineTests
         var model = _templateService.CreateResumeTemplate();
         Assert.NotNull(model);
         Assert.Single(model.Pages);
+        Assert.Equal("Alex_Morgan_Executive_Resume.pdf", model.Title);
+
+        var page = model.Pages[0];
+        Assert.NotEmpty(page.Elements);
+        Assert.True(page.Elements.Count >= 25, "Professional resume should have comprehensive sections and elements");
+
+        // Verify presence of QR code, avatar badge, dividers, and rich text sections
+        Assert.Contains(page.Elements, e => e is PdfQrCodeElement);
+        Assert.Contains(page.Elements, e => e is PdfShapeElement shape && shape.Label == "AM");
+        Assert.Contains(page.Elements, e => e is PdfDividerElement);
+        Assert.Contains(page.Elements, e => e is PdfTextElement text && text.Text.Contains("ALEXANDER MORGAN"));
+        Assert.Contains(page.Elements, e => e is PdfTextElement text && text.Text.Contains("EXECUTIVE SUMMARY"));
+        Assert.Contains(page.Elements, e => e is PdfTextElement text && text.Text.Contains("PROFESSIONAL EXPERIENCE"));
+        Assert.Contains(page.Elements, e => e is PdfTextElement text && text.Text.Contains("EDUCATION & PROFESSIONAL CREDENTIALS"));
+        Assert.Contains(page.Elements, e => e is PdfTextElement text && text.Text.Contains("NOTABLE PROJECTS"));
 
         byte[] pdfBytes = _exportService.GeneratePdfBytes(model);
         Assert.NotNull(pdfBytes);
-        Assert.True(pdfBytes.Length > 500);
+        Assert.True(pdfBytes.Length > 2000, "Rich PDF byte stream should be substantial");
 
         string header = Encoding.ASCII.GetString(pdfBytes, 0, 5);
         Assert.Equal("%PDF-", header);
@@ -1241,4 +1256,123 @@ public class PdfEngineTests
 
         Assert.NotNull(vm.OpenMicrosoftStoreCommand);
     }
+
+    [Fact]
+    public void TemplateRegistry_AllDefinitions_ProduceValidDocumentsAndExport()
+    {
+        var templateService = new TemplateService();
+        var allTemplates = templateService.GetAllTemplates();
+
+        Assert.NotEmpty(allTemplates);
+        Assert.True(allTemplates.Count >= 6, "Expected at least 6 default templates registered");
+
+        foreach (var t in allTemplates)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(t.Id));
+            Assert.False(string.IsNullOrWhiteSpace(t.Name));
+            Assert.False(string.IsNullOrWhiteSpace(t.Description));
+            Assert.False(string.IsNullOrWhiteSpace(t.IconKind));
+            Assert.False(string.IsNullOrWhiteSpace(t.AccentColorHex));
+
+            var doc = t.Create();
+            Assert.NotNull(doc);
+            Assert.NotEmpty(doc.Pages);
+
+            byte[] bytes = _exportService.GeneratePdfBytes(doc);
+            Assert.NotNull(bytes);
+            Assert.True(bytes.Length > 200);
+            Assert.Equal("%PDF-", Encoding.ASCII.GetString(bytes, 0, 5));
+        }
+    }
+
+    [Fact]
+    public void CommunityTemplate_CustomRegistration_Works()
+    {
+        var templateService = new TemplateService();
+        var customTemplate = new CustomCommunitySampleTemplate();
+
+        templateService.RegisterTemplate(customTemplate);
+
+        var retrieved = templateService.CreateTemplate("custom-flyer");
+        Assert.NotNull(retrieved);
+        Assert.Equal("Community Event Flyer", retrieved.Title);
+        Assert.Single(retrieved.Pages);
+
+        var vm = new MainViewModel(_exportService, templateService, _persistenceService);
+        vm.CreateNewFromTemplate("custom-flyer");
+        Assert.Equal("Community Event Flyer", vm.DocumentTitle);
+    }
+
+    private class CustomCommunitySampleTemplate : PdfEditorApp.Templates.ITemplateDefinition
+    {
+        public string Id => "custom-flyer";
+        public string Name => "Community Flyer";
+        public string Description => "Sample community event flyer template";
+        public string Category => "Events";
+        public string IconKind => "BullhornOutline";
+        public string AccentColorHex => "#E11D48";
+
+        public PdfDocumentModel Create()
+        {
+            var doc = new PdfDocumentModel { Title = "Community Event Flyer" };
+            var page = new PdfPageModel { PageNumber = 1, Width = 800, Height = 1131 };
+            page.Elements.Add(new PdfTextElement { Text = "Community Open Day 2026", FontSize = 28, IsBold = true });
+            doc.Pages.Add(page);
+            return doc;
+        }
+    }
+
+    [Fact]
+    public void TemplateGallery_FilteringAndSearch_WorksProperly()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+
+        // Open Dialog resets query and category
+        vm.OpenNewDocumentDialog();
+        Assert.True(vm.IsNewDocumentDialogOpen);
+        Assert.Equal("All", vm.SelectedTemplateCategory);
+        Assert.Equal("", vm.TemplateSearchQuery);
+
+        // All visible initially
+        Assert.True(vm.IsAnnualReportTemplateVisible);
+        Assert.True(vm.IsInvoiceTemplateVisible);
+        Assert.True(vm.IsResumeTemplateVisible);
+        Assert.True(vm.IsAcademicPaperTemplateVisible);
+        Assert.True(vm.IsCertificateTemplateVisible);
+        Assert.True(vm.IsBlankTemplateVisible);
+        Assert.False(vm.HasNoMatchingTemplates);
+
+        // Category filter: Career
+        vm.SetTemplateCategory("Career");
+        Assert.True(vm.IsResumeTemplateVisible);
+        Assert.False(vm.IsAnnualReportTemplateVisible);
+        Assert.False(vm.IsInvoiceTemplateVisible);
+
+        // Category filter: Finance
+        vm.SetTemplateCategory("Finance");
+        Assert.True(vm.IsInvoiceTemplateVisible);
+        Assert.False(vm.IsResumeTemplateVisible);
+
+        // Search query filter: "report"
+        vm.SetTemplateCategory("All");
+        vm.TemplateSearchQuery = "report";
+        Assert.True(vm.IsAnnualReportTemplateVisible);
+        Assert.False(vm.IsInvoiceTemplateVisible);
+        Assert.False(vm.IsResumeTemplateVisible);
+
+        // Clear search
+        vm.ClearTemplateSearch();
+        Assert.Equal("", vm.TemplateSearchQuery);
+        Assert.True(vm.IsResumeTemplateVisible);
+
+        // Non-existent search query shows empty state
+        vm.TemplateSearchQuery = "xyznonexistenttemplate";
+        Assert.True(vm.HasNoMatchingTemplates);
+
+        // Close dialog
+        vm.CloseNewDocumentDialog();
+        Assert.False(vm.IsNewDocumentDialogOpen);
+    }
 }
+
+

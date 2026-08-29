@@ -201,3 +201,51 @@ public class TextAlignmentConverter : IValueConverter
         throw new NotSupportedException();
     }
 }
+
+public class BooleanToFontWeightConverter : IValueConverter
+{
+    public static readonly BooleanToFontWeightConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        bool isBold = value is true;
+        return isBold ? FontWeight.Bold : FontWeight.Normal;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is FontWeight weight && weight >= FontWeight.Bold;
+    }
+}
+
+public class BooleanToFontStyleConverter : IValueConverter
+{
+    public static readonly BooleanToFontStyleConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        bool isItalic = value is true;
+        return isItalic ? FontStyle.Italic : FontStyle.Normal;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is FontStyle style && style == FontStyle.Italic;
+    }
+}
+
+public class BooleanToTextDecorationsConverter : IValueConverter
+{
+    public static readonly BooleanToTextDecorationsConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        bool isUnderline = value is true;
+        return isUnderline ? TextDecorations.Underline : null;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is TextDecorationCollection decs && decs.Count > 0;
+    }
+}

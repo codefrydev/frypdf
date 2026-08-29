@@ -392,6 +392,12 @@ public partial class MainViewModel : ViewModelBase
                 ElementKind.Table => new TableElementViewModel(),
                 ElementKind.Chart => new ChartElementViewModel(),
                 ElementKind.Watermark => new WatermarkElementViewModel(),
+                ElementKind.FormField => new FormFieldElementViewModel(),
+                ElementKind.QrCode => new QrCodeElementViewModel(),
+                ElementKind.Barcode => new BarcodeElementViewModel(),
+                ElementKind.Redaction => new RedactionElementViewModel(),
+                ElementKind.Ink => new InkElementViewModel(),
+                ElementKind.StickyNote => new StickyNoteElementViewModel(),
                 _ => new TextElementViewModel()
             };
 
@@ -422,6 +428,12 @@ public partial class MainViewModel : ViewModelBase
                 ElementKind.Table => new TableElementViewModel(),
                 ElementKind.Chart => new ChartElementViewModel(),
                 ElementKind.Watermark => new WatermarkElementViewModel(),
+                ElementKind.FormField => new FormFieldElementViewModel(),
+                ElementKind.QrCode => new QrCodeElementViewModel(),
+                ElementKind.Barcode => new BarcodeElementViewModel(),
+                ElementKind.Redaction => new RedactionElementViewModel(),
+                ElementKind.Ink => new InkElementViewModel(),
+                ElementKind.StickyNote => new StickyNoteElementViewModel(),
                 _ => new TextElementViewModel()
             };
 
@@ -611,23 +623,21 @@ public partial class MainViewModel : ViewModelBase
     {
         if (CurrentPage == null) return;
 
-        var noteEl = new TextElementViewModel
+        var noteEl = new StickyNoteElementViewModel
         {
             X = 120,
             Y = 180,
-            Width = 180,
-            Height = 140,
-            Text = "📌 Review Note:\nPlease verify financial data and audit metrics prior to final executive sign-off.",
-            FontSize = 11.5,
-            TextColorHex = "#78350F",
-            BackgroundColorHex = "#FEF3C7",
-            BorderColorHex = "#F59E0B",
-            BorderThickness = 1.0,
-            CornerRadius = 6,
-            Padding = 10
+            Width = 200,
+            Height = 150,
+            Author = "Lead Reviewer",
+            NoteText = "Please verify financial data and audit metrics prior to final executive sign-off.",
+            Status = "Pending Review",
+            ColorHex = "#FEF3C7",
+            BorderColorHex = "#F59E0B"
         };
 
         CurrentPage.AddElement(noteEl);
+        RefreshComments();
         UpdateStatus("Added Sticky Note");
     }
 
@@ -803,16 +813,23 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public void AddInkElement(bool isHighlighter = false)
+    public void AddInkElement(object? isHighlighterParam = null)
     {
         if (CurrentPage == null) return;
+
+        bool isHighlighter = isHighlighterParam switch
+        {
+            bool b => b,
+            string s when bool.TryParse(s, out var parsed) => parsed,
+            _ => false
+        };
 
         var inkEl = new InkElementViewModel
         {
             X = 100,
             Y = 250,
             Width = 260,
-            Height = 60,
+            Height = isHighlighter ? 24 : 12,
             StrokeColorHex = isHighlighter ? "#FEF08A" : "#0F6CBD",
             StrokeThickness = isHighlighter ? 14.0 : 3.0,
             Opacity = isHighlighter ? 0.45 : 1.0,
@@ -1008,6 +1025,12 @@ public partial class MainViewModel : ViewModelBase
     public void OpenNewDocumentDialog()
     {
         IsNewDocumentDialogOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseNewDocumentDialog()
+    {
+        IsNewDocumentDialogOpen = false;
     }
 
     [RelayCommand]

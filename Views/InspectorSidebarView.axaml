@@ -52,14 +52,14 @@
                                 <StackPanel Grid.Column="0" Spacing="3">
                                     <TextBlock Text="Font Family" Classes="inspector-label" />
                                     <ComboBox ItemsSource="{Binding AvailableFontFamilies}"
-                                              SelectedItem="{Binding TextElement.FontFamily}"
+                                              SelectedItem="{Binding SelectedFontFamily, Mode=TwoWay}"
                                               HorizontalAlignment="Stretch" Height="30" FontSize="12" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Spacing="3">
                                     <TextBlock Text="Size (pt)" Classes="inspector-label" />
                                     <ComboBox ItemsSource="{Binding AvailableFontSizes}"
-                                              SelectedItem="{Binding TextElement.FontSize}"
+                                              SelectedItem="{Binding SelectedFontSize, Mode=TwoWay}"
                                               HorizontalAlignment="Stretch" Height="30" FontSize="12" />
                                 </StackPanel>
                             </Grid>
@@ -137,7 +137,7 @@
                             <!-- Card Title -->
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="ShapeOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Shape Geometry (15 Styles)" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Shape Geometry (21 Styles)" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
                             <!-- Shape Type Selector Grid -->
@@ -148,16 +148,21 @@
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RoundedRectangle"><TextBlock Text="Rounded" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Circle"><TextBlock Text="Circle" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Triangle"><TextBlock Text="Triangle" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RightTriangle"><TextBlock Text="Rt. Triangle" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Diamond"><TextBlock Text="Diamond" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Pentagon"><TextBlock Text="Pentagon" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Hexagon"><TextBlock Text="Hexagon" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Octagon"><TextBlock Text="Octagon" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Star5"><TextBlock Text="★ Star 5" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Star4Badge"><TextBlock Text="✦ Badge" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="ArrowRight"><TextBlock Text="➔ Arrow" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="ArrowRight"><TextBlock Text="➔ Arrow R" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="ArrowLeft"><TextBlock Text="⬅ Arrow L" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Callout"><TextBlock Text="💬 Callout" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Heart"><TextBlock Text="♥ Heart" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Cloud"><TextBlock Text="☁ Cloud" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Line"><TextBlock Text="— Line" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Card"><TextBlock Text="🗂 Card" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="StickyNote"><TextBlock Text="📌 Note" FontSize="10" /></Button>
                                 </WrapPanel>
                             </StackPanel>
 
@@ -200,30 +205,32 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- 3. TABLE STRUCTURE & STYLES CARD (Visible when Table is selected) -->
+                    <!-- 3. TABLE STYLES & ROW/COL CARD (Visible when Table is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding TableElement, Converter={StaticResource NullToBooleanConverter}}">
                         <StackPanel Spacing="10">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <materialIcons:MaterialIcon Kind="TableLarge" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Table Styles &amp; Controls" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <materialIcons:MaterialIcon Kind="TableHeadersEye" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Table Styles (8 Themes)" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
                             <!-- Table Style Presets -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Table Style Presets (8 Styles)" Classes="inspector-label" />
+                                <TextBlock Text="Apply Preset Theme" Classes="inspector-label" />
                                 <WrapPanel Orientation="Horizontal">
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="EnterpriseBlue"><TextBlock Text="Enterprise" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="ModernMinimal"><TextBlock Text="Minimal" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="EnterpriseBlue"><TextBlock Text="Enterprise" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="DarkModeSlate"><TextBlock Text="Dark Slate" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="ZebraStriped"><TextBlock Text="Zebra" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="EmeraldGreen"><TextBlock Text="Emerald" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="AmberAccent"><TextBlock Text="Amber" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="FinancialBordered"><TextBlock Text="Financial" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="CompactClean"><TextBlock Text="Clean" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyTableStyleCommand}" CommandParameter="CompactClean"><TextBlock Text="Compact" FontSize="10" /></Button>
                                 </WrapPanel>
                             </StackPanel>
 
+                            <!-- Add / Remove Rows and Columns -->
+                            <TextBlock Text="Structure &amp; Dimensions" Classes="inspector-label" />
                             <Grid ColumnDefinitions="*,*" Margin="0,2">
                                 <Button Grid.Column="0" Classes="secondary-btn" Height="28" Margin="0,0,3,0"
                                         Command="{Binding TableElement.AddRowCommand}" ToolTip.Tip="Add Table Row">
@@ -285,6 +292,7 @@
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="GaugeProgress"><TextBlock Text="Gauge" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="StepLine"><TextBlock Text="Step" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Pyramid"><TextBlock Text="Pyramid" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="ScatterPlot"><TextBlock Text="Scatter" FontSize="10" /></Button>
                                 </WrapPanel>
                             </StackPanel>
 

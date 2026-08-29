@@ -60,6 +60,28 @@ public partial class InspectorViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isStickyNoteElement;
 
+    [ObservableProperty]
+    private string _selectedFontFamily = "Segoe UI";
+
+    partial void OnSelectedFontFamilyChanged(string value)
+    {
+        if (TextElement != null && !string.IsNullOrEmpty(value))
+        {
+            TextElement.FontFamily = value;
+        }
+    }
+
+    [ObservableProperty]
+    private double _selectedFontSize = 14;
+
+    partial void OnSelectedFontSizeChanged(double value)
+    {
+        if (TextElement != null && value > 0)
+        {
+            TextElement.FontSize = value;
+        }
+    }
+
     public ObservableCollection<string> AvailableFontFamilies { get; } = new()
     {
         "Segoe UI",
@@ -130,11 +152,12 @@ public partial class InspectorViewModel : ViewModelBase
 
         if (element is TextElementViewModel textVm)
         {
+            SelectedFontFamily = textVm.FontFamily;
+            SelectedFontSize = textVm.FontSize;
+
             if (!AvailableFontSizes.Contains(textVm.FontSize))
             {
                 AvailableFontSizes.Add(textVm.FontSize);
-                var sorted = new ObservableCollection<double>(AvailableFontSizes);
-                // keep list ordered
             }
         }
 
@@ -248,6 +271,12 @@ public partial class InspectorViewModel : ViewModelBase
                 ElementKind.Table => new TableElementViewModel(),
                 ElementKind.Chart => new ChartElementViewModel(),
                 ElementKind.Watermark => new WatermarkElementViewModel(),
+                ElementKind.FormField => new FormFieldElementViewModel(),
+                ElementKind.QrCode => new QrCodeElementViewModel(),
+                ElementKind.Barcode => new BarcodeElementViewModel(),
+                ElementKind.Redaction => new RedactionElementViewModel(),
+                ElementKind.Ink => new InkElementViewModel(),
+                ElementKind.StickyNote => new StickyNoteElementViewModel(),
                 _ => new TextElementViewModel()
             };
 

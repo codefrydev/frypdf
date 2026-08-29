@@ -320,4 +320,120 @@ public class PdfEngineTests
         qrVm.ApplyPresetTypeCommand.Execute("PhoneCall");
         Assert.StartsWith("tel:", qrVm.Content);
     }
+
+    [Fact]
+    public void Typography_FontFamilyAndSize_SynchronizesWithInspector()
+    {
+        var textEl = new PdfEditorApp.ViewModels.ElementViewModels.TextElementViewModel
+        {
+            FontFamily = "Georgia",
+            FontSize = 24,
+            IsBold = true,
+            IsItalic = true,
+            IsUnderline = true
+        };
+
+        var page = new PageViewModel();
+        page.AddElement(textEl);
+
+        var inspector = new InspectorViewModel();
+        inspector.UpdateSelection(textEl, page);
+
+        Assert.Equal("Georgia", inspector.SelectedFontFamily);
+        Assert.Equal(24, inspector.SelectedFontSize);
+
+        inspector.SelectedFontFamily = "Roboto";
+        Assert.Equal("Roboto", textEl.FontFamily);
+
+        inspector.SelectedFontSize = 32;
+        Assert.Equal(32, textEl.FontSize);
+
+        inspector.ToggleBoldCommand.Execute(null);
+        Assert.False(textEl.IsBold);
+
+        inspector.ToggleItalicCommand.Execute(null);
+        Assert.False(textEl.IsItalic);
+
+        inspector.ToggleUnderlineCommand.Execute(null);
+        Assert.False(textEl.IsUnderline);
+    }
+
+    [Fact]
+    public void All21ShapeTypes_ProduceValidVectorPaths()
+    {
+        var shapeVm = new PdfEditorApp.ViewModels.ElementViewModels.ShapeElementViewModel
+        {
+            Width = 100,
+            Height = 100,
+            CornerRadius = 12
+        };
+
+        foreach (ShapeType shapeType in Enum.GetValues<ShapeType>())
+        {
+            shapeVm.ShapeType = shapeType;
+            string path = shapeVm.PathData;
+            Assert.False(string.IsNullOrWhiteSpace(path), $"PathData for {shapeType} should not be empty");
+            Assert.StartsWith("M", path);
+        }
+    }
+
+    [Fact]
+    public void All13ChartTypes_PropertiesAndPersistence_Work()
+    {
+        var chartVm = new PdfEditorApp.ViewModels.ElementViewModels.ChartElementViewModel();
+
+        foreach (ChartType chartType in Enum.GetValues<ChartType>())
+        {
+            chartVm.SetChartTypeCommand.Execute(chartType.ToString());
+            Assert.Equal(chartType, chartVm.ChartType);
+
+            var model = chartVm.ToModel() as PdfEditorApp.Models.Elements.PdfChartElement;
+            Assert.NotNull(model);
+            Assert.Equal(chartType, model.ChartType);
+
+            var roundtripVm = new PdfEditorApp.ViewModels.ElementViewModels.ChartElementViewModel();
+            roundtripVm.LoadFromModel(model);
+            Assert.Equal(chartType, roundtripVm.ChartType);
+        }
+    }
+
+    [Fact]
+    public void FullElementDuplicationAndPaste_MaintainsCorrectTypes()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        Assert.NotNull(vm.CurrentPage);
+
+        // Add StickyNote
+        vm.AddStickyNoteElementCommand.Execute(null);
+        var sticky = vm.CurrentPage.SelectedElement;
+        Assert.IsType<PdfEditorApp.ViewModels.ElementViewModels.StickyNoteElementViewModel>(sticky);
+
+        // Copy and Paste
+        vm.CopyCommand.Execute(null);
+        vm.PasteCommand.Execute(null);
+        var pasted = vm.CurrentPage.SelectedElement;
+        Assert.IsType<PdfEditorApp.ViewModels.ElementViewModels.StickyNoteElementViewModel>(pasted);
+
+        // Add FormField
+        vm.AddFormFieldElementCommand.Execute("Signature");
+        var formField = vm.CurrentPage.SelectedElement;
+        Assert.IsType<PdfEditorApp.ViewModels.ElementViewModels.FormFieldElementViewModel>(formField);
+
+        // Duplicate
+        vm.DuplicateCommand.Execute(null);
+        var dupFormField = vm.CurrentPage.SelectedElement;
+        Assert.IsType<PdfEditorApp.ViewModels.ElementViewModels.FormFieldElementViewModel>(dupFormField);
+
+        // Add Ink
+        vm.AddInkElementCommand.Execute("True");
+        var ink = vm.CurrentPage.SelectedElement as PdfEditorApp.ViewModels.ElementViewModels.InkElementViewModel;
+        Assert.NotNull(ink);
+        Assert.True(ink.IsHighlighter);
+
+        // Dialog close
+        vm.OpenNewDocumentDialogCommand.Execute(null);
+        Assert.True(vm.IsNewDocumentDialogOpen);
+        vm.CloseNewDocumentDialogCommand.Execute(null);
+        Assert.False(vm.IsNewDocumentDialogOpen);
+    }
 }

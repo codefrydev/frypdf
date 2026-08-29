@@ -264,11 +264,11 @@
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <ComboBox Width="136" Height="28" FontSize="12" Padding="8,2"
                                                   ItemsSource="{Binding Inspector.AvailableFontFamilies}"
-                                                  SelectedItem="{Binding Inspector.TextElement.FontFamily, FallbackValue='Segoe UI'}" />
+                                                  SelectedItem="{Binding Inspector.SelectedFontFamily, Mode=TwoWay}" />
 
                                         <ComboBox Width="66" Height="28" FontSize="12" Padding="6,2"
                                                   ItemsSource="{Binding Inspector.AvailableFontSizes}"
-                                                  SelectedItem="{Binding Inspector.TextElement.FontSize, FallbackValue=14}" />
+                                                  SelectedItem="{Binding Inspector.SelectedFontSize, Mode=TwoWay}" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="2">
                                         <Button Classes="mini-tool-btn" Classes.active="{Binding Inspector.TextElement.IsBold, FallbackValue=False}" Command="{Binding Inspector.ToggleBoldCommand}" ToolTip.Tip="Bold">

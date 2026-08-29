@@ -35,6 +35,7 @@ public partial class ChartElementViewModel : ElementViewModelBase
     [NotifyPropertyChangedFor(nameof(IsGaugeProgress))]
     [NotifyPropertyChangedFor(nameof(IsStepLine))]
     [NotifyPropertyChangedFor(nameof(IsPyramid))]
+    [NotifyPropertyChangedFor(nameof(IsScatterPlot))]
     [NotifyPropertyChangedFor(nameof(ChartTypeDescription))]
     private ChartType _chartType = ChartType.BarColumn;
 
@@ -50,6 +51,7 @@ public partial class ChartElementViewModel : ElementViewModelBase
     public bool IsGaugeProgress => ChartType == ChartType.GaugeProgress;
     public bool IsStepLine => ChartType == ChartType.StepLine;
     public bool IsPyramid => ChartType == ChartType.Pyramid;
+    public bool IsScatterPlot => ChartType == ChartType.ScatterPlot;
 
     public string ChartTypeDescription => ChartType.ToString();
 
@@ -124,6 +126,7 @@ public partial class ChartElementViewModel : ElementViewModelBase
             Opacity = Opacity,
             IsLocked = IsLocked,
             Title = Title,
+            ChartType = ChartType,
             BackgroundColorHex = BackgroundColorHex,
             BorderColorHex = BorderColorHex,
             Categories = new List<string>(),
@@ -158,6 +161,7 @@ public partial class ChartElementViewModel : ElementViewModelBase
             IsLocked = chart.IsLocked;
 
             Title = chart.Title;
+            ChartType = chart.ChartType;
             BackgroundColorHex = chart.BackgroundColorHex;
             BorderColorHex = chart.BorderColorHex;
 

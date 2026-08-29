@@ -80,8 +80,9 @@
                                             <TextBlock Text="{Binding Text}"
                                                        FontFamily="{Binding FontFamily}"
                                                        FontSize="{Binding FontSize}"
-                                                       FontWeight="{Binding IsBold, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter=True, FallbackValue=Normal}"
-                                                       FontStyle="{Binding IsItalic, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter=True, FallbackValue=Normal}"
+                                                       FontWeight="{Binding IsBold, Converter={x:Static converters:BooleanToFontWeightConverter.Instance}}"
+                                                       FontStyle="{Binding IsItalic, Converter={x:Static converters:BooleanToFontStyleConverter.Instance}}"
+                                                       TextDecorations="{Binding IsUnderline, Converter={x:Static converters:BooleanToTextDecorationsConverter.Instance}}"
                                                        Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                        TextAlignment="{Binding Alignment, Converter={StaticResource TextAlignmentConverter}}"
                                                        TextWrapping="Wrap"
@@ -93,6 +94,8 @@
                                         <TextBox Text="{Binding Text, Mode=TwoWay}"
                                                  FontFamily="{Binding FontFamily}"
                                                  FontSize="{Binding FontSize}"
+                                                 FontWeight="{Binding IsBold, Converter={x:Static converters:BooleanToFontWeightConverter.Instance}}"
+                                                 FontStyle="{Binding IsItalic, Converter={x:Static converters:BooleanToFontStyleConverter.Instance}}"
                                                  Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                  AcceptsReturn="True"
                                                  TextWrapping="Wrap"
@@ -104,65 +107,34 @@
                                             <!-- Blue Bounding Box -->
                                             <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
 
-                                            <!-- Floating Quick Toolbar above element -->
-                                            <Border Background="White"
-                                                    BorderBrush="{StaticResource WinBorderBrush}"
-                                                    BorderThickness="1"
-                                                    CornerRadius="5"
-                                                    BoxShadow="0 2 10 #18000000"
-                                                    Padding="2"
-                                                    Height="28"
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Top"
-                                                    Margin="0,-32,0,0">
-                                                <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                                                    <Button Classes="mini-tool-btn" Width="22" Height="22"
-                                                            Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.ToggleBoldCommand}"
-                                                            ToolTip.Tip="Bold">
-                                                        <materialIcons:MaterialIcon Kind="FormatBold" Width="13" Height="13" Foreground="{StaticResource WinTextBrush}" />
-                                                    </Button>
-                                                    <Button Classes="mini-tool-btn" Width="22" Height="22"
-                                                            Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.ToggleItalicCommand}"
-                                                            ToolTip.Tip="Italic">
-                                                        <materialIcons:MaterialIcon Kind="FormatItalic" Width="13" Height="13" Foreground="{StaticResource WinTextBrush}" />
-                                                    </Button>
-                                                    <Rectangle Width="1" Height="14" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
-                                                    <Button Classes="mini-tool-btn" Width="22" Height="22"
-                                                            Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.DeleteSelectedElementCommand}"
-                                                            ToolTip.Tip="Delete">
-                                                        <materialIcons:MaterialIcon Kind="DeleteOutline" Width="13" Height="13" Foreground="{StaticResource WinDangerBrush}" />
-                                                    </Button>
-                                                </StackPanel>
-                                            </Border>
-
                                             <!-- 8 Resize Handles -->
                                             <!-- Top Left -->
                                             <Border Tag="topleft" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-4,-4,0,0" Cursor="TopLeftCorner"
                                                     PointerPressed="OnHandlePointerPressed" />
-                                            <!-- Top Center -->
+                                            <!-- Top Middle -->
                                             <Border Tag="top" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
-                                                    CornerRadius="1.5" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-4,0,0" Cursor="TopSide"
+                                                    CornerRadius="1.5" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-4,0,0" Cursor="SizeNorthSouth"
                                                     PointerPressed="OnHandlePointerPressed" />
                                             <!-- Top Right -->
                                             <Border Tag="topright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-4,-4,0" Cursor="TopRightCorner"
                                                     PointerPressed="OnHandlePointerPressed" />
-                                            <!-- Middle Left -->
+                                            <!-- Left Middle -->
                                             <Border Tag="left" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
-                                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-4,0,0,0" Cursor="LeftSide"
+                                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-4,0,0,0" Cursor="SizeWestEast"
                                                     PointerPressed="OnHandlePointerPressed" />
-                                            <!-- Middle Right -->
+                                            <!-- Right Middle -->
                                             <Border Tag="right" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
-                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-4,0" Cursor="RightSide"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-4,0" Cursor="SizeWestEast"
                                                     PointerPressed="OnHandlePointerPressed" />
                                             <!-- Bottom Left -->
                                             <Border Tag="bottomleft" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-4,0,0,-4" Cursor="BottomLeftCorner"
                                                     PointerPressed="OnHandlePointerPressed" />
-                                            <!-- Bottom Center -->
+                                            <!-- Bottom Middle -->
                                             <Border Tag="bottom" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
-                                                    CornerRadius="1.5" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-4" Cursor="BottomSide"
+                                                    CornerRadius="1.5" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-4" Cursor="SizeNorthSouth"
                                                     PointerPressed="OnHandlePointerPressed" />
                                             <!-- Bottom Right -->
                                             <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
@@ -172,22 +144,22 @@
                                     </Grid>
                                 </DataTemplate>
 
-                                <!-- 2. SHAPE ELEMENT TEMPLATE (Supports all 15 Vector Shape Types) -->
+                                <!-- 2. SHAPE ELEMENT TEMPLATE -->
                                 <DataTemplate DataType="elvm:ShapeElementViewModel">
                                     <Grid Width="{Binding Width}" Height="{Binding Height}">
                                         <Panel PointerPressed="OnElementPointerPressed">
-                                            <!-- Dynamic Vector Path Geometry -->
+                                            <!-- Vector Geometry Shape -->
                                             <Path Data="{Binding PathData}"
                                                   Fill="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                   Stroke="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                   StrokeThickness="{Binding StrokeThickness}"
                                                   Stretch="Fill" />
 
-                                            <!-- Optional Centered Label -->
+                                            <!-- Optional Centered Label / Stamp Text -->
                                             <TextBlock Text="{Binding Label}"
                                                        FontSize="{Binding LabelFontSize}"
-                                                       Foreground="{Binding LabelColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                        FontWeight="Bold"
+                                                       Foreground="{Binding LabelColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"
                                                        IsVisible="{Binding Label, Converter={StaticResource NullToBooleanConverter}}" />
@@ -205,12 +177,18 @@
 
                                 <!-- 3. DIVIDER ELEMENT TEMPLATE -->
                                 <DataTemplate DataType="elvm:DividerElementViewModel">
-                                    <Grid Width="{Binding Width}" Height="16" PointerPressed="OnElementPointerPressed" Background="Transparent">
+                                    <Grid Width="{Binding Width}" Height="16" PointerPressed="OnElementPointerPressed">
                                         <Rectangle Height="{Binding Thickness}"
                                                    Fill="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                   RadiusX="1" RadiusY="1"
                                                    VerticalAlignment="Center" />
-                                        <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1" IsVisible="{Binding IsSelected}" IsHitTestVisible="False" />
+
+                                        <!-- Selection Adorner -->
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+                                            <Border Tag="right" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-4,0" Cursor="SizeWestEast"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
                                     </Grid>
                                 </DataTemplate>
 
@@ -220,15 +198,12 @@
                                         <Border Background="White"
                                                 BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderThickness="1"
-                                                CornerRadius="6"
+                                                CornerRadius="4"
                                                 ClipToBounds="True"
-                                                BoxShadow="0 1 4 #08000000"
                                                 PointerPressed="OnElementPointerPressed">
                                             <Grid RowDefinitions="Auto,*">
-                                                <!-- Table Header -->
-                                                <Border Grid.Row="0"
-                                                        Background="{Binding HeaderBackgroundHex, Converter={StaticResource HexToBrushConverter}}"
-                                                        Padding="10,8">
+                                                <!-- Table Header Row -->
+                                                <Border Grid.Row="0" Background="{Binding HeaderBackgroundHex, Converter={StaticResource HexToBrushConverter}}" Padding="8,6">
                                                     <ItemsControl ItemsSource="{Binding Headers}">
                                                         <ItemsControl.ItemsPanel>
                                                             <ItemsPanelTemplate>
@@ -236,24 +211,23 @@
                                                             </ItemsPanelTemplate>
                                                         </ItemsControl.ItemsPanel>
                                                         <ItemsControl.ItemTemplate>
-                                                            <DataTemplate>
+                                                            <DataTemplate DataType="x:String">
                                                                 <TextBlock Text="{Binding}"
                                                                            FontWeight="Bold"
-                                                                           FontSize="11.5"
-                                                                           Foreground="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).HeaderTextHex, Converter={StaticResource HexToBrushConverter}}" />
+                                                                           FontSize="10.5"
+                                                                           Foreground="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).HeaderTextHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                           VerticalAlignment="Center" />
                                                             </DataTemplate>
                                                         </ItemsControl.ItemTemplate>
                                                     </ItemsControl>
                                                 </Border>
 
-                                                <!-- Table Rows -->
+                                                <!-- Table Data Rows -->
                                                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                                                     <ItemsControl ItemsSource="{Binding Rows}">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate DataType="elvm:TableRowItem">
-                                                                <Border BorderBrush="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                        Background="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).AlternateRowBackgroundHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                        BorderThickness="0,0,0,1" Padding="10,6">
+                                                                <Border BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="8,5">
                                                                     <ItemsControl ItemsSource="{Binding Cells}">
                                                                         <ItemsControl.ItemsPanel>
                                                                             <ItemsPanelTemplate>
@@ -261,8 +235,8 @@
                                                                             </ItemsPanelTemplate>
                                                                         </ItemsControl.ItemsPanel>
                                                                         <ItemsControl.ItemTemplate>
-                                                                            <DataTemplate>
-                                                                                <TextBlock Text="{Binding}" FontSize="11" Foreground="#334155" />
+                                                                            <DataTemplate DataType="x:String">
+                                                                                <TextBlock Text="{Binding}" FontSize="10" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
@@ -284,18 +258,17 @@
                                     </Grid>
                                 </DataTemplate>
 
-                                <!-- 5. CHART ELEMENT TEMPLATE (Supports all 13 Chart Types) -->
+                                <!-- 5. ADVANCED CHART ELEMENT TEMPLATE (13 Chart Kinds) -->
                                 <DataTemplate DataType="elvm:ChartElementViewModel">
                                     <Grid Width="{Binding Width}" Height="{Binding Height}">
                                         <Border Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderThickness="1"
-                                                CornerRadius="8"
-                                                BoxShadow="0 1 4 #08000000"
-                                                Padding="12"
+                                                CornerRadius="6"
+                                                Padding="10,8"
                                                 PointerPressed="OnElementPointerPressed">
                                             <Grid RowDefinitions="Auto,*">
-                                                <!-- Header Title & Badge -->
+                                                <!-- Chart Header -->
                                                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
                                                     <TextBlock Grid.Column="0" Text="{Binding Title}"
                                                                FontSize="11.5" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" />
@@ -305,8 +278,7 @@
                                                 </Grid>
 
                                                 <!-- 1. Vertical Column Chart View -->
-                                                <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="4,0"
-                                                              IsVisible="{Binding IsBarColumn}">
+                                                <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="4,0" IsVisible="{Binding IsBarColumn}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <UniformGrid Rows="1" />
@@ -314,15 +286,10 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate DataType="elvm:ChartBarItem">
-                                                            <Grid RowDefinitions="Auto,*,Auto" Margin="4,0" VerticalAlignment="Bottom">
-                                                                <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="9" FontWeight="Bold"
-                                                                           Foreground="#334155" HorizontalAlignment="Center" Margin="0,0,0,2" />
-                                                                <Border Grid.Row="1"
-                                                                        Height="{Binding BarHeightPx}"
-                                                                        Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                        CornerRadius="3,3,0,0" />
-                                                                <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9.5" FontWeight="SemiBold"
-                                                                           Foreground="#64748B" HorizontalAlignment="Center" Margin="0,3,0,0" />
+                                                            <Grid RowDefinitions="Auto,*,Auto" Margin="2,0" VerticalAlignment="Bottom">
+                                                                <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="#334155" HorizontalAlignment="Center" Margin="0,0,0,2" />
+                                                                <Border Grid.Row="1" Height="{Binding BarHeightPx}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="2,2,0,0" />
+                                                                <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,3,0,0" />
                                                             </Grid>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
@@ -333,7 +300,7 @@
                                                     <ItemsControl ItemsSource="{Binding Bars}">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate DataType="elvm:ChartBarItem">
-                                                                <Grid ColumnDefinitions="45,*,45" Margin="0,3" VerticalAlignment="Center">
+                                                                <Grid ColumnDefinitions="55,*,50" Margin="0,3" VerticalAlignment="Center">
                                                                     <TextBlock Grid.Column="0" Text="{Binding Category}" FontSize="10" FontWeight="SemiBold" Foreground="#475569" VerticalAlignment="Center" />
                                                                     <Border Grid.Column="1" Background="#E2E8F0" Height="14" CornerRadius="3" Margin="4,0">
                                                                         <Border HorizontalAlignment="Left" Width="{Binding BarHeightPx}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="3" />
@@ -358,8 +325,7 @@
                                                                 <DataTemplate DataType="elvm:ChartBarItem">
                                                                     <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
                                                                         <Border Width="9" Height="9" CornerRadius="2" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" VerticalAlignment="Center" />
-                                                                        <TextBlock Text="{Binding Category}" FontSize="9.5" Foreground="#334155" VerticalAlignment="Center" />
-                                                                        <TextBlock Text="{Binding ValueLabel}" FontSize="9.5" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                                                                        <TextBlock Text="{Binding Category}" FontSize="9" Foreground="#334155" VerticalAlignment="Center" />
                                                                     </StackPanel>
                                                                 </DataTemplate>
                                                             </ItemsControl.ItemTemplate>
@@ -367,7 +333,7 @@
                                                     </ScrollViewer>
                                                 </Grid>
 
-                                                <!-- 4. Line & Area Graph View -->
+                                                <!-- 4. Line Chart View -->
                                                 <Grid Grid.Row="1" Margin="4,0" IsVisible="{Binding IsLine}">
                                                     <ItemsControl ItemsSource="{Binding Bars}">
                                                         <ItemsControl.ItemsPanel>
@@ -378,29 +344,80 @@
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate DataType="elvm:ChartBarItem">
                                                                 <Grid RowDefinitions="Auto,*,Auto" VerticalAlignment="Bottom">
-                                                                    <Border Grid.Row="0" Background="#0F6CBD" CornerRadius="10" Padding="4,1" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                                                        <TextBlock Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="White" />
-                                                                    </Border>
+                                                                    <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="#0F6CBD" HorizontalAlignment="Center" />
                                                                     <Border Grid.Row="1" Width="8" Height="8" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="4" BorderBrush="White" BorderThickness="1.5" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                                    <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9.5" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                                                    <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0" />
                                                                 </Grid>
                                                             </DataTemplate>
                                                         </ItemsControl.ItemTemplate>
                                                     </ItemsControl>
                                                 </Grid>
 
-                                                <!-- 5. Gauge / KPI Progress View -->
-                                                <Grid Grid.Row="1" RowDefinitions="*,Auto" IsVisible="{Binding IsGaugeProgress}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <Panel Grid.Row="0" Width="100" Height="55" Margin="0,6,0,0">
-                                                        <Border Width="100" Height="50" BorderBrush="#0F6CBD" BorderThickness="8,8,8,0" CornerRadius="50,50,0,0" Background="Transparent" />
-                                                        <TextBlock Text="88.4%" FontWeight="Bold" FontSize="14" Foreground="#0F172A" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,2" />
-                                                    </Panel>
-                                                    <TextBlock Grid.Row="1" Text="KPI Performance Score" FontSize="10" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                                <!-- 5. Area Chart View -->
+                                                <Grid Grid.Row="1" Margin="4,0" IsVisible="{Binding IsArea}">
+                                                    <ItemsControl ItemsSource="{Binding Bars}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <UniformGrid Rows="1" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="elvm:ChartBarItem">
+                                                                <Grid RowDefinitions="Auto,*,Auto" VerticalAlignment="Bottom" Margin="2,0">
+                                                                    <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                                                    <Border Grid.Row="1" Height="{Binding BarHeightPx}" Background="#BFDBFE" BorderBrush="#0F6CBD" BorderThickness="2,2,2,0" CornerRadius="4,4,0,0" Opacity="0.75" />
+                                                                    <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9.5" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,3,0,0" />
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
                                                 </Grid>
 
-                                                <!-- 6. Funnel / Pyramid / Other Charts View -->
-                                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
-                                                              IsVisible="{Binding IsFunnel}">
+                                                <!-- 6. Stacked Bar Chart View -->
+                                                <Grid Grid.Row="1" RowDefinitions="Auto,*" Margin="4,0" IsVisible="{Binding IsStackedBar}">
+                                                    <Border Grid.Row="0" Height="24" CornerRadius="4" ClipToBounds="True" Background="#E2E8F0">
+                                                        <ItemsControl ItemsSource="{Binding Bars}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <UniformGrid Rows="1" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate DataType="elvm:ChartBarItem">
+                                                                    <Border Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}">
+                                                                        <TextBlock Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </Border>
+                                                    <ScrollViewer Grid.Row="1" Margin="0,6,0,0" VerticalScrollBarVisibility="Auto">
+                                                        <ItemsControl ItemsSource="{Binding Bars}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate DataType="elvm:ChartBarItem">
+                                                                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                                                                        <Border Width="8" Height="8" CornerRadius="2" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" VerticalAlignment="Center" />
+                                                                        <TextBlock Text="{Binding Category}" FontSize="9" Foreground="#334155" />
+                                                                        <TextBlock Text="{Binding ValueLabel}" FontSize="9" FontWeight="Bold" Foreground="#0F172A" />
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </ScrollViewer>
+                                                </Grid>
+
+                                                <!-- 7. Radar Chart View -->
+                                                <Grid Grid.Row="1" RowDefinitions="*,Auto" IsVisible="{Binding IsRadar}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <Panel Grid.Row="0" Width="90" Height="90">
+                                                        <Polygon Points="45,5 85,25 85,65 45,85 5,65 5,25" Stroke="#CBD5E1" StrokeThickness="1" Fill="#F8FAFC" />
+                                                        <Polygon Points="45,18 72,32 72,58 45,72 18,58 18,32" Stroke="#0F6CBD" StrokeThickness="1.5" Fill="#93C5FD" Opacity="0.6" />
+                                                        <Ellipse Width="6" Height="6" Fill="#0F6CBD" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    </Panel>
+                                                    <TextBlock Grid.Row="1" Text="Multi-Metric Radar" FontSize="9.5" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                                </Grid>
+
+                                                <!-- 8. Funnel Chart View -->
+                                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsFunnel}">
                                                     <ItemsControl ItemsSource="{Binding Bars}">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate DataType="elvm:ChartBarItem">
@@ -415,6 +432,95 @@
                                                         </ItemsControl.ItemTemplate>
                                                     </ItemsControl>
                                                 </ScrollViewer>
+
+                                                <!-- 9. Waterfall Chart View -->
+                                                <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="4,0" IsVisible="{Binding IsWaterfall}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Rows="1" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate DataType="elvm:ChartBarItem">
+                                                            <Grid RowDefinitions="Auto,*,Auto" VerticalAlignment="Bottom" Margin="2,0">
+                                                                <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="#16A34A" HorizontalAlignment="Center" />
+                                                                <Border Grid.Row="1" Height="{Binding BarHeightPx}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="2" Margin="0,2" />
+                                                                <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" />
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+
+                                                <!-- 10. Gauge / KPI Progress View -->
+                                                <Grid Grid.Row="1" RowDefinitions="*,Auto" IsVisible="{Binding IsGaugeProgress}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <Panel Grid.Row="0" Width="100" Height="55" Margin="0,6,0,0">
+                                                        <Border Width="100" Height="50" BorderBrush="#0F6CBD" BorderThickness="8,8,8,0" CornerRadius="50,50,0,0" Background="Transparent" />
+                                                        <TextBlock Text="88.4%" FontWeight="Bold" FontSize="14" Foreground="#0F172A" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                                                    </Panel>
+                                                    <TextBlock Grid.Row="1" Text="KPI Performance Score" FontSize="10" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                                </Grid>
+
+                                                <!-- 11. StepLine Chart View -->
+                                                <Grid Grid.Row="1" Margin="4,0" IsVisible="{Binding IsStepLine}">
+                                                    <ItemsControl ItemsSource="{Binding Bars}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <UniformGrid Rows="1" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="elvm:ChartBarItem">
+                                                                <Grid RowDefinitions="Auto,*,Auto" VerticalAlignment="Bottom">
+                                                                    <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                                                    <Border Grid.Row="1" Height="{Binding BarHeightPx}" BorderBrush="#0F6CBD" BorderThickness="2,2,0,0" Margin="0,2">
+                                                                        <Border Width="6" Height="6" Background="#0F6CBD" CornerRadius="3" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                                                                    </Border>
+                                                                    <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" />
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </Grid>
+
+                                                <!-- 12. Pyramid Chart View -->
+                                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsPyramid}">
+                                                    <ItemsControl ItemsSource="{Binding Bars}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="elvm:ChartBarItem">
+                                                                <Border Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        Height="18" CornerRadius="3" Margin="4,2" HorizontalAlignment="Center" Width="{Binding BarHeightPx}">
+                                                                    <Grid ColumnDefinitions="*,Auto" Margin="8,0">
+                                                                        <TextBlock Grid.Column="0" Text="{Binding Category}" FontSize="9" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
+                                                                        <TextBlock Grid.Column="1" Text="{Binding ValueLabel}" FontSize="9" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+
+                                                <!-- 13. Scatter Plot Chart View -->
+                                                <Grid Grid.Row="1" Margin="6,0" IsVisible="{Binding IsScatterPlot}">
+                                                    <Border BorderBrush="#E2E8F0" BorderThickness="1,0,0,1">
+                                                        <ItemsControl ItemsSource="{Binding Bars}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <UniformGrid Rows="1" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate DataType="elvm:ChartBarItem">
+                                                                    <Grid RowDefinitions="*,Auto" VerticalAlignment="Bottom">
+                                                                        <Border Grid.Row="0" Width="14" Height="14" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="7" BorderBrush="White" BorderThickness="1.5" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,8">
+                                                                            <TextBlock Text="{Binding ValueLabel}" FontSize="7" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                        </Border>
+                                                                        <TextBlock Grid.Row="1" Text="{Binding Category}" FontSize="9" Foreground="#64748B" HorizontalAlignment="Center" />
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </Border>
+                                                </Grid>
                                             </Grid>
                                         </Border>
 
@@ -438,12 +544,10 @@
                                                 ClipToBounds="True"
                                                 PointerPressed="OnElementPointerPressed">
                                             <Panel>
-                                                <!-- Image Preview if loaded -->
                                                 <Image Source="{Binding PreviewBitmap}"
                                                        Stretch="{Binding KeepAspectRatio, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter=True, FallbackValue=Uniform}"
                                                        IsVisible="{Binding PreviewBitmap, Converter={StaticResource NullToBooleanConverter}}" />
 
-                                                <!-- Placeholder Graphic if no image file loaded -->
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6"
                                                             IsVisible="{Binding PreviewBitmap, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter={x:Null}, FallbackValue=True}">
                                                     <materialIcons:MaterialIcon Kind="ImageOutline" Width="36" Height="36" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
@@ -452,7 +556,6 @@
                                             </Panel>
                                         </Border>
 
-                                        <!-- Selection Adorner -->
                                         <Grid IsVisible="{Binding IsSelected}">
                                             <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
                                             <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
@@ -489,14 +592,14 @@
                                                 Padding="8,4">
                                             <!-- Field layout based on type -->
                                             <Panel>
-                                                <!-- Checkbox Field -->
+                                                <!-- 1. Checkbox Field -->
                                                 <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
                                                             IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Checkbox}">
                                                     <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" VerticalAlignment="Center" />
                                                     <TextBlock Text="{Binding Label}" FontSize="{Binding FontSize}" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                                                 </StackPanel>
 
-                                                <!-- Signature Field -->
+                                                <!-- 2. Signature Field -->
                                                 <Grid RowDefinitions="Auto,*,Auto"
                                                       IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Signature}">
                                                     <TextBlock Grid.Row="0" Text="{Binding Label}" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource WinMutedBrush}" />
@@ -509,14 +612,52 @@
                                                     <TextBlock Grid.Row="2" Text="Digitally Verified Identity" FontSize="9" Foreground="#94A3B8" HorizontalAlignment="Right" />
                                                 </Grid>
 
-                                                <!-- Standard Text / Multiline Field -->
+                                                <!-- 3. Standard Single-Line Text Field -->
                                                 <StackPanel Spacing="3"
                                                             IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Text}">
                                                     <TextBlock Text="{Binding Label}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinMutedBrush}" />
                                                     <TextBox Text="{Binding Value, Mode=TwoWay}"
+                                                             PlaceholderText="{Binding Placeholder}"
                                                              FontSize="{Binding FontSize}"
                                                              Height="28" Padding="6,2" />
                                                 </StackPanel>
+
+                                                <!-- 4. Multiline Text Area -->
+                                                <StackPanel Spacing="3"
+                                                            IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=MultilineText}">
+                                                    <TextBlock Text="{Binding Label}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinMutedBrush}" />
+                                                    <TextBox Text="{Binding Value, Mode=TwoWay}"
+                                                             PlaceholderText="{Binding Placeholder}"
+                                                             FontSize="{Binding FontSize}"
+                                                             AcceptsReturn="True"
+                                                             TextWrapping="Wrap"
+                                                             Height="50" Padding="6,4" />
+                                                </StackPanel>
+
+                                                <!-- 5. Radio Button Field -->
+                                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                                            IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Radio}">
+                                                    <RadioButton IsChecked="{Binding IsChecked, Mode=TwoWay}" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding Label}" FontSize="{Binding FontSize}" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                                </StackPanel>
+
+                                                <!-- 6. Dropdown Select Field -->
+                                                <StackPanel Spacing="3"
+                                                            IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Dropdown}">
+                                                    <TextBlock Text="{Binding Label}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinMutedBrush}" />
+                                                    <Border Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4" Height="28" Padding="8,2">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Grid.Column="0" Text="{Binding Placeholder}" FontSize="11" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                                            <materialIcons:MaterialIcon Grid.Column="1" Kind="ChevronDown" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                                        </Grid>
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <!-- 7. Push Button Field -->
+                                                <Border Background="{StaticResource WinAccentBrush}" CornerRadius="4" Height="30" Padding="12,4" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                        IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Button}">
+                                                    <TextBlock Text="{Binding Label}" FontSize="11" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                </Border>
                                             </Panel>
                                         </Border>
 

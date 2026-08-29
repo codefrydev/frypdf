@@ -29,7 +29,7 @@
                     <Button Grid.Column="1"
                             Classes="mini-tool-btn"
                             Width="30" Height="30"
-                            Command="{Binding OpenNewDocumentDialogCommand}">
+                            Command="{Binding CloseNewDocumentDialogCommand}">
                         <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
                     </Button>
                 </Grid>
@@ -159,8 +159,7 @@
                             Height="34"
                             Padding="16,6"
                             Content="Cancel"
-                            Command="{Binding SelectTemplateCommand}"
-                            CommandParameter="AnnualReport" />
+                            Command="{Binding CloseNewDocumentDialogCommand}" />
                 </Grid>
             </Grid>
         </Border>

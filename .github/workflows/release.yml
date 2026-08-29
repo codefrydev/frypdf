@@ -3,8 +3,13 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag (e.g. 1.0.0 or v1.0.0)'
+        required: false
+        default: ''
 
 concurrency:
   group: release-${{ github.ref }}
@@ -15,16 +20,35 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
+      four_part_version: ${{ steps.version.outputs.four_part_version }}
     steps:
-      - name: Determine version
+      - name: Determine version from git tag
         id: version
         shell: bash
         run: |
-          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
-            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          RAW_VER=""
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            RAW_VER="${{ github.event.inputs.version }}"
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            RAW_VER="${GITHUB_REF_NAME}"
           else
-            echo "version=0.0.0-dev" >> "$GITHUB_OUTPUT"
+            RAW_VER="1.0.0-dev"
           fi
+
+          # Strip leading 'v' or 'V'
+          CLEAN_VER="${RAW_VER#[vV]}"
+          echo "version=${CLEAN_VER}" >> "$GITHUB_OUTPUT"
+
+          # Compute 4-part numeric version for Windows assembly & MSIX (Major.Minor.Build.Revision)
+          BASE_NUMERIC=$(echo "$CLEAN_VER" | cut -d'-' -f1)
+          IFS='.' read -r -a PARTS <<< "$BASE_NUMERIC"
+          P0="${PARTS[0]:-1}"
+          P1="${PARTS[1]:-0}"
+          P2="${PARTS[2]:-0}"
+          P3="${PARTS[3]:-0}"
+          FOUR_PART="$P0.$P1.$P2.$P3"
+          echo "four_part_version=${FOUR_PART}" >> "$GITHUB_OUTPUT"
+          echo "Resolved Release Version: ${CLEAN_VER} (4-part: ${FOUR_PART})"
 
   test:
     name: Run Unit Tests
@@ -44,6 +68,7 @@ jobs:
     runs-on: windows-latest
     env:
       VERSION: ${{ needs.determine-version.outputs.version }}
+      FOUR_PART_VERSION: ${{ needs.determine-version.outputs.four_part_version }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -52,19 +77,39 @@ jobs:
 
       - name: Publish win-x64
         shell: pwsh
-        run: dotnet publish PdfEditorApp.csproj -c Release -r win-x64 --self-contained true -p:Version=$env:VERSION -o publish/win-x64
+        run: >
+          dotnet publish PdfEditorApp.csproj -c Release -r win-x64 --self-contained true
+          -p:Version=$env:VERSION
+          -p:AssemblyVersion=$env:FOUR_PART_VERSION
+          -p:FileVersion=$env:FOUR_PART_VERSION
+          -p:InformationalVersion=$env:VERSION
+          -o publish/win-x64
 
       # ISCC.exe ships preinstalled on the windows-latest runner image at this path.
-      - name: Build installer
+      - name: Build Inno Setup installer (.exe)
         shell: pwsh
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" packaging\windows\installer.iss "/DMyAppVersion=$env:VERSION" "/DMyPublishDir=$env:GITHUB_WORKSPACE\publish\win-x64"
 
-      - name: Upload artifact
+      - name: Build & Sign Windows MSIX Package (.msix)
+        shell: pwsh
+        run: |
+          .\packaging\windows\msix\build-msix.ps1 -Version "$env:VERSION" -PublishDir "$env:GITHUB_WORKSPACE\publish\win-x64" -OutputDir "$env:GITHUB_WORKSPACE\packaging\windows"
+
+      - name: Upload Windows Installer (.exe)
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
           path: packaging/windows/FryPDF-Setup-${{ needs.determine-version.outputs.version }}.exe
+          if-no-files-found: error
+
+      - name: Upload Windows MSIX Package (.msix)
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-msix
+          path: |
+            packaging/windows/FryPDF-${{ needs.determine-version.outputs.version }}-x64.msix
+            packaging/windows/FryPDF-${{ needs.determine-version.outputs.version }}-PublicCert.cer
           if-no-files-found: error
 
   build-macos:
@@ -72,6 +117,7 @@ jobs:
     runs-on: macos-latest
     env:
       VERSION: ${{ needs.determine-version.outputs.version }}
+      FOUR_PART_VERSION: ${{ needs.determine-version.outputs.four_part_version }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -79,7 +125,13 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Publish osx-arm64
-        run: dotnet publish PdfEditorApp.csproj -c Release -r osx-arm64 --self-contained true -p:Version=$VERSION -o publish/osx-arm64
+        run: >
+          dotnet publish PdfEditorApp.csproj -c Release -r osx-arm64 --self-contained true
+          -p:Version=$VERSION
+          -p:AssemblyVersion=$FOUR_PART_VERSION
+          -p:FileVersion=$FOUR_PART_VERSION
+          -p:InformationalVersion=$VERSION
+          -o publish/osx-arm64
 
       - name: Assemble .app bundle
         run: |
@@ -111,7 +163,7 @@ jobs:
 
   release:
     needs: [determine-version, test, build-windows, build-macos]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -129,8 +181,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ needs.determine-version.outputs.version }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
+          TAG_NAME="v$VERSION"
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG_NAME="${GITHUB_REF_NAME}"
+          fi
+
+          gh release create "$TAG_NAME" \
             "artifacts/windows-installer/FryPDF-Setup-$VERSION.exe" \
+            "artifacts/windows-msix/FryPDF-$VERSION-x64.msix" \
+            "artifacts/windows-msix/FryPDF-$VERSION-PublicCert.cer" \
             "artifacts/macos-dmg/FryPDF-$VERSION-arm64.dmg" \
-            --title "FryPDF $GITHUB_REF_NAME" \
+            --title "FryPDF $TAG_NAME" \
             --generate-notes

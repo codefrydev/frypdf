@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,6 +12,33 @@ namespace PdfEditorApp.ViewModels;
 
 public partial class MainViewModel
 {
+    public string AppVersion
+    {
+        get
+        {
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var infoVer = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+                if (!string.IsNullOrWhiteSpace(infoVer))
+                {
+                    return infoVer.Split('+')[0];
+                }
+
+                var ver = assembly.GetName().Version;
+                if (ver != null)
+                {
+                    int build = ver.Build >= 0 ? ver.Build : 0;
+                    return $"{ver.Major}.{ver.Minor}.{build}";
+                }
+            }
+            catch { }
+            return "1.0.0";
+        }
+    }
+
+    public string AppVersionDisplay => $"v{AppVersion} Open Source";
+
     // --- COMMAND PALETTE & SHORTCUTS HELP STATE ---
 
     [ObservableProperty]
@@ -122,10 +150,45 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
+    public async System.Threading.Tasks.Task OpenMicrosoftStore()
+    {
+        const string storeUrl = "https://apps.microsoft.com/detail/9P5GW2Q81B33";
+        try
+        {
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Launcher != null)
+            {
+                await desktop.MainWindow.Launcher.LaunchUriAsync(new Uri(storeUrl));
+            }
+            else
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = storeUrl, UseShellExecute = true });
+            }
+        }
+        catch
+        {
+            try
+            {
+                if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+                {
+                    await desktop.MainWindow.Clipboard.SetTextAsync(storeUrl);
+                }
+            }
+            catch { }
+            ShowToast($"Copied Microsoft Store link: {storeUrl}", "Microsoft");
+            return;
+        }
+        ShowToast("Opening Microsoft Store...", "Microsoft");
+    }
+
+    [RelayCommand]
     public async System.Threading.Tasks.Task CopyDiagnostics()
     {
-        var diagnostics = $"FryPDF Open-Source Edition v1.0.0\n" +
-                          $"Developer: CodeFryDev (https://codefrydev.in)\n" +
+        var diagnostics = $"FryPDF Open-Source Edition v{AppVersion}\n" +
+                          $"Publisher: Code Fry Dev (CN=7E83DE15-E15F-41B6-B068-989D9548D0BF)\n" +
+                          $"Package Family Name: CodeFryDev.FryPDF_ntemjm2faw5zw\n" +
+                          $"Store ID: 9P5GW2Q81B33 (https://apps.microsoft.com/detail/9P5GW2Q81B33)\n" +
+                          $"MSA App ID: 4d091113-f7b6-4421-9318-220eb8b7234e\n" +
+                          $"Website: https://codefrydev.in\n" +
                           $"Support: codefrydev@gmail.com\n" +
                           $"OS: {System.Runtime.InteropServices.RuntimeInformation.OSDescription} ({System.Runtime.InteropServices.RuntimeInformation.OSArchitecture})\n" +
                           $"Runtime: .NET {Environment.Version}\n" +
@@ -252,7 +315,8 @@ public partial class MainViewModel
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "About FryPDF & CodeFryDev", Subtitle = "Company info, open source licensing & support", Category = "Help", IconKind = "InformationOutline", Action = () => OpenAboutDialogCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Contact Support (codefrydev@gmail.com)", Subtitle = "Copy developer support email to clipboard", Category = "Help", IconKind = "EmailOutline", Action = () => CopySupportEmailCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Visit CodeFryDev Website", Subtitle = "Open official codefrydev.in developer portal", Category = "Help", IconKind = "Web", Action = () => OpenCompanyWebsiteCommand.Execute(null) });
-        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Copy System Diagnostics", Subtitle = "Copy OS, framework, and app version report", Category = "Help", IconKind = "BugOutline", Action = () => CopyDiagnosticsCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Microsoft Store Page", Subtitle = "View FryPDF on Microsoft Store (9P5GW2Q81B33)", Category = "Help", IconKind = "Microsoft", Action = () => OpenMicrosoftStoreCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Copy System Diagnostics", Subtitle = "Copy OS, framework, store identity, and app version report", Category = "Help", IconKind = "BugOutline", Action = () => CopyDiagnosticsCommand.Execute(null) });
 
         FilterPaletteCommands("");
     }

@@ -7,6 +7,12 @@
     <ApplicationIcon>Assets/app-logo.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <DefaultItemExcludes>$(DefaultItemExcludes);PdfEditorApp.Tests/**</DefaultItemExcludes>
+    <Version Condition="'$(Version)' == ''">1.0.0</Version>
+    <AssemblyTitle>FryPDF</AssemblyTitle>
+    <Product>FryPDF</Product>
+    <Company>Code Fry Dev</Company>
+    <Copyright>Copyright © 2026 Code Fry Dev</Copyright>
+    <Description>Privacy-first, professional desktop PDF creator and editor studio</Description>
   </PropertyGroup>
 
   <ItemGroup>

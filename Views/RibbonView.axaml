@@ -99,25 +99,25 @@
                             <!-- Clipboard Group -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                    <Button Classes="tool-btn" Command="{Binding CutCommand}" ToolTip.Tip="Cut (Ctrl+X)">
+                                    <Button Classes="tool-btn" Command="{Binding CutCommand}" ToolTip.Tip="Cut (⌘X / Ctrl+X)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="ContentCut" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
                                             <TextBlock Text="Cut" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Classes="tool-btn" Command="{Binding CopyCommand}" ToolTip.Tip="Copy (Ctrl+C)">
+                                    <Button Classes="tool-btn" Command="{Binding CopyCommand}" ToolTip.Tip="Copy (⌘C / Ctrl+C)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="ContentCopy" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
                                             <TextBlock Text="Copy" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Classes="tool-btn" Command="{Binding PasteCommand}" ToolTip.Tip="Paste (Ctrl+V)">
+                                    <Button Classes="tool-btn" Command="{Binding PasteCommand}" ToolTip.Tip="Paste (⌘V / Ctrl+V)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="ContentPaste" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
                                             <TextBlock Text="Paste" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Classes="tool-btn" Command="{Binding DuplicateCommand}" ToolTip.Tip="Duplicate (Ctrl+D)">
+                                    <Button Classes="tool-btn" Command="{Binding DuplicateCommand}" ToolTip.Tip="Duplicate (⌘D / Ctrl+D)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="ContentDuplicate" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
                                             <TextBlock Text="Duplicate" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
@@ -132,13 +132,13 @@
                             <!-- History Group -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                    <Button Classes="tool-btn" Command="{Binding UndoCommand}" ToolTip.Tip="Undo (Ctrl+Z)">
+                                    <Button Classes="tool-btn" Command="{Binding UndoCommand}" ToolTip.Tip="Undo (⌘Z / Ctrl+Z)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Undo" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
                                             <TextBlock Text="Undo" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Classes="tool-btn" Command="{Binding RedoCommand}" ToolTip.Tip="Redo (Ctrl+Y)">
+                                    <Button Classes="tool-btn" Command="{Binding RedoCommand}" ToolTip.Tip="Redo (⌘Y / Ctrl+Y)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Redo" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
                                             <TextBlock Text="Redo" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
@@ -153,7 +153,7 @@
                             <!-- Quick Content Group -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                    <Button Classes="tool-btn" Command="{Binding AddTextElementCommand}" ToolTip.Tip="Insert Text Block">
+                                    <Button Classes="tool-btn" Command="{Binding AddTextElementCommand}" ToolTip.Tip="Insert Text Block (T)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="FormatColorText" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
                                             <TextBlock Text="Text" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
@@ -171,7 +171,7 @@
                                             <TextBlock Text="Image" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Classes="tool-btn" Command="{Binding AddShapeElementCommand}" CommandParameter="Rectangle" ToolTip.Tip="Insert Shape">
+                                    <Button Classes="tool-btn" Command="{Binding AddShapeElementCommand}" CommandParameter="Rectangle" ToolTip.Tip="Insert Shape (R)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="ShapeOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
                                             <TextBlock Text="Shape" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
@@ -192,13 +192,13 @@
                             <!-- Actions Group -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <Button Classes="secondary-btn" Height="34" Padding="12,6" Command="{Binding SaveProjectCommand}">
+                                    <Button Classes="secondary-btn" Height="34" Padding="12,6" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save Project (⌘S / Ctrl+S)">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
                                             <TextBlock Text="Save Project" FontSize="12" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Classes="accent-btn" Height="34" Padding="14,6" Command="{Binding ExportPdfCommand}">
+                                    <Button Classes="accent-btn" Height="34" Padding="14,6" Command="{Binding ExportPdfCommand}" ToolTip.Tip="Export Production PDF (⌘E / Ctrl+E)">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="White" VerticalAlignment="Center" />
                                             <TextBlock Text="Export PDF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12.5" />

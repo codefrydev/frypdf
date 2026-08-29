@@ -233,4 +233,46 @@
         <Setter Property="Padding" Value="6,2" />
     </Style>
 
+    <!-- Keyboard Key Cap / Badge Style -->
+    <Style Selector="Border.kbd-badge">
+        <Setter Property="Background" Value="#F1F5F9" />
+        <Setter Property="BorderBrush" Value="#CBD5E1" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="5,1.5" />
+        <Setter Property="BoxShadow" Value="0 1 0 #20000000" />
+    </Style>
+
+    <Style Selector="TextBlock.kbd-text">
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="#475569" />
+        <Setter Property="FontFamily" Value="Consolas, -apple-system, monospace" />
+    </Style>
+
+    <!-- Toast Notification Banner -->
+    <Style Selector="Border.toast-banner">
+        <Setter Property="Background" Value="#1E293B" />
+        <Setter Property="BorderBrush" Value="#334155" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="14,9" />
+        <Setter Property="BoxShadow" Value="0 8 24 #30000000" />
+    </Style>
+
+    <!-- Context Menu Item Styling -->
+    <Style Selector="ContextMenu">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="BorderBrush" Value="#E2E8F0" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+
+    <Style Selector="MenuItem">
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Padding" Value="8,5" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
 </Styles>

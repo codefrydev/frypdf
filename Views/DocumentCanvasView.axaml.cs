@@ -16,20 +16,60 @@ public partial class DocumentCanvasView : UserControl
     private Point _lastPointerPosition;
     private ElementViewModelBase? _draggedElement;
 
+    // Pan state
+    private bool _isSpacePressed;
+    private bool _isPanning;
+    private Point _panStart;
+    private Vector _scrollStart;
+
     public DocumentCanvasView()
     {
         InitializeComponent();
 
         AddHandler(PointerMovedEvent, OnGlobalPointerMoved, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, OnGlobalPointerReleased, RoutingStrategies.Tunnel);
+        AddHandler(PointerWheelChangedEvent, OnCanvasPointerWheelChanged, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, OnCanvasKeyDown, RoutingStrategies.Tunnel);
+        AddHandler(KeyUpEvent, OnCanvasKeyUp, RoutingStrategies.Tunnel);
     }
 
     private MainViewModel? ViewModel => DataContext as MainViewModel;
 
+    private void OnCanvasPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        bool isCtrlOrCmd = e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
+        if (isCtrlOrCmd && ViewModel != null)
+        {
+            if (e.Delta.Y > 0)
+            {
+                ViewModel.ZoomInCommand.Execute(null);
+            }
+            else if (e.Delta.Y < 0)
+            {
+                ViewModel.ZoomOutCommand.Execute(null);
+            }
+            e.Handled = true;
+        }
+    }
+
     private void OnCanvasBackgroundPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (ViewModel?.CurrentPage == null || PageElementsCanvas == null) return;
+
+        var pointerPoint = e.GetCurrentPoint(this);
+
+        // Middle button click or Spacebar held => Pan mode
+        if (_isSpacePressed || pointerPoint.Properties.IsMiddleButtonPressed)
+        {
+            _isPanning = true;
+            _panStart = e.GetPosition(this);
+            if (CanvasScrollViewer != null)
+            {
+                _scrollStart = new Vector(CanvasScrollViewer.Offset.X, CanvasScrollViewer.Offset.Y);
+            }
+            e.Handled = true;
+            return;
+        }
 
         var pos = e.GetPosition(PageElementsCanvas);
         double zoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
@@ -51,7 +91,7 @@ public partial class DocumentCanvasView : UserControl
                 IsHighlighter = isHighlighter
             };
 
-            ViewModel.CurrentPage.AddElement(ink);
+            ViewModel.AddElementWithUndo(ink, isHighlighter ? "Added Highlighter Stroke" : "Added Ink Stroke");
             _isResizingHandle = true;
             _activeResizeHandle = "bottomright";
             _draggedElement = ink;
@@ -69,6 +109,18 @@ public partial class DocumentCanvasView : UserControl
 
     private void OnElementPointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        if (_isSpacePressed || e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed)
+        {
+            _isPanning = true;
+            _panStart = e.GetPosition(this);
+            if (CanvasScrollViewer != null)
+            {
+                _scrollStart = new Vector(CanvasScrollViewer.Offset.X, CanvasScrollViewer.Offset.Y);
+            }
+            e.Handled = true;
+            return;
+        }
+
         if (sender is Control control && control.DataContext is ElementViewModelBase elementVm)
         {
             ViewModel?.CurrentPage?.SelectElement(elementVm);
@@ -114,6 +166,17 @@ public partial class DocumentCanvasView : UserControl
 
     private void OnGlobalPointerMoved(object? sender, PointerEventArgs e)
     {
+        if (_isPanning && CanvasScrollViewer != null)
+        {
+            var curPos = e.GetPosition(this);
+            var delta = curPos - _panStart;
+            CanvasScrollViewer.Offset = new Vector(
+                Math.Max(0, _scrollStart.X - delta.X),
+                Math.Max(0, _scrollStart.Y - delta.Y));
+            e.Handled = true;
+            return;
+        }
+
         if (PageElementsCanvas == null || _draggedElement == null || ViewModel?.CurrentPage == null) return;
 
         var currentPos = e.GetPosition(PageElementsCanvas);
@@ -142,6 +205,16 @@ public partial class DocumentCanvasView : UserControl
         _isResizingHandle = false;
         _activeResizeHandle = null;
         _draggedElement = null;
+        _isPanning = false;
+    }
+
+    private void OnCanvasKeyUp(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Space)
+        {
+            _isSpacePressed = false;
+            Cursor = Cursor.Default;
+        }
     }
 
     private void OnCanvasKeyDown(object? sender, KeyEventArgs e)
@@ -158,6 +231,13 @@ public partial class DocumentCanvasView : UserControl
                 textVm.IsInEditMode = false;
                 e.Handled = true;
             }
+            return;
+        }
+
+        if (e.Key == Key.Space && !_isSpacePressed)
+        {
+            _isSpacePressed = true;
+            Cursor = new Cursor(StandardCursorType.Hand);
             return;
         }
 
@@ -196,6 +276,16 @@ public partial class DocumentCanvasView : UserControl
                     ViewModel.SaveProjectCommand.Execute(null);
                     e.Handled = true;
                     break;
+                case Key.OemCloseBrackets:
+                    ViewModel.Inspector.BringToFrontCommand.Execute(null);
+                    ViewModel.ShowToast("Brought to Front", "ArrowUpBold");
+                    e.Handled = true;
+                    break;
+                case Key.OemOpenBrackets:
+                    ViewModel.Inspector.SendToBackCommand.Execute(null);
+                    ViewModel.ShowToast("Sent to Back", "ArrowDownBold");
+                    e.Handled = true;
+                    break;
             }
         }
         else if (selected != null)
@@ -204,7 +294,15 @@ public partial class DocumentCanvasView : UserControl
             {
                 case Key.Delete:
                 case Key.Back:
+                    var elToDelete = selected;
+                    var page = ViewModel.CurrentPage;
                     ViewModel.Inspector.DeleteSelectedElementCommand.Execute(null);
+                    ViewModel.UndoRedo.RecordAction(
+                        $"Delete {elToDelete.DisplayName}",
+                        () => page.AddElement(elToDelete),
+                        () => page.RemoveElement(elToDelete)
+                    );
+                    ViewModel.ShowToast($"Deleted {elToDelete.DisplayName}", "DeleteOutline");
                     e.Handled = true;
                     break;
                 case Key.Escape:
@@ -225,6 +323,47 @@ public partial class DocumentCanvasView : UserControl
                     break;
                 case Key.Down:
                     selected.Y = Math.Min(ViewModel.CurrentPage.Height - selected.Height, selected.Y + step);
+                    e.Handled = true;
+                    break;
+                case Key.OemCloseBrackets:
+                    ViewModel.Inspector.BringToFrontCommand.Execute(null);
+                    ViewModel.ShowToast("Brought to Front", "ArrowUpBold");
+                    e.Handled = true;
+                    break;
+                case Key.OemOpenBrackets:
+                    ViewModel.Inspector.SendToBackCommand.Execute(null);
+                    ViewModel.ShowToast("Sent to Back", "ArrowDownBold");
+                    e.Handled = true;
+                    break;
+            }
+        }
+        else
+        {
+            // Global quick single-key tool switches (when no element is selected)
+            switch (e.Key)
+            {
+                case Key.V:
+                    ViewModel.SetToolModeCommand.Execute("Select");
+                    e.Handled = true;
+                    break;
+                case Key.T:
+                    ViewModel.AddTextElementCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                case Key.R:
+                    ViewModel.AddShapeElementCommand.Execute("Rectangle");
+                    e.Handled = true;
+                    break;
+                case Key.H:
+                    ViewModel.AddInkElementCommand.Execute(true);
+                    e.Handled = true;
+                    break;
+                case Key.N:
+                    ViewModel.AddStickyNoteElementCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                case Key.D:
+                    ViewModel.AddInkElementCommand.Execute(false);
                     e.Handled = true;
                     break;
             }

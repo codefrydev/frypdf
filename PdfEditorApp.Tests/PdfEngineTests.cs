@@ -436,4 +436,141 @@ public class PdfEngineTests
         vm.CloseNewDocumentDialogCommand.Execute(null);
         Assert.False(vm.IsNewDocumentDialogOpen);
     }
+
+    [Fact]
+    public void CommandPalette_IndexingAndFiltering_WorksAccurately()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        Assert.NotEmpty(vm.AllPaletteCommands);
+        Assert.True(vm.AllPaletteCommands.Count >= 25);
+
+        // Open palette
+        vm.OpenCommandPaletteCommand.Execute(null);
+        Assert.True(vm.IsCommandPaletteOpen);
+        Assert.Equal(vm.AllPaletteCommands.Count, vm.FilteredPaletteCommands.Count);
+
+        // Search for "text"
+        vm.CommandSearchQuery = "text";
+        Assert.NotEmpty(vm.FilteredPaletteCommands);
+        Assert.All(vm.FilteredPaletteCommands, item =>
+            Assert.True(item.Title.Contains("text", StringComparison.OrdinalIgnoreCase) ||
+                        item.Subtitle.Contains("text", StringComparison.OrdinalIgnoreCase) ||
+                        item.Category.Contains("text", StringComparison.OrdinalIgnoreCase)));
+
+        // Search for "save"
+        vm.CommandSearchQuery = "save";
+        Assert.NotEmpty(vm.FilteredPaletteCommands);
+        Assert.Contains(vm.FilteredPaletteCommands, item => item.Title.Contains("Save", StringComparison.OrdinalIgnoreCase));
+
+        // Navigation
+        vm.SelectNextPaletteCommand();
+        Assert.True(vm.SelectedPaletteIndex >= 0);
+        vm.SelectPreviousPaletteCommand();
+        Assert.Equal(0, vm.SelectedPaletteIndex);
+
+        // Close palette
+        vm.CloseCommandPalette();
+        Assert.False(vm.IsCommandPaletteOpen);
+    }
+
+    [Fact]
+    public void PageNavigation_NextPreviousFirstLast_NavigatesProperly()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        Assert.Equal(3, vm.Pages.Count);
+        Assert.Equal(1, vm.CurrentPageNumber);
+
+        // Next page
+        vm.NextPageCommand.Execute(null);
+        Assert.Equal(2, vm.CurrentPageNumber);
+
+        // Next page
+        vm.NextPageCommand.Execute(null);
+        Assert.Equal(3, vm.CurrentPageNumber);
+
+        // Next page at boundary (should remain at 3)
+        vm.NextPageCommand.Execute(null);
+        Assert.Equal(3, vm.CurrentPageNumber);
+
+        // Previous page
+        vm.PreviousPageCommand.Execute(null);
+        Assert.Equal(2, vm.CurrentPageNumber);
+
+        // First page
+        vm.FirstPageCommand.Execute(null);
+        Assert.Equal(1, vm.CurrentPageNumber);
+
+        // Last page
+        vm.LastPageCommand.Execute(null);
+        Assert.Equal(3, vm.CurrentPageNumber);
+    }
+
+    [Fact]
+    public void PageOperations_WithUndoRedo_WorkAccurately()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        int initialPageCount = vm.Pages.Count;
+
+        // Add page
+        vm.AddPageCommand.Execute(null);
+        Assert.Equal(initialPageCount + 1, vm.Pages.Count);
+
+        // Undo add page
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(initialPageCount, vm.Pages.Count);
+
+        // Redo add page
+        vm.RedoCommand.Execute(null);
+        Assert.Equal(initialPageCount + 1, vm.Pages.Count);
+
+        // Duplicate page
+        vm.DuplicateCurrentPageCommand.Execute(null);
+        Assert.Equal(initialPageCount + 2, vm.Pages.Count);
+
+        // Undo duplicate
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(initialPageCount + 1, vm.Pages.Count);
+
+        // Rotate page with undo
+        int currentAngle = vm.CurrentPage!.RotationAngle;
+        vm.RotateCurrentPageCommand.Execute(null);
+        Assert.Equal((currentAngle + 90) % 360, vm.CurrentPage.RotationAngle);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(currentAngle, vm.CurrentPage.RotationAngle);
+
+        // Delete page with undo
+        int beforeDeleteCount = vm.Pages.Count;
+        vm.DeleteCurrentPageCommand.Execute(null);
+        Assert.Equal(beforeDeleteCount - 1, vm.Pages.Count);
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(beforeDeleteCount, vm.Pages.Count);
+    }
+
+    [Fact]
+    public void ToastNotification_And_ShortcutsDialog_Work()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+
+        // Show Toast
+        vm.ShowToast("Document saved successfully", "CheckCircleOutline");
+        Assert.Equal("Document saved successfully", vm.ToastMessage);
+        Assert.Equal("CheckCircleOutline", vm.ToastIcon);
+        Assert.True(vm.IsToastVisible);
+
+        // Shortcuts Dialog
+        vm.OpenShortcutsHelpCommand.Execute(null);
+        Assert.True(vm.IsShortcutsHelpDialogOpen);
+
+        vm.CloseShortcutsHelpCommand.Execute(null);
+        Assert.False(vm.IsShortcutsHelpDialogOpen);
+
+        // Tool Mode
+        vm.SetToolMode("Draw");
+        Assert.Equal(ToolMode.Draw, vm.ActiveToolMode);
+
+        vm.SetToolMode("Select");
+        Assert.Equal(ToolMode.Select, vm.ActiveToolMode);
+    }
 }

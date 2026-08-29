@@ -1,0 +1,191 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:models="using:PdfEditorApp.Models"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Dialogs.CommandPaletteDialog"
+             x:DataType="vm:MainViewModel">
+
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+    </UserControl.Resources>
+
+    <!-- Fullscreen Dark Blur Backdrop -->
+    <Grid Background="#60000000" PointerPressed="OnBackdropPointerPressed">
+        <!-- Centered Command Palette Card -->
+        <Border Width="580"
+                MaxHeight="480"
+                Background="White"
+                BorderBrush="#CBD5E1"
+                BorderThickness="1"
+                CornerRadius="12"
+                BoxShadow="0 20 60 #40000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Margin="20"
+                ClipToBounds="True">
+
+            <Grid RowDefinitions="Auto,*,Auto">
+
+                <!-- 1. Search Input Bar -->
+                <Border Grid.Row="0"
+                        Background="#F8FAFC"
+                        BorderBrush="#E2E8F0"
+                        BorderThickness="0,0,0,1"
+                        Padding="14,10">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <materialIcons:MaterialIcon Grid.Column="0"
+                                                    Kind="Magnify"
+                                                    Width="20"
+                                                    Height="20"
+                                                    Foreground="{StaticResource WinAccentBrush}"
+                                                    Margin="0,0,10,0"
+                                                    VerticalAlignment="Center" />
+
+                        <TextBox x:Name="SearchInputTextBox"
+                                 Grid.Column="1"
+                                 Text="{Binding CommandSearchQuery, Mode=TwoWay}"
+                                 PlaceholderText="Type a command, tool, action, or hotkey..."
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 FontSize="14"
+                                 FontWeight="Medium"
+                                 Foreground="{StaticResource WinTextBrush}"
+                                 VerticalAlignment="Center"
+                                 Padding="0"
+                                 KeyDown="OnSearchInputKeyDown" />
+
+                        <!-- Esc to close hint -->
+                        <Border Grid.Column="2" Classes="kbd-badge" VerticalAlignment="Center">
+                            <TextBlock Text="ESC" Classes="kbd-text" />
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- 2. Command Results List -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="360" Padding="6">
+                    <ItemsControl ItemsSource="{Binding FilteredPaletteCommands}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="models:CommandPaletteItem">
+                                <Border Background="Transparent"
+                                        BorderThickness="0"
+                                        CornerRadius="8"
+                                        Padding="10,8"
+                                        Margin="0,1"
+                                        Cursor="Hand"
+                                        PointerPressed="OnCommandItemPointerPressed">
+                                    <Border.Styles>
+                                        <Style Selector="Border:pointerover">
+                                            <Setter Property="Background" Value="#F1F5F9" />
+                                        </Style>
+                                    </Border.Styles>
+
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                        <!-- Left Icon Badge -->
+                                        <Border Grid.Column="0"
+                                                Width="32"
+                                                Height="32"
+                                                Background="#EFF6FF"
+                                                BorderBrush="#BFDBFE"
+                                                BorderThickness="1"
+                                                CornerRadius="7"
+                                                Margin="0,0,10,0"
+                                                VerticalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="{Binding IconKind}"
+                                                                        Width="18"
+                                                                        Height="18"
+                                                                        Foreground="{StaticResource WinAccentBrush}"
+                                                                        HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Center" />
+                                        </Border>
+
+                                        <!-- Command Title & Subtitle -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                            <TextBlock Text="{Binding Title}"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource WinTextBrush}" />
+                                            <TextBlock Text="{Binding Subtitle}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource WinMutedBrush}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+
+                                        <!-- Category Tag -->
+                                        <Border Grid.Column="2"
+                                                Background="#F1F5F9"
+                                                BorderBrush="#E2E8F0"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
+                                                Padding="6,2"
+                                                Margin="8,0"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Category}"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource WinSubtleBrush}" />
+                                        </Border>
+
+                                        <!-- Shortcut Badge -->
+                                        <Border Grid.Column="3"
+                                                Classes="kbd-badge"
+                                                VerticalAlignment="Center"
+                                                IsVisible="{Binding Shortcut, Converter={StaticResource NullToBooleanConverter}}">
+                                            <TextBlock Text="{Binding Shortcut}" Classes="kbd-text" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- 3. Bottom Footer Helper Hints -->
+                <Border Grid.Row="2"
+                        Background="#F8FAFC"
+                        BorderBrush="#E2E8F0"
+                        BorderThickness="0,1,0,0"
+                        Padding="14,8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <Border Classes="kbd-badge">
+                                    <TextBlock Text="↑" Classes="kbd-text" />
+                                </Border>
+                                <Border Classes="kbd-badge">
+                                    <TextBlock Text="↓" Classes="kbd-text" />
+                                </Border>
+                                <TextBlock Text="Navigate" FontSize="11" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <Border Classes="kbd-badge">
+                                    <TextBlock Text="↵" Classes="kbd-text" />
+                                </Border>
+                                <TextBlock Text="Execute" FontSize="11" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <Border Classes="kbd-badge">
+                                    <TextBlock Text="Esc" Classes="kbd-text" />
+                                </Border>
+                                <TextBlock Text="Close" FontSize="11" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding FilteredPaletteCommands.Count, StringFormat='{}{0} commands'}"
+                                   FontSize="11"
+                                   FontWeight="Medium"
+                                   Foreground="{StaticResource WinSubtleBrush}"
+                                   VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+            </Grid>
+        </Border>
+    </Grid>
+
+</UserControl>

@@ -14,6 +14,43 @@
         <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
         <converters:DoubleToThicknessConverter x:Key="DoubleToThickness" />
         <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
+
+        <!-- Rich Element Right-Click Context Menu -->
+        <ContextMenu x:Key="ElementContextMenu" x:DataType="elvm:ElementViewModelBase">
+            <MenuItem Header="Cut" InputGesture="Ctrl+X" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).CutCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ContentCut" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Copy" InputGesture="Ctrl+C" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).CopyCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ContentCopy" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Paste" InputGesture="Ctrl+V" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).PasteCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ContentPaste" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Duplicate" InputGesture="Ctrl+D" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).DuplicateCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ContentDuplicate" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="Bring to Front" InputGesture="Ctrl+OemCloseBrackets" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.BringToFrontCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ArrowUpBold" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Send to Back" InputGesture="Ctrl+OemOpenBrackets" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.SendToBackCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ArrowDownBold" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Align">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="FormatAlignLeft" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                <MenuItem Header="Align Left" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.AlignLeftCommand}" />
+                <MenuItem Header="Align Center" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.AlignCenterCommand}" />
+                <MenuItem Header="Align Right" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.AlignRightCommand}" />
+                <Separator />
+                <MenuItem Header="Align Top" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.AlignTopCommand}" />
+                <MenuItem Header="Align Middle" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.AlignMiddleCommand}" />
+                <MenuItem Header="Align Bottom" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.AlignBottomCommand}" />
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="Delete" InputGesture="Delete" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.DeleteSelectedElementCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="DeleteOutline" Width="16" Height="16" Foreground="#DC2626" /></MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
     </UserControl.Resources>
 
     <!-- Canvas Scrollable Workspace -->
@@ -22,6 +59,44 @@
                   HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto"
                   PointerPressed="OnCanvasBackgroundPointerPressed">
+
+        <!-- Canvas Background Context Menu -->
+        <ScrollViewer.ContextMenu>
+            <ContextMenu>
+                <MenuItem Header="Paste" InputGesture="Ctrl+V" Command="{Binding PasteCommand}">
+                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="ContentPaste" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Insert Text" InputGesture="T" Command="{Binding AddTextElementCommand}">
+                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="FormatColorText" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Insert Section Heading" InputGesture="H" Command="{Binding AddHeadingElementCommand}">
+                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="FormatHeader1" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Insert Rectangle Shape" InputGesture="R" Command="{Binding AddShapeElementCommand}" CommandParameter="Rectangle">
+                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="SquareOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Insert Sticky Note" InputGesture="N" Command="{Binding AddStickyNoteElementCommand}">
+                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="NoteTextOutline" Width="16" Height="16" Foreground="#D97706" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Insert Image" Command="{Binding AddImageElementCommand}">
+                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="ImageOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Fit to Page" InputGesture="Ctrl+D9" Command="{Binding FitToPageCommand}">
+                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="FitToPageOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Zoom In" InputGesture="Ctrl+OemPlus" Command="{Binding ZoomInCommand}">
+                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="MagnifyPlusOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Zoom Out" InputGesture="Ctrl+OemMinus" Command="{Binding ZoomOutCommand}">
+                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="MagnifyMinusOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Reset Zoom (100%)" InputGesture="Ctrl+D0" Command="{Binding ResetZoomCommand}">
+                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="Magnify" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                </MenuItem>
+            </ContextMenu>
+        </ScrollViewer.ContextMenu>
 
         <Grid HorizontalAlignment="Center" VerticalAlignment="Top" Margin="36">
             <LayoutTransformControl>
@@ -60,6 +135,7 @@
                                     <Setter Property="Canvas.Left" Value="{Binding X}" />
                                     <Setter Property="Canvas.Top" Value="{Binding Y}" />
                                     <Setter Property="Canvas.ZIndex" Value="{Binding ZIndex}" />
+                                    <Setter Property="ContextMenu" Value="{StaticResource ElementContextMenu}" />
                                 </ControlTheme>
                             </ItemsControl.ItemContainerTheme>
 

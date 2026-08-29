@@ -14,6 +14,34 @@
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
         <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
         <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+
+        <!-- Page Thumbnail Context Menu -->
+        <ContextMenu x:Key="PageThumbnailContextMenu" x:DataType="vm:PageViewModel">
+            <MenuItem Header="Add New Page" InputGesture="Ctrl+Shift+N" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).AddPageCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="FilePlusOutline" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Duplicate Page" InputGesture="Ctrl+Shift+D" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).DuplicateCurrentPageCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="FileMultipleOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="Rotate 90° Clockwise" InputGesture="Ctrl+Shift+R" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).RotateCurrentPageCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="RotateRight" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Rotate 90° Counter-Clockwise" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).RotateCurrentPageCounterClockwiseCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="RotateLeft" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="Move Page Up" InputGesture="Ctrl+Shift+Up" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).MovePageUpCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ChevronUp" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Move Page Down" InputGesture="Ctrl+Shift+Down" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).MovePageDownCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ChevronDown" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="Delete Page" InputGesture="Ctrl+Shift+Delete" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).DeleteCurrentPageCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="DeleteOutline" Width="16" Height="16" Foreground="#DC2626" /></MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
     </UserControl.Resources>
 
     <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,1,0" Width="240">
@@ -52,10 +80,10 @@
                     <!-- Quick Page Actions -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center"
                                 IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}">
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding AddPageCommand}" ToolTip.Tip="Add Page">
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding AddPageCommand}" ToolTip.Tip="Add New Page (⌘⇧N)">
                             <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding RotateCurrentPageCommand}" ToolTip.Tip="Rotate 90° CW">
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding RotateCurrentPageCommand}" ToolTip.Tip="Rotate 90° CW (⌘⇧R)">
                             <materialIcons:MaterialIcon Kind="RotateRight" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
                     </StackPanel>
@@ -76,6 +104,7 @@
                                         Padding="0"
                                         Margin="0,0,0,16"
                                         HorizontalAlignment="Center"
+                                        ContextMenu="{StaticResource PageThumbnailContextMenu}"
                                         Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).SelectPageCommand}"
                                         CommandParameter="{Binding}">
                                     <StackPanel HorizontalAlignment="Center" Spacing="6">
@@ -281,7 +310,7 @@
                         <TextBlock Text="DOCUMENT OUTLINE" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource WinSubtleBrush}" Margin="2,0,0,6" LetterSpacing="0.5" />
                         <ItemsControl ItemsSource="{Binding OutlineItems}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="vm:OutlineItem">
+                                <DataTemplate DataType="models:OutlineItem">
                                     <Button Background="Transparent"
                                             BorderThickness="0"
                                             Padding="6,4"
@@ -307,7 +336,7 @@
                         <TextBlock Text="COMMENTS &amp; ANNOTATIONS" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource WinSubtleBrush}" Margin="2,0,0,6" LetterSpacing="0.5" />
                         <ItemsControl ItemsSource="{Binding CommentItems}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="vm:CommentItem">
+                                <DataTemplate DataType="models:CommentItem">
                                     <Button Background="White"
                                             BorderBrush="#E2E8F0"
                                             BorderThickness="1"

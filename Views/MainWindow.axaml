@@ -23,6 +23,76 @@
         <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
     </Window.Resources>
 
+    <!-- Global Cross-Platform KeyBindings (macOS Cmd & Win/Linux Ctrl) -->
+    <Window.KeyBindings>
+        <!-- File Operations -->
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveProjectCommand}" />
+        <KeyBinding Gesture="Cmd+S" Command="{Binding SaveProjectCommand}" />
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenProjectCommand}" />
+        <KeyBinding Gesture="Cmd+O" Command="{Binding OpenProjectCommand}" />
+        <KeyBinding Gesture="Ctrl+N" Command="{Binding OpenNewDocumentDialogCommand}" />
+        <KeyBinding Gesture="Cmd+N" Command="{Binding OpenNewDocumentDialogCommand}" />
+        <KeyBinding Gesture="Ctrl+E" Command="{Binding ExportPdfCommand}" />
+        <KeyBinding Gesture="Cmd+E" Command="{Binding ExportPdfCommand}" />
+        <KeyBinding Gesture="Ctrl+P" Command="{Binding ExportPdfCommand}" />
+        <KeyBinding Gesture="Cmd+P" Command="{Binding ExportPdfCommand}" />
+
+        <!-- Edit & History -->
+        <KeyBinding Gesture="Ctrl+Z" Command="{Binding UndoCommand}" />
+        <KeyBinding Gesture="Cmd+Z" Command="{Binding UndoCommand}" />
+        <KeyBinding Gesture="Ctrl+Y" Command="{Binding RedoCommand}" />
+        <KeyBinding Gesture="Cmd+Y" Command="{Binding RedoCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+Z" Command="{Binding RedoCommand}" />
+        <KeyBinding Gesture="Cmd+Shift+Z" Command="{Binding RedoCommand}" />
+        <KeyBinding Gesture="Ctrl+C" Command="{Binding CopyCommand}" />
+        <KeyBinding Gesture="Cmd+C" Command="{Binding CopyCommand}" />
+        <KeyBinding Gesture="Ctrl+X" Command="{Binding CutCommand}" />
+        <KeyBinding Gesture="Cmd+X" Command="{Binding CutCommand}" />
+        <KeyBinding Gesture="Ctrl+V" Command="{Binding PasteCommand}" />
+        <KeyBinding Gesture="Cmd+V" Command="{Binding PasteCommand}" />
+        <KeyBinding Gesture="Ctrl+D" Command="{Binding DuplicateCommand}" />
+        <KeyBinding Gesture="Cmd+D" Command="{Binding DuplicateCommand}" />
+
+        <!-- Command Palette & Help -->
+        <KeyBinding Gesture="Ctrl+K" Command="{Binding OpenCommandPaletteCommand}" />
+        <KeyBinding Gesture="Cmd+K" Command="{Binding OpenCommandPaletteCommand}" />
+        <KeyBinding Gesture="Ctrl+F" Command="{Binding OpenCommandPaletteCommand}" />
+        <KeyBinding Gesture="Cmd+F" Command="{Binding OpenCommandPaletteCommand}" />
+        <KeyBinding Gesture="F1" Command="{Binding OpenShortcutsHelpCommand}" />
+        <KeyBinding Gesture="Ctrl+OemQuestion" Command="{Binding OpenShortcutsHelpCommand}" />
+        <KeyBinding Gesture="Cmd+OemQuestion" Command="{Binding OpenShortcutsHelpCommand}" />
+
+        <!-- View & Zoom -->
+        <KeyBinding Gesture="Ctrl+Add" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Gesture="Ctrl+OemPlus" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Gesture="Cmd+OemPlus" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Gesture="Ctrl+Subtract" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Gesture="Ctrl+OemMinus" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Gesture="Cmd+OemMinus" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Gesture="Ctrl+D0" Command="{Binding ResetZoomCommand}" />
+        <KeyBinding Gesture="Cmd+D0" Command="{Binding ResetZoomCommand}" />
+        <KeyBinding Gesture="Ctrl+D1" Command="{Binding FitToWidthCommand}" />
+        <KeyBinding Gesture="Cmd+D1" Command="{Binding FitToWidthCommand}" />
+        <KeyBinding Gesture="Ctrl+D9" Command="{Binding FitToPageCommand}" />
+        <KeyBinding Gesture="Cmd+D9" Command="{Binding FitToPageCommand}" />
+
+        <!-- Page Navigation & Page Actions -->
+        <KeyBinding Gesture="PageDown" Command="{Binding NextPageCommand}" />
+        <KeyBinding Gesture="Ctrl+PageDown" Command="{Binding NextPageCommand}" />
+        <KeyBinding Gesture="PageUp" Command="{Binding PreviousPageCommand}" />
+        <KeyBinding Gesture="Ctrl+PageUp" Command="{Binding PreviousPageCommand}" />
+        <KeyBinding Gesture="Home" Command="{Binding FirstPageCommand}" />
+        <KeyBinding Gesture="End" Command="{Binding LastPageCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+N" Command="{Binding AddPageCommand}" />
+        <KeyBinding Gesture="Cmd+Shift+N" Command="{Binding AddPageCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+D" Command="{Binding DuplicateCurrentPageCommand}" />
+        <KeyBinding Gesture="Cmd+Shift+D" Command="{Binding DuplicateCurrentPageCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+R" Command="{Binding RotateCurrentPageCommand}" />
+        <KeyBinding Gesture="Cmd+Shift+R" Command="{Binding RotateCurrentPageCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+Delete" Command="{Binding DeleteCurrentPageCommand}" />
+        <KeyBinding Gesture="Cmd+Shift+Delete" Command="{Binding DeleteCurrentPageCommand}" />
+    </Window.KeyBindings>
+
     <!-- Main Window Root Layout -->
     <Grid>
         <Grid RowDefinitions="Auto,Auto,*,Auto">
@@ -52,41 +122,43 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <!-- Center: Search & Command Bar -->
-                    <Border Grid.Column="1"
+                    <!-- Center: Search & Command Palette Trigger Bar -->
+                    <Button Grid.Column="1"
                             HorizontalAlignment="Center"
-                            Width="360"
+                            Width="380"
                             Height="30"
                             Background="White"
                             BorderBrush="{StaticResource WinBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="7"
-                            BoxShadow="0 1 3 #06000000"
-                            Padding="10,0">
+                            Padding="10,0"
+                            Command="{Binding OpenCommandPaletteCommand}"
+                            ToolTip.Tip="Open Quick Command Palette (⌘K / Ctrl+K)">
                         <Grid ColumnDefinitions="Auto,*,Auto">
-                            <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="15" Height="15" Foreground="{StaticResource WinSubtleBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
-                            <TextBox Grid.Column="1"
-                                     Text="{Binding SearchQuery, Mode=TwoWay}"
-                                     PlaceholderText="Search tools, commands, or text..."
-                                     BorderThickness="0"
-                                     Background="Transparent"
-                                     FontSize="11.5"
-                                     VerticalAlignment="Center"
-                                     Padding="0" />
+                            <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="15" Height="15" Foreground="{StaticResource WinAccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1"
+                                       Text="Type ⌘K to run commands, insert tools, search..."
+                                       FontSize="11.5"
+                                       Foreground="{StaticResource WinMutedBrush}"
+                                       VerticalAlignment="Center" />
                             <!-- Quick Shortcut Badge -->
                             <Border Grid.Column="2" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
                                 <TextBlock Text="⌘K" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" />
                             </Border>
                         </Grid>
-                    </Border>
+                    </Button>
 
                     <!-- Right: Quick Save & Actions -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                        <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save Project (Ctrl+S)">
+                        <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save Project (⌘S / Ctrl+S)">
                             <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
-                        <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding ExportPdfCommand}" ToolTip.Tip="Export to PDF">
+                        <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding ExportPdfCommand}" ToolTip.Tip="Export to PDF (⌘E / Ctrl+E)">
                             <materialIcons:MaterialIcon Kind="ExportVariant" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                        <Rectangle Width="1" Height="16" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+                        <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding OpenShortcutsHelpCommand}" ToolTip.Tip="Keyboard Shortcuts Cheat Sheet (F1 / ?)">
+                            <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -145,13 +217,18 @@
 
                     <!-- Right: View Modes & Zoom Controls -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <!-- Shortcuts Reference Button -->
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding OpenShortcutsHelpCommand}" ToolTip.Tip="Keyboard Shortcuts Reference (F1 / ?)">
+                            <materialIcons:MaterialIcon Kind="KeyboardOutline" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+
                         <!-- Fit to Page Button -->
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToPageCommand}" ToolTip.Tip="Fit to Page">
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToPageCommand}" ToolTip.Tip="Fit to Page (⌘9 / Ctrl+9)">
                             <materialIcons:MaterialIcon Kind="FitToPageOutline" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
 
                         <!-- Fit to Width Button -->
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToWidthCommand}" ToolTip.Tip="Fit to Width">
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToWidthCommand}" ToolTip.Tip="Fit to Width (⌘1 / Ctrl+1)">
                             <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
 
@@ -159,7 +236,7 @@
                         <Rectangle Width="1" Height="14" Fill="{StaticResource WinBorderBrush}" Margin="4,0" />
 
                         <!-- Zoom Out -->
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom Out">
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom Out (⌘- / Ctrl+-)">
                             <materialIcons:MaterialIcon Kind="Minus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
 
@@ -173,12 +250,19 @@
                                 VerticalAlignment="Center" />
 
                         <!-- Zoom In -->
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom In">
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom In (⌘+ / Ctrl++)">
                             <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
 
-                        <!-- Zoom Percentage Pill -->
-                        <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="6,2" Margin="4,0,0,0">
+                        <!-- Zoom Percentage Pill (Click to Reset 100%) -->
+                        <Button Background="White"
+                                BorderBrush="{StaticResource WinBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="5"
+                                Padding="6,2"
+                                Margin="4,0,0,0"
+                                Command="{Binding ResetZoomCommand}"
+                                ToolTip.Tip="Reset Zoom 100% (⌘0 / Ctrl+0)">
                             <TextBlock Text="{Binding ZoomLevel, Converter={StaticResource ZoomPercentageConverter}}"
                                        FontSize="11"
                                        FontWeight="SemiBold"
@@ -186,16 +270,31 @@
                                        Width="36"
                                        TextAlignment="Center"
                                        VerticalAlignment="Center" />
-                        </Border>
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Border>
 
         </Grid>
 
+        <!-- Floating HUD Toast Notification Banner -->
+        <Border Classes="toast-banner"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,50"
+                IsVisible="{Binding IsToastVisible}"
+                IsHitTestVisible="False">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <materialIcons:MaterialIcon Kind="{Binding ToastIcon}" Width="18" Height="18" Foreground="#38BDF8" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding ToastMessage}" FontSize="12" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
         <!-- Dialog Overlays -->
         <dialogs:NewDocumentDialog IsVisible="{Binding IsNewDocumentDialogOpen}" />
         <dialogs:ExportSuccessDialog IsVisible="{Binding IsExportSuccessDialogOpen}" />
+        <dialogs:CommandPaletteDialog IsVisible="{Binding IsCommandPaletteOpen}" />
+        <dialogs:ShortcutsHelpDialog IsVisible="{Binding IsShortcutsHelpDialogOpen}" />
     </Grid>
 
 </Window>

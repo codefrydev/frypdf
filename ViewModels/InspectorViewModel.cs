@@ -378,14 +378,30 @@ public partial class InspectorViewModel : ViewModelBase
         {
             var el = SelectedElement;
             var page = SelectedPage;
-            int oldZ = el.ZIndex;
+            int oldIdx = page.Elements.IndexOf(el);
+            if (oldIdx < 0 || oldIdx == page.Elements.Count - 1) return;
+
             page.BringToFront(el);
-            int newZ = el.ZIndex;
+            int newIdx = page.Elements.IndexOf(el);
 
             UndoRedo?.RecordAction(
                 $"Bring {el.DisplayName} to Front",
-                () => el.ZIndex = oldZ,
-                () => el.ZIndex = newZ
+                () => {
+                    if (page.Elements.Contains(el))
+                    {
+                        int cur = page.Elements.IndexOf(el);
+                        if (cur != oldIdx && oldIdx >= 0 && oldIdx < page.Elements.Count) page.Elements.Move(cur, oldIdx);
+                        page.NormalizeZIndices();
+                    }
+                },
+                () => {
+                    if (page.Elements.Contains(el))
+                    {
+                        int cur = page.Elements.IndexOf(el);
+                        if (cur != newIdx && newIdx >= 0 && newIdx < page.Elements.Count) page.Elements.Move(cur, newIdx);
+                        page.NormalizeZIndices();
+                    }
+                }
             );
         }
     }
@@ -397,14 +413,100 @@ public partial class InspectorViewModel : ViewModelBase
         {
             var el = SelectedElement;
             var page = SelectedPage;
-            int oldZ = el.ZIndex;
+            int oldIdx = page.Elements.IndexOf(el);
+            if (oldIdx <= 0) return;
+
             page.SendToBack(el);
-            int newZ = el.ZIndex;
+            int newIdx = page.Elements.IndexOf(el);
 
             UndoRedo?.RecordAction(
                 $"Send {el.DisplayName} to Back",
-                () => el.ZIndex = oldZ,
-                () => el.ZIndex = newZ
+                () => {
+                    if (page.Elements.Contains(el))
+                    {
+                        int cur = page.Elements.IndexOf(el);
+                        if (cur != oldIdx && oldIdx >= 0 && oldIdx < page.Elements.Count) page.Elements.Move(cur, oldIdx);
+                        page.NormalizeZIndices();
+                    }
+                },
+                () => {
+                    if (page.Elements.Contains(el))
+                    {
+                        int cur = page.Elements.IndexOf(el);
+                        if (cur != newIdx && newIdx >= 0 && newIdx < page.Elements.Count) page.Elements.Move(cur, newIdx);
+                        page.NormalizeZIndices();
+                    }
+                }
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void BringForward()
+    {
+        if (SelectedElement != null && SelectedPage != null)
+        {
+            var el = SelectedElement;
+            var page = SelectedPage;
+            int oldIdx = page.Elements.IndexOf(el);
+            if (oldIdx < 0 || oldIdx >= page.Elements.Count - 1) return;
+
+            page.BringForward(el);
+            int newIdx = page.Elements.IndexOf(el);
+
+            UndoRedo?.RecordAction(
+                $"Bring {el.DisplayName} Forward",
+                () => {
+                    if (page.Elements.Contains(el))
+                    {
+                        int cur = page.Elements.IndexOf(el);
+                        if (cur != oldIdx && oldIdx >= 0 && oldIdx < page.Elements.Count) page.Elements.Move(cur, oldIdx);
+                        page.NormalizeZIndices();
+                    }
+                },
+                () => {
+                    if (page.Elements.Contains(el))
+                    {
+                        int cur = page.Elements.IndexOf(el);
+                        if (cur != newIdx && newIdx >= 0 && newIdx < page.Elements.Count) page.Elements.Move(cur, newIdx);
+                        page.NormalizeZIndices();
+                    }
+                }
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void SendBackward()
+    {
+        if (SelectedElement != null && SelectedPage != null)
+        {
+            var el = SelectedElement;
+            var page = SelectedPage;
+            int oldIdx = page.Elements.IndexOf(el);
+            if (oldIdx <= 0) return;
+
+            page.SendBackward(el);
+            int newIdx = page.Elements.IndexOf(el);
+
+            UndoRedo?.RecordAction(
+                $"Send {el.DisplayName} Backward",
+                () => {
+                    if (page.Elements.Contains(el))
+                    {
+                        int cur = page.Elements.IndexOf(el);
+                        if (cur != oldIdx && oldIdx >= 0 && oldIdx < page.Elements.Count) page.Elements.Move(cur, oldIdx);
+                        page.NormalizeZIndices();
+                    }
+                },
+                () => {
+                    if (page.Elements.Contains(el))
+                    {
+                        int cur = page.Elements.IndexOf(el);
+                        if (cur != newIdx && newIdx >= 0 && newIdx < page.Elements.Count) page.Elements.Move(cur, newIdx);
+                        page.NormalizeZIndices();
+                    }
+                }
             );
         }
     }
@@ -791,6 +893,140 @@ public partial class InspectorViewModel : ViewModelBase
                 el.Y = currentY;
                 currentY += el.Height + gap;
             }
+        }
+    }
+
+    // --- ADDITIONAL ELEMENT COLOR & PROPERTY COMMANDS ---
+
+    [RelayCommand]
+    public void SetDividerColor(string hex)
+    {
+        if (DividerElement != null)
+        {
+            var el = DividerElement;
+            string oldHex = el.ColorHex;
+            el.ColorHex = hex;
+            UndoRedo?.RecordAction("Change Divider Color", () => el.ColorHex = oldHex, () => el.ColorHex = hex);
+        }
+    }
+
+    [RelayCommand]
+    public void SetInkColor(string hex)
+    {
+        if (InkElement != null)
+        {
+            var el = InkElement;
+            string oldHex = el.StrokeColorHex;
+            el.StrokeColorHex = hex;
+            UndoRedo?.RecordAction("Change Ink Color", () => el.StrokeColorHex = oldHex, () => el.StrokeColorHex = hex);
+        }
+    }
+
+    [RelayCommand]
+    public void SetStickyNoteColor(string hex)
+    {
+        if (StickyNoteElement != null)
+        {
+            var el = StickyNoteElement;
+            string oldHex = el.ColorHex;
+            el.ColorHex = hex;
+            UndoRedo?.RecordAction("Change Note Color", () => el.ColorHex = oldHex, () => el.ColorHex = hex);
+        }
+    }
+
+    [RelayCommand]
+    public void SetRedactionFillColor(string hex)
+    {
+        if (RedactionElement != null)
+        {
+            var el = RedactionElement;
+            string oldHex = el.FillColorHex;
+            el.FillColorHex = hex;
+            UndoRedo?.RecordAction("Change Redaction Fill", () => el.FillColorHex = oldHex, () => el.FillColorHex = hex);
+        }
+    }
+
+    [RelayCommand]
+    public void SetImageBorderColor(string hex)
+    {
+        if (ImageElement != null)
+        {
+            var el = ImageElement;
+            string oldHex = el.BorderColorHex;
+            el.BorderColorHex = hex;
+            UndoRedo?.RecordAction("Change Image Border Color", () => el.BorderColorHex = oldHex, () => el.BorderColorHex = hex);
+        }
+    }
+
+    [RelayCommand]
+    public void SetFormFieldBackgroundColor(string hex)
+    {
+        if (FormFieldElement != null)
+        {
+            var el = FormFieldElement;
+            string oldHex = el.BackgroundColorHex;
+            el.BackgroundColorHex = hex;
+            UndoRedo?.RecordAction("Change Field Background", () => el.BackgroundColorHex = oldHex, () => el.BackgroundColorHex = hex);
+        }
+    }
+
+    [RelayCommand]
+    public void SetFormFieldBorderColor(string hex)
+    {
+        if (FormFieldElement != null)
+        {
+            var el = FormFieldElement;
+            string oldHex = el.BorderColorHex;
+            el.BorderColorHex = hex;
+            UndoRedo?.RecordAction("Change Field Border", () => el.BorderColorHex = oldHex, () => el.BorderColorHex = hex);
+        }
+    }
+
+    [RelayCommand]
+    public void SetFormFieldType(string typeStr)
+    {
+        if (FormFieldElement != null && Enum.TryParse<FormFieldType>(typeStr, true, out var type))
+        {
+            var el = FormFieldElement;
+            var oldType = el.FieldType;
+            el.FieldType = type;
+            UndoRedo?.RecordAction($"Change Field to {type}", () => el.FieldType = oldType, () => el.FieldType = type);
+        }
+    }
+
+    [RelayCommand]
+    public void SetShapeLabelColor(string hex)
+    {
+        if (ShapeElement != null)
+        {
+            var el = ShapeElement;
+            string? oldHex = el.LabelColorHex;
+            el.LabelColorHex = hex;
+            UndoRedo?.RecordAction("Change Shape Label Color", () => el.LabelColorHex = oldHex, () => el.LabelColorHex = hex);
+        }
+    }
+
+    [RelayCommand]
+    public void SetQrCodeDarkColor(string hex)
+    {
+        if (QrCodeElement != null)
+        {
+            var el = QrCodeElement;
+            string oldHex = el.DarkColorHex;
+            el.DarkColorHex = hex;
+            UndoRedo?.RecordAction("Change QR Color", () => el.DarkColorHex = oldHex, () => el.DarkColorHex = hex);
+        }
+    }
+
+    [RelayCommand]
+    public void SetBarcodeColor(string hex)
+    {
+        if (BarcodeElement != null)
+        {
+            var el = BarcodeElement;
+            string oldHex = el.BarColorHex;
+            el.BarColorHex = hex;
+            UndoRedo?.RecordAction("Change Barcode Color", () => el.BarColorHex = oldHex, () => el.BarColorHex = hex);
         }
     }
 }

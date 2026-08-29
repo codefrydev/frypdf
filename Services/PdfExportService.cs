@@ -120,12 +120,12 @@ internal class QuestPdfDocumentWrapper : IDocument
                         .Bold();
                 }
 
-                // Content Elements ordered by Y position
+                // Content Elements ordered by ZIndex layering, then Y and X positions
                 page.Content().Column(col =>
                 {
                     col.Spacing(12);
 
-                    var sortedElements = pageModel.Elements.OrderBy(e => e.Y).ThenBy(e => e.X).ToList();
+                    var sortedElements = pageModel.Elements.OrderBy(e => e.ZIndex).ThenBy(e => e.Y).ThenBy(e => e.X).ToList();
 
                     foreach (var element in sortedElements)
                     {

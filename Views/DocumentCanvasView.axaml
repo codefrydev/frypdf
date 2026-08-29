@@ -31,10 +31,16 @@
             </MenuItem>
             <Separator />
             <MenuItem Header="Bring to Front" InputGesture="Ctrl+OemCloseBrackets" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.BringToFrontCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ArrangeBringToFront" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Bring Forward" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.BringForwardCommand}">
                 <MenuItem.Icon><materialIcons:MaterialIcon Kind="ArrowUpBold" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Send to Back" InputGesture="Ctrl+OemOpenBrackets" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.SendToBackCommand}">
+            <MenuItem Header="Send Backward" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.SendBackwardCommand}">
                 <MenuItem.Icon><materialIcons:MaterialIcon Kind="ArrowDownBold" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Send to Back" InputGesture="Ctrl+OemOpenBrackets" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.SendToBackCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ArrangeSendToBack" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Align">
                 <MenuItem.Icon><materialIcons:MaterialIcon Kind="FormatAlignLeft" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
@@ -135,6 +141,11 @@
                                     <Setter Property="Canvas.Left" Value="{Binding X}" />
                                     <Setter Property="Canvas.Top" Value="{Binding Y}" />
                                     <Setter Property="Canvas.ZIndex" Value="{Binding ZIndex}" />
+                                    <Setter Property="Opacity" Value="{Binding Opacity}" />
+                                    <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+                                    <Setter Property="RenderTransform">
+                                        <RotateTransform Angle="{Binding Rotation}" />
+                                    </Setter>
                                     <Setter Property="ContextMenu" Value="{StaticResource ElementContextMenu}" />
                                 </ControlTheme>
                             </ItemsControl.ItemContainerTheme>
@@ -158,7 +169,9 @@
                                                        FontSize="{Binding FontSize}"
                                                        FontWeight="{Binding IsBold, Converter={x:Static converters:BooleanToFontWeightConverter.Instance}}"
                                                        FontStyle="{Binding IsItalic, Converter={x:Static converters:BooleanToFontStyleConverter.Instance}}"
-                                                       TextDecorations="{Binding IsUnderline, Converter={x:Static converters:BooleanToTextDecorationsConverter.Instance}}"
+                                                       TextDecorations="{Binding TextDecorations}"
+                                                       LetterSpacing="{Binding CharacterSpacing}"
+                                                       LineHeight="{Binding ComputedLineHeight}"
                                                        Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                        TextAlignment="{Binding Alignment, Converter={StaticResource TextAlignmentConverter}}"
                                                        TextWrapping="Wrap"
@@ -729,7 +742,42 @@
                                                     </Border>
                                                 </StackPanel>
 
-                                                <!-- 7. Push Button Field -->
+                                                <!-- 7. Date Picker Field -->
+                                                <StackPanel Spacing="3"
+                                                            IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=DatePicker}">
+                                                    <TextBlock Text="{Binding Label}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinMutedBrush}" />
+                                                    <Border Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4" Height="28" Padding="8,2">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Grid.Column="0" Text="{Binding Placeholder, FallbackValue='YYYY-MM-DD'}" FontSize="11" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                                            <materialIcons:MaterialIcon Grid.Column="1" Kind="Calendar" Width="14" Height="14" Foreground="{StaticResource WinAccentBrush}" VerticalAlignment="Center" />
+                                                        </Grid>
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <!-- 8. Number / Currency Field -->
+                                                <StackPanel Spacing="3"
+                                                            IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Number}">
+                                                    <TextBlock Text="{Binding Label}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinMutedBrush}" />
+                                                    <TextBox Text="{Binding Value, Mode=TwoWay}"
+                                                             PlaceholderText="{Binding Placeholder, FallbackValue='0.00'}"
+                                                             FontSize="{Binding FontSize}"
+                                                             Height="28" Padding="6,2" />
+                                                </StackPanel>
+
+                                                <!-- 9. Signature Line Field -->
+                                                <Grid RowDefinitions="Auto,*,Auto"
+                                                      IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=SignatureLine}">
+                                                    <TextBlock Grid.Row="0" Text="{Binding Label}" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource WinMutedBrush}" />
+                                                    <Border Grid.Row="1" BorderBrush="#0F6CBD" BorderThickness="0,0,0,1.5" Margin="0,4,0,2">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                            <materialIcons:MaterialIcon Kind="DrawPen" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" />
+                                                            <TextBlock Text="[Authorized Signature Line]" FontSize="11" FontStyle="Italic" Foreground="{StaticResource WinAccentBrush}" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <TextBlock Grid.Row="2" Text="Signed &amp; Sealed Under Penalty of Law" FontSize="8.5" Foreground="#94A3B8" HorizontalAlignment="Right" />
+                                                </Grid>
+
+                                                <!-- 10. Push Button Field -->
                                                 <Border Background="{StaticResource WinAccentBrush}" CornerRadius="4" Height="30" Padding="12,4" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                         IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Button}">
                                                     <TextBlock Text="{Binding Label}" FontSize="11" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />

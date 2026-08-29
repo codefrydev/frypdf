@@ -678,15 +678,19 @@ public class PdfEngineTests
         var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
         var page = vm.CurrentPage!;
 
+        page.Elements.Clear();
+        var bottomEl = new ShapeElementViewModel { X = 10, Y = 10 };
         var shapeEl = new ShapeElementViewModel
         {
             X = 200,
             Y = 300,
             Width = 100,
-            Height = 100,
-            ZIndex = 1
+            Height = 100
         };
+        var topEl = new ShapeElementViewModel { X = 50, Y = 50 };
+        page.AddElement(bottomEl);
         page.AddElement(shapeEl);
+        page.AddElement(topEl);
         vm.Inspector.UpdateSelection(shapeEl, page);
 
         // Align Left
@@ -711,9 +715,20 @@ public class PdfEngineTests
         int oldZ = shapeEl.ZIndex;
         vm.Inspector.BringToFrontCommand.Execute(null);
         Assert.True(shapeEl.ZIndex > oldZ);
+        Assert.Equal(page.Elements.Count - 1, page.Elements.IndexOf(shapeEl));
 
         vm.UndoCommand.Execute(null);
         Assert.Equal(oldZ, shapeEl.ZIndex);
+        Assert.Equal(1, page.Elements.IndexOf(shapeEl));
+
+        // Send to Back
+        vm.Inspector.SendToBackCommand.Execute(null);
+        Assert.Equal(1, shapeEl.ZIndex);
+        Assert.Equal(0, page.Elements.IndexOf(shapeEl));
+
+        vm.UndoCommand.Execute(null);
+        Assert.Equal(oldZ, shapeEl.ZIndex);
+        Assert.Equal(1, page.Elements.IndexOf(shapeEl));
     }
 
     [Fact]
@@ -894,5 +909,111 @@ public class PdfEngineTests
         Assert.Equal(0, el1.X);
         Assert.Equal(150, el2.X);
         Assert.Equal(300, el3.X);
+    }
+
+    [Fact]
+    public void Inspector_TypographyAndTextDecorations_ReflectImmediately()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        var page = vm.CurrentPage!;
+        var textEl = new TextElementViewModel { Text = "Sample Heading", FontSize = 16 };
+        page.AddElement(textEl);
+
+        vm.Inspector.UpdateSelection(textEl, page);
+        Assert.NotNull(vm.Inspector.TextElement);
+
+        // Toggle Strikethrough and Underline
+        vm.Inspector.ToggleStrikethroughCommand.Execute(null);
+        Assert.True(textEl.IsStrikethrough);
+        Assert.NotNull(textEl.TextDecorations);
+
+        vm.Inspector.ToggleUnderlineCommand.Execute(null);
+        Assert.True(textEl.IsUnderline);
+        Assert.NotNull(textEl.TextDecorations);
+
+        // Change text color
+        vm.Inspector.SetTextColorCommand.Execute("#0F6CBD");
+        Assert.Equal("#0F6CBD", textEl.TextColorHex);
+
+        // Set alignment
+        vm.Inspector.SetAlignmentCommand.Execute("Center");
+        Assert.Equal(TextAlignmentMode.Center, textEl.Alignment);
+
+        // Computed line height
+        textEl.LineHeight = 1.5;
+        Assert.Equal(16 * 1.5, textEl.ComputedLineHeight);
+    }
+
+    [Fact]
+    public void Inspector_ShapeStylesAndLabels_ReflectImmediately()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        var page = vm.CurrentPage!;
+        var shapeEl = new ShapeElementViewModel { Width = 120, Height = 60 };
+        page.AddElement(shapeEl);
+
+        vm.Inspector.UpdateSelection(shapeEl, page);
+        Assert.NotNull(vm.Inspector.ShapeElement);
+
+        // Change shape type
+        vm.Inspector.SetShapeTypeCommand.Execute("Star4Badge");
+        Assert.Equal(ShapeType.Star4Badge, shapeEl.ShapeType);
+        Assert.NotEmpty(shapeEl.PathData);
+
+        // Set colors
+        vm.Inspector.SetShapeFillColorCommand.Execute("#16A34A");
+        Assert.Equal("#16A34A", shapeEl.FillColorHex);
+
+        vm.Inspector.SetShapeStrokeColorCommand.Execute("#DC2626");
+        Assert.Equal("#DC2626", shapeEl.StrokeColorHex);
+
+        // Set label
+        shapeEl.Label = "CERTIFIED";
+        vm.Inspector.SetShapeLabelColorCommand.Execute("#FFFFFF");
+        Assert.Equal("#FFFFFF", shapeEl.LabelColorHex);
+    }
+
+    [Fact]
+    public void Inspector_AllElementColorsAndProperties_ReflectProperly()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        var page = vm.CurrentPage!;
+
+        // Divider
+        var divEl = new DividerElementViewModel();
+        page.AddElement(divEl);
+        vm.Inspector.UpdateSelection(divEl, page);
+        vm.Inspector.SetDividerColorCommand.Execute("#EA580C");
+        Assert.Equal("#EA580C", divEl.ColorHex);
+
+        // Ink
+        var inkEl = new InkElementViewModel();
+        page.AddElement(inkEl);
+        vm.Inspector.UpdateSelection(inkEl, page);
+        vm.Inspector.SetInkColorCommand.Execute("#7C3AED");
+        Assert.Equal("#7C3AED", inkEl.StrokeColorHex);
+
+        // Sticky note
+        var noteEl = new StickyNoteElementViewModel();
+        page.AddElement(noteEl);
+        vm.Inspector.UpdateSelection(noteEl, page);
+        vm.Inspector.SetStickyNoteColorCommand.Execute("#DBEAFE");
+        Assert.Equal("#DBEAFE", noteEl.ColorHex);
+
+        // Redaction
+        var redEl = new RedactionElementViewModel();
+        page.AddElement(redEl);
+        vm.Inspector.UpdateSelection(redEl, page);
+        vm.Inspector.SetRedactionFillColorCommand.Execute("#0F172A");
+        Assert.Equal("#0F172A", redEl.FillColorHex);
+
+        // Form field
+        var formEl = new FormFieldElementViewModel();
+        page.AddElement(formEl);
+        vm.Inspector.UpdateSelection(formEl, page);
+        vm.Inspector.SetFormFieldTypeCommand.Execute("DatePicker");
+        Assert.Equal(FormFieldType.DatePicker, formEl.FieldType);
+        vm.Inspector.SetFormFieldBorderColorCommand.Execute("#16A34A");
+        Assert.Equal("#16A34A", formEl.BorderColorHex);
     }
 }

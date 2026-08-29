@@ -12,9 +12,10 @@
         <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
         <converters:DoubleToThicknessConverter x:Key="DoubleToThickness" />
         <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
     </UserControl.Resources>
 
-    <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1,0,0,0" Width="300">
+    <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1,0,0,0" Width="310">
         <Grid RowDefinitions="Auto,*">
 
             <!-- Sidebar Header -->
@@ -24,18 +25,51 @@
                         <materialIcons:MaterialIcon Kind="TuneVariant" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" />
                         <TextBlock Text="Properties &amp; Format" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                     </StackPanel>
-                    <TextBlock Grid.Column="1"
-                               Text="{Binding ActiveCategoryName}"
-                               FontSize="11"
-                               FontWeight="SemiBold"
-                               Foreground="{StaticResource WinAccentBrush}"
-                               VerticalAlignment="Center" />
+                    <Border Grid.Column="1" Background="{StaticResource WinAccentLightBrush}" CornerRadius="4" Padding="6,2">
+                        <TextBlock Text="{Binding ActiveCategoryName}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource WinAccentBrush}"
+                                   VerticalAlignment="Center" />
+                    </Border>
                 </Grid>
             </Border>
 
             <!-- Inspector Scrollable Cards -->
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Margin="12" Spacing="12">
+
+                    <!-- EMPTY STATE: DOCUMENT & PAGE OVERVIEW (Visible when nothing is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14"
+                            IsVisible="{Binding !HasSelectedElement}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Document Properties" FontWeight="SemiBold" FontSize="12.5" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="Select any element on the page canvas to inspect and edit its typography, geometry, styles, or interactive form fields."
+                                       FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" />
+
+                            <Rectangle Height="1" Fill="{StaticResource WinBorderBrush}" Margin="0,4" />
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Page Orientation" FontSize="11.5" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Classes="secondary-btn" Height="26" Padding="8,2"
+                                        Command="{Binding SelectedPage.RotateClockwiseCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="RotateRight" Width="13" Height="13" Foreground="{StaticResource WinMutedBrush}" />
+                                        <TextBlock Text="Rotate 90°" FontSize="10.5" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Show Footer Bar" FontSize="11.5" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedPage.ShowHeaderFooter, Mode=TwoWay}"
+                                              OnContent="" OffContent="" Margin="0" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
 
                     <!-- 1. TYPOGRAPHY CARD (Visible when Text element is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
@@ -44,11 +78,19 @@
                             <!-- Card Title -->
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="FormatFont" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Typography" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Typography &amp; Text" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- In-Inspector Text Editor -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Content Text" Classes="inspector-label" />
+                                <TextBox Text="{Binding TextElement.Text, Mode=TwoWay}"
+                                         AcceptsReturn="True" TextWrapping="Wrap"
+                                         Height="54" FontSize="12" CornerRadius="5" Padding="6,4" />
                             </StackPanel>
 
                             <!-- Font Family & Font Size -->
-                            <Grid ColumnDefinitions="*,80" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="*,75" ColumnSpacing="6">
                                 <StackPanel Grid.Column="0" Spacing="3">
                                     <TextBlock Text="Font Family" Classes="inspector-label" />
                                     <ComboBox ItemsSource="{Binding AvailableFontFamilies}"
@@ -58,69 +100,69 @@
 
                                 <StackPanel Grid.Column="1" Spacing="3">
                                     <TextBlock Text="Size (pt)" Classes="inspector-label" />
-                                    <ComboBox ItemsSource="{Binding AvailableFontSizes}"
-                                              SelectedItem="{Binding SelectedFontSize, Mode=TwoWay}"
-                                              HorizontalAlignment="Stretch" Height="30" FontSize="12" />
+                                    <NumericUpDown Value="{Binding TextElement.FontSize, Mode=TwoWay}"
+                                                   Minimum="6" Maximum="144" Increment="1"
+                                                   HorizontalAlignment="Stretch" Height="30" FontSize="12" />
                                 </StackPanel>
                             </Grid>
 
-                            <!-- Bold / Italic / Underline / Alignment -->
+                            <!-- Bold / Italic / Underline / Strikethrough / Alignment -->
                             <StackPanel Spacing="3">
-                                <TextBlock Text="Style &amp; Alignment" Classes="inspector-label" />
-                                <StackPanel Orientation="Horizontal" Spacing="2">
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                <TextBlock Text="Style &amp; Formatting" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
                                             Classes.active="{Binding TextElement.IsBold, FallbackValue=False}"
-                                            Command="{Binding ToggleBoldCommand}">
-                                        <materialIcons:MaterialIcon Kind="FormatBold" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                            Command="{Binding ToggleBoldCommand}" ToolTip.Tip="Bold (Ctrl+B)">
+                                        <materialIcons:MaterialIcon Kind="FormatBold" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
                                             Classes.active="{Binding TextElement.IsItalic, FallbackValue=False}"
-                                            Command="{Binding ToggleItalicCommand}">
-                                        <materialIcons:MaterialIcon Kind="FormatItalic" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                            Command="{Binding ToggleItalicCommand}" ToolTip.Tip="Italic (Ctrl+I)">
+                                        <materialIcons:MaterialIcon Kind="FormatItalic" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
                                             Classes.active="{Binding TextElement.IsUnderline, FallbackValue=False}"
-                                            Command="{Binding ToggleUnderlineCommand}" ToolTip.Tip="Underline">
-                                        <materialIcons:MaterialIcon Kind="FormatUnderline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                            Command="{Binding ToggleUnderlineCommand}" ToolTip.Tip="Underline (Ctrl+U)">
+                                        <materialIcons:MaterialIcon Kind="FormatUnderline" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
                                             Classes.active="{Binding TextElement.IsStrikethrough, FallbackValue=False}"
                                             Command="{Binding ToggleStrikethroughCommand}" ToolTip.Tip="Strikethrough">
-                                        <materialIcons:MaterialIcon Kind="FormatStrikethrough" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                        <materialIcons:MaterialIcon Kind="FormatStrikethrough" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
 
-                                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+                                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="3,0" />
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
                                             Command="{Binding ToggleBulletsCommand}" ToolTip.Tip="Bullet List">
-                                        <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                        <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
                                             Command="{Binding ToggleNumberingCommand}" ToolTip.Tip="Numbered List">
-                                        <materialIcons:MaterialIcon Kind="FormatListNumbered" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                        <materialIcons:MaterialIcon Kind="FormatListNumbered" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
 
-                                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+                                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="3,0" />
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
-                                            Command="{Binding SetAlignmentCommand}" CommandParameter="Left">
-                                        <materialIcons:MaterialIcon Kind="FormatAlignLeft" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                            Command="{Binding SetAlignmentCommand}" CommandParameter="Left" ToolTip.Tip="Align Left">
+                                        <materialIcons:MaterialIcon Kind="FormatAlignLeft" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
-                                            Command="{Binding SetAlignmentCommand}" CommandParameter="Center">
-                                        <materialIcons:MaterialIcon Kind="FormatAlignCenter" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                            Command="{Binding SetAlignmentCommand}" CommandParameter="Center" ToolTip.Tip="Align Center">
+                                        <materialIcons:MaterialIcon Kind="FormatAlignCenter" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
-                                            Command="{Binding SetAlignmentCommand}" CommandParameter="Right">
-                                        <materialIcons:MaterialIcon Kind="FormatAlignRight" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                            Command="{Binding SetAlignmentCommand}" CommandParameter="Right" ToolTip.Tip="Align Right">
+                                        <materialIcons:MaterialIcon Kind="FormatAlignRight" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
-                                </StackPanel>
+                                </WrapPanel>
                             </StackPanel>
 
                             <!-- Text Case Transforms -->
@@ -133,14 +175,14 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <!-- Character Spacing & Line Spacing -->
+                            <!-- Tracking & Line Spacing -->
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
                                 <StackPanel Grid.Column="0" Spacing="3">
-                                    <TextBlock Text="Tracking (Spacing)" Classes="inspector-label" />
+                                    <TextBlock Text="Letter Spacing" Classes="inspector-label" />
                                     <NumericUpDown Value="{Binding TextElement.CharacterSpacing, Mode=TwoWay}" Minimum="-2" Maximum="10" Increment="0.5" Height="28" FontSize="11.5" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Spacing="3">
-                                    <TextBlock Text="Line Height" Classes="inspector-label" />
+                                    <TextBlock Text="Line Spacing" Classes="inspector-label" />
                                     <NumericUpDown Value="{Binding TextElement.LineHeight, Mode=TwoWay}" Minimum="0.8" Maximum="3.0" Increment="0.1" Height="28" FontSize="11.5" />
                                 </StackPanel>
                             </Grid>
@@ -149,23 +191,29 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Text Color" Classes="inspector-label" />
                                 <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel Orientation="Horizontal" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate DataType="vm:ColorSwatchItem">
-                                            <Button Width="22" Height="22" Margin="2"
-                                                    CornerRadius="11"
-                                                    BorderBrush="#CBD5E1"
-                                                    BorderThickness="1"
+                                            <Button Width="22" Height="22" Margin="2" CornerRadius="11" BorderBrush="#CBD5E1" BorderThickness="1"
                                                     Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
                                                     Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetTextColorCommand}"
                                                     CommandParameter="{Binding Hex}" />
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
+                            </StackPanel>
+
+                            <!-- Text Background Color Swatches -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Highlight / Background Color" Classes="inspector-label" />
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <Button Classes="secondary-btn" Height="22" Padding="6,1" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#00000000"><TextBlock Text="None" FontSize="9.5" /></Button>
+                                    <Button Width="22" Height="22" CornerRadius="4" Background="#FEF08A" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#FEF08A" ToolTip.Tip="Yellow Highlight" />
+                                    <Button Width="22" Height="22" CornerRadius="4" Background="#BAE6FD" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#BAE6FD" ToolTip.Tip="Blue Highlight" />
+                                    <Button Width="22" Height="22" CornerRadius="4" Background="#BBF7D0" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#BBF7D0" ToolTip.Tip="Green Highlight" />
+                                    <Button Width="22" Height="22" CornerRadius="4" Background="#FEE2E2" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#FEE2E2" ToolTip.Tip="Red Highlight" />
+                                    <Button Width="22" Height="22" CornerRadius="4" Background="#F1F5F9" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#F1F5F9" ToolTip.Tip="Light Gray" />
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -177,18 +225,18 @@
                             <!-- Card Title -->
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="ShapeOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Shape Geometry (21 Styles)" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Shape Geometry &amp; Badges" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
                             <!-- Shape Type Selector Grid -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Select Preset Geometry" Classes="inspector-label" />
+                                <TextBlock Text="Preset Geometry (21 Shapes)" Classes="inspector-label" />
                                 <WrapPanel Orientation="Horizontal">
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Rectangle"><TextBlock Text="Rect" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RoundedRectangle"><TextBlock Text="Rounded" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Circle"><TextBlock Text="Circle" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Triangle"><TextBlock Text="Triangle" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RightTriangle"><TextBlock Text="Rt. Triangle" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RightTriangle"><TextBlock Text="Rt. Tri" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Diamond"><TextBlock Text="Diamond" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Pentagon"><TextBlock Text="Pentagon" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Hexagon"><TextBlock Text="Hexagon" FontSize="10" /></Button>
@@ -210,17 +258,10 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Fill Color" Classes="inspector-label" />
                                 <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel Orientation="Horizontal" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate DataType="vm:ColorSwatchItem">
-                                            <Button Width="22" Height="22" Margin="2"
-                                                    CornerRadius="4"
-                                                    BorderBrush="#CBD5E1"
-                                                    BorderThickness="1"
+                                            <Button Width="22" Height="22" Margin="2" CornerRadius="4" BorderBrush="#CBD5E1" BorderThickness="1"
                                                     Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
                                                     Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}"
                                                     CommandParameter="{Binding Hex}" />
@@ -229,23 +270,146 @@
                                 </ItemsControl>
                             </StackPanel>
 
+                            <!-- Stroke / Border Color Swatches -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Border / Stroke Color" Classes="inspector-label" />
+                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:ColorSwatchItem">
+                                            <Button Width="22" Height="22" Margin="2" CornerRadius="4" BorderBrush="#CBD5E1" BorderThickness="1"
+                                                    Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeStrokeColorCommand}"
+                                                    CommandParameter="{Binding Hex}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <!-- Corner Radius & Border Thickness -->
                             <Grid ColumnDefinitions="*,*">
                                 <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
                                     <TextBlock Text="Corner Radius" Classes="inspector-label" />
                                     <NumericUpDown Value="{Binding ShapeElement.CornerRadius, Mode=TwoWay}"
-                                                   Minimum="0" Maximum="60" Height="30" FontSize="12" />
+                                                   Minimum="0" Maximum="100" Height="28" FontSize="12" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
                                     <TextBlock Text="Border Width" Classes="inspector-label" />
                                     <NumericUpDown Value="{Binding ShapeElement.StrokeThickness, Mode=TwoWay}"
-                                                   Minimum="0" Maximum="10" Height="30" FontSize="12" />
+                                                   Minimum="0" Maximum="20" Height="28" FontSize="12" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Shape Center Label (for Badges & Buttons) -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Center Label / Badge Text" Classes="inspector-label" />
+                                <TextBox Text="{Binding ShapeElement.Label, Mode=TwoWay}" Height="28" FontSize="12" PlaceholderText="e.g. APPROVED, 1, ✦..." />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,*" IsVisible="{Binding ShapeElement.Label, Converter={StaticResource NullToBooleanConverter}}">
+                                <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
+                                    <TextBlock Text="Label Size" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding ShapeElement.LabelFontSize, Mode=TwoWay}" Minimum="8" Maximum="72" Height="28" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
+                                    <TextBlock Text="Label Color" Classes="inspector-label" />
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <Button Width="20" Height="20" CornerRadius="10" Background="#FFFFFF" BorderBrush="#94A3B8" BorderThickness="1" Command="{Binding SetShapeLabelColorCommand}" CommandParameter="#FFFFFF" />
+                                        <Button Width="20" Height="20" CornerRadius="10" Background="#201F1E" Command="{Binding SetShapeLabelColorCommand}" CommandParameter="#201F1E" />
+                                        <Button Width="20" Height="20" CornerRadius="10" Background="#0F6CBD" Command="{Binding SetShapeLabelColorCommand}" CommandParameter="#0F6CBD" />
+                                        <Button Width="20" Height="20" CornerRadius="10" Background="#16A34A" Command="{Binding SetShapeLabelColorCommand}" CommandParameter="#16A34A" />
+                                    </StackPanel>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
                     </Border>
 
-                    <!-- 3. TABLE STYLES & ROW/COL CARD (Visible when Table is selected) -->
+                    <!-- 3. IMAGE CARD (Visible when Image is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding ImageElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="ImageOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Image Properties" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Alt Text / Caption" Classes="inspector-label" />
+                                <TextBox Text="{Binding ImageElement.AltText, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Image File Path" Classes="inspector-label" />
+                                <TextBox Text="{Binding ImageElement.ImagePath, Mode=TwoWay}" Height="28" FontSize="11" PlaceholderText="/path/to/image.png" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,*">
+                                <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
+                                    <TextBlock Text="Corner Radius" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding ImageElement.CornerRadius, Mode=TwoWay}" Minimum="0" Maximum="60" Height="28" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
+                                    <TextBlock Text="Border Width" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding ImageElement.BorderThickness, Mode=TwoWay}" Minimum="0" Maximum="10" Height="28" FontSize="12" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Preserve Aspect Ratio" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding ImageElement.KeepAspectRatio, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
+                            </Grid>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Border Color" Classes="inspector-label" />
+                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:ColorSwatchItem">
+                                            <Button Width="20" Height="20" Margin="2" CornerRadius="3" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetImageBorderColorCommand}" CommandParameter="{Binding Hex}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 4. DIVIDER CARD (Visible when Divider is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding DividerElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="Minus" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Divider Line Settings" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Line Thickness (pt)" Classes="inspector-label" />
+                                <NumericUpDown Value="{Binding DividerElement.Thickness, Mode=TwoWay}" Minimum="0.5" Maximum="20" Increment="0.5" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Vertical Divider" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding DividerElement.IsVertical, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
+                            </Grid>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Line Color" Classes="inspector-label" />
+                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:ColorSwatchItem">
+                                            <Button Width="20" Height="20" Margin="2" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetDividerColorCommand}" CommandParameter="{Binding Hex}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 5. TABLE STYLES & ROW/COL CARD (Visible when Table is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding TableElement, Converter={StaticResource NullToBooleanConverter}}">
                         <StackPanel Spacing="10">
@@ -307,7 +471,7 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- 4. CHART CONFIG & TYPES CARD (Visible when Chart is selected) -->
+                    <!-- 6. CHART CONFIG CARD (Visible when Chart is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding ChartElement, Converter={StaticResource NullToBooleanConverter}}">
                         <StackPanel Spacing="10">
@@ -360,7 +524,7 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- 5. WATERMARK CARD (Visible when Watermark is selected) -->
+                    <!-- 7. WATERMARK CARD (Visible when Watermark is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding WatermarkElement, Converter={StaticResource NullToBooleanConverter}}">
                         <StackPanel Spacing="10">
@@ -389,10 +553,23 @@
                                 <TextBlock Text="Opacity" Classes="inspector-label" />
                                 <Slider Value="{Binding WatermarkElement.Opacity, Mode=TwoWay}" Minimum="0.05" Maximum="1.0" Height="28" />
                             </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Watermark Color" Classes="inspector-label" />
+                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:ColorSwatchItem">
+                                            <Button Width="20" Height="20" Margin="2" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetWatermarkColorCommand}" CommandParameter="{Binding Hex}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
-                    <!-- 6. FORM FIELD CARD (Visible when Form Field is selected) -->
+                    <!-- 8. ACROFORMS CARD (Visible when Form Field is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding FormFieldElement, Converter={StaticResource NullToBooleanConverter}}">
                         <StackPanel Spacing="10">
@@ -401,33 +578,76 @@
                                 <TextBlock Text="AcroForm Field Setup" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
+                            <!-- Field Type Switcher Chips -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Field Control Type" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldTypeCommand}" CommandParameter="Text"><TextBlock Text="Text" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldTypeCommand}" CommandParameter="MultilineText"><TextBlock Text="Textarea" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldTypeCommand}" CommandParameter="Checkbox"><TextBlock Text="☑ Check" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldTypeCommand}" CommandParameter="Radio"><TextBlock Text="◉ Radio" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldTypeCommand}" CommandParameter="Dropdown"><TextBlock Text="▼ Select" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldTypeCommand}" CommandParameter="DatePicker"><TextBlock Text="📅 Date" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldTypeCommand}" CommandParameter="Number"><TextBlock Text="123 Num" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldTypeCommand}" CommandParameter="SignatureLine"><TextBlock Text="✍ Signature" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldTypeCommand}" CommandParameter="Button"><TextBlock Text="Button" FontSize="10" /></Button>
+                                </WrapPanel>
+                            </StackPanel>
+
                             <StackPanel Spacing="3">
                                 <TextBlock Text="Field Label" Classes="inspector-label" />
                                 <TextBox Text="{Binding FormFieldElement.Label, Mode=TwoWay}" Height="28" FontSize="12" />
                             </StackPanel>
 
                             <StackPanel Spacing="3">
-                                <TextBlock Text="Placeholder / Watermark" Classes="inspector-label" />
+                                <TextBlock Text="Placeholder / Default Value" Classes="inspector-label" />
                                 <TextBox Text="{Binding FormFieldElement.Placeholder, Mode=TwoWay}" Height="28" FontSize="12" />
                             </StackPanel>
 
-                            <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="Required Field (*)" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
-                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding FormFieldElement.IsRequired, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Validation Rule Preset" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="None"><TextBlock Text="None" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="Email"><TextBlock Text="Email" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="Numeric"><TextBlock Text="123" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="Phone"><TextBlock Text="Phone" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="Date"><TextBlock Text="Date" FontSize="10" /></Button>
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,*">
+                                <CheckBox Grid.Column="0" IsChecked="{Binding FormFieldElement.IsRequired, Mode=TwoWay}">
+                                    <TextBlock Text="Required (*)" FontSize="11.5" />
+                                </CheckBox>
+                                <CheckBox Grid.Column="1" IsChecked="{Binding FormFieldElement.IsReadOnly, Mode=TwoWay}">
+                                    <TextBlock Text="Read Only" FontSize="11.5" />
+                                </CheckBox>
                             </Grid>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Border Color" Classes="inspector-label" />
+                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:ColorSwatchItem">
+                                            <Button Width="20" Height="20" Margin="2" CornerRadius="3" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetFormFieldBorderColorCommand}" CommandParameter="{Binding Hex}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
-                    <!-- 7. QR CODE CARD (Visible when QR Code is selected) -->
+                    <!-- 9. QR CODE CARD (Visible when QR Code is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding QrCodeElement, Converter={StaticResource NullToBooleanConverter}}">
                         <StackPanel Spacing="10">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="Qrcode" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="QR Code Presets &amp; Settings" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="QR Code Settings &amp; Presets" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
-                            <!-- QR Presets -->
                             <StackPanel Spacing="3">
                                 <TextBlock Text="Quick Payload Presets" Classes="inspector-label" />
                                 <WrapPanel Orientation="Horizontal">
@@ -449,10 +669,23 @@
                                 <TextBlock Text="Label Text" Classes="inspector-label" />
                                 <TextBox Text="{Binding QrCodeElement.Label, Mode=TwoWay}" Height="28" FontSize="12" />
                             </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="QR Code Color" Classes="inspector-label" />
+                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:ColorSwatchItem">
+                                            <Button Width="20" Height="20" Margin="2" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetQrCodeDarkColorCommand}" CommandParameter="{Binding Hex}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
-                    <!-- 8. BARCODE CARD (Visible when Barcode is selected) -->
+                    <!-- 10. BARCODE CARD (Visible when Barcode is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding BarcodeElement, Converter={StaticResource NullToBooleanConverter}}">
                         <StackPanel Spacing="10">
@@ -461,7 +694,6 @@
                                 <TextBlock Text="Barcode Standards (7 Formats)" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
-                            <!-- Barcode Formats -->
                             <StackPanel Spacing="3">
                                 <TextBlock Text="Select Barcode Standard" Classes="inspector-label" />
                                 <WrapPanel Orientation="Horizontal">
@@ -484,20 +716,33 @@
                                 <TextBlock Grid.Column="0" Text="Show Text Underneath" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
                                 <ToggleSwitch Grid.Column="1" IsChecked="{Binding BarcodeElement.ShowText, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
                             </Grid>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Barcode Color" Classes="inspector-label" />
+                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:ColorSwatchItem">
+                                            <Button Width="20" Height="20" Margin="2" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetBarcodeColorCommand}" CommandParameter="{Binding Hex}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
-                    <!-- 9. REDACTION CARD (Visible when Redaction block is selected) -->
+                    <!-- 11. REDACTION CARD (Visible when Redaction block is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding RedactionElement, Converter={StaticResource NullToBooleanConverter}}">
                         <StackPanel Spacing="10">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="EyeOffOutline" Width="16" Height="16" Foreground="{StaticResource WinDangerBrush}" />
-                                <TextBlock Text="Redaction Exemption" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinDangerBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Legal Redaction Exemption" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinDangerBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
                             <StackPanel Spacing="3">
-                                <TextBlock Text="Exemption Code" Classes="inspector-label" />
+                                <TextBlock Text="Exemption Code / Rationale" Classes="inspector-label" />
                                 <TextBox Text="{Binding RedactionElement.ExemptionCode, Mode=TwoWay}" Height="28" FontSize="12" />
                             </StackPanel>
 
@@ -505,89 +750,98 @@
                                 <TextBlock Grid.Column="0" Text="Show Exemption Text" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
                                 <ToggleSwitch Grid.Column="1" IsChecked="{Binding RedactionElement.ShowOverlayText, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
                             </Grid>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Redaction Fill Style" Classes="inspector-label" />
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Button Width="24" Height="24" CornerRadius="4" Background="#0F172A" Command="{Binding SetRedactionFillColorCommand}" CommandParameter="#0F172A" ToolTip.Tip="Blackout" />
+                                    <Button Width="24" Height="24" CornerRadius="4" Background="#FFFFFF" BorderBrush="#94A3B8" BorderThickness="1" Command="{Binding SetRedactionFillColorCommand}" CommandParameter="#FFFFFF" ToolTip.Tip="Whiteout" />
+                                    <Button Width="24" Height="24" CornerRadius="4" Background="#475569" Command="{Binding SetRedactionFillColorCommand}" CommandParameter="#475569" ToolTip.Tip="Grayout" />
+                                    <Button Width="24" Height="24" CornerRadius="4" Background="#DC2626" Command="{Binding SetRedactionFillColorCommand}" CommandParameter="#DC2626" ToolTip.Tip="Red Confidential" />
+                                </StackPanel>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
-                    <!-- 10. STICKY NOTE CARD (Visible when Sticky Note is selected) -->
+                    <!-- 12. INK & MARKUP CARD (Visible when Ink element is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding InkElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="DrawPen" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Ink &amp; Markup Drawing" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Stroke Width (pt)" Classes="inspector-label" />
+                                <NumericUpDown Value="{Binding InkElement.StrokeThickness, Mode=TwoWay}" Minimum="1" Maximum="30" Increment="1" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Highlighter Mode" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding InkElement.IsHighlighter, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
+                            </Grid>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Ink Color" Classes="inspector-label" />
+                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:ColorSwatchItem">
+                                            <Button Width="20" Height="20" Margin="2" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetInkColorCommand}" CommandParameter="{Binding Hex}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 13. STICKY NOTE CARD (Visible when Sticky Note is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding StickyNoteElement, Converter={StaticResource NullToBooleanConverter}}">
                         <StackPanel Spacing="10">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="NoteTextOutline" Width="16" Height="16" Foreground="#B45309" />
-                                <TextBlock Text="Review Comment" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Review Comment Note" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
                             <StackPanel Spacing="3">
-                                <TextBlock Text="Author" Classes="inspector-label" />
-                                <TextBox Text="{Binding StickyNoteElement.Author, Mode=TwoWay}" Height="28" FontSize="12" />
-                            </StackPanel>
-
-                            <StackPanel Spacing="3">
-                                <TextBlock Text="Review Status" Classes="inspector-label" />
-                                <TextBox Text="{Binding StickyNoteElement.Status, Mode=TwoWay}" Height="28" FontSize="12" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- 11. ACROFORMS CARD (Visible when Form Field is selected) -->
-                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
-                            IsVisible="{Binding FormFieldElement, Converter={StaticResource NullToBooleanConverter}}">
-                        <StackPanel Spacing="10">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <materialIcons:MaterialIcon Kind="FormTextbox" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="AcroForm Properties" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
-                            </StackPanel>
-
-                            <StackPanel Spacing="3">
-                                <TextBlock Text="Field Name / ID" Classes="inspector-label" />
-                                <TextBox Text="{Binding FormFieldElement.FieldName, Mode=TwoWay}" Height="28" FontSize="12" />
-                            </StackPanel>
-
-                            <StackPanel Spacing="3">
-                                <TextBlock Text="Field Type" Classes="inspector-label" />
-                                <TextBlock Text="{Binding FormFieldElement.FieldType}" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinAccentBrush}" />
-                            </StackPanel>
-
-                            <StackPanel Spacing="3">
-                                <TextBlock Text="Validation Rule" Classes="inspector-label" />
-                                <WrapPanel Orientation="Horizontal">
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="None"><TextBlock Text="None" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="Email"><TextBlock Text="Email" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="Numeric"><TextBlock Text="123" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="Phone"><TextBlock Text="Phone" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="Date"><TextBlock Text="Date" FontSize="10" /></Button>
-                                </WrapPanel>
-                            </StackPanel>
-
-                            <StackPanel Spacing="3">
-                                <TextBlock Text="Default Value" Classes="inspector-label" />
-                                <TextBox Text="{Binding FormFieldElement.DefaultValue, Mode=TwoWay}" Height="28" FontSize="12" />
-                            </StackPanel>
-
-                            <StackPanel Spacing="3">
-                                <TextBlock Text="Tooltip / Hint" Classes="inspector-label" />
-                                <TextBox Text="{Binding FormFieldElement.Tooltip, Mode=TwoWay}" Height="28" FontSize="12" />
+                                <TextBlock Text="Comment Text" Classes="inspector-label" />
+                                <TextBox Text="{Binding StickyNoteElement.NoteText, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" Height="60" FontSize="12" />
                             </StackPanel>
 
                             <Grid ColumnDefinitions="*,*">
-                                <CheckBox Grid.Column="0" IsChecked="{Binding FormFieldElement.IsRequired, Mode=TwoWay}">
-                                    <TextBlock Text="Required" FontSize="11.5" />
-                                </CheckBox>
-                                <CheckBox Grid.Column="1" IsChecked="{Binding FormFieldElement.IsReadOnly, Mode=TwoWay}">
-                                    <TextBlock Text="Read Only" FontSize="11.5" />
-                                </CheckBox>
+                                <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
+                                    <TextBlock Text="Author" Classes="inspector-label" />
+                                    <TextBox Text="{Binding StickyNoteElement.Author, Mode=TwoWay}" Height="28" FontSize="11.5" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
+                                    <TextBlock Text="Review Status" Classes="inspector-label" />
+                                    <TextBox Text="{Binding StickyNoteElement.Status, Mode=TwoWay}" Height="28" FontSize="11.5" />
+                                </StackPanel>
                             </Grid>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Sticky Color" Classes="inspector-label" />
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Button Width="24" Height="24" CornerRadius="4" Background="#FEF3C7" Command="{Binding SetStickyNoteColorCommand}" CommandParameter="#FEF3C7" ToolTip.Tip="Yellow Note" />
+                                    <Button Width="24" Height="24" CornerRadius="4" Background="#DBEAFE" Command="{Binding SetStickyNoteColorCommand}" CommandParameter="#DBEAFE" ToolTip.Tip="Blue Note" />
+                                    <Button Width="24" Height="24" CornerRadius="4" Background="#DCFCE7" Command="{Binding SetStickyNoteColorCommand}" CommandParameter="#DCFCE7" ToolTip.Tip="Green Note" />
+                                    <Button Width="24" Height="24" CornerRadius="4" Background="#FCE7F3" Command="{Binding SetStickyNoteColorCommand}" CommandParameter="#FCE7F3" ToolTip.Tip="Pink Note" />
+                                </StackPanel>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
-                    <!-- 6. DIMENSIONS & POSITION CARD (Visible for any selected element) -->
+                    <!-- 14. DIMENSIONS, POSITION & TRANSFORMS CARD (Visible for any selected element) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding HasSelectedElement}">
                         <StackPanel Spacing="10">
                             <!-- Card Title -->
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="ArrowAll" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Position &amp; Size" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Position &amp; Geometry" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
                             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" RowSpacing="6">
@@ -603,7 +857,7 @@
 
                                 <StackPanel Grid.Row="1" Grid.Column="0" Spacing="3" Margin="0,0,4,0">
                                     <TextBlock Text="Width (pt)" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding SelectedElement.Width, Mode=TwoWay}" Minimum="20" Maximum="2000" Height="30" FontSize="12" />
+                                    <NumericUpDown Value="{Binding SelectedElement.Width, Mode=TwoWay}" Minimum="10" Maximum="2000" Height="30" FontSize="12" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="1" Grid.Column="1" Spacing="3" Margin="4,0,0,0">
@@ -612,8 +866,48 @@
                                 </StackPanel>
                             </Grid>
 
+                            <!-- Rotation & Opacity -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                                <StackPanel Grid.Column="0" Spacing="3">
+                                    <TextBlock Text="Rotation (°)" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding SelectedElement.Rotation, Mode=TwoWay}" Minimum="0" Maximum="360" Increment="15" Height="28" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="3">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="Opacity" Classes="inspector-label" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedElement.Opacity, StringFormat='{}{0:P0}'}" FontSize="10" Foreground="{StaticResource WinMutedBrush}" />
+                                    </Grid>
+                                    <Slider Value="{Binding SelectedElement.Opacity, Mode=TwoWay}" Minimum="0.0" Maximum="1.0" Height="28" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Alignment Buttons -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Page Alignment" Classes="inspector-label" />
+                                <Grid ColumnDefinitions="*,*,*,*,*,*">
+                                    <Button Grid.Column="0" Classes="mini-tool-btn" Height="28" Margin="1" Command="{Binding AlignLeftCommand}" ToolTip.Tip="Align Left">
+                                        <materialIcons:MaterialIcon Kind="AlignHorizontalLeft" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </Button>
+                                    <Button Grid.Column="1" Classes="mini-tool-btn" Height="28" Margin="1" Command="{Binding AlignCenterCommand}" ToolTip.Tip="Align Center">
+                                        <materialIcons:MaterialIcon Kind="AlignHorizontalCenter" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </Button>
+                                    <Button Grid.Column="2" Classes="mini-tool-btn" Height="28" Margin="1" Command="{Binding AlignRightCommand}" ToolTip.Tip="Align Right">
+                                        <materialIcons:MaterialIcon Kind="AlignHorizontalRight" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </Button>
+                                    <Button Grid.Column="3" Classes="mini-tool-btn" Height="28" Margin="1" Command="{Binding AlignTopCommand}" ToolTip.Tip="Align Top">
+                                        <materialIcons:MaterialIcon Kind="AlignVerticalTop" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </Button>
+                                    <Button Grid.Column="4" Classes="mini-tool-btn" Height="28" Margin="1" Command="{Binding AlignMiddleCommand}" ToolTip.Tip="Align Middle">
+                                        <materialIcons:MaterialIcon Kind="AlignVerticalCenter" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </Button>
+                                    <Button Grid.Column="5" Classes="mini-tool-btn" Height="28" Margin="1" Command="{Binding AlignBottomCommand}" ToolTip.Tip="Align Bottom">
+                                        <materialIcons:MaterialIcon Kind="AlignVerticalBottom" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+
                             <!-- Distribution Tools -->
-                            <StackPanel Spacing="3" Margin="0,4,0,0">
+                            <StackPanel Spacing="3">
                                 <TextBlock Text="Smart Distribution" Classes="inspector-label" />
                                 <Grid ColumnDefinitions="*,*">
                                     <Button Grid.Column="0" Classes="secondary-btn" Height="28" Margin="0,0,3,0" Command="{Binding DistributeHorizontallyCommand}">
@@ -631,58 +925,41 @@
                                 </Grid>
                             </StackPanel>
 
-                            <!-- Actions Row (Front, Back, Duplicate, Delete) -->
-                            <Grid ColumnDefinitions="*,*,*,*" Margin="0,4,0,0">
-                                <Button Grid.Column="0" Classes="secondary-btn" Height="30" Margin="0,0,2,0"
-                                        Command="{Binding BringToFrontCommand}" ToolTip.Tip="Bring to Front">
-                                    <materialIcons:MaterialIcon Kind="ArrangeBringToFront" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                </Button>
+                            <!-- Actions Row (Front, Up, Down, Back, Duplicate, Delete) -->
+                            <StackPanel Spacing="3" Margin="0,4,0,0">
+                                <TextBlock Text="Layer Order &amp; Quick Actions" Classes="inspector-label" />
+                                <Grid ColumnDefinitions="*,*,*,*,*,*">
+                                    <Button Grid.Column="0" Classes="secondary-btn" Height="30" Margin="1"
+                                            Command="{Binding BringToFrontCommand}" ToolTip.Tip="Bring to Front (Ctrl+])">
+                                        <materialIcons:MaterialIcon Kind="ArrangeBringToFront" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </Button>
 
-                                <Button Grid.Column="1" Classes="secondary-btn" Height="30" Margin="2,0,2,0"
-                                        Command="{Binding SendToBackCommand}" ToolTip.Tip="Send to Back">
-                                    <materialIcons:MaterialIcon Kind="ArrangeSendToBack" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                </Button>
+                                    <Button Grid.Column="1" Classes="secondary-btn" Height="30" Margin="1"
+                                            Command="{Binding BringForwardCommand}" ToolTip.Tip="Bring Forward (1 Step)">
+                                        <materialIcons:MaterialIcon Kind="ArrowUpBold" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </Button>
 
-                                <Button Grid.Column="2" Classes="secondary-btn" Height="30" Margin="2,0,2,0"
-                                        Command="{Binding DuplicateSelectedElementCommand}" ToolTip.Tip="Duplicate Element">
-                                    <materialIcons:MaterialIcon Kind="ContentCopy" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                </Button>
+                                    <Button Grid.Column="2" Classes="secondary-btn" Height="30" Margin="1"
+                                            Command="{Binding SendBackwardCommand}" ToolTip.Tip="Send Backward (1 Step)">
+                                        <materialIcons:MaterialIcon Kind="ArrowDownBold" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </Button>
 
-                                <Button Grid.Column="3" Classes="danger-btn" Height="30" Margin="2,0,0,0"
-                                        Command="{Binding DeleteSelectedElementCommand}" ToolTip.Tip="Delete Element">
-                                    <materialIcons:MaterialIcon Kind="DeleteOutline" Width="14" Height="14" Foreground="{StaticResource WinDangerBrush}" HorizontalAlignment="Center" />
-                                </Button>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
+                                    <Button Grid.Column="3" Classes="secondary-btn" Height="30" Margin="1"
+                                            Command="{Binding SendToBackCommand}" ToolTip.Tip="Send to Back (Ctrl+[)">
+                                        <materialIcons:MaterialIcon Kind="ArrangeSendToBack" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </Button>
 
-                    <!-- 7. PAGE & DOCUMENT SETUP CARD -->
-                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
-                        <StackPanel Spacing="10">
-                            <!-- Card Title -->
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Page Setup" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <Button Grid.Column="4" Classes="secondary-btn" Height="30" Margin="1"
+                                            Command="{Binding DuplicateSelectedElementCommand}" ToolTip.Tip="Duplicate (Ctrl+D)">
+                                        <materialIcons:MaterialIcon Kind="ContentCopy" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </Button>
+
+                                    <Button Grid.Column="5" Classes="danger-btn" Height="30" Margin="1"
+                                            Command="{Binding DeleteSelectedElementCommand}" ToolTip.Tip="Delete (Del)">
+                                        <materialIcons:MaterialIcon Kind="DeleteOutline" Width="14" Height="14" Foreground="{StaticResource WinDangerBrush}" HorizontalAlignment="Center" />
+                                    </Button>
+                                </Grid>
                             </StackPanel>
-
-                            <!-- Rotate Button -->
-                            <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="Orientation" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
-                                <Button Grid.Column="1" Classes="secondary-btn" Height="28" Padding="8,2"
-                                        Command="{Binding SelectedPage.RotateClockwiseCommand}">
-                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                        <materialIcons:MaterialIcon Kind="RotateRight" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
-                                        <TextBlock Text="Rotate 90°" FontSize="11" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </Button>
-                            </Grid>
-
-                            <!-- Header & Footer Toggle -->
-                            <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="Footer Bar" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
-                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedPage.ShowHeaderFooter, Mode=TwoWay}"
-                                              OnContent="" OffContent="" Margin="0" />
-                            </Grid>
                         </StackPanel>
                     </Border>
 

@@ -96,16 +96,54 @@ public partial class PageViewModel : ViewModelBase
 
     public void BringToFront(ElementViewModelBase element)
     {
-        if (Elements.Count <= 1) return;
-        int maxZ = Elements.Max(e => e.ZIndex);
-        element.ZIndex = maxZ + 1;
+        if (!Elements.Contains(element) || Elements.Count <= 1) return;
+        int oldIndex = Elements.IndexOf(element);
+        if (oldIndex != Elements.Count - 1)
+        {
+            Elements.Move(oldIndex, Elements.Count - 1);
+        }
+        NormalizeZIndices();
     }
 
     public void SendToBack(ElementViewModelBase element)
     {
-        if (Elements.Count <= 1) return;
-        int minZ = Elements.Min(e => e.ZIndex);
-        element.ZIndex = Math.Max(0, minZ - 1);
+        if (!Elements.Contains(element) || Elements.Count <= 1) return;
+        int oldIndex = Elements.IndexOf(element);
+        if (oldIndex != 0)
+        {
+            Elements.Move(oldIndex, 0);
+        }
+        NormalizeZIndices();
+    }
+
+    public void BringForward(ElementViewModelBase element)
+    {
+        if (!Elements.Contains(element) || Elements.Count <= 1) return;
+        int oldIndex = Elements.IndexOf(element);
+        if (oldIndex < Elements.Count - 1)
+        {
+            Elements.Move(oldIndex, oldIndex + 1);
+            NormalizeZIndices();
+        }
+    }
+
+    public void SendBackward(ElementViewModelBase element)
+    {
+        if (!Elements.Contains(element) || Elements.Count <= 1) return;
+        int oldIndex = Elements.IndexOf(element);
+        if (oldIndex > 0)
+        {
+            Elements.Move(oldIndex, oldIndex - 1);
+            NormalizeZIndices();
+        }
+    }
+
+    public void NormalizeZIndices()
+    {
+        for (int i = 0; i < Elements.Count; i++)
+        {
+            Elements[i].ZIndex = i + 1;
+        }
     }
 
     [RelayCommand]

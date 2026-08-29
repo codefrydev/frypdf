@@ -14,6 +14,7 @@ public partial class TextElementViewModel : ElementViewModelBase
     private string _fontFamily = "Segoe UI";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ComputedLineHeight))]
     private double _fontSize = 14;
 
     [ObservableProperty]
@@ -23,9 +24,11 @@ public partial class TextElementViewModel : ElementViewModelBase
     private bool _isItalic;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TextDecorations))]
     private bool _isUnderline;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TextDecorations))]
     private bool _isStrikethrough;
 
     [ObservableProperty]
@@ -35,6 +38,7 @@ public partial class TextElementViewModel : ElementViewModelBase
     private TextAlignmentMode _alignment = TextAlignmentMode.Left;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ComputedLineHeight))]
     private double _lineHeight = 1.4;
 
     [ObservableProperty]
@@ -54,6 +58,25 @@ public partial class TextElementViewModel : ElementViewModelBase
 
     [ObservableProperty]
     private double _cornerRadius = 0;
+
+    public Avalonia.Media.TextDecorationCollection? TextDecorations
+    {
+        get
+        {
+            if (IsUnderline && IsStrikethrough)
+            {
+                var decs = new Avalonia.Media.TextDecorationCollection();
+                foreach (var d in Avalonia.Media.TextDecorations.Underline) decs.Add(d);
+                foreach (var d in Avalonia.Media.TextDecorations.Strikethrough) decs.Add(d);
+                return decs;
+            }
+            if (IsUnderline) return Avalonia.Media.TextDecorations.Underline;
+            if (IsStrikethrough) return Avalonia.Media.TextDecorations.Strikethrough;
+            return null;
+        }
+    }
+
+    public double ComputedLineHeight => FontSize * (LineHeight > 0.1 ? LineHeight : 1.2);
 
     public override ElementKind Kind => ElementKind.Text;
     public override string DisplayName => Text.Length > 20 ? Text.Substring(0, 17) + "..." : (string.IsNullOrWhiteSpace(Text) ? "Text Box" : Text);

@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using PdfEditorApp.Models;
+using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels;
 using PdfEditorApp.ViewModels.ElementViewModels;
@@ -1037,5 +1038,168 @@ public class PdfEngineTests
         Assert.Equal(FormFieldType.DatePicker, formEl.FieldType);
         vm.Inspector.SetFormFieldBorderColorCommand.Execute("#16A34A");
         Assert.Equal("#16A34A", formEl.BorderColorHex);
+    }
+
+    [Fact]
+    public void DocumentCompareService_DetectsDifferences_BetweenRevisions()
+    {
+        var compareService = new DocumentCompareService();
+
+        var original = new PdfDocumentModel
+        {
+            Title = "Contract v1.0",
+            Pages = new System.Collections.Generic.List<PdfPageModel>
+            {
+                new PdfPageModel
+                {
+                    PageNumber = 1,
+                    Elements = new System.Collections.Generic.List<PdfElementBase>
+                    {
+                        new PdfTextElement { Id = "el-1", Text = "Initial Clause A", X = 50, Y = 50 },
+                        new PdfTextElement { Id = "el-2", Text = "Unchanged Clause B", X = 50, Y = 100 }
+                    }
+                }
+            }
+        };
+
+        var modified = new PdfDocumentModel
+        {
+            Title = "Contract v2.0",
+            Pages = new System.Collections.Generic.List<PdfPageModel>
+            {
+                new PdfPageModel
+                {
+                    PageNumber = 1,
+                    Elements = new System.Collections.Generic.List<PdfElementBase>
+                    {
+                        new PdfTextElement { Id = "el-1", Text = "Amended Clause A (Updated)", X = 50, Y = 50 },
+                        new PdfTextElement { Id = "el-2", Text = "Unchanged Clause B", X = 50, Y = 100 },
+                        new PdfTextElement { Id = "el-3", Text = "Newly Added Clause C", X = 50, Y = 150 }
+                    }
+                }
+            }
+        };
+
+        var report = compareService.CompareDocuments(original, modified);
+
+        Assert.NotNull(report);
+        Assert.Equal(1, report.AdditionsCount); // el-3 added
+        Assert.Equal(1, report.ModificationsCount); // el-1 modified
+        Assert.Equal(0, report.DeletionsCount);
+        Assert.Contains(report.Differences, d => d.DiffType == CompareDiffType.ElementAdded && d.Description.Contains("Newly Added Clause C"));
+        Assert.Contains(report.Differences, d => d.DiffType == CompareDiffType.TextModified && d.OldValue == "Initial Clause A");
+    }
+
+    [Fact]
+    public void BatesNumbering_CustomPrefixAndPosition_AppliesAndRemovesCorrectly()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        Assert.True(vm.Pages.Count >= 3);
+
+        vm.BatesPrefix = "LEGAL-BATES-";
+        vm.BatesStartingNumber = 101;
+        vm.BatesNumberOfDigits = 5;
+        vm.BatesPosition = BatesPosition.TopRight;
+
+        vm.ApplyBatesNumberingCommand.Execute(null);
+
+        Assert.Equal("LEGAL-BATES-00101", vm.Pages[0].HeaderRight);
+        Assert.Equal("LEGAL-BATES-00102", vm.Pages[1].HeaderRight);
+        Assert.Equal("LEGAL-BATES-00103", vm.Pages[2].HeaderRight);
+
+        // Remove Bates numbering
+        vm.RemoveBatesNumberingCommand.Execute(null);
+        Assert.True(string.IsNullOrEmpty(vm.Pages[0].HeaderRight));
+        Assert.True(string.IsNullOrEmpty(vm.Pages[1].HeaderRight));
+    }
+
+    [Fact]
+    public void OrganizePages_BatchRotate_RotatesPagesCorrectly()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        int initialPage1Angle = vm.Pages[0].RotationAngle;
+        int initialPage2Angle = vm.Pages[1].RotationAngle;
+
+        vm.BatchRotatePagesCommand.Execute("all");
+
+        Assert.Equal((initialPage1Angle + 90) % 360, vm.Pages[0].RotationAngle);
+        Assert.Equal((initialPage2Angle + 90) % 360, vm.Pages[1].RotationAngle);
+    }
+
+    [Fact]
+    public void AcroForms_RecalculateFormFields_CalculatesFormulas()
+    {
+        var page = new PageViewModel();
+
+        var f1 = new FormFieldElementViewModel { FieldName = "Subtotal", Value = "150.00" };
+        var f2 = new FormFieldElementViewModel { FieldName = "Tax", Value = "15.00" };
+        var f3 = new FormFieldElementViewModel
+        {
+            FieldName = "Total",
+            CalculationFormula = CalculationFormula.Sum,
+            CalculationSourceFields = "Subtotal, Tax"
+        };
+        var fAvg = new FormFieldElementViewModel
+        {
+            FieldName = "AverageItem",
+            CalculationFormula = CalculationFormula.Average,
+            CalculationSourceFields = "Subtotal, Tax"
+        };
+
+        page.AddElement(f1);
+        page.AddElement(f2);
+        page.AddElement(f3);
+        page.AddElement(fAvg);
+
+        page.RecalculateFormFields();
+
+        Assert.Equal("165.00", f3.Value);
+        Assert.Equal("82.50", fAvg.Value);
+    }
+
+    [Fact]
+    public void MeasurementElement_CalculatesDistance_AndFormatsUnits()
+    {
+        var meas = new PdfMeasurementElement
+        {
+            StartX = 0,
+            StartY = 0,
+            EndX = 72,
+            EndY = 0, // 72 pts = 1.00 inch
+            Unit = RulerUnit.Inches
+        };
+
+        Assert.Equal(72.0, meas.CalculateDistance(), 2);
+        Assert.Equal("1.00 in", meas.GetFormattedDistance());
+
+        meas.Unit = RulerUnit.Millimeters;
+        Assert.Equal("25.4 mm", meas.GetFormattedDistance());
+
+        meas.Unit = RulerUnit.Points;
+        Assert.Equal("72.0 pt", meas.GetFormattedDistance());
+    }
+
+    [Fact]
+    public void FindAndReplace_FindsAndReplacesText_AcrossElements()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        var page = vm.CurrentPage!;
+
+        var txt1 = new TextElementViewModel { Text = "Acme Global Corporation Quarterly Financial Summary" };
+        var txt2 = new TextElementViewModel { Text = "Prepared exclusively for Acme Global Leadership" };
+        page.AddElement(txt1);
+        page.AddElement(txt2);
+
+        vm.FindQuery = "Acme Global";
+        vm.ReplaceQuery = "Apex International";
+        vm.FindMatchCase = true;
+
+        vm.FindNextCommand.Execute(null);
+        Assert.Equal(2, vm.FindMatchesCount);
+
+        vm.ReplaceAllCommand.Execute(null);
+
+        Assert.Contains("Apex International Corporation", txt1.Text);
+        Assert.Contains("Apex International Leadership", txt2.Text);
     }
 }

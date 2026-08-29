@@ -17,6 +17,7 @@ namespace PdfEditorApp.Models.Elements;
 [JsonDerivedType(typeof(PdfRedactionElement), typeDiscriminator: "redaction")]
 [JsonDerivedType(typeof(PdfInkElement), typeDiscriminator: "ink")]
 [JsonDerivedType(typeof(PdfStickyNoteElement), typeDiscriminator: "stickynote")]
+[JsonDerivedType(typeof(PdfMeasurementElement), typeDiscriminator: "measurement")]
 public abstract class PdfElementBase
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");

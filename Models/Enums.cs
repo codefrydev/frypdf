@@ -16,7 +16,8 @@ public enum ElementKind
     QrCode,
     Barcode,
     Redaction,
-    Ink
+    Ink,
+    Measurement
 }
 
 public enum FormFieldType
@@ -31,6 +32,57 @@ public enum FormFieldType
     DatePicker,
     Number,
     SignatureLine
+}
+
+public enum CalculationFormula
+{
+    None,
+    Sum,
+    Average,
+    Product,
+    Min,
+    Max
+}
+
+public enum FormButtonAction
+{
+    SubmitForm,
+    ResetForm,
+    PrintDocument,
+    GotoPage
+}
+
+public enum BatesPosition
+{
+    TopLeft,
+    TopCenter,
+    TopRight,
+    BottomLeft,
+    BottomCenter,
+    BottomRight
+}
+
+public enum SplitExtractMode
+{
+    SplitEveryNPages,
+    SplitByPageRanges,
+    ExtractSelectedPages
+}
+
+public enum CompareDiffType
+{
+    ElementAdded,
+    ElementRemoved,
+    ElementModified,
+    TextModified,
+    PageCountChanged
+}
+
+public enum RulerUnit
+{
+    Points,
+    Inches,
+    Millimeters
 }
 
 public enum FormValidationType
@@ -75,7 +127,9 @@ public enum PageFormat
     Legal,
     Executive,
     A3,
-    A5
+    A5,
+    Tabloid,
+    Custom
 }
 
 public enum PageOrientation
@@ -114,7 +168,9 @@ public enum ShapeType
     Arrow,
     Star,
     Card,
-    StickyNote
+    StickyNote,
+    RevisionCloud,
+    DimensionLine
 }
 
 public enum ChartType
@@ -208,7 +264,8 @@ public enum ToolMode
     Draw,
     Form,
     Redact,
-    Signature
+    Signature,
+    Measure
 }
 
 public enum SidebarTabKind
@@ -217,4 +274,5 @@ public enum SidebarTabKind
     Outline,
     Comments
 }
+
 

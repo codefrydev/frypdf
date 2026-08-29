@@ -1,0 +1,150 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:models="using:PdfEditorApp.Models"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Dialogs.BatesNumberingDialog"
+             x:DataType="vm:MainViewModel">
+
+    <UserControl.Resources>
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+    </UserControl.Resources>
+
+    <!-- Modal Backdrop -->
+    <Grid Background="#60000000">
+        <!-- Dialog Card -->
+        <Border Width="620"
+                Background="White"
+                BorderBrush="{StaticResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="10"
+                BoxShadow="0 20 60 #35000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Padding="24">
+
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- Header -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Border Width="30" Height="30" Background="#EFF6FF" CornerRadius="6">
+                                <materialIcons:MaterialIcon Kind="Numeric" Width="18" Height="18" Foreground="#0F6CBD" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Legal Bates Numbering Studio" FontSize="17" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="Apply standardized sequential legal discovery numbers across all pages in the document." FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding CloseBatesNumberingDialogCommand}">
+                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+                </Grid>
+
+                <!-- Body -->
+                <StackPanel Grid.Row="1" Spacing="14">
+
+                    <!-- Prefix & Suffix -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Prefix (Case / Party Name)" Classes="inspector-label" />
+                            <TextBox Text="{Binding BatesPrefix, Mode=TwoWay}" Height="32" FontSize="12" PlaceholderText="e.g. CASE-2026-" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Suffix" Classes="inspector-label" />
+                            <TextBox Text="{Binding BatesSuffix, Mode=TwoWay}" Height="32" FontSize="12" PlaceholderText="e.g. -CONF" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Starting Number & Digits -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Starting Number" Classes="inspector-label" />
+                            <NumericUpDown Value="{Binding BatesStartingNumber, Mode=TwoWay}" Minimum="1" Maximum="9999999" Height="32" FontSize="12" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Number of Digits (Zero-Padding)" Classes="inspector-label" />
+                            <NumericUpDown Value="{Binding BatesNumberOfDigits, Mode=TwoWay}" Minimum="1" Maximum="10" Height="32" FontSize="12" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Position Selection -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Placement on Page" Classes="inspector-label" />
+                        <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" RowSpacing="6" ColumnSpacing="6">
+                            <Button Grid.Row="0" Grid.Column="0" Classes="secondary-btn" Height="30"
+                                    Classes.active="{Binding BatesPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=TopLeft}"
+                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models:BatesPosition.TopLeft}">
+                                <TextBlock Text="Top-Left" FontSize="11" />
+                            </Button>
+                            <Button Grid.Row="0" Grid.Column="1" Classes="secondary-btn" Height="30"
+                                    Classes.active="{Binding BatesPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=TopCenter}"
+                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models:BatesPosition.TopCenter}">
+                                <TextBlock Text="Top-Center" FontSize="11" />
+                            </Button>
+                            <Button Grid.Row="0" Grid.Column="2" Classes="secondary-btn" Height="30"
+                                    Classes.active="{Binding BatesPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=TopRight}"
+                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models:BatesPosition.TopRight}">
+                                <TextBlock Text="Top-Right" FontSize="11" />
+                            </Button>
+
+                            <Button Grid.Row="1" Grid.Column="0" Classes="secondary-btn" Height="30"
+                                    Classes.active="{Binding BatesPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomLeft}"
+                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models:BatesPosition.BottomLeft}">
+                                <TextBlock Text="Bottom-Left" FontSize="11" />
+                            </Button>
+                            <Button Grid.Row="1" Grid.Column="1" Classes="secondary-btn" Height="30"
+                                    Classes.active="{Binding BatesPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomCenter}"
+                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models:BatesPosition.BottomCenter}">
+                                <TextBlock Text="Bottom-Center" FontSize="11" />
+                            </Button>
+                            <Button Grid.Row="1" Grid.Column="2" Classes="secondary-btn" Height="30"
+                                    Classes.active="{Binding BatesPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomRight}"
+                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models:BatesPosition.BottomRight}">
+                                <TextBlock Text="Bottom-Right" FontSize="11" />
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Live Sample Preview Card -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="SAMPLE PREVIEW (PAGE 1)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource WinSubtleBrush}" LetterSpacing="0.5" />
+                            <TextBlock Text="{Binding BatesSamplePreview}" FontSize="13" FontWeight="SemiBold" FontFamily="Consolas, Monaco, monospace" Foreground="{StaticResource WinAccentBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+                <!-- Footer Actions -->
+                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,18,0,0">
+                    <Button Grid.Column="0" Classes="secondary-btn" HorizontalAlignment="Left" Command="{Binding RemoveBatesNumberingCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <materialIcons:MaterialIcon Kind="DeleteOutline" Width="14" Height="14" Foreground="{StaticResource WinDangerBrush}" />
+                            <TextBlock Text="Remove Existing Bates" Foreground="{StaticResource WinDangerBrush}" FontSize="11.5" />
+                        </StackPanel>
+                    </Button>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                        <Button Classes="secondary-btn" Height="32" Padding="14,0" Command="{Binding CloseBatesNumberingDialogCommand}">
+                            <TextBlock Text="Cancel" FontSize="12" />
+                        </Button>
+                        <Button Classes="accent-btn" Height="32" Padding="16,0" Command="{Binding ApplyBatesNumberingCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="Check" Width="15" Height="15" Foreground="White" />
+                                <TextBlock Text="Apply Bates Stamp" FontSize="12" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+            </Grid>
+        </Border>
+    </Grid>
+
+</UserControl>

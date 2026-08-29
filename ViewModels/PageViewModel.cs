@@ -42,10 +42,16 @@ public partial class PageViewModel : ViewModelBase
     private string? _headerLeft;
 
     [ObservableProperty]
+    private string? _headerCenter;
+
+    [ObservableProperty]
     private string? _headerRight;
 
     [ObservableProperty]
     private string? _footerLeft = "CONFIDENTIAL & PROPRIETARY";
+
+    [ObservableProperty]
+    private string? _footerCenter;
 
     [ObservableProperty]
     private string? _footerRight = "Page 1 of 1";
@@ -166,8 +172,10 @@ public partial class PageViewModel : ViewModelBase
             BackgroundColorHex = BackgroundColorHex,
             ShowHeaderFooter = ShowHeaderFooter,
             HeaderLeft = HeaderLeft,
+            HeaderCenter = HeaderCenter,
             HeaderRight = HeaderRight,
             FooterLeft = FooterLeft,
+            FooterCenter = FooterCenter,
             FooterRight = FooterRight
         };
 
@@ -191,8 +199,10 @@ public partial class PageViewModel : ViewModelBase
         BackgroundColorHex = model.BackgroundColorHex;
         ShowHeaderFooter = model.ShowHeaderFooter;
         HeaderLeft = model.HeaderLeft;
+        HeaderCenter = model.HeaderCenter;
         HeaderRight = model.HeaderRight;
         FooterLeft = model.FooterLeft;
+        FooterCenter = model.FooterCenter;
         FooterRight = model.FooterRight;
 
         Elements.Clear();
@@ -213,10 +223,41 @@ public partial class PageViewModel : ViewModelBase
                 PdfRedactionElement red => new RedactionElementViewModel(),
                 PdfInkElement ink => new InkElementViewModel(),
                 PdfStickyNoteElement note => new StickyNoteElementViewModel(),
+                PdfMeasurementElement m => new MeasurementElementViewModel(),
                 _ => new TextElementViewModel()
             };
             vm.LoadFromModel(elModel);
             Elements.Add(vm);
+        }
+    }
+
+    public void RecalculateFormFields()
+    {
+        var formFields = Elements.OfType<FormFieldElementViewModel>().ToList();
+        foreach (var field in formFields.Where(f => f.CalculationFormula != CalculationFormula.None))
+        {
+            if (string.IsNullOrWhiteSpace(field.CalculationSourceFields)) continue;
+            var sourceNames = field.CalculationSourceFields
+                .Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            var values = formFields
+                .Where(f => sourceNames.Contains(f.FieldName, StringComparer.OrdinalIgnoreCase))
+                .Select(f => double.TryParse(f.Value, out var v) ? v : (double.TryParse(f.DefaultValue, out var dv) ? dv : 0.0))
+                .ToList();
+
+            if (values.Count == 0) continue;
+
+            double result = field.CalculationFormula switch
+            {
+                CalculationFormula.Sum => values.Sum(),
+                CalculationFormula.Average => values.Average(),
+                CalculationFormula.Product => values.Aggregate(1.0, (acc, x) => acc * x),
+                CalculationFormula.Min => values.Min(),
+                CalculationFormula.Max => values.Max(),
+                _ => 0
+            };
+
+            field.Value = result.ToString("F2");
         }
     }
 }

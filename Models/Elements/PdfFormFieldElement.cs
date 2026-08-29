@@ -23,6 +23,12 @@ public class PdfFormFieldElement : PdfElementBase
     public double FontSize { get; set; } = 12;
     public List<string> Options { get; set; } = new() { "Option 1", "Option 2", "Option 3" };
 
+    // Acrobat Form Calculations & Action Buttons
+    public CalculationFormula CalculationFormula { get; set; } = CalculationFormula.None;
+    public string CalculationSourceFields { get; set; } = "";
+    public FormButtonAction ButtonAction { get; set; } = FormButtonAction.SubmitForm;
+    public string ActionTarget { get; set; } = "";
+
     public override PdfElementBase Clone()
     {
         var clone = (PdfFormFieldElement)base.Clone();

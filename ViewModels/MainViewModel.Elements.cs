@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
+using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
 namespace PdfEditorApp.ViewModels;
@@ -410,18 +412,6 @@ public partial class MainViewModel
         AddElementWithUndo(inkEl, isHighlighter ? "Added Highlighter Stroke" : "Added Freehand Ink Stroke");
     }
 
-    [RelayCommand]
-    public void ApplyBatesNumbering()
-    {
-        for (int i = 0; i < Pages.Count; i++)
-        {
-            string batesCode = $"CONF-BATES-{(i + 1):D6}";
-            Pages[i].FooterLeft = batesCode;
-            Pages[i].ShowHeaderFooter = true;
-        }
-        ShowToast("Applied Bates Numbering (CONF-BATES-000001...)", "Numeric");
-    }
-
     // --- FILL & SIGN / DIGITAL SIGNATURE STUDIO ---
 
     [RelayCommand]
@@ -774,5 +764,344 @@ public partial class MainViewModel
             GridSnapSize = size;
             ShowToast($"Grid Snap Interval: {(int)size}pt", "GridLarge");
         }
+    }
+
+    // --- BATES NUMBERING STUDIO COMMANDS ---
+
+    public string BatesSamplePreview =>
+        $"{BatesPrefix}{BatesStartingNumber.ToString().PadLeft(BatesNumberOfDigits, '0')}{BatesSuffix}";
+
+    [RelayCommand]
+    public void OpenBatesNumberingDialog()
+    {
+        OnPropertyChanged(nameof(BatesSamplePreview));
+        IsBatesNumberingDialogOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseBatesNumberingDialog()
+    {
+        IsBatesNumberingDialogOpen = false;
+    }
+
+    [RelayCommand]
+    public void SetBatesPosition(BatesPosition pos)
+    {
+        BatesPosition = pos;
+    }
+
+    [RelayCommand]
+    public void ApplyBatesNumbering()
+    {
+        IsBatesNumberingDialogOpen = false;
+        int currentNum = BatesStartingNumber;
+
+        for (int i = 0; i < Pages.Count; i++)
+        {
+            var page = Pages[i];
+            string batesText = $"{BatesPrefix}{currentNum.ToString().PadLeft(BatesNumberOfDigits, '0')}{BatesSuffix}";
+
+            // Remove any existing Bates on page
+            var existing = page.Elements.OfType<TextElementViewModel>().Where(e => e.Text.StartsWith(BatesPrefix) || e.DisplayName.Contains("Bates")).ToList();
+            foreach (var el in existing) page.RemoveElement(el);
+
+            double x = 40;
+            double y = 40;
+            double pageWidth = page.Width > 0 ? page.Width : 800;
+            double pageHeight = page.Height > 0 ? page.Height : 1131;
+
+            switch (BatesPosition)
+            {
+                case BatesPosition.TopLeft:
+                    page.HeaderLeft = batesText;
+                    page.ShowHeaderFooter = true;
+                    x = 40; y = 25; break;
+                case BatesPosition.TopCenter:
+                    page.HeaderCenter = batesText;
+                    page.ShowHeaderFooter = true;
+                    x = (pageWidth - 220) / 2; y = 25; break;
+                case BatesPosition.TopRight:
+                    page.HeaderRight = batesText;
+                    page.ShowHeaderFooter = true;
+                    x = pageWidth - 240; y = 25; break;
+                case BatesPosition.BottomLeft:
+                    page.FooterLeft = batesText;
+                    page.ShowHeaderFooter = true;
+                    x = 40; y = pageHeight - 45; break;
+                case BatesPosition.BottomCenter:
+                    page.FooterCenter = batesText;
+                    page.ShowHeaderFooter = true;
+                    x = (pageWidth - 220) / 2; y = pageHeight - 45; break;
+                case BatesPosition.BottomRight:
+                    page.FooterRight = batesText;
+                    page.ShowHeaderFooter = true;
+                    x = pageWidth - 240; y = pageHeight - 45; break;
+            }
+
+            var batesEl = new TextElementViewModel
+            {
+                X = x,
+                Y = y,
+                Width = 200,
+                Height = 25,
+                Text = batesText,
+                FontSize = BatesFontSize,
+                FontFamily = "Consolas",
+                TextColorHex = BatesFontColorHex,
+                IsBold = true
+            };
+
+            page.AddElement(batesEl);
+            currentNum++;
+        }
+
+        ShowToast($"Applied legal Bates stamp across all {Pages.Count} pages", "Numeric");
+    }
+
+    [RelayCommand]
+    public void RemoveBatesNumbering()
+    {
+        IsBatesNumberingDialogOpen = false;
+        int removed = 0;
+        foreach (var page in Pages)
+        {
+            if (page.HeaderLeft?.StartsWith(BatesPrefix) == true) page.HeaderLeft = "";
+            if (page.HeaderCenter?.StartsWith(BatesPrefix) == true) page.HeaderCenter = "";
+            if (page.HeaderRight?.StartsWith(BatesPrefix) == true) page.HeaderRight = "";
+            if (page.FooterLeft?.StartsWith(BatesPrefix) == true) page.FooterLeft = "";
+            if (page.FooterCenter?.StartsWith(BatesPrefix) == true) page.FooterCenter = "";
+            if (page.FooterRight?.StartsWith(BatesPrefix) == true) page.FooterRight = "";
+
+            var existing = page.Elements.OfType<TextElementViewModel>().Where(e => e.Text.StartsWith(BatesPrefix) || e.DisplayName.Contains("Bates")).ToList();
+            foreach (var el in existing)
+            {
+                page.RemoveElement(el);
+                removed++;
+            }
+        }
+        ShowToast($"Removed {removed} Bates stamps from document", "DeleteOutline");
+    }
+
+    // --- DOCUMENT COMPARISON DIFF COMMANDS ---
+
+    [RelayCommand]
+    public void OpenCompareDialog()
+    {
+        var compareService = new DocumentCompareService();
+        var currentDoc = ToDocumentModel();
+        var templateDoc = _templateService.CreateAnnualReportTemplate(); // Compare against standard baseline
+        ActiveComparisonReport = compareService.CompareDocuments(templateDoc, currentDoc);
+        IsCompareDialogOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseCompareDialog()
+    {
+        IsCompareDialogOpen = false;
+    }
+
+    // --- IN-CANVAS FIND & REPLACE COMMANDS ---
+
+    [RelayCommand]
+    public void OpenFindReplace()
+    {
+        IsFindReplaceOpen = true;
+        if (!string.IsNullOrWhiteSpace(FindQuery))
+        {
+            FindNext();
+        }
+    }
+
+    [RelayCommand]
+    public void CloseFindReplace()
+    {
+        IsFindReplaceOpen = false;
+    }
+
+    [RelayCommand]
+    public void FindNext()
+    {
+        if (string.IsNullOrWhiteSpace(FindQuery) || Pages.Count == 0) return;
+
+        var comparison = FindMatchCase ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+        int totalMatches = 0;
+        bool found = false;
+
+        foreach (var page in Pages)
+        {
+            var textElements = page.Elements.OfType<TextElementViewModel>().ToList();
+            foreach (var el in textElements)
+            {
+                if (el.Text.Contains(FindQuery, comparison))
+                {
+                    totalMatches++;
+                    if (!found)
+                    {
+                        SelectPage(page);
+                        page.SelectElement(el);
+                        found = true;
+                    }
+                }
+            }
+        }
+
+        FindMatchesCount = totalMatches;
+        if (totalMatches > 0)
+        {
+            ShowToast($"Found {totalMatches} match(es) for \"{FindQuery}\"", "Magnify");
+        }
+        else
+        {
+            ShowToast($"No matches found for \"{FindQuery}\"", "InformationOutline");
+        }
+    }
+
+    [RelayCommand]
+    public void FindPrevious()
+    {
+        FindNext();
+    }
+
+    [RelayCommand]
+    public void ReplaceNext()
+    {
+        if (CurrentPage?.SelectedElement is TextElementViewModel txt && !string.IsNullOrWhiteSpace(FindQuery))
+        {
+            var comparison = FindMatchCase ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+            if (txt.Text.Contains(FindQuery, comparison))
+            {
+                txt.Text = txt.Text.Replace(FindQuery, ReplaceQuery ?? "", comparison);
+                ShowToast("Replaced occurrence", "FindReplace");
+                FindNext();
+            }
+        }
+        else
+        {
+            FindNext();
+        }
+    }
+
+    [RelayCommand]
+    public void ReplaceAll()
+    {
+        if (string.IsNullOrWhiteSpace(FindQuery)) return;
+
+        var comparison = FindMatchCase ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+        int replacements = 0;
+
+        foreach (var page in Pages)
+        {
+            var textElements = page.Elements.OfType<TextElementViewModel>().ToList();
+            foreach (var el in textElements)
+            {
+                if (el.Text.Contains(FindQuery, comparison))
+                {
+                    el.Text = el.Text.Replace(FindQuery, ReplaceQuery ?? "", comparison);
+                    replacements++;
+                }
+            }
+        }
+
+        ShowToast($"Replaced {replacements} occurrences with \"{ReplaceQuery}\"", "FindReplace");
+        FindMatchesCount = 0;
+    }
+
+    // --- MEASUREMENT & ACROBAT ANNOTATION COMMANDS ---
+
+    [RelayCommand]
+    public void AddMeasurementElement()
+    {
+        if (CurrentPage == null) return;
+
+        var measureEl = new MeasurementElementViewModel
+        {
+            X = 140,
+            Y = 220,
+            Width = 240,
+            Height = 36,
+            Unit = RulerUnit,
+            StrokeColorHex = "#DC2626",
+            StrokeThickness = 1.5,
+            FontSize = 10
+        };
+
+        AddElementWithUndo(measureEl, "Added Measurement Dimension");
+    }
+
+    [RelayCommand]
+    public void AddCalloutElement()
+    {
+        if (CurrentPage == null) return;
+
+        var callout = new ShapeElementViewModel
+        {
+            X = 140,
+            Y = 180,
+            Width = 220,
+            Height = 80,
+            ShapeType = ShapeType.Callout,
+            FillColorHex = "#EFF6FF",
+            StrokeColorHex = "#0F6CBD",
+            StrokeThickness = 1.5,
+            Label = "Important: Review Section",
+            LabelFontSize = 11,
+            LabelColorHex = "#0F6CBD"
+        };
+
+        AddElementWithUndo(callout, "Added Callout Note");
+    }
+
+    [RelayCommand]
+    public void AddRevisionCloudElement()
+    {
+        if (CurrentPage == null) return;
+
+        var cloud = new ShapeElementViewModel
+        {
+            X = 120,
+            Y = 160,
+            Width = 260,
+            Height = 140,
+            ShapeType = ShapeType.RevisionCloud,
+            FillColorHex = "#FEF2F2",
+            StrokeColorHex = "#DC2626",
+            StrokeThickness = 2.0,
+            Opacity = 0.85
+        };
+
+        AddElementWithUndo(cloud, "Added Revision Cloud Markup");
+    }
+
+    // --- RULERS, PRESENTATION & THEME COMMANDS ---
+
+    [RelayCommand]
+    public void ToggleRulers()
+    {
+        ShowRulers = !ShowRulers;
+        ShowToast(ShowRulers ? "Canvas Rulers Visible" : "Canvas Rulers Hidden", "Ruler");
+    }
+
+    [RelayCommand]
+    public void SetRulerUnit(string unitStr)
+    {
+        if (Enum.TryParse<RulerUnit>(unitStr, true, out var unit))
+        {
+            RulerUnit = unit;
+            ShowToast($"Ruler Units: {unit}", "RulerSquare");
+        }
+    }
+
+    [RelayCommand]
+    public void TogglePresentationMode()
+    {
+        IsPresentationMode = !IsPresentationMode;
+        ShowToast(IsPresentationMode ? "Entered Full-Screen Presentation Mode (Esc to Exit)" : "Exited Presentation Mode", "Presentation");
+    }
+
+    [RelayCommand]
+    public void ToggleTheme()
+    {
+        IsDarkMode = !IsDarkMode;
+        ShowToast(IsDarkMode ? "Switched to Fluent Dark Studio" : "Switched to Fluent Light Studio", "ThemeLightDark");
     }
 }

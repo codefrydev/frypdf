@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.FindReplaceBarView"
+             x:DataType="vm:MainViewModel">
+
+    <Border Classes="glass-hud" Width="360" CornerRadius="8" BoxShadow="0 8 24 #30000000">
+        <StackPanel Spacing="6">
+            <!-- Find Row -->
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="4">
+                <TextBox Grid.Column="0" Text="{Binding FindQuery, Mode=TwoWay}"
+                         Height="28" FontSize="11.5"
+                         PlaceholderText="Find in document..."
+                         VerticalContentAlignment="Center"
+                         Padding="6,2" />
+
+                <!-- Match count badge -->
+                <Border Grid.Column="1" Background="{StaticResource WinHoverBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,2" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding FindMatchesCount, StringFormat='{}{0} found'}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinMutedBrush}" />
+                </Border>
+
+                <Button Grid.Column="2" Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FindPreviousCommand}" ToolTip.Tip="Find Previous (Shift+Enter)">
+                    <materialIcons:MaterialIcon Kind="ChevronUp" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                </Button>
+
+                <Button Grid.Column="3" Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FindNextCommand}" ToolTip.Tip="Find Next (Enter)">
+                    <materialIcons:MaterialIcon Kind="ChevronDown" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                </Button>
+
+                <Button Grid.Column="4" Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding CloseFindReplaceCommand}" ToolTip.Tip="Close (Esc)">
+                    <materialIcons:MaterialIcon Kind="Close" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                </Button>
+            </Grid>
+
+            <!-- Replace Row -->
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
+                <TextBox Grid.Column="0" Text="{Binding ReplaceQuery, Mode=TwoWay}"
+                         Height="28" FontSize="11.5"
+                         PlaceholderText="Replace with..."
+                         VerticalContentAlignment="Center"
+                         Padding="6,2" />
+
+                <Button Grid.Column="1" Classes="secondary-btn" Height="28" Padding="8,2" Command="{Binding ReplaceNextCommand}" ToolTip.Tip="Replace Next Match">
+                    <TextBlock Text="Replace" FontSize="11" />
+                </Button>
+
+                <Button Grid.Column="2" Classes="secondary-btn" Height="28" Padding="8,2" Command="{Binding ReplaceAllCommand}" ToolTip.Tip="Replace All Matches in Document">
+                    <TextBlock Text="Replace All" FontSize="11" />
+                </Button>
+            </Grid>
+
+            <!-- Options Row -->
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <CheckBox IsChecked="{Binding FindMatchCase, Mode=TwoWay}">
+                    <TextBlock Text="Match Case" FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" />
+                </CheckBox>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+
+</UserControl>

@@ -226,11 +226,72 @@
         <Setter Property="Padding" Value="8,4" />
     </Style>
 
+    <!-- Sleek Compact NumericUpDown & ButtonSpinner Styling (Adobe Pro & Studio Grade) -->
     <Style Selector="NumericUpDown">
         <Setter Property="CornerRadius" Value="6" />
         <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
         <Setter Property="MinHeight" Value="28" />
-        <Setter Property="Padding" Value="6,2" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Padding" Value="6,1,2,1" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+
+    <Style Selector="NumericUpDown /template/ TextBox#PART_TextBox">
+        <Setter Property="MinHeight" Value="26" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Padding" Value="4,1" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="11.5" />
+    </Style>
+
+    <Style Selector="NumericUpDown /template/ ButtonSpinner">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+
+    <Style Selector="ButtonSpinner /template/ RepeatButton">
+        <Setter Property="MinWidth" Value="16" />
+        <Setter Property="Width" Value="16" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="ButtonSpinner /template/ RepeatButton:pointerover">
+        <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
+    </Style>
+
+    <!-- Input Prefix Badge (e.g., [X], [Y], [W], [H], [∠]) -->
+    <Style Selector="Border.input-badge">
+        <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1,1,0,1" />
+        <Setter Property="CornerRadius" Value="5,0,0,5" />
+        <Setter Property="Width" Value="24" />
+        <Setter Property="Height" Value="28" />
+    </Style>
+
+    <Style Selector="TextBlock.input-badge-text">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource WinMutedBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Floating Glass HUD Bar -->
+    <Style Selector="Border.glass-hud">
+        <Setter Property="Background" Value="#F8FAFC" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BoxShadow" Value="0 8 20 #20000000" />
+        <Setter Property="Padding" Value="8,6" />
     </Style>
 
     <!-- Keyboard Key Cap / Badge Style -->

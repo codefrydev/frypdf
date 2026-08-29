@@ -151,6 +151,87 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _customStampColorHex = "#0F6CBD";
 
+    // Bates Numbering Studio
+    [ObservableProperty]
+    private bool _isBatesNumberingDialogOpen;
+
+    [ObservableProperty]
+    private string _batesPrefix = "CONF-BATES-";
+
+    [ObservableProperty]
+    private string _batesSuffix = "";
+
+    [ObservableProperty]
+    private int _batesStartingNumber = 1;
+
+    [ObservableProperty]
+    private int _batesNumberOfDigits = 6;
+
+    [ObservableProperty]
+    private BatesPosition _batesPosition = BatesPosition.BottomLeft;
+
+    [ObservableProperty]
+    private string _batesFontColorHex = "#0F172A";
+
+    [ObservableProperty]
+    private double _batesFontSize = 9.0;
+
+    // Organize Pages: Split & Extract Studio
+    [ObservableProperty]
+    private bool _isSplitExtractDialogOpen;
+
+    [ObservableProperty]
+    private SplitExtractMode _splitExtractMode = SplitExtractMode.SplitEveryNPages;
+
+    [ObservableProperty]
+    private int _splitPageInterval = 1;
+
+    [ObservableProperty]
+    private string _splitPageRanges = "1-2";
+
+    // Document Comparison Diff Studio
+    [ObservableProperty]
+    private bool _isCompareDialogOpen;
+
+    [ObservableProperty]
+    private DocumentComparisonReport? _activeComparisonReport;
+
+    // In-Canvas Interactive Find & Replace
+    [ObservableProperty]
+    private bool _isFindReplaceOpen;
+
+    [ObservableProperty]
+    private string _findQuery = "";
+
+    [ObservableProperty]
+    private string _replaceQuery = "";
+
+    [ObservableProperty]
+    private bool _findMatchCase;
+
+    [ObservableProperty]
+    private int _findMatchesCount;
+
+    // Canvas Rulers & Measure Tool
+    [ObservableProperty]
+    private bool _showRulers = true;
+
+    [ObservableProperty]
+    private RulerUnit _rulerUnit = RulerUnit.Points;
+
+    [ObservableProperty]
+    private double _cursorCanvasX;
+
+    [ObservableProperty]
+    private double _cursorCanvasY;
+
+    // Presentation / Read Mode & Theme
+    [ObservableProperty]
+    private bool _isPresentationMode;
+
+    [ObservableProperty]
+    private bool _isDarkMode;
+
     // Collections
     public ObservableCollection<PageViewModel> Pages { get; } = new();
     public ObservableCollection<OutlineItem> OutlineItems { get; } = new();
@@ -343,6 +424,7 @@ public partial class MainViewModel : ViewModelBase
                 ElementKind.Redaction => new RedactionElementViewModel(),
                 ElementKind.Ink => new InkElementViewModel(),
                 ElementKind.StickyNote => new StickyNoteElementViewModel(),
+                ElementKind.Measurement => new MeasurementElementViewModel(),
                 _ => new TextElementViewModel()
             };
 
@@ -378,6 +460,7 @@ public partial class MainViewModel : ViewModelBase
                 ElementKind.Redaction => new RedactionElementViewModel(),
                 ElementKind.Ink => new InkElementViewModel(),
                 ElementKind.StickyNote => new StickyNoteElementViewModel(),
+                ElementKind.Measurement => new MeasurementElementViewModel(),
                 _ => new TextElementViewModel()
             };
 

@@ -323,7 +323,7 @@
                                         </Button>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="2">
-                                        <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignTopCommand}" ToolTip.Tip="Align Page Top">
+                                        <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignTopCommand}" ToolTip.Tip="Align Page Top Margin">
                                             <materialIcons:MaterialIcon Kind="AlignVerticalTop" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignMiddleCommand}" ToolTip.Tip="Center Vertically">
@@ -339,6 +339,27 @@
                                 </StackPanel>
                                 <TextBlock Grid.Row="1" Text="Align &amp; Distribute" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
+
+                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+
+                            <!-- Search & Measure Group -->
+                            <Grid RowDefinitions="*,Auto">
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Classes="tool-btn" Command="{Binding OpenFindReplaceCommand}" ToolTip.Tip="Interactive Find &amp; Replace (⌘F / Ctrl+F)">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="FindReplace" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Find &amp; Replace" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddMeasurementElementCommand}" ToolTip.Tip="Add Dimension Measurement Tool">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="RulerSquare" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Measure" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock Grid.Row="1" Text="Search &amp; Measure" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                            </Grid>
                         </StackPanel>
 
                         <!-- ================= TAB: COMMENT (Review & Annotations) ================= -->
@@ -352,6 +373,24 @@
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="NoteTextOutline" Width="20" Height="20" Foreground="#D97706" HorizontalAlignment="Center" />
                                             <TextBlock Text="Sticky Note" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddCalloutElementCommand}" ToolTip.Tip="Insert Callout Markup Note">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="ChatAlertOutline" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Callout" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddRevisionCloudElementCommand}" ToolTip.Tip="Insert Revision Cloud Perimeter">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="CloudOutline" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Rev Cloud" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddMeasurementElementCommand}" ToolTip.Tip="Insert Dimension Measurement">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="RulerSquare" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Measure" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddInkElementCommand}" CommandParameter="true" ToolTip.Tip="Highlighter Stroke (H)">
@@ -579,6 +618,24 @@
                                             <TextBlock Text="Rotate 90°" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
+                                    <Button Classes="tool-btn" Command="{Binding BatchRotatePagesCommand}" CommandParameter="all" ToolTip.Tip="Rotate All Pages 90° CW">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="Rotate3dVariant" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Rotate All" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding MovePageUpCommand}" ToolTip.Tip="Move Active Page Up">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="ArrowUpBold" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Move Up" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding MovePageDownCommand}" ToolTip.Tip="Move Active Page Down">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="ArrowDownBold" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Move Down" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
                                     <Button Classes="tool-btn" Command="{Binding DeleteCurrentPageCommand}" ToolTip.Tip="Delete Current Page">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="DeleteOutline" Width="20" Height="20" Foreground="{StaticResource WinDangerBrush}" HorizontalAlignment="Center" />
@@ -587,6 +644,21 @@
                                     </Button>
                                 </StackPanel>
                                 <TextBlock Grid.Row="1" Text="Page Operations" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                            </Grid>
+
+                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+
+                            <!-- Split & Extract Tools -->
+                            <Grid RowDefinitions="*,Auto">
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Classes="tool-btn" Command="{Binding OpenSplitExtractDialogCommand}" ToolTip.Tip="Split / Extract Document Pages">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="CallSplit" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Split / Extract" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock Grid.Row="1" Text="Partition" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
                             <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
@@ -657,10 +729,10 @@
                                             <TextBlock Text="Burn In Redactions" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Classes="tool-btn" Command="{Binding ApplyBatesNumberingCommand}" ToolTip.Tip="Apply Legal Bates Numbering">
+                                    <Button Classes="tool-btn" Command="{Binding OpenBatesNumberingDialogCommand}" ToolTip.Tip="Legal Bates Numbering Studio">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Numeric" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Bates Stamp" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Bates Studio" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
@@ -681,6 +753,12 @@
                                             <TextBlock Text="Preflight Audit" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
+                                    <Button Classes="tool-btn" Command="{Binding OpenCompareDialogCommand}" ToolTip.Tip="Document Comparison &amp; Visual Diff Matrix">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="FileCompare" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Compare Diff" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
                                     <Button Classes="tool-btn" Command="{Binding ExportPreflightReportCommand}" ToolTip.Tip="Export Preflight Report">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="DownloadOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
@@ -688,7 +766,7 @@
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Compliance" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Compliance &amp; Diff" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
                             <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
@@ -696,6 +774,12 @@
                             <!-- Canvas Guides & Grid -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Classes="tool-btn" Command="{Binding ToggleRulersCommand}" ToolTip.Tip="Toggle Canvas Rulers (⌘R / Ctrl+R)">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="Ruler" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Rulers" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
                                     <Button Classes="tool-btn" Command="{Binding ToggleGridCommand}" ToolTip.Tip="Toggle Visual Grid Dots">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Grid" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
@@ -710,6 +794,27 @@
                                     </Button>
                                 </StackPanel>
                                 <TextBlock Grid.Row="1" Text="Canvas Guides" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                            </Grid>
+
+                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+
+                            <!-- Presentation & Workspace -->
+                            <Grid RowDefinitions="*,Auto">
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Classes="tool-btn" Command="{Binding TogglePresentationModeCommand}" ToolTip.Tip="Full-Screen Read / Presentation Mode (F5 / F11)">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="Presentation" Width="20" Height="20" Foreground="#7C3AED" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Present" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding ToggleThemeCommand}" ToolTip.Tip="Toggle Dark / Light Workspace Theme">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="ThemeLightDark" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Theme" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock Grid.Row="1" Text="View Mode" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 

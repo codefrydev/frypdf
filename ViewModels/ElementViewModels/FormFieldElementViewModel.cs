@@ -53,6 +53,19 @@ public partial class FormFieldElementViewModel : ElementViewModelBase
     [ObservableProperty]
     private double _fontSize = 12;
 
+    // Acrobat Form Calculations & Action Buttons
+    [ObservableProperty]
+    private CalculationFormula _calculationFormula = CalculationFormula.None;
+
+    [ObservableProperty]
+    private string _calculationSourceFields = "";
+
+    [ObservableProperty]
+    private FormButtonAction _buttonAction = FormButtonAction.SubmitForm;
+
+    [ObservableProperty]
+    private string _actionTarget = "";
+
     public ObservableCollection<string> Options { get; } = new();
 
     public override ElementKind Kind => ElementKind.FormField;
@@ -115,6 +128,10 @@ public partial class FormFieldElementViewModel : ElementViewModelBase
             BorderColorHex = BorderColorHex,
             BackgroundColorHex = BackgroundColorHex,
             FontSize = FontSize,
+            CalculationFormula = CalculationFormula,
+            CalculationSourceFields = CalculationSourceFields,
+            ButtonAction = ButtonAction,
+            ActionTarget = ActionTarget,
             Options = new System.Collections.Generic.List<string>(Options)
         };
         return model;
@@ -149,6 +166,10 @@ public partial class FormFieldElementViewModel : ElementViewModelBase
             BorderColorHex = form.BorderColorHex;
             BackgroundColorHex = form.BackgroundColorHex;
             FontSize = form.FontSize;
+            CalculationFormula = form.CalculationFormula;
+            CalculationSourceFields = form.CalculationSourceFields;
+            ButtonAction = form.ButtonAction;
+            ActionTarget = form.ActionTarget;
 
             Options.Clear();
             foreach (var opt in form.Options) Options.Add(opt);

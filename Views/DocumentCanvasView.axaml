@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:views="using:PdfEditorApp.Views"
              xmlns:elvm="using:PdfEditorApp.ViewModels.ElementViewModels"
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
@@ -42,15 +43,9 @@
             <MenuItem Header="Send to Back" InputGesture="Ctrl+OemOpenBrackets" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.SendToBackCommand}">
                 <MenuItem.Icon><materialIcons:MaterialIcon Kind="ArrangeSendToBack" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Align">
-                <MenuItem.Icon><materialIcons:MaterialIcon Kind="FormatAlignLeft" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
-                <MenuItem Header="Align Left" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.AlignLeftCommand}" />
-                <MenuItem Header="Align Center" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.AlignCenterCommand}" />
-                <MenuItem Header="Align Right" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.AlignRightCommand}" />
-                <Separator />
-                <MenuItem Header="Align Top" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.AlignTopCommand}" />
-                <MenuItem Header="Align Middle" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.AlignMiddleCommand}" />
-                <MenuItem Header="Align Bottom" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.AlignBottomCommand}" />
+            <Separator />
+            <MenuItem Header="Lock / Unlock" InputGesture="Ctrl+L" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.ToggleLockCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="LockOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
             </MenuItem>
             <Separator />
             <MenuItem Header="Delete" InputGesture="Delete" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.DeleteSelectedElementCommand}">
@@ -59,50 +54,84 @@
         </ContextMenu>
     </UserControl.Resources>
 
-    <!-- Canvas Scrollable Workspace -->
-    <ScrollViewer x:Name="CanvasScrollViewer"
-                  Background="#ECEFF3"
-                  HorizontalScrollBarVisibility="Auto"
-                  VerticalScrollBarVisibility="Auto"
-                  PointerPressed="OnCanvasBackgroundPointerPressed">
+    <!-- Outer Grid: Rulers + Canvas Viewport -->
+    <Grid RowDefinitions="Auto,*" ColumnDefinitions="Auto,*">
 
-        <!-- Canvas Background Context Menu -->
-        <ScrollViewer.ContextMenu>
-            <ContextMenu>
-                <MenuItem Header="Paste" InputGesture="Ctrl+V" Command="{Binding PasteCommand}">
-                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="ContentPaste" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="Insert Text" InputGesture="T" Command="{Binding AddTextElementCommand}">
-                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="FormatColorText" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Insert Section Heading" InputGesture="H" Command="{Binding AddHeadingElementCommand}">
-                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="FormatHeader1" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Insert Rectangle Shape" InputGesture="R" Command="{Binding AddShapeElementCommand}" CommandParameter="Rectangle">
-                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="SquareOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Insert Sticky Note" InputGesture="N" Command="{Binding AddStickyNoteElementCommand}">
-                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="NoteTextOutline" Width="16" Height="16" Foreground="#D97706" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Insert Image" Command="{Binding AddImageElementCommand}">
-                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="ImageOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="Fit to Page" InputGesture="Ctrl+D9" Command="{Binding FitToPageCommand}">
-                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="FitToPageOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Zoom In" InputGesture="Ctrl+OemPlus" Command="{Binding ZoomInCommand}">
-                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="MagnifyPlusOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Zoom Out" InputGesture="Ctrl+OemMinus" Command="{Binding ZoomOutCommand}">
-                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="MagnifyMinusOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Reset Zoom (100%)" InputGesture="Ctrl+D0" Command="{Binding ResetZoomCommand}">
-                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="Magnify" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
-                </MenuItem>
-            </ContextMenu>
-        </ScrollViewer.ContextMenu>
+        <!-- Ruler Origin Corner -->
+        <Border Grid.Row="0" Grid.Column="0" Width="20" Height="20" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,0,1,1" IsVisible="{Binding ShowRulers}">
+            <materialIcons:MaterialIcon Kind="RulerSquare" Width="11" Height="11" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+
+        <!-- Top Horizontal Ruler -->
+        <views:CanvasRulerControl Grid.Row="0" Grid.Column="1" Height="20"
+                                  Orientation="Horizontal"
+                                  ZoomLevel="{Binding ZoomLevel}"
+                                  Unit="{Binding RulerUnit}"
+                                  CursorPosition="{Binding CursorCanvasX}"
+                                  PageOffset="36"
+                                  PageDimension="{Binding CurrentPage.Width, FallbackValue=800}"
+                                  IsVisible="{Binding ShowRulers}" />
+
+        <!-- Left Vertical Ruler -->
+        <views:CanvasRulerControl Grid.Row="1" Grid.Column="0" Width="20"
+                                  Orientation="Vertical"
+                                  ZoomLevel="{Binding ZoomLevel}"
+                                  Unit="{Binding RulerUnit}"
+                                  CursorPosition="{Binding CursorCanvasY}"
+                                  PageOffset="36"
+                                  PageDimension="{Binding CurrentPage.Height, FallbackValue=1131}"
+                                  IsVisible="{Binding ShowRulers}" />
+
+        <!-- Canvas Viewport with Overlays -->
+        <Grid Grid.Row="1" Grid.Column="1">
+            <!-- Canvas Scrollable Workspace -->
+            <ScrollViewer x:Name="CanvasScrollViewer"
+                          Background="#ECEFF3"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto"
+                          PointerPressed="OnCanvasBackgroundPointerPressed"
+                          PointerMoved="OnCanvasPointerMoved">
+
+                <!-- Canvas Background Context Menu -->
+                <ScrollViewer.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Paste" InputGesture="Ctrl+V" Command="{Binding PasteCommand}">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="ContentPaste" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
+                        </MenuItem>
+                        <Separator />
+                        <MenuItem Header="Insert Text" InputGesture="T" Command="{Binding AddTextElementCommand}">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="FormatColorText" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Insert Section Heading" InputGesture="H" Command="{Binding AddHeadingElementCommand}">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="FormatHeader1" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Insert Rectangle Shape" InputGesture="R" Command="{Binding AddShapeElementCommand}" CommandParameter="Rectangle">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="SquareOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Insert Sticky Note" InputGesture="N" Command="{Binding AddStickyNoteElementCommand}">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="NoteTextOutline" Width="16" Height="16" Foreground="#D97706" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Insert Dimension Measurement" Command="{Binding AddMeasurementElementCommand}">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="RulerSquare" Width="16" Height="16" Foreground="#DC2626" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Insert Image" Command="{Binding AddImageElementCommand}">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="ImageOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                        </MenuItem>
+                        <Separator />
+                        <MenuItem Header="Fit to Page" InputGesture="Ctrl+D9" Command="{Binding FitToPageCommand}">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="FitToPageOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Zoom In" InputGesture="Ctrl+OemPlus" Command="{Binding ZoomInCommand}">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="MagnifyPlusOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Zoom Out" InputGesture="Ctrl+OemMinus" Command="{Binding ZoomOutCommand}">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="MagnifyMinusOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Reset Zoom (100%)" InputGesture="Ctrl+D0" Command="{Binding ResetZoomCommand}">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="Magnify" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </ScrollViewer.ContextMenu>
 
         <Grid HorizontalAlignment="Center" VerticalAlignment="Top" Margin="36">
             <LayoutTransformControl>
@@ -932,6 +961,34 @@
                                     </Grid>
                                 </DataTemplate>
 
+                                <!-- 14. MEASUREMENT DIMENSION ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:MeasurementElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}" PointerPressed="OnElementPointerPressed">
+                                        <!-- Vector Dimension Graphic with Terminal Ticks -->
+                                        <Canvas Width="{Binding Width}" Height="{Binding Height}">
+                                            <!-- Left Tick -->
+                                            <Line StartPoint="0,4" EndPoint="0,28" Stroke="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}" StrokeThickness="{Binding StrokeThickness}" />
+                                            <!-- Right Tick -->
+                                            <Line StartPoint="{Binding Width, StringFormat='{}{0},4'}" EndPoint="{Binding Width, StringFormat='{}{0},28'}" Stroke="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}" StrokeThickness="{Binding StrokeThickness}" />
+                                            <!-- Horizontal Dimension Axis -->
+                                            <Line StartPoint="0,16" EndPoint="{Binding Width, StringFormat='{}{0},16'}" Stroke="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}" StrokeThickness="{Binding StrokeThickness}" />
+                                        </Canvas>
+
+                                        <!-- Dimension Readout Badge -->
+                                        <Border Background="White" BorderBrush="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}" BorderThickness="1" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding FormattedDistance}" FontSize="{Binding FontSize}" FontWeight="Bold" Foreground="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}" />
+                                        </Border>
+
+                                        <!-- Selection Adorner -->
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+                                            <Border Tag="right" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-4,0" Cursor="SizeWestEast"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
                             </ItemsControl.DataTemplates>
                         </ItemsControl>
 
@@ -966,4 +1023,9 @@
         </Grid>
     </ScrollViewer>
 
+    <!-- Floating In-Canvas Find & Replace HUD Bar -->
+    <views:FindReplaceBarView HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,16,24,0" IsVisible="{Binding IsFindReplaceOpen}" />
+
+    </Grid>
+</Grid>
 </UserControl>

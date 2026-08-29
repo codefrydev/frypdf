@@ -65,6 +65,9 @@ public partial class InspectorViewModel : ViewModelBase
     private bool _isStickyNoteElement;
 
     [ObservableProperty]
+    private bool _isMeasurementElement;
+
+    [ObservableProperty]
     private string _selectedFontFamily = "Arial";
 
     partial void OnSelectedFontFamilyChanged(string value)
@@ -155,6 +158,13 @@ public partial class InspectorViewModel : ViewModelBase
         new ColorSwatchItem { Name = "White", Hex = "#FFFFFF" }
     };
 
+    public ObservableCollection<RulerUnit> MeasurementUnits { get; } = new()
+    {
+        RulerUnit.Points,
+        RulerUnit.Inches,
+        RulerUnit.Millimeters
+    };
+
     public TextElementViewModel? TextElement => SelectedElement as TextElementViewModel;
     public ShapeElementViewModel? ShapeElement => SelectedElement as ShapeElementViewModel;
     public ImageElementViewModel? ImageElement => SelectedElement as ImageElementViewModel;
@@ -168,6 +178,7 @@ public partial class InspectorViewModel : ViewModelBase
     public RedactionElementViewModel? RedactionElement => SelectedElement as RedactionElementViewModel;
     public InkElementViewModel? InkElement => SelectedElement as InkElementViewModel;
     public StickyNoteElementViewModel? StickyNoteElement => SelectedElement as StickyNoteElementViewModel;
+    public MeasurementElementViewModel? MeasurementElement => SelectedElement as MeasurementElementViewModel;
 
     public string ActiveCategoryName => SelectedElement != null ? SelectedElement.Kind.ToString() : "Document";
     public ObservableCollection<ColorSwatchItem> ColorSwatches => Swatches;
@@ -190,6 +201,7 @@ public partial class InspectorViewModel : ViewModelBase
         IsBarcodeElement = element is BarcodeElementViewModel;
         IsRedactionElement = element is RedactionElementViewModel;
         IsStickyNoteElement = element is StickyNoteElementViewModel;
+        IsMeasurementElement = element is MeasurementElementViewModel;
 
         if (element is TextElementViewModel textVm)
         {
@@ -1050,6 +1062,19 @@ public partial class InspectorViewModel : ViewModelBase
             string oldHex = el.BarColorHex;
             el.BarColorHex = hex;
             UndoRedo?.RecordAction("Change Barcode Color", () => el.BarColorHex = oldHex, () => el.BarColorHex = hex);
+        }
+    }
+
+    [RelayCommand]
+    public void SetFormFieldCalculation(string calcStr)
+    {
+        if (FormFieldElement != null && Enum.TryParse<CalculationFormula>(calcStr, true, out var calc))
+        {
+            var el = FormFieldElement;
+            var oldCalc = el.CalculationFormula;
+            el.CalculationFormula = calc;
+            SelectedPage?.RecalculateFormFields();
+            UndoRedo?.RecordAction($"Set Formula to {calc}", () => { el.CalculationFormula = oldCalc; SelectedPage?.RecalculateFormFields(); }, () => { el.CalculationFormula = calc; SelectedPage?.RecalculateFormFields(); });
         }
     }
 }

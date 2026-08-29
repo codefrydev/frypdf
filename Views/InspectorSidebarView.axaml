@@ -630,6 +630,24 @@
                                 </CheckBox>
                             </Grid>
 
+                            <!-- Calculation Formula (Acrobat Feature) -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Field Calculation / Formula" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldCalculationCommand}" CommandParameter="None"><TextBlock Text="None" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldCalculationCommand}" CommandParameter="Sum"><TextBlock Text="Sum (+)" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldCalculationCommand}" CommandParameter="Average"><TextBlock Text="Avg" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldCalculationCommand}" CommandParameter="Product"><TextBlock Text="Product (×)" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldCalculationCommand}" CommandParameter="Min"><TextBlock Text="Min" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldCalculationCommand}" CommandParameter="Max"><TextBlock Text="Max" FontSize="10" /></Button>
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Calculation Source Fields (comma-separated)" Classes="inspector-label" />
+                                <TextBox Text="{Binding FormFieldElement.CalculationSourceFields, Mode=TwoWay}" Height="28" FontSize="11.5" PlaceholderText="e.g. subtotal, tax_rate" />
+                            </StackPanel>
+
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Border Color" Classes="inspector-label" />
                                 <ItemsControl ItemsSource="{Binding ColorSwatches}">
@@ -840,50 +858,117 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- 14. DIMENSIONS, POSITION & TRANSFORMS CARD (Visible for any selected element) -->
+                    <!-- 14. MEASUREMENT DIMENSION CARD (Visible when Measurement is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding MeasurementElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="RulerSquare" Width="16" Height="16" Foreground="{StaticResource WinDangerBrush}" />
+                                <TextBlock Text="Measurement &amp; Scale Annotation" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Custom Label (or auto distance)" Classes="inspector-label" />
+                                <TextBox Text="{Binding MeasurementElement.CustomLabel, Mode=TwoWay}" Height="28" FontSize="12" PlaceholderText="Auto-computed dimension..." />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,*">
+                                <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
+                                    <TextBlock Text="Dimension Units" Classes="inspector-label" />
+                                    <ComboBox ItemsSource="{Binding MeasurementUnits}"
+                                              SelectedItem="{Binding MeasurementElement.Unit, Mode=TwoWay}"
+                                              Height="28" FontSize="11.5" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
+                                    <TextBlock Text="Stroke Width (pt)" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding MeasurementElement.StrokeThickness, Mode=TwoWay}" Minimum="0.5" Maximum="10" Increment="0.5" Height="28" FontSize="11.5" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="8">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="14" Height="14" Foreground="{StaticResource WinDangerBrush}" />
+                                    <TextBlock Text="Calculated Dimension:" FontSize="11" Foreground="{StaticResource WinMutedBrush}" />
+                                    <TextBlock Text="{Binding MeasurementElement.FormattedDistance}" FontWeight="Bold" FontSize="11.5" Foreground="{StaticResource WinDangerBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 15. DIMENSIONS, POSITION & TRANSFORMS CARD (Visible for any selected element) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding HasSelectedElement}">
                         <StackPanel Spacing="10">
                             <!-- Card Title -->
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <materialIcons:MaterialIcon Kind="ArrowAll" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Position &amp; Geometry" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
-                            </StackPanel>
-
-                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" RowSpacing="6">
-                                <StackPanel Grid.Row="0" Grid.Column="0" Spacing="3" Margin="0,0,4,0">
-                                    <TextBlock Text="X (pt)" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding SelectedElement.X, Mode=TwoWay}" Minimum="0" Maximum="2000" Height="30" FontSize="12" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="ArrowAll" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                    <TextBlock Text="Position &amp; Geometry" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
+                                <Border Grid.Column="1" Background="{StaticResource WinHoverBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1">
+                                    <TextBlock Text="pt" FontSize="9.5" FontWeight="SemiBold" Foreground="{StaticResource WinMutedBrush}" />
+                                </Border>
+                            </Grid>
 
-                                <StackPanel Grid.Row="0" Grid.Column="1" Spacing="3" Margin="4,0,0,0">
-                                    <TextBlock Text="Y (pt)" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding SelectedElement.Y, Mode=TwoWay}" Minimum="0" Maximum="3000" Height="30" FontSize="12" />
-                                </StackPanel>
+                            <!-- X & Y Coords -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Grid Grid.Column="0" ColumnDefinitions="Auto,*">
+                                    <Border Classes="input-badge">
+                                        <TextBlock Text="X" Classes="input-badge-text" />
+                                    </Border>
+                                    <NumericUpDown Grid.Column="1" Value="{Binding SelectedElement.X, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="2000" Increment="1" FormatString="0"
+                                                   HorizontalAlignment="Stretch" CornerRadius="0,5,5,0" />
+                                </Grid>
 
-                                <StackPanel Grid.Row="1" Grid.Column="0" Spacing="3" Margin="0,0,4,0">
-                                    <TextBlock Text="Width (pt)" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding SelectedElement.Width, Mode=TwoWay}" Minimum="10" Maximum="2000" Height="30" FontSize="12" />
-                                </StackPanel>
+                                <Grid Grid.Column="1" ColumnDefinitions="Auto,*">
+                                    <Border Classes="input-badge">
+                                        <TextBlock Text="Y" Classes="input-badge-text" />
+                                    </Border>
+                                    <NumericUpDown Grid.Column="1" Value="{Binding SelectedElement.Y, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="3000" Increment="1" FormatString="0"
+                                                   HorizontalAlignment="Stretch" CornerRadius="0,5,5,0" />
+                                </Grid>
+                            </Grid>
 
-                                <StackPanel Grid.Row="1" Grid.Column="1" Spacing="3" Margin="4,0,0,0">
-                                    <TextBlock Text="Height (pt)" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding SelectedElement.Height, Mode=TwoWay}" Minimum="5" Maximum="3000" Height="30" FontSize="12" />
-                                </StackPanel>
+                            <!-- Width & Height -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Grid Grid.Column="0" ColumnDefinitions="Auto,*">
+                                    <Border Classes="input-badge">
+                                        <TextBlock Text="W" Classes="input-badge-text" />
+                                    </Border>
+                                    <NumericUpDown Grid.Column="1" Value="{Binding SelectedElement.Width, Mode=TwoWay}"
+                                                   Minimum="10" Maximum="2000" Increment="1" FormatString="0"
+                                                   HorizontalAlignment="Stretch" CornerRadius="0,5,5,0" />
+                                </Grid>
+
+                                <Grid Grid.Column="1" ColumnDefinitions="Auto,*">
+                                    <Border Classes="input-badge">
+                                        <TextBlock Text="H" Classes="input-badge-text" />
+                                    </Border>
+                                    <NumericUpDown Grid.Column="1" Value="{Binding SelectedElement.Height, Mode=TwoWay}"
+                                                   Minimum="5" Maximum="3000" Increment="1" FormatString="0"
+                                                   HorizontalAlignment="Stretch" CornerRadius="0,5,5,0" />
+                                </Grid>
                             </Grid>
 
                             <!-- Rotation & Opacity -->
-                            <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
-                                <StackPanel Grid.Column="0" Spacing="3">
-                                    <TextBlock Text="Rotation (°)" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding SelectedElement.Rotation, Mode=TwoWay}" Minimum="0" Maximum="360" Increment="15" Height="28" FontSize="12" />
-                                </StackPanel>
-                                <StackPanel Grid.Column="1" Spacing="3">
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Grid Grid.Column="0" ColumnDefinitions="Auto,*">
+                                    <Border Classes="input-badge">
+                                        <TextBlock Text="∠" Classes="input-badge-text" />
+                                    </Border>
+                                    <NumericUpDown Grid.Column="1" Value="{Binding SelectedElement.Rotation, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="360" Increment="15" FormatString="0°"
+                                                   HorizontalAlignment="Stretch" CornerRadius="0,5,5,0" />
+                                </Grid>
+
+                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                                     <Grid ColumnDefinitions="*,Auto">
-                                        <TextBlock Grid.Column="0" Text="Opacity" Classes="inspector-label" />
-                                        <TextBlock Grid.Column="1" Text="{Binding SelectedElement.Opacity, StringFormat='{}{0:P0}'}" FontSize="10" Foreground="{StaticResource WinMutedBrush}" />
+                                        <TextBlock Grid.Column="0" Text="Opacity" Classes="inspector-label" Margin="0" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedElement.Opacity, StringFormat='{}{0:P0}'}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinAccentBrush}" />
                                     </Grid>
-                                    <Slider Value="{Binding SelectedElement.Opacity, Mode=TwoWay}" Minimum="0.0" Maximum="1.0" Height="28" />
+                                    <Slider Value="{Binding SelectedElement.Opacity, Mode=TwoWay}" Minimum="0.0" Maximum="1.0" Height="20" Margin="0" />
                                 </StackPanel>
                             </Grid>
 

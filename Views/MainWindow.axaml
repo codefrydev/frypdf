@@ -302,6 +302,9 @@
         <dialogs:WatermarkManagerDialog IsVisible="{Binding IsWatermarkManagerOpen}" />
         <dialogs:SearchRedactDialog IsVisible="{Binding IsSearchRedactDialogOpen}" />
         <dialogs:CustomStampDialog IsVisible="{Binding IsCustomStampDialogOpen}" />
+        <dialogs:BatesNumberingDialog IsVisible="{Binding IsBatesNumberingDialogOpen}" />
+        <dialogs:SplitExtractDialog IsVisible="{Binding IsSplitExtractDialogOpen}" />
+        <dialogs:CompareDocumentsDialog IsVisible="{Binding IsCompareDialogOpen}" />
     </Grid>
 
 </Window>

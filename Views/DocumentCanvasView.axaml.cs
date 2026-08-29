@@ -207,6 +207,14 @@ public partial class DocumentCanvasView : UserControl
             return;
         }
 
+        if (PageElementsCanvas != null && ViewModel != null)
+        {
+            var pPos = e.GetPosition(PageElementsCanvas);
+            double z = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+            ViewModel.CursorCanvasX = Math.Max(0, pPos.X / z);
+            ViewModel.CursorCanvasY = Math.Max(0, pPos.Y / z);
+        }
+
         if (PageElementsCanvas == null || _draggedElement == null || ViewModel?.CurrentPage == null) return;
 
         var currentPos = e.GetPosition(PageElementsCanvas);
@@ -227,6 +235,11 @@ public partial class DocumentCanvasView : UserControl
             _draggedElement.MoveBy(deltaX, deltaY, ViewModel.CurrentPage.Width, ViewModel.CurrentPage.Height);
             _lastPointerPosition = currentPos;
         }
+    }
+
+    private void OnCanvasPointerMoved(object? sender, PointerEventArgs e)
+    {
+        // Handled by tunnel/bubble or direct event
     }
 
     private void OnGlobalPointerReleased(object? sender, PointerReleasedEventArgs e)

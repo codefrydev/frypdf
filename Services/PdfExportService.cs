@@ -431,6 +431,15 @@ internal class QuestPdfDocumentWrapper : IDocument
                     nCol.Item().PaddingTop(4).Text($"Status: {noteEl.Status}").FontSize(7.5f).Bold().FontColor("#B45309");
                 });
                 break;
+
+            case PdfMeasurementElement measEl:
+                col.Item().PaddingVertical(4).Row(mRow =>
+                {
+                    mRow.AutoItem().Text("|").FontSize(10).Bold().FontColor(measEl.StrokeColorHex);
+                    mRow.RelativeItem().BorderBottom((float)measEl.StrokeThickness).BorderColor(measEl.StrokeColorHex).PaddingBottom(2).AlignCenter().Text(measEl.GetFormattedDistance()).FontSize((float)measEl.FontSize).Bold().FontColor(measEl.StrokeColorHex);
+                    mRow.AutoItem().Text("|").FontSize(10).Bold().FontColor(measEl.StrokeColorHex);
+                });
+                break;
         }
     }
 }

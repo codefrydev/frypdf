@@ -1,0 +1,418 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:elvm="using:PdfEditorApp.ViewModels.ElementViewModels"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.DocumentCanvasView"
+             x:DataType="vm:MainViewModel">
+
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:TextAlignmentConverter x:Key="TextAlignmentConverter" />
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+        <converters:DoubleToThicknessConverter x:Key="DoubleToThickness" />
+        <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
+    </UserControl.Resources>
+
+    <!-- Canvas Scrollable Workspace -->
+    <ScrollViewer x:Name="CanvasScrollViewer"
+                  Background="#ECEFF3"
+                  HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Auto"
+                  PointerPressed="OnCanvasBackgroundPointerPressed">
+
+        <Grid HorizontalAlignment="Center" VerticalAlignment="Top" Margin="36">
+            <LayoutTransformControl>
+                <LayoutTransformControl.LayoutTransform>
+                    <ScaleTransform ScaleX="{Binding ZoomLevel}" ScaleY="{Binding ZoomLevel}" />
+                </LayoutTransformControl.LayoutTransform>
+
+                <!-- PDF Paper Sheet Container (A4 / Letter) -->
+                <Border Width="{Binding CurrentPage.Width, FallbackValue=800}"
+                        Height="{Binding CurrentPage.Height, FallbackValue=1131}"
+                        Background="White"
+                        CornerRadius="2"
+                        BoxShadow="0 6 24 #14000000, 0 1 4 #08000000, 0 0 1 #20000000"
+                        ClipToBounds="True">
+
+                    <!-- Document Sheet Layout -->
+                    <Grid Width="{Binding CurrentPage.Width, FallbackValue=800}"
+                          Height="{Binding CurrentPage.Height, FallbackValue=1131}">
+
+                        <!-- Elements Canvas ItemsControl -->
+                        <ItemsControl x:Name="PageElementsCanvas"
+                                      ItemsSource="{Binding CurrentPage.Elements}"
+                                      Width="{Binding CurrentPage.Width, FallbackValue=800}"
+                                      Height="{Binding CurrentPage.Height, FallbackValue=1131}">
+
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas Width="{Binding CurrentPage.Width, FallbackValue=800}"
+                                            Height="{Binding CurrentPage.Height, FallbackValue=1131}"
+                                            Background="White" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+
+                            <ItemsControl.ItemContainerTheme>
+                                <ControlTheme TargetType="ContentPresenter" x:DataType="elvm:ElementViewModelBase">
+                                    <Setter Property="Canvas.Left" Value="{Binding X}" />
+                                    <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                                    <Setter Property="Canvas.ZIndex" Value="{Binding ZIndex}" />
+                                </ControlTheme>
+                            </ItemsControl.ItemContainerTheme>
+
+                            <ItemsControl.DataTemplates>
+
+                                <!-- 1. TEXT ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:TextElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                        <!-- Visual Content Box -->
+                                        <Border Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="{Binding BorderThickness, Converter={StaticResource DoubleToThickness}}"
+                                                CornerRadius="{Binding CornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                                Padding="{Binding Padding, Converter={StaticResource DoubleToThickness}}"
+                                                PointerPressed="OnElementPointerPressed">
+
+                                            <!-- Normal Text View -->
+                                            <TextBlock Text="{Binding Text}"
+                                                       FontFamily="{Binding FontFamily}"
+                                                       FontSize="{Binding FontSize}"
+                                                       FontWeight="{Binding IsBold, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter=True, FallbackValue=Normal}"
+                                                       FontStyle="{Binding IsItalic, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter=True, FallbackValue=Normal}"
+                                                       Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                       TextAlignment="{Binding Alignment, Converter={StaticResource TextAlignmentConverter}}"
+                                                       TextWrapping="Wrap"
+                                                       IsVisible="{Binding !IsInEditMode}"
+                                                       DoubleTapped="OnTextElementDoubleTapped" />
+                                        </Border>
+
+                                        <!-- In-place Editable TextBox -->
+                                        <TextBox Text="{Binding Text, Mode=TwoWay}"
+                                                 FontFamily="{Binding FontFamily}"
+                                                 FontSize="{Binding FontSize}"
+                                                 Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                 AcceptsReturn="True"
+                                                 TextWrapping="Wrap"
+                                                 IsVisible="{Binding IsInEditMode}"
+                                                 LostFocus="OnTextBoxLostFocus" />
+
+                                        <!-- Selection Adorner & Resize Handles -->
+                                        <Grid IsVisible="{Binding IsSelected}" IsHitTestVisible="True">
+                                            <!-- Blue Bounding Box -->
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+
+                                            <!-- Floating Quick Toolbar above element -->
+                                            <Border Background="White"
+                                                    BorderBrush="{StaticResource WinBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="5"
+                                                    BoxShadow="0 2 10 #18000000"
+                                                    Padding="2"
+                                                    Height="28"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Top"
+                                                    Margin="0,-32,0,0">
+                                                <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                                    <Button Classes="mini-tool-btn" Width="22" Height="22"
+                                                            Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.ToggleBoldCommand}"
+                                                            ToolTip.Tip="Bold">
+                                                        <materialIcons:MaterialIcon Kind="FormatBold" Width="13" Height="13" Foreground="{StaticResource WinTextBrush}" />
+                                                    </Button>
+                                                    <Button Classes="mini-tool-btn" Width="22" Height="22"
+                                                            Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.ToggleItalicCommand}"
+                                                            ToolTip.Tip="Italic">
+                                                        <materialIcons:MaterialIcon Kind="FormatItalic" Width="13" Height="13" Foreground="{StaticResource WinTextBrush}" />
+                                                    </Button>
+                                                    <Rectangle Width="1" Height="14" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+                                                    <Button Classes="mini-tool-btn" Width="22" Height="22"
+                                                            Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.DeleteSelectedElementCommand}"
+                                                            ToolTip.Tip="Delete">
+                                                        <materialIcons:MaterialIcon Kind="DeleteOutline" Width="13" Height="13" Foreground="{StaticResource WinDangerBrush}" />
+                                                    </Button>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- 8 Resize Handles -->
+                                            <!-- Top Left -->
+                                            <Border Tag="topleft" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-4,-4,0,0" Cursor="TopLeftCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <!-- Top Center -->
+                                            <Border Tag="top" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-4,0,0" Cursor="TopSide"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <!-- Top Right -->
+                                            <Border Tag="topright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-4,-4,0" Cursor="TopRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <!-- Middle Left -->
+                                            <Border Tag="left" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-4,0,0,0" Cursor="LeftSide"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <!-- Middle Right -->
+                                            <Border Tag="right" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-4,0" Cursor="RightSide"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <!-- Bottom Left -->
+                                            <Border Tag="bottomleft" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-4,0,0,-4" Cursor="BottomLeftCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <!-- Bottom Center -->
+                                            <Border Tag="bottom" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-4" Cursor="BottomSide"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <!-- Bottom Right -->
+                                            <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!-- 2. SHAPE ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:ShapeElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                        <Border Background="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderBrush="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="{Binding StrokeThickness, Converter={StaticResource DoubleToThickness}}"
+                                                CornerRadius="{Binding CornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                                Padding="4"
+                                                PointerPressed="OnElementPointerPressed">
+                                            <TextBlock Text="{Binding Label}"
+                                                       FontSize="{Binding LabelFontSize}"
+                                                       Foreground="{Binding LabelColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                       FontWeight="Bold"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding Label, Converter={StaticResource NullToBooleanConverter}}" />
+                                        </Border>
+
+                                        <!-- Selection Adorner -->
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+                                            <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!-- 3. DIVIDER ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:DividerElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="16" PointerPressed="OnElementPointerPressed" Background="Transparent">
+                                        <Rectangle Height="{Binding Thickness}"
+                                                   Fill="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                   RadiusX="1" RadiusY="1"
+                                                   VerticalAlignment="Center" />
+                                        <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1" IsVisible="{Binding IsSelected}" IsHitTestVisible="False" />
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!-- 4. TABLE ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:TableElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                        <Border Background="White"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                ClipToBounds="True"
+                                                BoxShadow="0 1 4 #08000000"
+                                                PointerPressed="OnElementPointerPressed">
+                                            <Grid RowDefinitions="Auto,*">
+                                                <!-- Table Header -->
+                                                <Border Grid.Row="0"
+                                                        Background="{Binding HeaderBackgroundHex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Padding="10,8">
+                                                    <ItemsControl ItemsSource="{Binding Headers}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <UniformGrid Rows="1" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding}"
+                                                                           FontWeight="Bold"
+                                                                           FontSize="11.5"
+                                                                           Foreground="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).HeaderTextHex, Converter={StaticResource HexToBrushConverter}}" />
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </Border>
+
+                                                <!-- Table Rows -->
+                                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                                    <ItemsControl ItemsSource="{Binding Rows}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="elvm:TableRowItem">
+                                                                <Border BorderBrush="#F1F5F9" BorderThickness="0,0,0,1" Padding="10,6">
+                                                                    <ItemsControl ItemsSource="{Binding Cells}">
+                                                                        <ItemsControl.ItemsPanel>
+                                                                            <ItemsPanelTemplate>
+                                                                                <UniformGrid Rows="1" />
+                                                                            </ItemsPanelTemplate>
+                                                                        </ItemsControl.ItemsPanel>
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <TextBlock Text="{Binding}" FontSize="11" Foreground="#334155" />
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Selection Adorner -->
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+                                            <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!-- 5. CHART ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:ChartElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                        <Border Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                BoxShadow="0 1 4 #08000000"
+                                                Padding="14"
+                                                PointerPressed="OnElementPointerPressed">
+                                            <Grid RowDefinitions="Auto,*,Auto">
+                                                <!-- Title -->
+                                                <TextBlock Grid.Row="0" Text="{Binding Title}"
+                                                           FontSize="11.5" FontWeight="Bold" Foreground="#334155"
+                                                           HorizontalAlignment="Center" Margin="0,0,0,10" />
+
+                                                <!-- Visual Bar Chart -->
+                                                <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="6,0">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Rows="1" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate DataType="elvm:ChartBarItem">
+                                                            <Grid RowDefinitions="Auto,*,Auto" Margin="5,0" VerticalAlignment="Bottom">
+                                                                <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="9.5" FontWeight="Bold"
+                                                                           Foreground="#334155" HorizontalAlignment="Center" Margin="0,0,0,3" />
+                                                                <Border Grid.Row="1"
+                                                                        Height="{Binding BarHeightPx}"
+                                                                        Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        CornerRadius="3,3,0,0" />
+                                                                <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="10" FontWeight="SemiBold"
+                                                                           Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Selection Adorner -->
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+                                            <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!-- 6. IMAGE ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:ImageElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                        <Border Background="#F8FAFC"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="{Binding BorderThickness, Converter={StaticResource DoubleToThickness}}"
+                                                CornerRadius="{Binding CornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                                ClipToBounds="True"
+                                                PointerPressed="OnElementPointerPressed">
+                                            <Panel>
+                                                <!-- Image Preview if loaded -->
+                                                <Image Source="{Binding PreviewBitmap}"
+                                                       Stretch="{Binding KeepAspectRatio, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter=True, FallbackValue=Uniform}"
+                                                       IsVisible="{Binding PreviewBitmap, Converter={StaticResource NullToBooleanConverter}}" />
+
+                                                <!-- Placeholder Graphic if no image file loaded -->
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6"
+                                                            IsVisible="{Binding PreviewBitmap, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter={x:Null}, FallbackValue=True}">
+                                                    <materialIcons:MaterialIcon Kind="ImageOutline" Width="36" Height="36" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                                    <TextBlock Text="{Binding AltText}" FontSize="11" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                                </StackPanel>
+                                            </Panel>
+                                        </Border>
+
+                                        <!-- Selection Adorner -->
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+                                            <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!-- 7. WATERMARK ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:WatermarkElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}" PointerPressed="OnElementPointerPressed">
+                                        <LayoutTransformControl HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <LayoutTransformControl.LayoutTransform>
+                                                <RotateTransform Angle="{Binding Angle}" />
+                                            </LayoutTransformControl.LayoutTransform>
+                                            <TextBlock Text="{Binding Text}"
+                                                       FontSize="{Binding FontSize}"
+                                                       FontWeight="Bold"
+                                                       Opacity="{Binding Opacity}"
+                                                       Foreground="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" />
+                                        </LayoutTransformControl>
+                                        <Border BorderBrush="{StaticResource WinDangerBrush}" BorderThickness="1" IsVisible="{Binding IsSelected}" IsHitTestVisible="False" />
+                                    </Grid>
+                                </DataTemplate>
+
+                            </ItemsControl.DataTemplates>
+                        </ItemsControl>
+
+                        <!-- Page Footer Bar (Inside page margins) -->
+                        <Border VerticalAlignment="Bottom"
+                                Height="38"
+                                Padding="30,0"
+                                BorderBrush="#E2E8F0"
+                                BorderThickness="0,1,0,0"
+                                Background="Transparent"
+                                IsHitTestVisible="False"
+                                IsVisible="{Binding CurrentPage.ShowHeaderFooter}">
+                            <Grid ColumnDefinitions="*,*">
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding CurrentPage.FooterLeft}"
+                                           FontSize="10"
+                                           Foreground="#94A3B8"
+                                           FontWeight="Medium"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding CurrentPage.FooterRight}"
+                                           FontSize="10"
+                                           Foreground="#94A3B8"
+                                           FontWeight="Medium"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </LayoutTransformControl>
+        </Grid>
+    </ScrollViewer>
+
+</UserControl>

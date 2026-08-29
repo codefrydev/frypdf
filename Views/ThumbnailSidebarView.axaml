@@ -1,0 +1,143 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.ThumbnailSidebarView"
+             x:DataType="vm:MainViewModel">
+
+    <UserControl.Resources>
+        <converters:BooleanToBrushConverter x:Key="BoolToBrush" />
+        <converters:BooleanToThicknessConverter x:Key="BoolToThickness" />
+    </UserControl.Resources>
+
+    <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,1,0" Width="230">
+        <Grid RowDefinitions="Auto,*,Auto">
+
+            <!-- 1. Sidebar Header -->
+            <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" Height="40" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="14,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="PAGES" FontSize="11" FontWeight="Bold" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" LetterSpacing="0.6" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding AddPageCommand}" ToolTip.Tip="Add New Page">
+                            <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding DuplicateCurrentPageCommand}" ToolTip.Tip="Duplicate Page">
+                            <materialIcons:MaterialIcon Kind="ContentCopy" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding RotateCurrentPageCommand}" ToolTip.Tip="Rotate 90°">
+                            <materialIcons:MaterialIcon Kind="RotateRight" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 2. Page Thumbnail Cards List -->
+            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="14">
+                <ItemsControl ItemsSource="{Binding Pages}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:PageViewModel">
+                            <Button Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    Margin="0,0,0,16"
+                                    HorizontalAlignment="Center"
+                                    Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).SelectPageCommand}"
+                                    CommandParameter="{Binding}">
+                                <StackPanel HorizontalAlignment="Center" Spacing="6">
+
+                                    <!-- Thumbnail Card -->
+                                    <Border Background="White"
+                                            BorderThickness="{Binding IsSelected, Converter={StaticResource BoolToThickness}, ConverterParameter='2|1'}"
+                                            BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#E2E8F0'}"
+                                            CornerRadius="6"
+                                            BoxShadow="0 2 10 #0D000000"
+                                            Padding="4"
+                                            Width="140"
+                                            Height="198">
+
+                                        <!-- Mini Page Visual Mock -->
+                                        <Border Background="#FAFAFA" BorderBrush="#F1F5F9" BorderThickness="1" CornerRadius="3" Padding="8">
+                                            <Grid RowDefinitions="Auto,*,Auto">
+                                                <!-- Mini Header -->
+                                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                                                    <Rectangle Grid.Column="0" Height="4" Width="56" Fill="{StaticResource WinAccentBrush}" HorizontalAlignment="Left" RadiusX="1" RadiusY="1" />
+                                                    <Border Grid.Column="1" Width="10" Height="10" Background="{StaticResource WinAccentBrush}" CornerRadius="2" />
+                                                </Grid>
+
+                                                <!-- Mini Content lines -->
+                                                <StackPanel Grid.Row="1" Spacing="4" VerticalAlignment="Top">
+                                                    <Rectangle Height="5" Width="85" Fill="#1E293B" HorizontalAlignment="Left" RadiusX="1" RadiusY="1" />
+                                                    <Rectangle Height="2.5" Fill="#CBD5E1" RadiusX="1" RadiusY="1" />
+                                                    <Rectangle Height="2.5" Width="95" Fill="#CBD5E1" HorizontalAlignment="Left" RadiusX="1" RadiusY="1" />
+                                                    <Rectangle Height="2.5" Fill="#CBD5E1" RadiusX="1" RadiusY="1" />
+
+                                                    <!-- Mini highlight box / chart mock -->
+                                                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="0.8" Height="38" CornerRadius="3" Margin="0,4,0,0" Padding="4">
+                                                        <Grid ColumnDefinitions="*,*,*,*" VerticalAlignment="Bottom" Margin="0,4,0,0">
+                                                            <Border Grid.Column="0" Height="10" Background="#93C5FD" CornerRadius="1,1,0,0" Margin="1,0" />
+                                                            <Border Grid.Column="1" Height="16" Background="#60A5FA" CornerRadius="1,1,0,0" Margin="1,0" />
+                                                            <Border Grid.Column="2" Height="22" Background="#3B82F6" CornerRadius="1,1,0,0" Margin="1,0" />
+                                                            <Border Grid.Column="3" Height="28" Background="#0F6CBD" CornerRadius="1,1,0,0" Margin="1,0" />
+                                                        </Grid>
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <!-- Mini Footer -->
+                                                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                                                    <Rectangle Grid.Column="0" Height="2" Width="40" Fill="#E2E8F0" HorizontalAlignment="Left" />
+                                                    <Rectangle Grid.Column="1" Height="2" Width="16" Fill="#E2E8F0" HorizontalAlignment="Right" />
+                                                </Grid>
+                                            </Grid>
+                                        </Border>
+                                    </Border>
+
+                                    <!-- Page Number Badge -->
+                                    <Border Background="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#F1F5F9'}"
+                                            BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#E2E8F0'}"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="10,2">
+                                        <TextBlock Text="{Binding PageNumber, StringFormat='Page {0}'}"
+                                                   FontSize="10.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#FFFFFF|#64748B'}"
+                                                   HorizontalAlignment="Center" />
+                                    </Border>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- 3. Bottom Page Actions -->
+            <Border Grid.Row="2" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,1,0,0" Padding="10,8">
+                <Grid ColumnDefinitions="*,*">
+                    <Button Grid.Column="0"
+                            Classes="secondary-btn"
+                            Height="28"
+                            Margin="0,0,3,0"
+                            Command="{Binding MovePageUpCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="ChevronUp" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            <TextBlock Text="Move Up" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="1"
+                            Classes="secondary-btn"
+                            Height="28"
+                            Margin="3,0,0,0"
+                            Command="{Binding MovePageDownCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="ChevronDown" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            <TextBlock Text="Move Down" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Border>
+</UserControl>

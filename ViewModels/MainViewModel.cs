@@ -1,0 +1,871 @@
+using System;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using PdfEditorApp.Models;
+using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Services;
+using PdfEditorApp.ViewModels.ElementViewModels;
+
+namespace PdfEditorApp.ViewModels;
+
+public partial class MainViewModel : ViewModelBase
+{
+    private readonly IPdfExportService _exportService;
+    private readonly ITemplateService _templateService;
+    private readonly IProjectPersistenceService _persistenceService;
+
+    [ObservableProperty]
+    private string _documentTitle = "Annual_Report_2026.pdf";
+
+    [ObservableProperty]
+    private string _documentAuthor = "ACME CORP.";
+
+    [ObservableProperty]
+    private string _documentSubject = "Fiscal Year 2026 Annual Report";
+
+    [ObservableProperty]
+    private RibbonTabKind _activeRibbonTab = RibbonTabKind.Edit;
+
+    [ObservableProperty]
+    private ToolMode _activeToolMode = ToolMode.Select;
+
+    [ObservableProperty]
+    private double _zoomLevel = 1.0; // 100%
+
+    [ObservableProperty]
+    private string _searchQuery = "";
+
+    [ObservableProperty]
+    private string _statusMessage = "Ready";
+
+    [ObservableProperty]
+    private string _lastExportedFilePath = "";
+
+    [ObservableProperty]
+    private bool _isExportSuccessDialogOpen;
+
+    [ObservableProperty]
+    private bool _isNewDocumentDialogOpen;
+
+    [ObservableProperty]
+    private PageViewModel? _currentPage;
+
+    public ObservableCollection<PageViewModel> Pages { get; } = new();
+
+    public InspectorViewModel Inspector { get; } = new();
+
+    public UndoRedoService UndoRedo { get; } = new();
+
+    private ElementViewModelBase? _clipboardElement;
+
+    public int CurrentPageNumber => CurrentPage != null ? Pages.IndexOf(CurrentPage) + 1 : 1;
+    public int TotalPagesCount => Pages.Count;
+    public string PageDimensionsDisplay => CurrentPage?.Format switch
+    {
+        PageFormat.A4 => "A4 (8.27 x 11.69 in)",
+        PageFormat.Letter => "Letter (8.5 x 11.0 in)",
+        PageFormat.Legal => "Legal (8.5 x 14.0 in)",
+        PageFormat.Executive => "Executive (7.25 x 10.5 in)",
+        _ => "8.5 x 11.0 in"
+    };
+
+    // Global file storage provider setter for Avalonia desktop file dialogs
+    public static IStorageProvider? StorageProvider { get; set; }
+
+    public MainViewModel() : this(new PdfExportService(), new TemplateService(), new ProjectPersistenceService())
+    {
+    }
+
+    public MainViewModel(
+        IPdfExportService exportService,
+        ITemplateService templateService,
+        IProjectPersistenceService persistenceService)
+    {
+        _exportService = exportService;
+        _templateService = templateService;
+        _persistenceService = persistenceService;
+
+        // Load default Annual Report 2026 template matching the user's mockup
+        LoadTemplate("AnnualReport");
+    }
+
+    public void LoadTemplate(string templateName)
+    {
+        PdfDocumentModel doc = templateName switch
+        {
+            "AnnualReport" => _templateService.CreateAnnualReportTemplate(),
+            "Invoice" => _templateService.CreateInvoiceTemplate(),
+            "Resume" => _templateService.CreateResumeTemplate(),
+            "AcademicPaper" => _templateService.CreateAcademicPaperTemplate(),
+            "Certificate" => _templateService.CreateCertificateTemplate(),
+            _ => _templateService.CreateBlankDocument()
+        };
+
+        LoadFromDocumentModel(doc);
+    }
+
+    public void LoadFromDocumentModel(PdfDocumentModel model)
+    {
+        DocumentTitle = model.Title;
+        DocumentAuthor = model.Author;
+        DocumentSubject = model.Subject;
+
+        Pages.Clear();
+        foreach (var pageModel in model.Pages)
+        {
+            var pageVm = new PageViewModel();
+            pageVm.LoadFromModel(pageModel);
+            pageVm.SelectionChanged += OnElementSelectionChanged;
+            Pages.Add(pageVm);
+        }
+
+        if (Pages.Count > 0)
+        {
+            SelectPage(Pages[0]);
+        }
+        else
+        {
+            AddPage();
+        }
+
+        UpdateStatus($"Document loaded: {DocumentTitle}");
+    }
+
+    public PdfDocumentModel ToDocumentModel()
+    {
+        var doc = new PdfDocumentModel
+        {
+            Title = DocumentTitle,
+            Author = DocumentAuthor,
+            Subject = DocumentSubject,
+            CreatedDate = DateTime.Now,
+            ModifiedDate = DateTime.Now
+        };
+
+        foreach (var pageVm in Pages)
+        {
+            doc.Pages.Add(pageVm.ToModel());
+        }
+
+        return doc;
+    }
+
+    private void OnElementSelectionChanged(ElementViewModelBase? element)
+    {
+        Inspector.UpdateSelection(element, CurrentPage);
+    }
+
+    [RelayCommand]
+    public void SelectRibbonTab(RibbonTabKind tab)
+    {
+        ActiveRibbonTab = tab;
+    }
+
+    [RelayCommand]
+    public void SelectPage(PageViewModel page)
+    {
+        foreach (var p in Pages)
+        {
+            p.IsSelected = (p == page);
+        }
+
+        CurrentPage = page;
+        Inspector.UpdateSelection(page.SelectedElement, page);
+        OnPropertyChanged(nameof(CurrentPageNumber));
+        OnPropertyChanged(nameof(TotalPagesCount));
+        OnPropertyChanged(nameof(PageDimensionsDisplay));
+    }
+
+    [RelayCommand]
+    public void AddPage()
+    {
+        var newPage = new PageViewModel
+        {
+            PageNumber = Pages.Count + 1,
+            Format = CurrentPage?.Format ?? PageFormat.A4,
+            Orientation = CurrentPage?.Orientation ?? PageOrientation.Portrait,
+            Width = CurrentPage?.Width ?? 800,
+            Height = CurrentPage?.Height ?? 1131,
+            FooterRight = $"Page {Pages.Count + 1} of {Pages.Count + 1}"
+        };
+
+        newPage.SelectionChanged += OnElementSelectionChanged;
+        Pages.Add(newPage);
+        SelectPage(newPage);
+        UpdateStatus($"Added new Page {newPage.PageNumber}");
+    }
+
+    [RelayCommand]
+    public void DuplicateCurrentPage()
+    {
+        if (CurrentPage == null) return;
+        var model = CurrentPage.ToModel();
+        var clonedPage = new PageViewModel();
+        clonedPage.LoadFromModel(model);
+        clonedPage.PageNumber = Pages.Count + 1;
+        clonedPage.SelectionChanged += OnElementSelectionChanged;
+        Pages.Add(clonedPage);
+        SelectPage(clonedPage);
+        UpdateStatus($"Duplicated Page {CurrentPage.PageNumber}");
+    }
+
+    [RelayCommand]
+    public void DeleteCurrentPage()
+    {
+        if (Pages.Count <= 1 || CurrentPage == null)
+        {
+            UpdateStatus("Cannot delete the only page in the document.");
+            return;
+        }
+
+        int index = Pages.IndexOf(CurrentPage);
+        var toRemove = CurrentPage;
+        Pages.Remove(toRemove);
+
+        // Renumber pages
+        for (int i = 0; i < Pages.Count; i++)
+        {
+            Pages[i].PageNumber = i + 1;
+        }
+
+        int newIndex = Math.Min(index, Pages.Count - 1);
+        SelectPage(Pages[newIndex]);
+        UpdateStatus("Page deleted.");
+    }
+
+    [RelayCommand]
+    public void RotateCurrentPage()
+    {
+        CurrentPage?.RotateClockwise();
+        UpdateStatus($"Page rotated to {CurrentPage?.RotationAngle}°");
+    }
+
+    [RelayCommand]
+    public void RotateCurrentPageCounterClockwise()
+    {
+        if (CurrentPage != null)
+        {
+            CurrentPage.RotationAngle = (CurrentPage.RotationAngle + 270) % 360;
+            UpdateStatus($"Page rotated to {CurrentPage.RotationAngle}°");
+        }
+    }
+
+    [RelayCommand]
+    public void MovePageUp()
+    {
+        if (CurrentPage == null) return;
+        int idx = Pages.IndexOf(CurrentPage);
+        if (idx > 0)
+        {
+            Pages.Move(idx, idx - 1);
+            RenumberPages();
+            SelectPage(Pages[idx - 1]);
+        }
+    }
+
+    [RelayCommand]
+    public void MovePageDown()
+    {
+        if (CurrentPage == null) return;
+        int idx = Pages.IndexOf(CurrentPage);
+        if (idx < Pages.Count - 1)
+        {
+            Pages.Move(idx, idx + 1);
+            RenumberPages();
+            SelectPage(Pages[idx + 1]);
+        }
+    }
+
+    private void RenumberPages()
+    {
+        for (int i = 0; i < Pages.Count; i++)
+        {
+            Pages[i].PageNumber = i + 1;
+        }
+        OnPropertyChanged(nameof(CurrentPageNumber));
+        OnPropertyChanged(nameof(TotalPagesCount));
+    }
+
+    // --- UNDO / REDO & CLIPBOARD COMMANDS ---
+
+    [RelayCommand]
+    public void Undo()
+    {
+        if (UndoRedo.CanUndo)
+        {
+            UndoRedo.Undo();
+            UpdateStatus("Undo performed");
+        }
+        else
+        {
+            UpdateStatus("Nothing to undo");
+        }
+    }
+
+    [RelayCommand]
+    public void Redo()
+    {
+        if (UndoRedo.CanRedo)
+        {
+            UndoRedo.Redo();
+            UpdateStatus("Redo performed");
+        }
+        else
+        {
+            UpdateStatus("Nothing to redo");
+        }
+    }
+
+    [RelayCommand]
+    public void Copy()
+    {
+        if (CurrentPage?.SelectedElement != null)
+        {
+            _clipboardElement = CurrentPage.SelectedElement;
+            UpdateStatus($"Copied: {_clipboardElement.DisplayName}");
+        }
+    }
+
+    [RelayCommand]
+    public void Cut()
+    {
+        if (CurrentPage?.SelectedElement != null)
+        {
+            _clipboardElement = CurrentPage.SelectedElement;
+            var elToRemove = CurrentPage.SelectedElement;
+            CurrentPage.RemoveElement(elToRemove);
+            UpdateStatus($"Cut: {_clipboardElement.DisplayName}");
+        }
+    }
+
+    [RelayCommand]
+    public void Paste()
+    {
+        if (_clipboardElement != null && CurrentPage != null)
+        {
+            var model = _clipboardElement.ToModel();
+            var clone = model.Clone();
+            clone.Id = Guid.NewGuid().ToString();
+            clone.X += 20;
+            clone.Y += 20;
+
+            ElementViewModelBase? newVm = clone.Kind switch
+            {
+                ElementKind.Text => new TextElementViewModel(),
+                ElementKind.Heading => new TextElementViewModel(),
+                ElementKind.Shape => new ShapeElementViewModel(),
+                ElementKind.Image => new ImageElementViewModel(),
+                ElementKind.Divider => new DividerElementViewModel(),
+                ElementKind.Table => new TableElementViewModel(),
+                ElementKind.Chart => new ChartElementViewModel(),
+                ElementKind.Watermark => new WatermarkElementViewModel(),
+                _ => new TextElementViewModel()
+            };
+
+            newVm.LoadFromModel(clone);
+            CurrentPage.AddElement(newVm);
+            UpdateStatus($"Pasted: {newVm.DisplayName}");
+        }
+    }
+
+    [RelayCommand]
+    public void Duplicate()
+    {
+        if (CurrentPage?.SelectedElement != null)
+        {
+            var model = CurrentPage.SelectedElement.ToModel();
+            var clone = model.Clone();
+            clone.Id = Guid.NewGuid().ToString();
+            clone.X += 20;
+            clone.Y += 20;
+
+            ElementViewModelBase? newVm = clone.Kind switch
+            {
+                ElementKind.Text => new TextElementViewModel(),
+                ElementKind.Heading => new TextElementViewModel(),
+                ElementKind.Shape => new ShapeElementViewModel(),
+                ElementKind.Image => new ImageElementViewModel(),
+                ElementKind.Divider => new DividerElementViewModel(),
+                ElementKind.Table => new TableElementViewModel(),
+                ElementKind.Chart => new ChartElementViewModel(),
+                ElementKind.Watermark => new WatermarkElementViewModel(),
+                _ => new TextElementViewModel()
+            };
+
+            newVm.LoadFromModel(clone);
+            CurrentPage.AddElement(newVm);
+            UpdateStatus($"Duplicated: {newVm.DisplayName}");
+        }
+    }
+
+    // --- ELEMENT CREATION COMMANDS ---
+
+    [RelayCommand]
+    public void AddTextElement()
+    {
+        if (CurrentPage == null) return;
+
+        var textEl = new TextElementViewModel
+        {
+            X = 100,
+            Y = 150,
+            Width = 400,
+            Height = 80,
+            Text = "New editable paragraph. Double-click or use inspector to customize text, fonts, colors, and alignments.",
+            FontSize = 13,
+            TextColorHex = "#201F1E"
+        };
+
+        CurrentPage.AddElement(textEl);
+        UpdateStatus("Added Text Element");
+    }
+
+    [RelayCommand]
+    public void AddHeadingElement()
+    {
+        if (CurrentPage == null) return;
+
+        var headingEl = new TextElementViewModel
+        {
+            X = 100,
+            Y = 100,
+            Width = 500,
+            Height = 45,
+            Text = "Section Heading",
+            FontSize = 22,
+            FontFamily = "Georgia",
+            IsBold = true,
+            TextColorHex = "#111827"
+        };
+
+        CurrentPage.AddElement(headingEl);
+        UpdateStatus("Added Heading Element");
+    }
+
+    [RelayCommand]
+    public void AddShapeElement(string? shapeTypeStr = "Rectangle")
+    {
+        if (CurrentPage == null) return;
+
+        var shapeType = ShapeType.Rectangle;
+        if (!string.IsNullOrEmpty(shapeTypeStr) && Enum.TryParse<ShapeType>(shapeTypeStr, true, out var parsed))
+        {
+            shapeType = parsed;
+        }
+
+        var shapeEl = new ShapeElementViewModel
+        {
+            X = 120,
+            Y = 200,
+            Width = shapeType == ShapeType.Circle ? 120 : 240,
+            Height = 120,
+            ShapeType = shapeType,
+            FillColorHex = "#F0F7FD",
+            StrokeColorHex = "#0F6CBD",
+            StrokeThickness = 1.5,
+            CornerRadius = shapeType == ShapeType.Circle ? 60 : (shapeType == ShapeType.RoundedRectangle ? 16 : 6)
+        };
+
+        CurrentPage.AddElement(shapeEl);
+        UpdateStatus($"Added Shape ({shapeType})");
+    }
+
+    [RelayCommand]
+    public async Task AddImageElementAsync()
+    {
+        if (CurrentPage == null) return;
+
+        try
+        {
+            if (StorageProvider != null)
+            {
+                var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = "Insert Image",
+                    AllowMultiple = false,
+                    FileTypeFilter = new[]
+                    {
+                        new FilePickerFileType("Image Files (*.png, *.jpg, *.jpeg, *.webp)")
+                        {
+                            Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp" }
+                        }
+                    }
+                });
+
+                if (files.Count > 0)
+                {
+                    string filePath = files[0].Path.LocalPath;
+                    var imgEl = new ImageElementViewModel
+                    {
+                        X = 100,
+                        Y = 200,
+                        Width = 260,
+                        Height = 180,
+                        ImagePath = filePath
+                    };
+
+                    CurrentPage.AddElement(imgEl);
+                    UpdateStatus($"Inserted Image: {Path.GetFileName(filePath)}");
+                    return;
+                }
+            }
+
+            // Fallback placeholder image element
+            var fallbackImg = new ImageElementViewModel
+            {
+                X = 100,
+                Y = 200,
+                Width = 260,
+                Height = 180,
+                AltText = "Inserted Graphic"
+            };
+            CurrentPage.AddElement(fallbackImg);
+            UpdateStatus("Inserted Image Placeholder");
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus($"Image insert error: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    public void AddStampElement(string? stampTypeStr = "Approved")
+    {
+        if (CurrentPage == null) return;
+
+        string label = stampTypeStr?.ToUpper() ?? "APPROVED";
+        string fillHex = stampTypeStr?.ToLower() switch
+        {
+            "approved" => "#DCFCE7",
+            "confidential" => "#FEE2E2",
+            "draft" => "#F1F5F9",
+            "urgent" => "#FEF3C7",
+            "void" => "#FFEDD5",
+            _ => "#EFF6FF"
+        };
+        string strokeHex = stampTypeStr?.ToLower() switch
+        {
+            "approved" => "#16A34A",
+            "confidential" => "#DC2626",
+            "draft" => "#64748B",
+            "urgent" => "#D97706",
+            "void" => "#EA580C",
+            _ => "#0F6CBD"
+        };
+
+        var stampEl = new ShapeElementViewModel
+        {
+            X = 200,
+            Y = 200,
+            Width = 180,
+            Height = 60,
+            ShapeType = ShapeType.RoundedRectangle,
+            CornerRadius = 8,
+            FillColorHex = fillHex,
+            StrokeColorHex = strokeHex,
+            StrokeThickness = 2.0,
+            Label = label,
+            LabelColorHex = strokeHex,
+            LabelFontSize = 18
+        };
+
+        CurrentPage.AddElement(stampEl);
+        UpdateStatus($"Added Stamp ({label})");
+    }
+
+    [RelayCommand]
+    public void AddStickyNoteElement()
+    {
+        if (CurrentPage == null) return;
+
+        var noteEl = new TextElementViewModel
+        {
+            X = 120,
+            Y = 180,
+            Width = 180,
+            Height = 140,
+            Text = "📌 Review Note:\nPlease verify financial data and audit metrics prior to final executive sign-off.",
+            FontSize = 11.5,
+            TextColorHex = "#78350F",
+            BackgroundColorHex = "#FEF3C7",
+            BorderColorHex = "#F59E0B",
+            BorderThickness = 1.0,
+            CornerRadius = 6,
+            Padding = 10
+        };
+
+        CurrentPage.AddElement(noteEl);
+        UpdateStatus("Added Sticky Note");
+    }
+
+    [RelayCommand]
+    public void AddDividerElement()
+    {
+        if (CurrentPage == null) return;
+
+        var divEl = new DividerElementViewModel
+        {
+            X = 60,
+            Y = 250,
+            Width = 680,
+            Height = 3,
+            Thickness = 2,
+            ColorHex = "#0F6CBD"
+        };
+
+        CurrentPage.AddElement(divEl);
+        UpdateStatus("Added Divider Line");
+    }
+
+    [RelayCommand]
+    public void AddTableElement()
+    {
+        if (CurrentPage == null) return;
+
+        var tableEl = new TableElementViewModel
+        {
+            X = 60,
+            Y = 250,
+            Width = 680,
+            Height = 180
+        };
+
+        CurrentPage.AddElement(tableEl);
+        UpdateStatus("Added Table Element");
+    }
+
+    [RelayCommand]
+    public void AddChartElement()
+    {
+        if (CurrentPage == null) return;
+
+        var chartEl = new ChartElementViewModel
+        {
+            X = 100,
+            Y = 250,
+            Width = 400,
+            Height = 220
+        };
+
+        CurrentPage.AddElement(chartEl);
+        UpdateStatus("Added Chart Element");
+    }
+
+    [RelayCommand]
+    public void AddWatermarkElement()
+    {
+        if (CurrentPage == null) return;
+
+        var wmEl = new WatermarkElementViewModel
+        {
+            X = 100,
+            Y = 350,
+            Text = "CONFIDENTIAL",
+            FontSize = 56,
+            ColorHex = "#DC2626",
+            Opacity = 0.15,
+            Angle = -35
+        };
+
+        CurrentPage.AddElement(wmEl);
+        UpdateStatus("Added Watermark Overlay");
+    }
+
+    // --- ZOOM COMMANDS ---
+
+    [RelayCommand]
+    public void ZoomIn()
+    {
+        ZoomLevel = Math.Min(2.5, Math.Round(ZoomLevel + 0.1, 2));
+    }
+
+    [RelayCommand]
+    public void ZoomOut()
+    {
+        ZoomLevel = Math.Max(0.4, Math.Round(ZoomLevel - 0.1, 2));
+    }
+
+    [RelayCommand]
+    public void ResetZoom()
+    {
+        ZoomLevel = 1.0;
+    }
+
+    [RelayCommand]
+    public void FitToWidth()
+    {
+        ZoomLevel = 1.15;
+    }
+
+    [RelayCommand]
+    public void FitToPage()
+    {
+        ZoomLevel = 0.85;
+    }
+
+    // --- EXPORT & PERSISTENCE ---
+
+    [RelayCommand]
+    public async Task ExportPdfAsync()
+    {
+        try
+        {
+            UpdateStatus("Generating PDF with QuestPDF engine...");
+
+            string defaultFileName = Path.ChangeExtension(DocumentTitle, ".pdf");
+            if (string.IsNullOrEmpty(defaultFileName)) defaultFileName = "Document.pdf";
+
+            string exportPath = "";
+
+            if (StorageProvider != null)
+            {
+                var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                {
+                    Title = "Export PDF Document",
+                    DefaultExtension = "pdf",
+                    SuggestedFileName = defaultFileName,
+                    FileTypeChoices = new[]
+                    {
+                        new FilePickerFileType("PDF Documents (*.pdf)")
+                        {
+                            Patterns = new[] { "*.pdf" }
+                        }
+                    }
+                });
+
+                if (file != null)
+                {
+                    exportPath = file.Path.LocalPath;
+                }
+            }
+
+            if (string.IsNullOrEmpty(exportPath))
+            {
+                // Fallback to output directory
+                exportPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), defaultFileName);
+            }
+
+            var docModel = ToDocumentModel();
+            await _exportService.ExportToFileAsync(docModel, exportPath);
+
+            LastExportedFilePath = exportPath;
+            IsExportSuccessDialogOpen = true;
+            UpdateStatus($"Successfully exported PDF to {Path.GetFileName(exportPath)}");
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus($"Export error: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    public async Task SaveProjectAsync()
+    {
+        try
+        {
+            string savePath = "";
+            string defaultFileName = Path.ChangeExtension(DocumentTitle, ".pdfproj");
+
+            if (StorageProvider != null)
+            {
+                var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                {
+                    Title = "Save PDF Creator Project",
+                    DefaultExtension = "pdfproj",
+                    SuggestedFileName = defaultFileName,
+                    FileTypeChoices = new[]
+                    {
+                        new FilePickerFileType("PDF Creator Project (*.pdfproj)")
+                        {
+                            Patterns = new[] { "*.pdfproj", "*.json" }
+                        }
+                    }
+                });
+
+                if (file != null)
+                {
+                    savePath = file.Path.LocalPath;
+                }
+            }
+
+            if (string.IsNullOrEmpty(savePath))
+            {
+                savePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), defaultFileName);
+            }
+
+            var docModel = ToDocumentModel();
+            await _persistenceService.SaveProjectAsync(docModel, savePath);
+            UpdateStatus($"Project saved to {Path.GetFileName(savePath)}");
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus($"Save error: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    public async Task OpenProjectAsync()
+    {
+        try
+        {
+            if (StorageProvider != null)
+            {
+                var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = "Open PDF Creator Project",
+                    AllowMultiple = false,
+                    FileTypeFilter = new[]
+                    {
+                        new FilePickerFileType("PDF Creator Project (*.pdfproj, *.json)")
+                        {
+                            Patterns = new[] { "*.pdfproj", "*.json" }
+                        }
+                    }
+                });
+
+                if (files.Count > 0)
+                {
+                    var path = files[0].Path.LocalPath;
+                    var model = await _persistenceService.LoadProjectAsync(path);
+                    if (model != null)
+                    {
+                        LoadFromDocumentModel(model);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus($"Open error: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    public void OpenNewDocumentDialog()
+    {
+        IsNewDocumentDialogOpen = true;
+    }
+
+    [RelayCommand]
+    public void SelectTemplate(string templateName)
+    {
+        IsNewDocumentDialogOpen = false;
+        LoadTemplate(templateName);
+    }
+
+    [RelayCommand]
+    public void CloseExportDialog()
+    {
+        IsExportSuccessDialogOpen = false;
+    }
+
+    private void UpdateStatus(string message)
+    {
+        StatusMessage = message;
+    }
+}

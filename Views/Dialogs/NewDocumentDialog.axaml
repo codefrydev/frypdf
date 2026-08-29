@@ -1,0 +1,169 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Dialogs.NewDocumentDialog"
+             x:DataType="vm:MainViewModel">
+
+    <!-- Modal Backdrop -->
+    <Grid Background="#60000000">
+        <!-- Dialog Card -->
+        <Border Width="720"
+                Background="White"
+                BorderBrush="{StaticResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="10"
+                BoxShadow="0 20 60 #35000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Padding="24">
+
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- Header -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Create New Document or Template" FontSize="18" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" />
+                        <TextBlock Text="Select a pre-designed layout or start with a fresh blank canvas." FontSize="12" Foreground="{StaticResource WinMutedBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding OpenNewDocumentDialogCommand}">
+                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+                </Grid>
+
+                <!-- Template Selection Grid (3x2) -->
+                <Grid Grid.Row="1" ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" Margin="0,4,0,20">
+
+                    <!-- Template 1: Annual Report 2026 -->
+                    <Button Grid.Row="0" Grid.Column="0"
+                            Margin="4" Padding="12"
+                            Background="{StaticResource WinBgBrush}"
+                            BorderBrush="{StaticResource WinAccentBrush}"
+                            BorderThickness="1.5"
+                            CornerRadius="8" Cursor="Hand"
+                            Command="{Binding SelectTemplateCommand}" CommandParameter="AnnualReport">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <Border Width="40" Height="40" Background="{StaticResource WinAccentLightBrush}" CornerRadius="20" HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="ChartBoxOutline" Width="22" Height="22" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Annual Report" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Executive summary &amp; chart" FontSize="10" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Template 2: Invoice -->
+                    <Button Grid.Row="0" Grid.Column="1"
+                            Margin="4" Padding="12"
+                            Background="{StaticResource WinBgBrush}"
+                            BorderBrush="{StaticResource WinBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8" Cursor="Hand"
+                            Command="{Binding SelectTemplateCommand}" CommandParameter="Invoice">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <Border Width="40" Height="40" Background="{StaticResource WinSuccessLightBrush}" CornerRadius="20" HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="ReceiptTextOutline" Width="22" Height="22" Foreground="{StaticResource WinSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Modern Invoice" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Itemized billing table" FontSize="10" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Template 3: Resume -->
+                    <Button Grid.Row="0" Grid.Column="2"
+                            Margin="4" Padding="12"
+                            Background="{StaticResource WinBgBrush}"
+                            BorderBrush="{StaticResource WinBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8" Cursor="Hand"
+                            Command="{Binding SelectTemplateCommand}" CommandParameter="Resume">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <Border Width="40" Height="40" Background="#F5F3FF" CornerRadius="20" HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="AccountTieOutline" Width="22" Height="22" Foreground="#7C3AED" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Resume / CV" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Professional career layout" FontSize="10" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Template 4: Academic Paper -->
+                    <Button Grid.Row="1" Grid.Column="0"
+                            Margin="4" Padding="12"
+                            Background="{StaticResource WinBgBrush}"
+                            BorderBrush="{StaticResource WinBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8" Cursor="Hand"
+                            Command="{Binding SelectTemplateCommand}" CommandParameter="AcademicPaper">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <Border Width="40" Height="40" Background="#FEF3C7" CornerRadius="20" HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="22" Height="22" Foreground="#D97706" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Academic Paper" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="2-column research paper" FontSize="10" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Template 5: Certificate of Achievement -->
+                    <Button Grid.Row="1" Grid.Column="1"
+                            Margin="4" Padding="12"
+                            Background="{StaticResource WinBgBrush}"
+                            BorderBrush="{StaticResource WinBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8" Cursor="Hand"
+                            Command="{Binding SelectTemplateCommand}" CommandParameter="Certificate">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <Border Width="40" Height="40" Background="#EFF6FF" CornerRadius="20" HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="CertificateOutline" Width="22" Height="22" Foreground="#2563EB" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Certificate" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Award of excellence" FontSize="10" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Template 6: Blank Page -->
+                    <Button Grid.Row="1" Grid.Column="2"
+                            Margin="4" Padding="12"
+                            Background="{StaticResource WinBgBrush}"
+                            BorderBrush="{StaticResource WinBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8" Cursor="Hand"
+                            Command="{Binding SelectTemplateCommand}" CommandParameter="Blank">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <Border Width="40" Height="40" Background="{StaticResource WinHoverBrush}" CornerRadius="20" HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FileOutline" Width="22" Height="22" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Blank Page" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Start from scratch" FontSize="10" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <!-- Footer / Open Project -->
+                <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+                    <Button Grid.Column="0"
+                            Classes="secondary-btn"
+                            Height="34"
+                            Padding="12,6"
+                            HorizontalAlignment="Left"
+                            Command="{Binding OpenProjectCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                            <TextBlock Text="Open Existing Project (.pdfproj)" FontSize="12" FontWeight="Medium" Foreground="{StaticResource WinAccentBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="1"
+                            Classes="secondary-btn"
+                            Height="34"
+                            Padding="16,6"
+                            Content="Cancel"
+                            Command="{Binding SelectTemplateCommand}"
+                            CommandParameter="AnnualReport" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+
+</UserControl>

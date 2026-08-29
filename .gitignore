@@ -1,0 +1,83 @@
+## .NET and C#
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+*.dbmdl
+*.jfm
+*.pidb
+*.booproj
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/[Dd]ebug/
+[Bb]in/[Rr]elease/
+[Oo]bj/[Dd]ebug/
+[Oo]bj/[Rr]elease/
+
+## Visual Studio & JetBrains Rider
+.vs/
+.idea/
+*.sln.iml
+*.DotSettings.user
+_ReSharper*/
+*.rsuser
+
+## Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+## Test Results & Coverage
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage.opencover.xml
+
+## NuGet Packages
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+packages/
+
+## Avalonia & Skia Artifacts
+.avalonia/
+*.generated.cs
+
+## macOS specific
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+## Local user project files & generated PDFs
+*.pdf
+!Assets/**/*.pdf
+*.pdfproj
+!Templates/**/*.pdfproj

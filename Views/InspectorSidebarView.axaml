@@ -1,0 +1,403 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:elvm="using:PdfEditorApp.ViewModels.ElementViewModels"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.InspectorSidebarView"
+             x:DataType="vm:InspectorViewModel">
+
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+        <converters:DoubleToThicknessConverter x:Key="DoubleToThickness" />
+        <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
+    </UserControl.Resources>
+
+    <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1,0,0,0" Width="300">
+        <Grid RowDefinitions="Auto,*">
+
+            <!-- Sidebar Header -->
+            <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="14,10">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="TuneVariant" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" />
+                        <TextBlock Text="Properties &amp; Format" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding ActiveCategoryName}"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource WinAccentBrush}"
+                               VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Inspector Scrollable Cards -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="12" Spacing="12">
+
+                    <!-- 1. TYPOGRAPHY CARD (Visible when Text element is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding TextElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <!-- Card Title -->
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FormatFont" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Typography" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- Font Family & Font Size -->
+                            <Grid ColumnDefinitions="*,80" ColumnSpacing="6">
+                                <StackPanel Grid.Column="0" Spacing="3">
+                                    <TextBlock Text="Font Family" Classes="inspector-label" />
+                                    <ComboBox ItemsSource="{Binding AvailableFontFamilies}"
+                                              SelectedItem="{Binding TextElement.FontFamily}"
+                                              HorizontalAlignment="Stretch" Height="30" FontSize="12" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Spacing="3">
+                                    <TextBlock Text="Size (pt)" Classes="inspector-label" />
+                                    <ComboBox ItemsSource="{Binding AvailableFontSizes}"
+                                              SelectedItem="{Binding TextElement.FontSize}"
+                                              HorizontalAlignment="Stretch" Height="30" FontSize="12" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Bold / Italic / Underline / Alignment -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Style &amp; Alignment" Classes="inspector-label" />
+                                <StackPanel Orientation="Horizontal" Spacing="2">
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                            Classes.active="{Binding TextElement.IsBold, FallbackValue=False}"
+                                            Command="{Binding ToggleBoldCommand}">
+                                        <materialIcons:MaterialIcon Kind="FormatBold" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                    </Button>
+
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                            Classes.active="{Binding TextElement.IsItalic, FallbackValue=False}"
+                                            Command="{Binding ToggleItalicCommand}">
+                                        <materialIcons:MaterialIcon Kind="FormatItalic" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                    </Button>
+
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                            Classes.active="{Binding TextElement.IsUnderline, FallbackValue=False}"
+                                            Command="{Binding ToggleUnderlineCommand}">
+                                        <materialIcons:MaterialIcon Kind="FormatUnderline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                    </Button>
+
+                                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="3,0" />
+
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                            Command="{Binding SetAlignmentCommand}" CommandParameter="Left">
+                                        <materialIcons:MaterialIcon Kind="FormatAlignLeft" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                    </Button>
+
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                            Command="{Binding SetAlignmentCommand}" CommandParameter="Center">
+                                        <materialIcons:MaterialIcon Kind="FormatAlignCenter" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                    </Button>
+
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                            Command="{Binding SetAlignmentCommand}" CommandParameter="Right">
+                                        <materialIcons:MaterialIcon Kind="FormatAlignRight" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Text Color Swatches -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Text Color" Classes="inspector-label" />
+                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:ColorSwatchItem">
+                                            <Button Width="22" Height="22" Margin="2"
+                                                    CornerRadius="11"
+                                                    BorderBrush="#CBD5E1"
+                                                    BorderThickness="1"
+                                                    Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetTextColorCommand}"
+                                                    CommandParameter="{Binding Hex}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 2. SHAPE & BADGE CARD (Visible when Shape element is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding ShapeElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <!-- Card Title -->
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="ShapeOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Shape Properties" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- Shape Type Selector -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Shape Geometry" Classes="inspector-label" />
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <Button Classes="secondary-btn" Height="26" Padding="6,2"
+                                            Command="{Binding SetShapeTypeCommand}" CommandParameter="Rectangle">
+                                        <TextBlock Text="Rect" FontSize="10.5" />
+                                    </Button>
+                                    <Button Classes="secondary-btn" Height="26" Padding="6,2"
+                                            Command="{Binding SetShapeTypeCommand}" CommandParameter="RoundedRectangle">
+                                        <TextBlock Text="Rounded" FontSize="10.5" />
+                                    </Button>
+                                    <Button Classes="secondary-btn" Height="26" Padding="6,2"
+                                            Command="{Binding SetShapeTypeCommand}" CommandParameter="Circle">
+                                        <TextBlock Text="Circle" FontSize="10.5" />
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Fill Color Swatches -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Fill Color" Classes="inspector-label" />
+                                <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:ColorSwatchItem">
+                                            <Button Width="22" Height="22" Margin="2"
+                                                    CornerRadius="4"
+                                                    BorderBrush="#CBD5E1"
+                                                    BorderThickness="1"
+                                                    Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                    Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}"
+                                                    CommandParameter="{Binding Hex}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,*">
+                                <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
+                                    <TextBlock Text="Corner Radius" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding ShapeElement.CornerRadius, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="60" Height="30" FontSize="12" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
+                                    <TextBlock Text="Border Width" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding ShapeElement.StrokeThickness, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="10" Height="30" FontSize="12" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 3. TABLE STRUCTURE CARD (Visible when Table is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding TableElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="TableLarge" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Table Controls" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,*" Margin="0,2">
+                                <Button Grid.Column="0" Classes="secondary-btn" Height="28" Margin="0,0,3,0"
+                                        Command="{Binding TableElement.AddRowCommand}" ToolTip.Tip="Add Table Row">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="TableRowPlusAfter" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                                        <TextBlock Text="Add Row" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Grid.Column="1" Classes="secondary-btn" Height="28" Margin="3,0,0,0"
+                                        Command="{Binding TableElement.RemoveRowCommand}" ToolTip.Tip="Delete Table Row">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="TableRowRemove" Width="14" Height="14" Foreground="{StaticResource WinDangerBrush}" />
+                                        <TextBlock Text="Del Row" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*,*" Margin="0,2">
+                                <Button Grid.Column="0" Classes="secondary-btn" Height="28" Margin="0,0,3,0"
+                                        Command="{Binding TableElement.AddColumnCommand}" ToolTip.Tip="Add Table Column">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="TableColumnPlusAfter" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                                        <TextBlock Text="Add Col" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Grid.Column="1" Classes="secondary-btn" Height="28" Margin="3,0,0,0"
+                                        Command="{Binding TableElement.RemoveColumnCommand}" ToolTip.Tip="Delete Table Column">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="TableColumnRemove" Width="14" Height="14" Foreground="{StaticResource WinDangerBrush}" />
+                                        <TextBlock Text="Del Col" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 4. CHART DATA CARD (Visible when Chart is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding ChartElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="ChartBar" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Chart Config" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Chart Title" Classes="inspector-label" />
+                                <TextBox Text="{Binding ChartElement.Title, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,*">
+                                <Button Grid.Column="0" Classes="secondary-btn" Height="28" Margin="0,0,3,0"
+                                        Command="{Binding ChartElement.AddDataPointCommand}" ToolTip.Tip="Add Data Point">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinAccentBrush}" />
+                                        <TextBlock Text="Add Point" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Grid.Column="1" Classes="secondary-btn" Height="28" Margin="3,0,0,0"
+                                        Command="{Binding ChartElement.RemoveDataPointCommand}" ToolTip.Tip="Remove Data Point">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="Minus" Width="14" Height="14" Foreground="{StaticResource WinDangerBrush}" />
+                                        <TextBlock Text="Del Point" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 5. WATERMARK CARD (Visible when Watermark is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding WatermarkElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="Watermark" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Watermark Settings" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Watermark Text" Classes="inspector-label" />
+                                <TextBox Text="{Binding WatermarkElement.Text, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,*">
+                                <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
+                                    <TextBlock Text="Font Size" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding WatermarkElement.FontSize, Mode=TwoWay}" Minimum="20" Maximum="120" Height="28" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
+                                    <TextBlock Text="Angle (°)" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding WatermarkElement.Angle, Mode=TwoWay}" Minimum="-90" Maximum="90" Height="28" FontSize="12" />
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Opacity" Classes="inspector-label" />
+                                <Slider Value="{Binding WatermarkElement.Opacity, Mode=TwoWay}" Minimum="0.05" Maximum="1.0" Height="28" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 6. DIMENSIONS & POSITION CARD (Visible for any selected element) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding HasSelectedElement}">
+                        <StackPanel Spacing="10">
+                            <!-- Card Title -->
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="ArrowAll" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Position &amp; Size" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" RowSpacing="6">
+                                <StackPanel Grid.Row="0" Grid.Column="0" Spacing="3" Margin="0,0,4,0">
+                                    <TextBlock Text="X (pt)" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding SelectedElement.X, Mode=TwoWay}" Minimum="0" Maximum="2000" Height="30" FontSize="12" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="0" Grid.Column="1" Spacing="3" Margin="4,0,0,0">
+                                    <TextBlock Text="Y (pt)" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding SelectedElement.Y, Mode=TwoWay}" Minimum="0" Maximum="3000" Height="30" FontSize="12" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="1" Grid.Column="0" Spacing="3" Margin="0,0,4,0">
+                                    <TextBlock Text="Width (pt)" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding SelectedElement.Width, Mode=TwoWay}" Minimum="20" Maximum="2000" Height="30" FontSize="12" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="1" Grid.Column="1" Spacing="3" Margin="4,0,0,0">
+                                    <TextBlock Text="Height (pt)" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding SelectedElement.Height, Mode=TwoWay}" Minimum="5" Maximum="3000" Height="30" FontSize="12" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Actions Row (Front, Back, Duplicate, Delete) -->
+                            <Grid ColumnDefinitions="*,*,*,*" Margin="0,4,0,0">
+                                <Button Grid.Column="0" Classes="secondary-btn" Height="30" Margin="0,0,2,0"
+                                        Command="{Binding BringToFrontCommand}" ToolTip.Tip="Bring to Front">
+                                    <materialIcons:MaterialIcon Kind="ArrangeBringToFront" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                </Button>
+
+                                <Button Grid.Column="1" Classes="secondary-btn" Height="30" Margin="2,0,2,0"
+                                        Command="{Binding SendToBackCommand}" ToolTip.Tip="Send to Back">
+                                    <materialIcons:MaterialIcon Kind="ArrangeSendToBack" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                </Button>
+
+                                <Button Grid.Column="2" Classes="secondary-btn" Height="30" Margin="2,0,2,0"
+                                        Command="{Binding DuplicateSelectedElementCommand}" ToolTip.Tip="Duplicate Element">
+                                    <materialIcons:MaterialIcon Kind="ContentCopy" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                </Button>
+
+                                <Button Grid.Column="3" Classes="danger-btn" Height="30" Margin="2,0,0,0"
+                                        Command="{Binding DeleteSelectedElementCommand}" ToolTip.Tip="Delete Element">
+                                    <materialIcons:MaterialIcon Kind="DeleteOutline" Width="14" Height="14" Foreground="{StaticResource WinDangerBrush}" HorizontalAlignment="Center" />
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 7. PAGE & DOCUMENT SETUP CARD -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                        <StackPanel Spacing="10">
+                            <!-- Card Title -->
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Page Setup" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- Rotate Button -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Orientation" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                                <Button Grid.Column="1" Classes="secondary-btn" Height="28" Padding="8,2"
+                                        Command="{Binding SelectedPage.RotateClockwiseCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="RotateRight" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                                        <TextBlock Text="Rotate 90°" FontSize="11" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <!-- Header & Footer Toggle -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Footer Bar" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedPage.ShowHeaderFooter, Mode=TwoWay}"
+                                              OnContent="" OffContent="" Margin="0" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,0 +1,236 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+
+    <Styles.Resources>
+        <!-- Modern Fluent & Studio Color Palette -->
+        <Color x:Key="WinBgColor">#F8FAFC</Color>
+        <Color x:Key="WinPanelColor">#FFFFFF</Color>
+        <Color x:Key="WinBorderColor">#E2E8F0</Color>
+        <Color x:Key="WinBorderSubtleColor">#F1F5F9</Color>
+        <Color x:Key="WinHoverColor">#F1F5F9</Color>
+        <Color x:Key="WinActiveColor">#E2E8F0</Color>
+        <Color x:Key="WinTextColor">#0F172A</Color>
+        <Color x:Key="WinMutedColor">#64748B</Color>
+        <Color x:Key="WinSubtleColor">#94A3B8</Color>
+        <Color x:Key="WinAccentColor">#0F6CBD</Color>
+        <Color x:Key="WinAccentHoverColor">#0C599B</Color>
+        <Color x:Key="WinAccentLightColor">#EFF6FF</Color>
+        <Color x:Key="WinAccentBorderColor">#BFDBFE</Color>
+        <Color x:Key="WinDangerColor">#DC2626</Color>
+        <Color x:Key="WinDangerLightColor">#FEF2F2</Color>
+        <Color x:Key="WinDangerBorderColor">#FECACA</Color>
+        <Color x:Key="WinSuccessColor">#16A34A</Color>
+        <Color x:Key="WinSuccessLightColor">#F0FDF4</Color>
+
+        <SolidColorBrush x:Key="WinBgBrush" Color="{StaticResource WinBgColor}" />
+        <SolidColorBrush x:Key="WinPanelBrush" Color="{StaticResource WinPanelColor}" />
+        <SolidColorBrush x:Key="WinBorderBrush" Color="{StaticResource WinBorderColor}" />
+        <SolidColorBrush x:Key="WinBorderSubtleBrush" Color="{StaticResource WinBorderSubtleColor}" />
+        <SolidColorBrush x:Key="WinHoverBrush" Color="{StaticResource WinHoverColor}" />
+        <SolidColorBrush x:Key="WinActiveBrush" Color="{StaticResource WinActiveColor}" />
+        <SolidColorBrush x:Key="WinTextBrush" Color="{StaticResource WinTextColor}" />
+        <SolidColorBrush x:Key="WinMutedBrush" Color="{StaticResource WinMutedColor}" />
+        <SolidColorBrush x:Key="WinSubtleBrush" Color="{StaticResource WinSubtleColor}" />
+        <SolidColorBrush x:Key="WinAccentBrush" Color="{StaticResource WinAccentColor}" />
+        <SolidColorBrush x:Key="WinAccentHoverBrush" Color="{StaticResource WinAccentHoverColor}" />
+        <SolidColorBrush x:Key="WinAccentLightBrush" Color="{StaticResource WinAccentLightColor}" />
+        <SolidColorBrush x:Key="WinAccentBorderBrush" Color="{StaticResource WinAccentBorderColor}" />
+        <SolidColorBrush x:Key="WinDangerBrush" Color="{StaticResource WinDangerColor}" />
+        <SolidColorBrush x:Key="WinDangerLightBrush" Color="{StaticResource WinDangerLightColor}" />
+        <SolidColorBrush x:Key="WinDangerBorderBrush" Color="{StaticResource WinDangerBorderColor}" />
+        <SolidColorBrush x:Key="WinSuccessBrush" Color="{StaticResource WinSuccessColor}" />
+        <SolidColorBrush x:Key="WinSuccessLightBrush" Color="{StaticResource WinSuccessLightColor}" />
+    </Styles.Resources>
+
+    <!-- Global Application Typography & Controls Default Polish -->
+    <Style Selector="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Cantarell, sans-serif" />
+    </Style>
+
+    <!-- Ribbon Tab Button Style -->
+    <Style Selector="Button.ribbon-tab">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource WinMutedBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="12,5" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.ribbon-tab:pointerover">
+        <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource WinTextBrush}" />
+    </Style>
+
+    <Style Selector="Button.ribbon-tab.active">
+        <Setter Property="Background" Value="{StaticResource WinAccentLightBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource WinAccentBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <!-- File Tab Button Style (Accent pill) -->
+    <Style Selector="Button.ribbon-file-tab">
+        <Setter Property="Background" Value="{StaticResource WinAccentBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="12,5" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.ribbon-file-tab:pointerover">
+        <Setter Property="Background" Value="{StaticResource WinAccentHoverBrush}" />
+    </Style>
+
+    <!-- Ribbon Vertical Tool Button -->
+    <Style Selector="Button.tool-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="4,4" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="MinWidth" Value="64" />
+        <Setter Property="Height" Value="66" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.tool-btn:pointerover">
+        <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+    </Style>
+
+    <Style Selector="Button.tool-btn.active">
+        <Setter Property="Background" Value="{StaticResource WinAccentLightBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinAccentBorderBrush}" />
+    </Style>
+
+    <!-- Mini Tool Button (for fonts, icons, quick toolbar) -->
+    <Style Selector="Button.mini-tool-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.mini-tool-btn:pointerover">
+        <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+    </Style>
+
+    <Style Selector="Button.mini-tool-btn.active">
+        <Setter Property="Background" Value="{StaticResource WinAccentLightBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinAccentBorderBrush}" />
+    </Style>
+
+    <!-- Secondary Action Button (Icon + Label, perfect for Inspector & Footer) -->
+    <Style Selector="Button.secondary-btn">
+        <Setter Property="Background" Value="{StaticResource WinPanelBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource WinTextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.secondary-btn:pointerover">
+        <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
+        <Setter Property="BorderBrush" Value="#CBD5E1" />
+    </Style>
+
+    <!-- Danger Button (Delete, Remove) -->
+    <Style Selector="Button.danger-btn">
+        <Setter Property="Background" Value="{StaticResource WinDangerLightBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource WinDangerBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinDangerBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.danger-btn:pointerover">
+        <Setter Property="Background" Value="#FEE2E2" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinDangerBrush}" />
+    </Style>
+
+    <!-- Accent Primary Button (Save, Export) -->
+    <Style Selector="Button.accent-btn">
+        <Setter Property="Background" Value="{StaticResource WinAccentBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="14,6" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Height" Value="34" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.accent-btn:pointerover">
+        <Setter Property="Background" Value="{StaticResource WinAccentHoverBrush}" />
+    </Style>
+
+    <!-- Inspector Section Labels & Headers -->
+    <Style Selector="TextBlock.inspector-header">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource WinMutedBrush}" />
+        <Setter Property="LetterSpacing" Value="0.6" />
+    </Style>
+
+    <Style Selector="TextBlock.inspector-label">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{StaticResource WinMutedBrush}" />
+        <Setter Property="Margin" Value="0,0,0,3" />
+    </Style>
+
+    <!-- Modern ComboBox, TextBox, NumericUpDown adjustments -->
+    <Style Selector="ComboBox">
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Padding" Value="8,2" />
+    </Style>
+
+    <Style Selector="TextBox">
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Padding" Value="8,4" />
+    </Style>
+
+    <Style Selector="NumericUpDown">
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Padding" Value="6,2" />
+    </Style>
+
+</Styles>

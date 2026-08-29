@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "avalonia": {
+      "source": "markpitt/claude-skills",
+      "sourceType": "github",
+      "skillPath": "skills/avalonia/SKILL.md",
+      "computedHash": "e373cf5ca70a57953b18815e3c9671508e5888d4daab4025cc48d9f7507d4d6b"
+    }
+  }
+}

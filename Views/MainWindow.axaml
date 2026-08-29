@@ -1,0 +1,201 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PdfEditorApp.ViewModels"
+        xmlns:views="using:PdfEditorApp.Views"
+        xmlns:dialogs="using:PdfEditorApp.Views.Dialogs"
+        xmlns:converters="using:PdfEditorApp.Converters"
+        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="820"
+        x:Class="PdfEditorApp.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="{Binding DocumentTitle, StringFormat='{}{0} - PDF Editor Pro'}"
+        Width="1320"
+        Height="840"
+        MinWidth="960"
+        MinHeight="640"
+        Background="{StaticResource WinBgBrush}">
+
+    <Window.Resources>
+        <converters:ZoomPercentageConverter x:Key="ZoomPercentageConverter" />
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+    </Window.Resources>
+
+    <!-- Main Window Root Layout -->
+    <Grid>
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+            <!-- 1. Top Modern Title Bar -->
+            <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" Height="44" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="14,0">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+
+                    <!-- Left: App Icon, Brand & Document Title -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <!-- Red PDF Brand Icon Badge -->
+                        <Border Width="28" Height="28" Background="#DC2626" CornerRadius="6" BoxShadow="0 2 6 #30DC2626">
+                            <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding DocumentTitle}"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource WinTextBrush}"
+                                       VerticalAlignment="Center" />
+
+                            <!-- App Name Subtitle Pill -->
+                            <Border Background="{StaticResource WinHoverBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
+                                <TextBlock Text="PDF Editor Pro" FontSize="10.5" FontWeight="Medium" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Center: Search & Command Bar -->
+                    <Border Grid.Column="1"
+                            HorizontalAlignment="Center"
+                            Width="360"
+                            Height="30"
+                            Background="White"
+                            BorderBrush="{StaticResource WinBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="7"
+                            BoxShadow="0 1 3 #06000000"
+                            Padding="10,0">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="15" Height="15" Foreground="{StaticResource WinSubtleBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding SearchQuery, Mode=TwoWay}"
+                                     PlaceholderText="Search tools, commands, or text..."
+                                     BorderThickness="0"
+                                     Background="Transparent"
+                                     FontSize="11.5"
+                                     VerticalAlignment="Center"
+                                     Padding="0" />
+                            <!-- Quick Shortcut Badge -->
+                            <Border Grid.Column="2" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
+                                <TextBlock Text="⌘K" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" />
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Right: Quick Save & Actions -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save Project (Ctrl+S)">
+                            <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                        <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding ExportPdfCommand}" ToolTip.Tip="Export to PDF">
+                            <materialIcons:MaterialIcon Kind="ExportVariant" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 2. Ribbon Menu & Toolbars -->
+            <views:RibbonView Grid.Row="1" />
+
+            <!-- 3. Main Workspace: Left Thumbnails + Center Document Canvas + Right Inspector -->
+            <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto">
+                <!-- Left: Thumbnails Sidebar -->
+                <views:ThumbnailSidebarView Grid.Column="0" />
+
+                <!-- Center: Interactive PDF Document Canvas -->
+                <views:DocumentCanvasView Grid.Column="1" />
+
+                <!-- Right: Format & Properties Inspector -->
+                <views:InspectorSidebarView Grid.Column="2" DataContext="{Binding Inspector}" />
+            </Grid>
+
+            <!-- 4. Bottom Status Bar -->
+            <Border Grid.Row="3" Background="{StaticResource WinBgBrush}" Height="32" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,1,0,0" Padding="14,0">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+
+                    <!-- Left: Page Info, Dimensions & Document Status -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <!-- Page Number Chip -->
+                        <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="7,2">
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="13" Height="13" Foreground="{StaticResource WinMutedBrush}" />
+                                <TextBlock FontSize="11" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="Page {0} of {1}">
+                                            <Binding Path="CurrentPageNumber" />
+                                            <Binding Path="TotalPagesCount" />
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Format Dimensions Chip -->
+                        <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="7,2">
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="AspectRatio" Width="13" Height="13" Foreground="{StaticResource WinMutedBrush}" />
+                                <TextBlock Text="{Binding PageDimensionsDisplay}" FontSize="11" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Status Message with Active Indicator Dot -->
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="6,0,0,0">
+                            <Ellipse Width="6" Height="6" Fill="#10B981" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{StaticResource WinMutedBrush}" FontWeight="Medium" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Right: View Modes & Zoom Controls -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <!-- Fit to Page Button -->
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToPageCommand}" ToolTip.Tip="Fit to Page">
+                            <materialIcons:MaterialIcon Kind="FitToPageOutline" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+
+                        <!-- Fit to Width Button -->
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToWidthCommand}" ToolTip.Tip="Fit to Width">
+                            <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+
+                        <!-- Divider -->
+                        <Rectangle Width="1" Height="14" Fill="{StaticResource WinBorderBrush}" Margin="4,0" />
+
+                        <!-- Zoom Out -->
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom Out">
+                            <materialIcons:MaterialIcon Kind="Minus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+
+                        <!-- Zoom Slider -->
+                        <Slider Width="110"
+                                Minimum="0.4"
+                                Maximum="2.5"
+                                Value="{Binding ZoomLevel, Mode=TwoWay}"
+                                SmallChange="0.05"
+                                LargeChange="0.1"
+                                VerticalAlignment="Center" />
+
+                        <!-- Zoom In -->
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom In">
+                            <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+
+                        <!-- Zoom Percentage Pill -->
+                        <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="6,2" Margin="4,0,0,0">
+                            <TextBlock Text="{Binding ZoomLevel, Converter={StaticResource ZoomPercentageConverter}}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource WinTextBrush}"
+                                       Width="36"
+                                       TextAlignment="Center"
+                                       VerticalAlignment="Center" />
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+        </Grid>
+
+        <!-- Dialog Overlays -->
+        <dialogs:NewDocumentDialog IsVisible="{Binding IsNewDocumentDialogOpen}" />
+        <dialogs:ExportSuccessDialog IsVisible="{Binding IsExportSuccessDialogOpen}" />
+    </Grid>
+
+</Window>

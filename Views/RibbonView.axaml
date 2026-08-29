@@ -61,6 +61,14 @@
                         <TextBlock Text="Insert" />
                     </Button>
 
+                    <!-- Forms Tab (AcroForms Suite) -->
+                    <Button Classes="ribbon-tab"
+                            Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Forms}"
+                            Command="{Binding SelectRibbonTabCommand}"
+                            CommandParameter="{x:Static models:RibbonTabKind.Forms}">
+                        <TextBlock Text="Forms" />
+                    </Button>
+
                     <!-- Organize Tab -->
                     <Button Classes="ribbon-tab"
                             Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Organize}"
@@ -74,7 +82,7 @@
                             Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Export}"
                             Command="{Binding SelectRibbonTabCommand}"
                             CommandParameter="{x:Static models:RibbonTabKind.Export}">
-                        <TextBlock Text="Export" />
+                        <TextBlock Text="Export &amp; Protect" />
                     </Button>
                 </StackPanel>
             </Border>
@@ -201,7 +209,7 @@
                             </Grid>
                         </StackPanel>
 
-                        <!-- ================= TAB: EDIT (Default) ================= -->
+                        <!-- ================= TAB: EDIT (Authoring & Layout) ================= -->
                         <StackPanel Orientation="Horizontal" Spacing="6"
                                     IsVisible="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Edit}">
 
@@ -289,6 +297,37 @@
 
                             <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
+                            <!-- Alignment Suite Group -->
+                            <Grid RowDefinitions="*,Auto">
+                                <StackPanel Grid.Row="0" VerticalAlignment="Center" Spacing="4" HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="2">
+                                        <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignLeftCommand}" ToolTip.Tip="Align Page Left Margin">
+                                            <materialIcons:MaterialIcon Kind="AlignHorizontalLeft" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                        </Button>
+                                        <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignCenterCommand}" ToolTip.Tip="Center Horizontally">
+                                            <materialIcons:MaterialIcon Kind="AlignHorizontalCenter" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                        </Button>
+                                        <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignRightCommand}" ToolTip.Tip="Align Page Right Margin">
+                                            <materialIcons:MaterialIcon Kind="AlignHorizontalRight" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                        </Button>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="2">
+                                        <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignTopCommand}" ToolTip.Tip="Align Page Top">
+                                            <materialIcons:MaterialIcon Kind="AlignVerticalTop" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                        </Button>
+                                        <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignMiddleCommand}" ToolTip.Tip="Center Vertically">
+                                            <materialIcons:MaterialIcon Kind="AlignVerticalCenter" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                        </Button>
+                                        <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignBottomCommand}" ToolTip.Tip="Align Page Bottom">
+                                            <materialIcons:MaterialIcon Kind="AlignVerticalBottom" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+                                <TextBlock Grid.Row="1" Text="Align" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                            </Grid>
+
+                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+
                             <!-- Insert & Layout Tools Group -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
@@ -304,39 +343,12 @@
                                             <TextBlock Text="Watermark" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Classes="tool-btn" Command="{Binding AddPageCommand}" ToolTip.Tip="Add New Blank Page">
-                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="FilePlusOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="New Page" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
-                                        </StackPanel>
-                                    </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Insert" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
-                            </Grid>
-
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
-
-                            <!-- Actions Group -->
-                            <Grid RowDefinitions="*,Auto">
-                                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <Button Classes="secondary-btn" Height="34" Padding="12,6" Command="{Binding SaveProjectCommand}">
-                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                            <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
-                                            <TextBlock Text="Save Project" FontSize="12" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </Button>
-                                    <Button Classes="accent-btn" Height="34" Padding="14,6" Command="{Binding ExportPdfCommand}">
-                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                            <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="White" VerticalAlignment="Center" />
-                                            <TextBlock Text="Export PDF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12.5" />
-                                        </StackPanel>
-                                    </Button>
-                                </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Actions" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Decorations" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 
-                        <!-- ================= TAB: COMMENT ================= -->
+                        <!-- ================= TAB: COMMENT (Review & Markup) ================= -->
                         <StackPanel Orientation="Horizontal" Spacing="6"
                                     IsVisible="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Comment}">
 
@@ -349,8 +361,26 @@
                                             <TextBlock Text="Sticky Note" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddInkElementCommand}" CommandParameter="True" ToolTip.Tip="Highlight Marker">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="Marker" Width="20" Height="20" Foreground="#EAB308" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Highlight" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddInkElementCommand}" CommandParameter="False" ToolTip.Tip="Freehand Ink Drawing">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="DrawPen" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Draw Ink" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddRedactionElementCommand}" CommandParameter="[REDACTED]" ToolTip.Tip="Blackout Redaction Box">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="EyeOffOutline" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Redact" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Notes" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Markup Tools" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
                             <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
@@ -385,24 +415,9 @@
                                 </StackPanel>
                                 <TextBlock Grid.Row="1" Text="Stamps &amp; Seals" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
-
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
-
-                            <!-- Watermark Group -->
-                            <Grid RowDefinitions="*,Auto">
-                                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                    <Button Classes="tool-btn" Command="{Binding AddWatermarkElementCommand}" ToolTip.Tip="Insert Translucent Watermark Overlay">
-                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="Watermark" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Watermark" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
-                                        </StackPanel>
-                                    </Button>
-                                </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Watermark" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
-                            </Grid>
                         </StackPanel>
 
-                        <!-- ================= TAB: INSERT ================= -->
+                        <!-- ================= TAB: INSERT (Visuals, QR & Media) ================= -->
                         <StackPanel Orientation="Horizontal" Spacing="6"
                                     IsVisible="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Insert}">
 
@@ -427,16 +442,16 @@
                                             <TextBlock Text="Image" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Classes="tool-btn" Command="{Binding AddShapeElementCommand}" CommandParameter="Rectangle" ToolTip.Tip="Insert Rectangle">
+                                    <Button Classes="tool-btn" Command="{Binding AddQrCodeElementCommand}" ToolTip.Tip="Insert Vector QR Code">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="RectangleOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Rectangle" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="Qrcode" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="QR Code" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Classes="tool-btn" Command="{Binding AddShapeElementCommand}" CommandParameter="Circle" ToolTip.Tip="Insert Circle Shape">
+                                    <Button Classes="tool-btn" Command="{Binding AddBarcodeElementCommand}" ToolTip.Tip="Insert Barcode">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="CircleOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Circle" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="Barcode" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Barcode" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddTableElementCommand}" ToolTip.Tip="Insert Table">
@@ -454,30 +469,51 @@
                                 </StackPanel>
                                 <TextBlock Grid.Row="1" Text="Visual Elements" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
+                        </StackPanel>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                        <!-- ================= TAB: FORMS (AcroForms Interactive Suite) ================= -->
+                        <StackPanel Orientation="Horizontal" Spacing="6"
+                                    IsVisible="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Forms}">
 
-                            <!-- Document Parts Group -->
+                            <!-- Form Creation Tools -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                    <Button Classes="tool-btn" Command="{Binding AddDividerElementCommand}" ToolTip.Tip="Insert Divider Line">
+                                    <Button Classes="tool-btn" Command="{Binding AddFormFieldElementCommand}" CommandParameter="Text" ToolTip.Tip="Insert Text Input Field">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="VectorLine" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Divider" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="FormTextbox" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Text Field" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Classes="tool-btn" Command="{Binding AddPageCommand}" ToolTip.Tip="Add Blank Page">
+                                    <Button Classes="tool-btn" Command="{Binding AddFormFieldElementCommand}" CommandParameter="Checkbox" ToolTip.Tip="Insert Checkbox">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="FilePlusOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Blank Page" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="CheckboxMarkedOutline" Width="20" Height="20" Foreground="#16A34A" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Checkbox" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddFormFieldElementCommand}" CommandParameter="Radio" ToolTip.Tip="Insert Radio Option">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="RadioboxMarked" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Radio" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddFormFieldElementCommand}" CommandParameter="Dropdown" ToolTip.Tip="Insert Dropdown List">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="FormDropdown" Width="20" Height="20" Foreground="#7C3AED" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Dropdown" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddFormFieldElementCommand}" CommandParameter="Signature" ToolTip.Tip="Insert Digital Signature Block">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="SignatureFreehand" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Signature" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Document Layout" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="AcroForm Fields" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 
-                        <!-- ================= TAB: ORGANIZE ================= -->
+                        <!-- ================= TAB: ORGANIZE (Pages & Bates Numbering) ================= -->
                         <StackPanel Orientation="Horizontal" Spacing="6"
                                     IsVisible="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Organize}">
 
@@ -508,39 +544,21 @@
 
                             <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
-                            <!-- Ordering & Rotation Group -->
+                            <!-- Legal Bates Numbering -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                    <Button Classes="tool-btn" Command="{Binding MovePageUpCommand}" ToolTip.Tip="Move Page Up">
+                                    <Button Classes="tool-btn" Command="{Binding ApplyBatesNumberingCommand}" ToolTip.Tip="Apply Legal Bates Numbering (CONF-BATES-000001)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ArrowUpBold" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Move Up" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
-                                        </StackPanel>
-                                    </Button>
-                                    <Button Classes="tool-btn" Command="{Binding MovePageDownCommand}" ToolTip.Tip="Move Page Down">
-                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ArrowDownBold" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Move Down" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
-                                        </StackPanel>
-                                    </Button>
-                                    <Button Classes="tool-btn" Command="{Binding RotateCurrentPageCommand}" ToolTip.Tip="Rotate 90° Clockwise">
-                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="RotateRight" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Rotate 90°" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
-                                        </StackPanel>
-                                    </Button>
-                                    <Button Classes="tool-btn" Command="{Binding RotateCurrentPageCounterClockwiseCommand}" ToolTip.Tip="Rotate 90° Counter-Clockwise">
-                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="RotateLeft" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Rotate -90°" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="Numeric" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Bates Stamp" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Reorder &amp; Rotate" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Legal Bates" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 
-                        <!-- ================= TAB: EXPORT ================= -->
+                        <!-- ================= TAB: EXPORT & PROTECT ================= -->
                         <StackPanel Orientation="Horizontal" Spacing="6"
                                     IsVisible="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Export}">
 

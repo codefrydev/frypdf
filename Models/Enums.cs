@@ -11,7 +11,30 @@ public enum ElementKind
     Chart,
     Watermark,
     Stamp,
-    StickyNote
+    StickyNote,
+    FormField,
+    QrCode,
+    Barcode,
+    Redaction,
+    Ink
+}
+
+public enum FormFieldType
+{
+    Text,
+    MultilineText,
+    Checkbox,
+    Radio,
+    Dropdown,
+    Signature,
+    Button
+}
+
+public enum RedactionMode
+{
+    Blackout,
+    Whiteout,
+    Grayout
 }
 
 public enum PageFormat
@@ -57,7 +80,9 @@ public enum StampType
     Urgent,
     SignHere,
     Void,
-    Completed
+    Completed,
+    Final,
+    Expired
 }
 
 public enum RibbonTabKind
@@ -67,6 +92,7 @@ public enum RibbonTabKind
     Edit,
     Comment,
     Insert,
+    Forms,
     Organize,
     Export
 }
@@ -78,5 +104,7 @@ public enum ToolMode
     Text,
     Shape,
     Highlight,
-    Draw
+    Draw,
+    Form,
+    Redact
 }

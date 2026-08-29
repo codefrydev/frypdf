@@ -308,6 +308,116 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- 6. FORM FIELD CARD (Visible when Form Field is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding FormFieldElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FormTextbox" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="AcroForm Field Setup" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Field Label" Classes="inspector-label" />
+                                <TextBox Text="{Binding FormFieldElement.Label, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Placeholder / Watermark" Classes="inspector-label" />
+                                <TextBox Text="{Binding FormFieldElement.Placeholder, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Required Field (*)" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding FormFieldElement.IsRequired, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 7. QR CODE CARD (Visible when QR Code is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding QrCodeElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="Qrcode" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="QR Code Settings" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Target URL / Payload" Classes="inspector-label" />
+                                <TextBox Text="{Binding QrCodeElement.Content, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Label Text" Classes="inspector-label" />
+                                <TextBox Text="{Binding QrCodeElement.Label, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 8. BARCODE CARD (Visible when Barcode is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding BarcodeElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="Barcode" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Barcode Settings" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Code Value" Classes="inspector-label" />
+                                <TextBox Text="{Binding BarcodeElement.CodeValue, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Show Text Underneath" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding BarcodeElement.ShowText, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 9. REDACTION CARD (Visible when Redaction block is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding RedactionElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="EyeOffOutline" Width="16" Height="16" Foreground="{StaticResource WinDangerBrush}" />
+                                <TextBlock Text="Redaction Exemption" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinDangerBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Exemption Code" Classes="inspector-label" />
+                                <TextBox Text="{Binding RedactionElement.ExemptionCode, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Show Exemption Text" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding RedactionElement.ShowOverlayText, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 10. STICKY NOTE CARD (Visible when Sticky Note is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding StickyNoteElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="NoteTextOutline" Width="16" Height="16" Foreground="#B45309" />
+                                <TextBlock Text="Review Comment" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Author" Classes="inspector-label" />
+                                <TextBox Text="{Binding StickyNoteElement.Author, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Review Status" Classes="inspector-label" />
+                                <TextBox Text="{Binding StickyNoteElement.Status, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
                     <!-- 6. DIMENSIONS & POSITION CARD (Visible for any selected element) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding HasSelectedElement}">

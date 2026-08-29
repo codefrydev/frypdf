@@ -275,6 +275,79 @@ internal class QuestPdfDocumentWrapper : IDocument
                         .Text(imgEl.AltText).FontSize(11).FontColor(Colors.Grey.Medium);
                 }
                 break;
+
+            case PdfFormFieldElement formEl:
+                col.Item().Border(1).BorderColor(formEl.BorderColorHex).Background(formEl.BackgroundColorHex).Padding(8).Column(fCol =>
+                {
+                    fCol.Item().Row(r =>
+                    {
+                        r.RelativeItem().Text(formEl.Label).FontSize(9).Bold().FontColor(Colors.Grey.Darken3);
+                        if (formEl.IsRequired)
+                        {
+                            r.AutoItem().Text("* Required").FontSize(7.5f).FontColor(Colors.Red.Medium);
+                        }
+                    });
+
+                    if (formEl.FieldType == FormFieldType.Checkbox)
+                    {
+                        fCol.Item().PaddingTop(4).Row(r =>
+                        {
+                            r.AutoItem().Width(12).Height(12).Border(1).BorderColor(Colors.Grey.Darken2).Background(formEl.IsChecked ? Colors.Blue.Lighten4 : Colors.White);
+                            r.RelativeItem().PaddingLeft(6).Text(formEl.IsChecked ? "[X] Checked" : "[ ] Unchecked").FontSize(8.5f);
+                        });
+                    }
+                    else if (formEl.FieldType == FormFieldType.Signature)
+                    {
+                        fCol.Item().PaddingTop(6).BorderBottom(1).BorderColor(Colors.Grey.Medium).PaddingBottom(4).Text(string.IsNullOrEmpty(formEl.Value) ? "Digitally Verified Signer Placeholder" : formEl.Value).FontSize(10).Italic().FontColor(Colors.Blue.Darken2);
+                    }
+                    else
+                    {
+                        fCol.Item().PaddingTop(4).Border(1).BorderColor(Colors.Grey.Lighten1).Background(Colors.White).Padding(4).Text(string.IsNullOrEmpty(formEl.Value) ? formEl.Placeholder : formEl.Value).FontSize(9).FontColor(string.IsNullOrEmpty(formEl.Value) ? Colors.Grey.Medium : Colors.Black);
+                    }
+                });
+                break;
+
+            case PdfQrCodeElement qrEl:
+                col.Item().Border(1).BorderColor(Colors.Grey.Lighten2).Background(Colors.White).Padding(8).Column(qCol =>
+                {
+                    qCol.Item().AlignCenter().Width(70).Height(70).Border(2).BorderColor(qrEl.DarkColorHex).Background(Colors.Grey.Lighten4).AlignCenter().AlignMiddle().Text("QR CODE").FontSize(8).Bold();
+                    qCol.Item().PaddingTop(4).AlignCenter().Text(qrEl.Label).FontSize(7.5f).Bold().FontColor(Colors.Grey.Darken2);
+                    qCol.Item().AlignCenter().Text(qrEl.Content).FontSize(6.5f).FontColor(Colors.Blue.Darken2);
+                });
+                break;
+
+            case PdfBarcodeElement barEl:
+                col.Item().Border(1).BorderColor(Colors.Grey.Lighten2).Background(Colors.White).Padding(6).Column(bCol =>
+                {
+                    bCol.Item().AlignCenter().Height(24).Background(Colors.Grey.Lighten3).AlignCenter().AlignMiddle().Text("|| | ||| | || |||| | |||").FontSize(14).Bold().FontColor(barEl.BarColorHex);
+                    if (barEl.ShowText)
+                    {
+                        bCol.Item().PaddingTop(2).AlignCenter().Text(barEl.CodeValue).FontSize(8).FontColor(Colors.Grey.Darken3);
+                    }
+                });
+                break;
+
+            case PdfRedactionElement redEl:
+                col.Item().Background(redEl.FillColorHex).Border((float)redEl.BorderThickness).BorderColor(redEl.BorderColorHex).Padding(6).AlignCenter().AlignMiddle()
+                    .Text(redEl.ShowOverlayText ? redEl.ExemptionCode : "").FontSize(8.5f).Bold().FontColor(redEl.TextColorHex);
+                break;
+
+            case PdfInkElement inkEl:
+                col.Item().Height((float)inkEl.StrokeThickness).Background(inkEl.StrokeColorHex);
+                break;
+
+            case PdfStickyNoteElement noteEl:
+                col.Item().Border(1).BorderColor(noteEl.BorderColorHex).Background(noteEl.ColorHex).Padding(8).Column(nCol =>
+                {
+                    nCol.Item().Row(r =>
+                    {
+                        r.RelativeItem().Text($"📌 {noteEl.Author}").FontSize(8.5f).Bold().FontColor("#78350F");
+                        r.AutoItem().Text(noteEl.Timestamp).FontSize(7.5f).FontColor("#92400E");
+                    });
+                    nCol.Item().PaddingTop(4).Text(noteEl.NoteText).FontSize(8.5f).FontColor("#78350F");
+                    nCol.Item().PaddingTop(4).Text($"Status: {noteEl.Status}").FontSize(7.5f).Bold().FontColor("#B45309");
+                });
+                break;
         }
     }
 }

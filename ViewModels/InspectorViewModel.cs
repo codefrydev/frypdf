@@ -45,6 +45,21 @@ public partial class InspectorViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isWatermarkElement;
 
+    [ObservableProperty]
+    private bool _isFormFieldElement;
+
+    [ObservableProperty]
+    private bool _isQrCodeElement;
+
+    [ObservableProperty]
+    private bool _isBarcodeElement;
+
+    [ObservableProperty]
+    private bool _isRedactionElement;
+
+    [ObservableProperty]
+    private bool _isStickyNoteElement;
+
     public ObservableCollection<string> AvailableFontFamilies { get; } = new()
     {
         "Segoe UI",
@@ -84,6 +99,12 @@ public partial class InspectorViewModel : ViewModelBase
     public ChartElementViewModel? ChartElement => SelectedElement as ChartElementViewModel;
     public DividerElementViewModel? DividerElement => SelectedElement as DividerElementViewModel;
     public WatermarkElementViewModel? WatermarkElement => SelectedElement as WatermarkElementViewModel;
+    public FormFieldElementViewModel? FormFieldElement => SelectedElement as FormFieldElementViewModel;
+    public QrCodeElementViewModel? QrCodeElement => SelectedElement as QrCodeElementViewModel;
+    public BarcodeElementViewModel? BarcodeElement => SelectedElement as BarcodeElementViewModel;
+    public RedactionElementViewModel? RedactionElement => SelectedElement as RedactionElementViewModel;
+    public InkElementViewModel? InkElement => SelectedElement as InkElementViewModel;
+    public StickyNoteElementViewModel? StickyNoteElement => SelectedElement as StickyNoteElementViewModel;
 
     public string ActiveCategoryName => SelectedElement != null ? SelectedElement.Kind.ToString() : "Document";
     public ObservableCollection<ColorSwatchItem> ColorSwatches => Swatches;
@@ -101,6 +122,11 @@ public partial class InspectorViewModel : ViewModelBase
         IsChartElement = element is ChartElementViewModel;
         IsDividerElement = element is DividerElementViewModel;
         IsWatermarkElement = element is WatermarkElementViewModel;
+        IsFormFieldElement = element is FormFieldElementViewModel;
+        IsQrCodeElement = element is QrCodeElementViewModel;
+        IsBarcodeElement = element is BarcodeElementViewModel;
+        IsRedactionElement = element is RedactionElementViewModel;
+        IsStickyNoteElement = element is StickyNoteElementViewModel;
 
         if (element is TextElementViewModel textVm)
         {
@@ -119,6 +145,12 @@ public partial class InspectorViewModel : ViewModelBase
         OnPropertyChanged(nameof(ChartElement));
         OnPropertyChanged(nameof(DividerElement));
         OnPropertyChanged(nameof(WatermarkElement));
+        OnPropertyChanged(nameof(FormFieldElement));
+        OnPropertyChanged(nameof(QrCodeElement));
+        OnPropertyChanged(nameof(BarcodeElement));
+        OnPropertyChanged(nameof(RedactionElement));
+        OnPropertyChanged(nameof(InkElement));
+        OnPropertyChanged(nameof(StickyNoteElement));
         OnPropertyChanged(nameof(ActiveCategoryName));
     }
 
@@ -270,6 +302,69 @@ public partial class InspectorViewModel : ViewModelBase
         if (WatermarkElement != null)
         {
             WatermarkElement.ColorHex = hex;
+        }
+    }
+
+    [RelayCommand]
+    public void AlignLeft()
+    {
+        if (SelectedElement != null)
+        {
+            SelectedElement.X = 60;
+        }
+    }
+
+    [RelayCommand]
+    public void AlignCenter()
+    {
+        if (SelectedElement != null && SelectedPage != null)
+        {
+            SelectedElement.X = Math.Max(0, (SelectedPage.Width - SelectedElement.Width) / 2);
+        }
+    }
+
+    [RelayCommand]
+    public void AlignRight()
+    {
+        if (SelectedElement != null && SelectedPage != null)
+        {
+            SelectedElement.X = Math.Max(0, SelectedPage.Width - SelectedElement.Width - 60);
+        }
+    }
+
+    [RelayCommand]
+    public void AlignTop()
+    {
+        if (SelectedElement != null)
+        {
+            SelectedElement.Y = 60;
+        }
+    }
+
+    [RelayCommand]
+    public void AlignMiddle()
+    {
+        if (SelectedElement != null && SelectedPage != null)
+        {
+            SelectedElement.Y = Math.Max(0, (SelectedPage.Height - SelectedElement.Height) / 2);
+        }
+    }
+
+    [RelayCommand]
+    public void AlignBottom()
+    {
+        if (SelectedElement != null && SelectedPage != null)
+        {
+            SelectedElement.Y = Math.Max(0, SelectedPage.Height - SelectedElement.Height - 60);
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleLock()
+    {
+        if (SelectedElement != null)
+        {
+            SelectedElement.IsLocked = !SelectedElement.IsLocked;
         }
     }
 }

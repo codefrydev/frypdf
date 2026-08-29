@@ -169,6 +169,12 @@ public partial class PageViewModel : ViewModelBase
                 PdfChartElement ch => new ChartElementViewModel(),
                 PdfTableElement tbl => new TableElementViewModel(),
                 PdfWatermarkElement wm => new WatermarkElementViewModel(),
+                PdfFormFieldElement form => new FormFieldElementViewModel(),
+                PdfQrCodeElement qr => new QrCodeElementViewModel(),
+                PdfBarcodeElement bar => new BarcodeElementViewModel(),
+                PdfRedactionElement red => new RedactionElementViewModel(),
+                PdfInkElement ink => new InkElementViewModel(),
+                PdfStickyNoteElement note => new StickyNoteElementViewModel(),
                 _ => new TextElementViewModel()
             };
             vm.LoadFromModel(elModel);

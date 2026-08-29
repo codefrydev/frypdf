@@ -164,4 +164,81 @@ public class PdfEngineTests
         vm.RotateCurrentPageCounterClockwiseCommand.Execute(null);
         Assert.Equal(rotation, vm.CurrentPage.RotationAngle);
     }
+
+    [Fact]
+    public void GeneratePdf_WithAllAcroFormsAndVisualElements_Succeeds()
+    {
+        var doc = new PdfDocumentModel { Title = "Adobe Acrobat Pro Replacement Test Document" };
+        var page = new PdfPageModel { PageNumber = 1, Width = 800, Height = 1100, ShowHeaderFooter = true };
+
+        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfFormFieldElement
+        {
+            FieldType = FormFieldType.Text,
+            Label = "Candidate Name:",
+            Placeholder = "Jane Doe"
+        });
+
+        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfFormFieldElement
+        {
+            FieldType = FormFieldType.Checkbox,
+            Label = "NDA Signed",
+            IsChecked = true
+        });
+
+        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfFormFieldElement
+        {
+            FieldType = FormFieldType.Signature,
+            Label = "Authorized Signatory",
+            Value = "John Hancock"
+        });
+
+        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfQrCodeElement
+        {
+            Content = "https://github.com/PrashantUnity/PDFCreator",
+            Label = "VERIFICATION QR"
+        });
+
+        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfBarcodeElement
+        {
+            CodeValue = "DOC-998822",
+            ShowText = true
+        });
+
+        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfRedactionElement
+        {
+            ExemptionCode = "[REDACTED - (b)(4)]"
+        });
+
+        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfInkElement
+        {
+            IsHighlighter = true,
+            StrokeThickness = 8
+        });
+
+        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfStickyNoteElement
+        {
+            Author = "Lead Counsel",
+            NoteText = "Approved for filing."
+        });
+
+        doc.Pages.Add(page);
+
+        byte[] bytes = _exportService.GeneratePdfBytes(doc);
+        Assert.NotNull(bytes);
+        Assert.True(bytes.Length > 800);
+        Assert.Equal("%PDF-", Encoding.ASCII.GetString(bytes, 0, 5));
+    }
+
+    [Fact]
+    public void BatesNumbering_AppliesSequentialCodesAcrossPages()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        Assert.True(vm.Pages.Count >= 3);
+
+        vm.ApplyBatesNumberingCommand.Execute(null);
+
+        Assert.Equal("CONF-BATES-000001", vm.Pages[0].FooterLeft);
+        Assert.Equal("CONF-BATES-000002", vm.Pages[1].FooterLeft);
+        Assert.Equal("CONF-BATES-000003", vm.Pages[2].FooterLeft);
+    }
 }

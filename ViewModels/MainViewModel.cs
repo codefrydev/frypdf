@@ -676,6 +676,129 @@ public partial class MainViewModel : ViewModelBase
         UpdateStatus("Added Watermark Overlay");
     }
 
+    [RelayCommand]
+    public void AddFormFieldElement(string? formTypeStr = "Text")
+    {
+        if (CurrentPage == null) return;
+
+        var fieldType = FormFieldType.Text;
+        if (!string.IsNullOrEmpty(formTypeStr) && Enum.TryParse<FormFieldType>(formTypeStr, true, out var parsed))
+        {
+            fieldType = parsed;
+        }
+
+        var formEl = new FormFieldElementViewModel
+        {
+            X = 100,
+            Y = 220,
+            Width = fieldType == FormFieldType.Checkbox ? 180 : (fieldType == FormFieldType.Signature ? 260 : 340),
+            Height = fieldType == FormFieldType.Signature ? 90 : (fieldType == FormFieldType.MultilineText ? 80 : 42),
+            FieldType = fieldType,
+            Label = fieldType switch
+            {
+                FormFieldType.Text => "Full Legal Name:",
+                FormFieldType.MultilineText => "Additional Notes / Comments:",
+                FormFieldType.Checkbox => "I accept the Terms & Conditions",
+                FormFieldType.Radio => "Select Option:",
+                FormFieldType.Dropdown => "Country / Jurisdiction:",
+                FormFieldType.Signature => "Authorized Officer Signature:",
+                _ => "Field:"
+            },
+            Placeholder = fieldType == FormFieldType.Signature ? "Click to Sign / Verify Identity" : "Enter value..."
+        };
+
+        CurrentPage.AddElement(formEl);
+        UpdateStatus($"Added Form Field ({fieldType})");
+    }
+
+    [RelayCommand]
+    public void AddQrCodeElement()
+    {
+        if (CurrentPage == null) return;
+
+        var qrEl = new QrCodeElementViewModel
+        {
+            X = 100,
+            Y = 220,
+            Width = 130,
+            Height = 150,
+            Content = "https://github.com/PrashantUnity/PDFCreator",
+            Label = "SCAN TO VERIFY CREDENTIAL"
+        };
+
+        CurrentPage.AddElement(qrEl);
+        UpdateStatus("Added Vector QR Code");
+    }
+
+    [RelayCommand]
+    public void AddBarcodeElement()
+    {
+        if (CurrentPage == null) return;
+
+        var barcodeEl = new BarcodeElementViewModel
+        {
+            X = 100,
+            Y = 220,
+            Width = 240,
+            Height = 65,
+            CodeValue = $"DOC-2026-{Random.Shared.Next(100000, 999999)}"
+        };
+
+        CurrentPage.AddElement(barcodeEl);
+        UpdateStatus("Added Barcode Element");
+    }
+
+    [RelayCommand]
+    public void AddRedactionElement(string? exemptionCode = "[REDACTED - (b)(4) PRIVILEGED]")
+    {
+        if (CurrentPage == null) return;
+
+        var redEl = new RedactionElementViewModel
+        {
+            X = 80,
+            Y = 200,
+            Width = 320,
+            Height = 36,
+            ExemptionCode = exemptionCode ?? "[REDACTED]"
+        };
+
+        CurrentPage.AddElement(redEl);
+        UpdateStatus("Added Redaction Blackout Block");
+    }
+
+    [RelayCommand]
+    public void AddInkElement(bool isHighlighter = false)
+    {
+        if (CurrentPage == null) return;
+
+        var inkEl = new InkElementViewModel
+        {
+            X = 100,
+            Y = 250,
+            Width = 260,
+            Height = 60,
+            StrokeColorHex = isHighlighter ? "#FEF08A" : "#0F6CBD",
+            StrokeThickness = isHighlighter ? 14.0 : 3.0,
+            Opacity = isHighlighter ? 0.45 : 1.0,
+            IsHighlighter = isHighlighter
+        };
+
+        CurrentPage.AddElement(inkEl);
+        UpdateStatus(isHighlighter ? "Added Highlighter Stroke" : "Added Freehand Ink Stroke");
+    }
+
+    [RelayCommand]
+    public void ApplyBatesNumbering()
+    {
+        for (int i = 0; i < Pages.Count; i++)
+        {
+            string batesCode = $"CONF-BATES-{(i + 1):D6}";
+            Pages[i].FooterLeft = batesCode;
+            Pages[i].ShowHeaderFooter = true;
+        }
+        UpdateStatus("Applied Bates Legal Numbering across all pages (CONF-BATES-000001...)");
+    }
+
     // --- ZOOM COMMANDS ---
 
     [RelayCommand]

@@ -381,6 +381,194 @@
                                     </Grid>
                                 </DataTemplate>
 
+                                <!-- 8. FORM FIELD ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:FormFieldElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}" PointerPressed="OnElementPointerPressed">
+                                        <Border Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="1.5"
+                                                CornerRadius="4"
+                                                Padding="8,4">
+                                            <!-- Field layout based on type -->
+                                            <Panel>
+                                                <!-- Checkbox Field -->
+                                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                                            IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Checkbox}">
+                                                    <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding Label}" FontSize="{Binding FontSize}" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                                </StackPanel>
+
+                                                <!-- Signature Field -->
+                                                <Grid RowDefinitions="Auto,*,Auto"
+                                                      IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Signature}">
+                                                    <TextBlock Grid.Row="0" Text="{Binding Label}" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource WinMutedBrush}" />
+                                                    <Border Grid.Row="1" BorderBrush="#CBD5E1" BorderThickness="0,0,0,1.5" Margin="0,4,0,2">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                            <materialIcons:MaterialIcon Kind="DrawPen" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" />
+                                                            <TextBlock Text="[Click / Sign Here]" FontSize="12" FontStyle="Italic" Foreground="{StaticResource WinAccentBrush}" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <TextBlock Grid.Row="2" Text="Digitally Verified Identity" FontSize="9" Foreground="#94A3B8" HorizontalAlignment="Right" />
+                                                </Grid>
+
+                                                <!-- Standard Text / Multiline Field -->
+                                                <StackPanel Spacing="3"
+                                                            IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Text}">
+                                                    <TextBlock Text="{Binding Label}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinMutedBrush}" />
+                                                    <TextBox Text="{Binding Value, Mode=TwoWay}"
+                                                             FontSize="{Binding FontSize}"
+                                                             Height="28" Padding="6,2" />
+                                                </StackPanel>
+                                            </Panel>
+                                        </Border>
+
+                                        <!-- Selection Adorner -->
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+                                            <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!-- 9. QR CODE ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:QrCodeElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}" PointerPressed="OnElementPointerPressed">
+                                        <Border Background="White"
+                                                BorderBrush="#E2E8F0"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                Padding="8"
+                                                BoxShadow="0 1 4 #08000000">
+                                            <Grid RowDefinitions="*,Auto">
+                                                <!-- High-contrast vector stylized QR Matrix Preview -->
+                                                <Grid Grid.Row="0" Width="96" Height="96" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <!-- QR Corner Markers -->
+                                                    <Border Width="26" Height="26" BorderBrush="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" BorderThickness="3" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3">
+                                                        <Border Background="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" />
+                                                    </Border>
+                                                    <Border Width="26" Height="26" BorderBrush="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" BorderThickness="3" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="3">
+                                                        <Border Background="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" />
+                                                    </Border>
+                                                    <Border Width="26" Height="26" BorderBrush="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" BorderThickness="3" HorizontalAlignment="Left" VerticalAlignment="Bottom" Padding="3">
+                                                        <Border Background="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" />
+                                                    </Border>
+                                                    <!-- QR Center Matrix Simulation -->
+                                                    <materialIcons:MaterialIcon Kind="Qrcode" Width="48" Height="48" Foreground="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Grid>
+                                                <TextBlock Grid.Row="1" Text="{Binding Label}" FontSize="8" FontWeight="Bold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0" TextWrapping="Wrap" TextAlignment="Center" />
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Selection Adorner -->
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+                                            <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!-- 10. BARCODE ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:BarcodeElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}" PointerPressed="OnElementPointerPressed">
+                                        <Border Background="White"
+                                                BorderBrush="#E2E8F0"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
+                                                Padding="8,4">
+                                            <Grid RowDefinitions="*,Auto">
+                                                <materialIcons:MaterialIcon Grid.Row="0" Kind="Barcode" Width="180" Height="36" Foreground="{Binding BarColorHex, Converter={StaticResource HexToBrushConverter}}" HorizontalAlignment="Center" />
+                                                <TextBlock Grid.Row="1" Text="{Binding CodeValue}" FontSize="10" FontWeight="SemiBold" Foreground="#334155" HorizontalAlignment="Center" LetterSpacing="1.2" IsVisible="{Binding ShowText}" />
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Selection Adorner -->
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+                                            <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!-- 11. REDACTION ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:RedactionElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}" PointerPressed="OnElementPointerPressed">
+                                        <Border Background="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="{Binding BorderThickness, Converter={StaticResource DoubleToThickness}}"
+                                                CornerRadius="2"
+                                                Padding="4">
+                                            <TextBlock Text="{Binding ExemptionCode}"
+                                                       FontSize="10"
+                                                       FontWeight="Bold"
+                                                       Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding ShowOverlayText}" />
+                                        </Border>
+
+                                        <!-- Selection Adorner -->
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{StaticResource WinDangerBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+                                            <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinDangerBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!-- 12. INK & HIGHLIGHTER ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:InkElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}" PointerPressed="OnElementPointerPressed" Background="Transparent">
+                                        <!-- Highlighter / Ink Stroke simulation -->
+                                        <Border Height="{Binding StrokeThickness}"
+                                                Background="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                Opacity="{Binding Opacity}"
+                                                CornerRadius="2"
+                                                VerticalAlignment="Center" />
+                                        <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1" IsVisible="{Binding IsSelected}" IsHitTestVisible="False" />
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!-- 13. STICKY NOTE ELEMENT TEMPLATE -->
+                                <DataTemplate DataType="elvm:StickyNoteElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}" PointerPressed="OnElementPointerPressed">
+                                        <Border Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                BoxShadow="0 4 12 #20000000"
+                                                Padding="10">
+                                            <Grid RowDefinitions="Auto,*,Auto">
+                                                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,6">
+                                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="NoteTextOutline" Width="14" Height="14" Foreground="#B45309" Margin="0,0,4,0" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding Author}" FontSize="10.5" FontWeight="Bold" Foreground="#78350F" VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding Timestamp}" FontSize="8.5" Foreground="#92400E" VerticalAlignment="Center" />
+                                                </Grid>
+                                                <TextBox Grid.Row="1" Text="{Binding NoteText, Mode=TwoWay}"
+                                                         FontSize="10.5" Foreground="#78350F" Background="Transparent"
+                                                         BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" />
+                                                <Border Grid.Row="2" Background="#FEF3C7" CornerRadius="3" Padding="4,2" HorizontalAlignment="Left" Margin="0,4,0,0">
+                                                    <TextBlock Text="{Binding Status}" FontSize="9" FontWeight="SemiBold" Foreground="#B45309" />
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Selection Adorner -->
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+                                            <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
                             </ItemsControl.DataTemplates>
                         </ItemsControl>
 

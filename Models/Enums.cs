@@ -108,3 +108,10 @@ public enum ToolMode
     Form,
     Redact
 }
+
+public enum SidebarTabKind
+{
+    Thumbnails,
+    Outline,
+    Comments
+}

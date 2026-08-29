@@ -29,7 +29,38 @@ public partial class DocumentCanvasView : UserControl
 
     private void OnCanvasBackgroundPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        // If clicking directly on the canvas background, deselect all elements
+        if (ViewModel?.CurrentPage == null || PageElementsCanvas == null) return;
+
+        var pos = e.GetPosition(PageElementsCanvas);
+        double zoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+        double canvasX = pos.X / zoom;
+        double canvasY = pos.Y / zoom;
+
+        if (ViewModel.ActiveToolMode == Models.ToolMode.Draw || ViewModel.ActiveToolMode == Models.ToolMode.Highlight)
+        {
+            bool isHighlighter = ViewModel.ActiveToolMode == Models.ToolMode.Highlight;
+            var ink = new InkElementViewModel
+            {
+                X = Math.Max(0, canvasX),
+                Y = Math.Max(0, canvasY),
+                Width = 20,
+                Height = isHighlighter ? 18 : 6,
+                StrokeColorHex = isHighlighter ? "#FEF08A" : "#0F6CBD",
+                StrokeThickness = isHighlighter ? 14.0 : 3.0,
+                Opacity = isHighlighter ? 0.45 : 1.0,
+                IsHighlighter = isHighlighter
+            };
+
+            ViewModel.CurrentPage.AddElement(ink);
+            _isResizingHandle = true;
+            _activeResizeHandle = "bottomright";
+            _draggedElement = ink;
+            _lastPointerPosition = pos;
+            e.Handled = true;
+            return;
+        }
+
+        // If clicking directly on the canvas background in select mode, deselect all elements
         if (e.Source is ScrollViewer || (e.Source is Border b && b.Name == null && b.Child is Grid))
         {
             ViewModel?.CurrentPage?.ClearSelection();

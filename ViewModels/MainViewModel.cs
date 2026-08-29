@@ -40,6 +40,27 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _searchQuery = "";
 
+    partial void OnSearchQueryChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return;
+
+        for (int p = 0; p < Pages.Count; p++)
+        {
+            var page = Pages[p];
+            foreach (var el in page.Elements)
+            {
+                if (el is TextElementViewModel txt && txt.Text.Contains(value, StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectPage(page);
+                    page.SelectElement(txt);
+                    UpdateStatus($"Found match on Page {p + 1}: \"{txt.Text.Split('\n').FirstOrDefault()}\"");
+                    return;
+                }
+            }
+        }
+        UpdateStatus($"No results for \"{value}\"");
+    }
+
     [ObservableProperty]
     private string _statusMessage = "Ready";
 
@@ -53,9 +74,16 @@ public partial class MainViewModel : ViewModelBase
     private bool _isNewDocumentDialogOpen;
 
     [ObservableProperty]
+    private SidebarTabKind _activeSidebarTab = SidebarTabKind.Thumbnails;
+
+    [ObservableProperty]
     private PageViewModel? _currentPage;
 
     public ObservableCollection<PageViewModel> Pages { get; } = new();
+
+    public ObservableCollection<OutlineItem> OutlineItems { get; } = new();
+
+    public ObservableCollection<CommentItem> CommentItems { get; } = new();
 
     public InspectorViewModel Inspector { get; } = new();
 
@@ -987,8 +1015,128 @@ public partial class MainViewModel : ViewModelBase
         IsExportSuccessDialogOpen = false;
     }
 
+    [RelayCommand]
+    public void SelectSidebarTab(SidebarTabKind tab)
+    {
+        ActiveSidebarTab = tab;
+        if (tab == SidebarTabKind.Outline) RefreshOutline();
+        if (tab == SidebarTabKind.Comments) RefreshComments();
+    }
+
+    public void RefreshOutline()
+    {
+        OutlineItems.Clear();
+        for (int p = 0; p < Pages.Count; p++)
+        {
+            var page = Pages[p];
+            OutlineItems.Add(new OutlineItem
+            {
+                Title = $"Page {p + 1}: {page.Format} ({page.Orientation})",
+                PageIndex = p,
+                Kind = "Page"
+            });
+
+            foreach (var el in page.Elements)
+            {
+                if (el is TextElementViewModel txt && txt.FontSize >= 14)
+                {
+                    OutlineItems.Add(new OutlineItem
+                    {
+                        Title = $"  • {txt.Text.Split('\n').FirstOrDefault() ?? "Heading"}",
+                        PageIndex = p,
+                        Kind = "Section"
+                    });
+                }
+            }
+        }
+    }
+
+    public void RefreshComments()
+    {
+        CommentItems.Clear();
+        for (int p = 0; p < Pages.Count; p++)
+        {
+            var page = Pages[p];
+            foreach (var el in page.Elements)
+            {
+                if (el is StickyNoteElementViewModel note)
+                {
+                    CommentItems.Add(new CommentItem
+                    {
+                        Author = note.Author,
+                        Timestamp = note.Timestamp,
+                        Text = note.NoteText,
+                        Status = note.Status,
+                        PageIndex = p,
+                        Element = note
+                    });
+                }
+                else if (el is RedactionElementViewModel red)
+                {
+                    CommentItems.Add(new CommentItem
+                    {
+                        Author = "Security / Legal",
+                        Timestamp = "Redaction Exemption",
+                        Text = red.ExemptionCode,
+                        Status = "Redacted",
+                        PageIndex = p,
+                        Element = red
+                    });
+                }
+                else if (el is FormFieldElementViewModel form && form.FieldType == FormFieldType.Signature)
+                {
+                    CommentItems.Add(new CommentItem
+                    {
+                        Author = "Signature Field",
+                        Timestamp = "Required Action",
+                        Text = form.Label,
+                        Status = "Unsigned",
+                        PageIndex = p,
+                        Element = form
+                    });
+                }
+            }
+        }
+    }
+
+    [RelayCommand]
+    public void JumpToOutlineItem(OutlineItem item)
+    {
+        if (item.PageIndex >= 0 && item.PageIndex < Pages.Count)
+        {
+            SelectPage(Pages[item.PageIndex]);
+        }
+    }
+
+    [RelayCommand]
+    public void JumpToCommentItem(CommentItem item)
+    {
+        if (item.PageIndex >= 0 && item.PageIndex < Pages.Count)
+        {
+            SelectPage(Pages[item.PageIndex]);
+            Pages[item.PageIndex].SelectElement(item.Element);
+        }
+    }
+
     private void UpdateStatus(string message)
     {
         StatusMessage = message;
     }
+}
+
+public class OutlineItem
+{
+    public string Title { get; set; } = "";
+    public int PageIndex { get; set; }
+    public string Kind { get; set; } = "Heading";
+}
+
+public class CommentItem
+{
+    public string Author { get; set; } = "";
+    public string Timestamp { get; set; } = "";
+    public string Text { get; set; } = "";
+    public string Status { get; set; } = "";
+    public int PageIndex { get; set; }
+    public ElementViewModelBase Element { get; set; } = null!;
 }

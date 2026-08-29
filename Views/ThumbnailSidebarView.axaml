@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:elvm="using:PdfEditorApp.ViewModels.ElementViewModels"
+             xmlns:models="using:PdfEditorApp.Models"
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.Views.ThumbnailSidebarView"
@@ -9,109 +11,331 @@
     <UserControl.Resources>
         <converters:BooleanToBrushConverter x:Key="BoolToBrush" />
         <converters:BooleanToThicknessConverter x:Key="BoolToThickness" />
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
     </UserControl.Resources>
 
-    <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,1,0" Width="230">
+    <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,1,0" Width="240">
         <Grid RowDefinitions="Auto,*,Auto">
 
-            <!-- 1. Sidebar Header -->
-            <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" Height="40" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="14,0">
+            <!-- 1. Sidebar Tab Bar Header (Thumbnails, Outline, Comments) -->
+            <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" Height="42" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="8,0">
                 <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Grid.Column="0" Text="PAGES" FontSize="11" FontWeight="Bold" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" LetterSpacing="0.6" />
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding AddPageCommand}" ToolTip.Tip="Add New Page">
+                    <!-- Tab Switcher -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                        <Button Classes="mini-tool-btn" Width="30" Height="30"
+                                Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}"
+                                Command="{Binding SelectSidebarTabCommand}"
+                                CommandParameter="{x:Static models:SidebarTabKind.Thumbnails}"
+                                ToolTip.Tip="Page Thumbnails">
+                            <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                        </Button>
+
+                        <Button Classes="mini-tool-btn" Width="30" Height="30"
+                                Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Outline}"
+                                Command="{Binding SelectSidebarTabCommand}"
+                                CommandParameter="{x:Static models:SidebarTabKind.Outline}"
+                                ToolTip.Tip="Document Outline &amp; Bookmarks">
+                            <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                        </Button>
+
+                        <Button Classes="mini-tool-btn" Width="30" Height="30"
+                                Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Comments}"
+                                Command="{Binding SelectSidebarTabCommand}"
+                                CommandParameter="{x:Static models:SidebarTabKind.Comments}"
+                                ToolTip.Tip="Comments &amp; Review Annotations">
+                            <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Quick Page Actions -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center"
+                                IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}">
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding AddPageCommand}" ToolTip.Tip="Add Page">
                             <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding DuplicateCurrentPageCommand}" ToolTip.Tip="Duplicate Page">
-                            <materialIcons:MaterialIcon Kind="ContentCopy" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
-                        </Button>
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding RotateCurrentPageCommand}" ToolTip.Tip="Rotate 90°">
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding RotateCurrentPageCommand}" ToolTip.Tip="Rotate 90° CW">
                             <materialIcons:MaterialIcon Kind="RotateRight" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- 2. Page Thumbnail Cards List -->
-            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="14">
-                <ItemsControl ItemsSource="{Binding Pages}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="vm:PageViewModel">
-                            <Button Background="Transparent"
-                                    BorderThickness="0"
-                                    Padding="0"
-                                    Margin="0,0,0,16"
-                                    HorizontalAlignment="Center"
-                                    Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).SelectPageCommand}"
-                                    CommandParameter="{Binding}">
-                                <StackPanel HorizontalAlignment="Center" Spacing="6">
+            <!-- 2. Content Area (Dynamically changes based on ActiveSidebarTab) -->
+            <Panel Grid.Row="1">
 
-                                    <!-- Thumbnail Card -->
-                                    <Border Background="White"
-                                            BorderThickness="{Binding IsSelected, Converter={StaticResource BoolToThickness}, ConverterParameter='2|1'}"
-                                            BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#E2E8F0'}"
-                                            CornerRadius="6"
-                                            BoxShadow="0 2 10 #0D000000"
-                                            Padding="4"
-                                            Width="140"
-                                            Height="198">
+                <!-- 2A. TAB: REAL LIVE PAGE THUMBNAILS (Real Live Scaled Viewboxes) -->
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="12"
+                              IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}">
+                    <ItemsControl ItemsSource="{Binding Pages}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:PageViewModel">
+                                <Button Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="0"
+                                        Margin="0,0,0,16"
+                                        HorizontalAlignment="Center"
+                                        Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).SelectPageCommand}"
+                                        CommandParameter="{Binding}">
+                                    <StackPanel HorizontalAlignment="Center" Spacing="6">
 
-                                        <!-- Mini Page Visual Mock -->
-                                        <Border Background="#FAFAFA" BorderBrush="#F1F5F9" BorderThickness="1" CornerRadius="3" Padding="8">
-                                            <Grid RowDefinitions="Auto,*,Auto">
-                                                <!-- Mini Header -->
-                                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-                                                    <Rectangle Grid.Column="0" Height="4" Width="56" Fill="{StaticResource WinAccentBrush}" HorizontalAlignment="Left" RadiusX="1" RadiusY="1" />
-                                                    <Border Grid.Column="1" Width="10" Height="10" Background="{StaticResource WinAccentBrush}" CornerRadius="2" />
-                                                </Grid>
+                                        <!-- Real Live Miniature Page Card -->
+                                        <Border Background="White"
+                                                BorderThickness="{Binding IsSelected, Converter={StaticResource BoolToThickness}, ConverterParameter='2.5|1'}"
+                                                BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#CBD5E1'}"
+                                                CornerRadius="6"
+                                                BoxShadow="0 4 14 #15000000"
+                                                Padding="2"
+                                                Width="148"
+                                                Height="208"
+                                                ClipToBounds="True">
 
-                                                <!-- Mini Content lines -->
-                                                <StackPanel Grid.Row="1" Spacing="4" VerticalAlignment="Top">
-                                                    <Rectangle Height="5" Width="85" Fill="#1E293B" HorizontalAlignment="Left" RadiusX="1" RadiusY="1" />
-                                                    <Rectangle Height="2.5" Fill="#CBD5E1" RadiusX="1" RadiusY="1" />
-                                                    <Rectangle Height="2.5" Width="95" Fill="#CBD5E1" HorizontalAlignment="Left" RadiusX="1" RadiusY="1" />
-                                                    <Rectangle Height="2.5" Fill="#CBD5E1" RadiusX="1" RadiusY="1" />
+                                            <!-- Live Scaled Page Canvas Viewbox -->
+                                            <Viewbox Width="142" Height="202" Stretch="Uniform">
+                                                <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                        Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                        BoxShadow="0 1 4 #08000000">
 
-                                                    <!-- Mini highlight box / chart mock -->
-                                                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="0.8" Height="38" CornerRadius="3" Margin="0,4,0,0" Padding="4">
-                                                        <Grid ColumnDefinitions="*,*,*,*" VerticalAlignment="Bottom" Margin="0,4,0,0">
-                                                            <Border Grid.Column="0" Height="10" Background="#93C5FD" CornerRadius="1,1,0,0" Margin="1,0" />
-                                                            <Border Grid.Column="1" Height="16" Background="#60A5FA" CornerRadius="1,1,0,0" Margin="1,0" />
-                                                            <Border Grid.Column="2" Height="22" Background="#3B82F6" CornerRadius="1,1,0,0" Margin="1,0" />
-                                                            <Border Grid.Column="3" Height="28" Background="#0F6CBD" CornerRadius="1,1,0,0" Margin="1,0" />
-                                                        </Grid>
-                                                    </Border>
-                                                </StackPanel>
+                                                    <!-- Live Real Elements on Page -->
+                                                    <ItemsControl ItemsSource="{Binding Elements}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <Canvas Width="{Binding Width}" Height="{Binding Height}" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
 
-                                                <!-- Mini Footer -->
-                                                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,4,0,0">
-                                                    <Rectangle Grid.Column="0" Height="2" Width="40" Fill="#E2E8F0" HorizontalAlignment="Left" />
-                                                    <Rectangle Grid.Column="1" Height="2" Width="16" Fill="#E2E8F0" HorizontalAlignment="Right" />
-                                                </Grid>
-                                            </Grid>
+                                                        <ItemsControl.ItemContainerTheme>
+                                                            <ControlTheme TargetType="ContentPresenter" x:DataType="elvm:ElementViewModelBase">
+                                                                <Setter Property="Canvas.Left" Value="{Binding X}" />
+                                                                <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                                                                <Setter Property="Canvas.ZIndex" Value="{Binding ZIndex}" />
+                                                                <Setter Property="Opacity" Value="{Binding Opacity}" />
+                                                            </ControlTheme>
+                                                        </ItemsControl.ItemContainerTheme>
+
+                                                        <ItemsControl.DataTemplates>
+
+                                                            <!-- Text Element Mini Template -->
+                                                            <DataTemplate DataType="elvm:TextElementViewModel">
+                                                                <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                                        Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderThickness="{Binding BorderThickness}"
+                                                                        Padding="{Binding Padding}">
+                                                                    <TextBlock Text="{Binding Text}"
+                                                                               FontFamily="{Binding FontFamily}"
+                                                                               FontSize="{Binding FontSize}"
+                                                                               Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                               TextWrapping="Wrap" />
+                                                                </Border>
+                                                            </DataTemplate>
+
+                                                            <!-- Shape Element Mini Template -->
+                                                            <DataTemplate DataType="elvm:ShapeElementViewModel">
+                                                                <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                                        Background="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderBrush="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderThickness="{Binding StrokeThickness}"
+                                                                        CornerRadius="{Binding CornerRadius}" />
+                                                            </DataTemplate>
+
+                                                            <!-- Table Element Mini Template -->
+                                                            <DataTemplate DataType="elvm:TableElementViewModel">
+                                                                <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                                        Background="White"
+                                                                        BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderThickness="1" Padding="4">
+                                                                    <Grid RowDefinitions="Auto,*">
+                                                                        <Rectangle Grid.Row="0" Height="20" Fill="{Binding HeaderBackgroundHex, Converter={StaticResource HexToBrushConverter}}" />
+                                                                        <StackPanel Grid.Row="1" Spacing="4" Margin="0,4,0,0">
+                                                                            <Rectangle Height="8" Fill="#E2E8F0" />
+                                                                            <Rectangle Height="8" Fill="#F1F5F9" />
+                                                                            <Rectangle Height="8" Fill="#E2E8F0" />
+                                                                        </StackPanel>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+
+                                                            <!-- Chart Element Mini Template -->
+                                                            <DataTemplate DataType="elvm:ChartElementViewModel">
+                                                                <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                                        Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderThickness="1" CornerRadius="4" Padding="6">
+                                                                    <Grid RowDefinitions="Auto,*">
+                                                                        <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="11" FontWeight="Bold" Foreground="#334155" />
+                                                                        <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="0,4,0,0">
+                                                                            <ItemsControl.ItemsPanel>
+                                                                                <ItemsPanelTemplate>
+                                                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Spacing="8" />
+                                                                                </ItemsPanelTemplate>
+                                                                            </ItemsControl.ItemsPanel>
+                                                                            <ItemsControl.ItemTemplate>
+                                                                                <DataTemplate DataType="elvm:ChartBarItem">
+                                                                                    <Border Width="28" Height="{Binding BarHeightPx}"
+                                                                                            Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                                            CornerRadius="2,2,0,0" />
+                                                                                </DataTemplate>
+                                                                            </ItemsControl.ItemTemplate>
+                                                                        </ItemsControl>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+
+                                                            <!-- Image Element Mini Template -->
+                                                            <DataTemplate DataType="elvm:ImageElementViewModel">
+                                                                <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                                        Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4">
+                                                                    <materialIcons:MaterialIcon Kind="ImageOutline" Width="28" Height="28" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                </Border>
+                                                            </DataTemplate>
+
+                                                            <!-- QR Code Mini Template -->
+                                                            <DataTemplate DataType="elvm:QrCodeElementViewModel">
+                                                                <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                                        Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4" Padding="6">
+                                                                    <materialIcons:MaterialIcon Kind="Qrcode" Width="48" Height="48" Foreground="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                </Border>
+                                                            </DataTemplate>
+
+                                                            <!-- Barcode Mini Template -->
+                                                            <DataTemplate DataType="elvm:BarcodeElementViewModel">
+                                                                <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                                        Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="3" Padding="4">
+                                                                    <materialIcons:MaterialIcon Kind="Barcode" Width="100" Height="24" Foreground="{Binding BarColorHex, Converter={StaticResource HexToBrushConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                </Border>
+                                                            </DataTemplate>
+
+                                                            <!-- Redaction Mini Template -->
+                                                            <DataTemplate DataType="elvm:RedactionElementViewModel">
+                                                                <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                                        Background="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderThickness="1.5" CornerRadius="2">
+                                                                    <TextBlock Text="{Binding ExemptionCode}" FontSize="8" FontWeight="Bold" Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                </Border>
+                                                            </DataTemplate>
+
+                                                            <!-- Sticky Note Mini Template -->
+                                                            <DataTemplate DataType="elvm:StickyNoteElementViewModel">
+                                                                <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                                        Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderThickness="1" CornerRadius="4" Padding="4">
+                                                                    <TextBlock Text="{Binding NoteText}" FontSize="8" Foreground="#78350F" TextWrapping="Wrap" />
+                                                                </Border>
+                                                            </DataTemplate>
+
+                                                            <!-- Form Field Mini Template -->
+                                                            <DataTemplate DataType="elvm:FormFieldElementViewModel">
+                                                                <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                                        Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                        BorderThickness="1" CornerRadius="3" Padding="3">
+                                                                    <TextBlock Text="{Binding Label}" FontSize="9" FontWeight="SemiBold" Foreground="#334155" />
+                                                                </Border>
+                                                            </DataTemplate>
+
+                                                            <!-- Watermark Mini Template -->
+                                                            <DataTemplate DataType="elvm:WatermarkElementViewModel">
+                                                                <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                                                    <TextBlock Text="{Binding Text}" FontSize="{Binding FontSize}" FontWeight="Bold"
+                                                                               Opacity="{Binding Opacity}" Foreground="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                </Grid>
+                                                            </DataTemplate>
+
+                                                        </ItemsControl.DataTemplates>
+                                                    </ItemsControl>
+
+                                                </Border>
+                                            </Viewbox>
                                         </Border>
-                                    </Border>
 
-                                    <!-- Page Number Badge -->
-                                    <Border Background="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#F1F5F9'}"
-                                            BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#E2E8F0'}"
+                                        <!-- Page Number Pill -->
+                                        <Border Background="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#F1F5F9'}"
+                                                BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#CBD5E1'}"
+                                                BorderThickness="1"
+                                                CornerRadius="10"
+                                                Padding="10,2">
+                                            <TextBlock Text="{Binding PageNumber, StringFormat='Page {0}'}"
+                                                       FontSize="10.5"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#FFFFFF|#64748B'}"
+                                                       HorizontalAlignment="Center" />
+                                        </Border>
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- 2B. TAB: DOCUMENT OUTLINE & BOOKMARKS -->
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="12"
+                              IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Outline}">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="DOCUMENT OUTLINE" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource WinSubtleBrush}" Margin="2,0,0,6" LetterSpacing="0.5" />
+                        <ItemsControl ItemsSource="{Binding OutlineItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:OutlineItem">
+                                    <Button Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="6,4"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).JumpToOutlineItemCommand}"
+                                            CommandParameter="{Binding}">
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <materialIcons:MaterialIcon Grid.Column="0" Kind="BookmarkOutline" Width="14" Height="14" Foreground="{StaticResource WinAccentBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="11.5" Foreground="{StaticResource WinTextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 2C. TAB: COMMENTS & REVIEW STREAM -->
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="12"
+                              IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Comments}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="COMMENTS &amp; ANNOTATIONS" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource WinSubtleBrush}" Margin="2,0,0,6" LetterSpacing="0.5" />
+                        <ItemsControl ItemsSource="{Binding CommentItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:CommentItem">
+                                    <Button Background="White"
+                                            BorderBrush="#E2E8F0"
                                             BorderThickness="1"
-                                            CornerRadius="10"
-                                            Padding="10,2">
-                                        <TextBlock Text="{Binding PageNumber, StringFormat='Page {0}'}"
-                                                   FontSize="10.5"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#FFFFFF|#64748B'}"
-                                                   HorizontalAlignment="Center" />
-                                    </Border>
-                                </StackPanel>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Margin="0,0,0,6"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).JumpToCommentItemCommand}"
+                                            CommandParameter="{Binding}">
+                                        <Grid RowDefinitions="Auto,Auto,Auto">
+                                            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,4">
+                                                <materialIcons:MaterialIcon Grid.Column="0" Kind="NoteTextOutline" Width="14" Height="14" Foreground="#B45309" Margin="0,0,4,0" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Author}" FontSize="11" FontWeight="Bold" Foreground="#78350F" />
+                                                <TextBlock Grid.Column="2" Text="{Binding PageIndex, StringFormat='p. {0}'}" FontSize="9.5" Foreground="#94A3B8" />
+                                            </Grid>
+                                            <TextBlock Grid.Row="1" Text="{Binding Text}" FontSize="10.5" Foreground="#334155" TextWrapping="Wrap" Margin="0,0,0,4" />
+                                            <Border Grid.Row="2" Background="#FEF3C7" CornerRadius="3" Padding="4,1" HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding Status}" FontSize="8.5" FontWeight="SemiBold" Foreground="#B45309" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
 
-            <!-- 3. Bottom Page Actions -->
+            </Panel>
+
+            <!-- 3. Bottom Reorder Page Actions -->
             <Border Grid.Row="2" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,1,0,0" Padding="10,8">
                 <Grid ColumnDefinitions="*,*">
                     <Button Grid.Column="0"

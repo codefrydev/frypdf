@@ -1,0 +1,83 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using PdfEditorApp.Models;
+
+namespace PdfEditorApp.Services;
+
+/// <summary>
+/// Persists up to 20 recent documents to a JSON file in the user's application data folder.
+/// </summary>
+public class RecentDocumentsService : IRecentDocumentsService
+{
+    private const int MaxRecent = 20;
+
+    private static string StoragePath
+    {
+        get
+        {
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var dir = Path.Combine(appData, "FryPDF");
+            Directory.CreateDirectory(dir);
+            return Path.Combine(dir, "recent.json");
+        }
+    }
+
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
+    public List<RecentDocumentItem> Load()
+    {
+        try
+        {
+            if (!File.Exists(StoragePath)) return new List<RecentDocumentItem>();
+            var json = File.ReadAllText(StoragePath);
+            return JsonSerializer.Deserialize<List<RecentDocumentItem>>(json, _jsonOptions)
+                   ?? new List<RecentDocumentItem>();
+        }
+        catch
+        {
+            return new List<RecentDocumentItem>();
+        }
+    }
+
+    public void Add(RecentDocumentItem item)
+    {
+        var list = Load();
+        // Remove existing entry for the same path (bump to top)
+        list.RemoveAll(x => string.Equals(x.FilePath, item.FilePath, StringComparison.OrdinalIgnoreCase));
+        list.Insert(0, item);
+        // Trim to max
+        if (list.Count > MaxRecent) list = list.Take(MaxRecent).ToList();
+        Save(list);
+    }
+
+    public void Remove(string filePath)
+    {
+        var list = Load();
+        list.RemoveAll(x => string.Equals(x.FilePath, filePath, StringComparison.OrdinalIgnoreCase));
+        Save(list);
+    }
+
+    public void Clear()
+    {
+        Save(new List<RecentDocumentItem>());
+    }
+
+    private static void Save(List<RecentDocumentItem> list)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(list, _jsonOptions);
+            File.WriteAllText(StoragePath, json);
+        }
+        catch
+        {
+            // Best-effort: silently swallow disk errors
+        }
+    }
+}

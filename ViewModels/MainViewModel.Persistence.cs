@@ -114,6 +114,14 @@ public partial class MainViewModel
 
             var docModel = ToDocumentModel();
             await _persistenceService.SaveProjectAsync(docModel, savePath);
+            // Record in recent documents
+            _recentService.Add(new RecentDocumentItem
+            {
+                FilePath = savePath,
+                Title = DocumentTitle,
+                LastOpened = DateTime.UtcNow
+            });
+            Home.RefreshRecent();
             ShowToast($"Project saved to {Path.GetFileName(savePath)}", "ContentSaveOutline");
         }
         catch (Exception ex)
@@ -125,39 +133,8 @@ public partial class MainViewModel
     [RelayCommand]
     public async Task OpenProjectAsync()
     {
-        try
-        {
-            if (StorageProvider != null)
-            {
-                var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-                {
-                    Title = "Open FryPDF Project",
-                    AllowMultiple = false,
-                    FileTypeFilter = new[]
-                    {
-                        new FilePickerFileType("FryPDF Project (*.frypdf, *.pdfproj, *.json)")
-                        {
-                            Patterns = new[] { "*.frypdf", "*.pdfproj", "*.json" }
-                        }
-                    }
-                });
-
-                if (files.Count > 0)
-                {
-                    var path = files[0].Path.LocalPath;
-                    var model = await _persistenceService.LoadProjectAsync(path);
-                    if (model != null)
-                    {
-                        LoadFromDocumentModel(model);
-                        ShowToast($"Opened Project: {Path.GetFileName(path)}", "FolderOpenOutline");
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            ShowToast($"Open error: {ex.Message}", "AlertCircleOutline");
-        }
+        // When in editor, use the file picker directly
+        await OpenProjectAndEnterEditorAsync();
     }
 
     // --- TEMPLATE SELECTION & GALLERY DIALOG STATE ---
@@ -265,19 +242,13 @@ public partial class MainViewModel
     [RelayCommand]
     public void SelectTemplate(string? templateName)
     {
-        CreateNewFromTemplate(templateName);
+        OpenEditorWithTemplate(templateName);
     }
 
     [RelayCommand]
     public void CreateNewFromTemplate(string? templateName)
     {
-        var model = string.IsNullOrWhiteSpace(templateName)
-            ? _templateService.CreateBlankDocument()
-            : _templateService.CreateTemplate(templateName);
-
-        LoadFromDocumentModel(model);
-        CloseNewDocumentDialog();
-        ShowToast($"Created new document from {templateName ?? "Blank"} template", "FilePlusOutline");
+        OpenEditorWithTemplate(templateName);
     }
 
     // --- MODEL CONVERSION & SERIALIZATION ---

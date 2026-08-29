@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
@@ -20,8 +21,20 @@ public partial class MainViewModel : ViewModelBase
     private readonly IDocumentAuditService _auditService;
     private readonly ISignatureService _signatureService;
     private readonly ISmartPlacementService _placementService;
+    private readonly IRecentDocumentsService _recentService;
 
     public ISmartPlacementService SmartPlacement => _placementService;
+
+    // --- HOME / EDITOR VIEW-SWITCHING ---
+
+    [ObservableProperty]
+    private bool _isHomePageVisible = true;
+
+    [ObservableProperty]
+    private bool _isEditorVisible = false;
+
+    /// <summary>ViewModel for the Home / Start Screen.</summary>
+    public HomeViewModel Home { get; }
 
     private ElementViewModelBase? _clipboardElement;
     private CancellationTokenSource? _toastCts;
@@ -271,7 +284,7 @@ public partial class MainViewModel : ViewModelBase
 
     // --- CONSTRUCTORS ---
 
-    public MainViewModel() : this(new PdfExportService(), new TemplateService(), new ProjectPersistenceService(), new DocumentAuditService(), new SignatureService(), new SmartPlacementService())
+    public MainViewModel() : this(new PdfExportService(), new TemplateService(), new ProjectPersistenceService(), new DocumentAuditService(), new SignatureService(), new SmartPlacementService(), new RecentDocumentsService())
     {
     }
 
@@ -281,7 +294,8 @@ public partial class MainViewModel : ViewModelBase
         IProjectPersistenceService persistenceService,
         IDocumentAuditService? auditService = null,
         ISignatureService? signatureService = null,
-        ISmartPlacementService? placementService = null)
+        ISmartPlacementService? placementService = null,
+        IRecentDocumentsService? recentService = null)
     {
         _exportService = exportService;
         _templateService = templateService;
@@ -289,13 +303,16 @@ public partial class MainViewModel : ViewModelBase
         _auditService = auditService ?? new DocumentAuditService();
         _signatureService = signatureService ?? new SignatureService();
         _placementService = placementService ?? new SmartPlacementService();
+        _recentService = recentService ?? new RecentDocumentsService();
 
         // Connect undo/redo service to inspector
         Inspector.UndoRedo = UndoRedo;
 
-        // Initialize document with default Annual Report template
-        var defaultDoc = _templateService.CreateAnnualReportTemplate();
-        LoadFromDocumentModel(defaultDoc);
+        // Set up Home page and wire its navigation events
+        Home = new HomeViewModel(_recentService);
+        Home.OpenTemplateRequested += OpenEditorWithTemplate;
+        Home.OpenFileRequested += () => _ = OpenProjectAndEnterEditorAsync();
+        Home.OpenRecentRequested += OpenEditorWithFile;
 
         // Synchronize inspector when selection changes
         Inspector.PropertyChanged += (s, e) =>
@@ -308,6 +325,88 @@ public partial class MainViewModel : ViewModelBase
 
         // Initialize quick command palette indexing
         InitCommandPalette();
+    }
+
+    // --- HOME / EDITOR NAVIGATION ---
+
+    /// <summary>Switches to the editor and loads the requested template.</summary>
+    public void OpenEditorWithTemplate(string? templateName)
+    {
+        var model = string.IsNullOrWhiteSpace(templateName)
+            ? _templateService.CreateBlankDocument()
+            : _templateService.CreateTemplate(templateName);
+
+        LoadFromDocumentModel(model);
+        IsHomePageVisible = false;
+        IsEditorVisible = true;
+        ShowToast($"Created new document from {templateName ?? "Blank"} template", "FilePlusOutline");
+    }
+
+    /// <summary>Switches to the editor and loads a project from a file path.</summary>
+    public void OpenEditorWithFile(string path)
+    {
+        try
+        {
+            var model = _persistenceService.LoadProjectAsync(path).GetAwaiter().GetResult();
+            if (model != null)
+            {
+                LoadFromDocumentModel(model);
+                _recentService.Add(new RecentDocumentItem
+                {
+                    FilePath = path,
+                    Title = model.Title,
+                    LastOpened = DateTime.UtcNow
+                });
+                Home.RefreshRecent();
+                IsHomePageVisible = false;
+                IsEditorVisible = true;
+                ShowToast($"Opened: {Path.GetFileName(path)}", "FolderOpenOutline");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Could not open file: {ex.Message}", "AlertCircleOutline");
+        }
+    }
+
+    private async Task OpenProjectAndEnterEditorAsync()
+    {
+        try
+        {
+            if (StorageProvider != null)
+            {
+                var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = "Open FryPDF Project",
+                    AllowMultiple = false,
+                    FileTypeFilter = new[]
+                    {
+                        new FilePickerFileType("FryPDF Project (*.frypdf, *.pdfproj, *.json)")
+                        {
+                            Patterns = new[] { "*.frypdf", "*.pdfproj", "*.json" }
+                        }
+                    }
+                });
+
+                if (files.Count > 0)
+                {
+                    OpenEditorWithFile(files[0].Path.LocalPath);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Open error: {ex.Message}", "AlertCircleOutline");
+        }
+    }
+
+    /// <summary>Returns to the Home page from the editor.</summary>
+    [RelayCommand]
+    public void NavigateToHome()
+    {
+        Home.RefreshRecent();
+        IsEditorVisible = false;
+        IsHomePageVisible = true;
     }
 
     public void OnElementSelectionChanged(ElementViewModelBase? selectedElement)

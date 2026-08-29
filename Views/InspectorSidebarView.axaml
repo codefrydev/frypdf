@@ -82,11 +82,29 @@
 
                                     <Button Classes="mini-tool-btn" Width="28" Height="28"
                                             Classes.active="{Binding TextElement.IsUnderline, FallbackValue=False}"
-                                            Command="{Binding ToggleUnderlineCommand}">
+                                            Command="{Binding ToggleUnderlineCommand}" ToolTip.Tip="Underline">
                                         <materialIcons:MaterialIcon Kind="FormatUnderline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
 
-                                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="3,0" />
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                            Classes.active="{Binding TextElement.IsStrikethrough, FallbackValue=False}"
+                                            Command="{Binding ToggleStrikethroughCommand}" ToolTip.Tip="Strikethrough">
+                                        <materialIcons:MaterialIcon Kind="FormatStrikethrough" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                    </Button>
+
+                                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                            Command="{Binding ToggleBulletsCommand}" ToolTip.Tip="Bullet List">
+                                        <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                    </Button>
+
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                            Command="{Binding ToggleNumberingCommand}" ToolTip.Tip="Numbered List">
+                                        <materialIcons:MaterialIcon Kind="FormatListNumbered" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                    </Button>
+
+                                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
 
                                     <Button Classes="mini-tool-btn" Width="28" Height="28"
                                             Command="{Binding SetAlignmentCommand}" CommandParameter="Left">
@@ -104,6 +122,28 @@
                                     </Button>
                                 </StackPanel>
                             </StackPanel>
+
+                            <!-- Text Case Transforms -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Text Case" Classes="inspector-label" />
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,2" Command="{Binding TransformTextCaseCommand}" CommandParameter="Upper"><TextBlock Text="UPPERCASE" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,2" Command="{Binding TransformTextCaseCommand}" CommandParameter="Lower"><TextBlock Text="lowercase" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,2" Command="{Binding TransformTextCaseCommand}" CommandParameter="Title"><TextBlock Text="Title Case" FontSize="9.5" /></Button>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Character Spacing & Line Spacing -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                                <StackPanel Grid.Column="0" Spacing="3">
+                                    <TextBlock Text="Tracking (Spacing)" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding TextElement.CharacterSpacing, Mode=TwoWay}" Minimum="-2" Maximum="10" Increment="0.5" Height="28" FontSize="11.5" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="3">
+                                    <TextBlock Text="Line Height" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding TextElement.LineHeight, Mode=TwoWay}" Minimum="0.8" Maximum="3.0" Increment="0.1" Height="28" FontSize="11.5" />
+                                </StackPanel>
+                            </Grid>
 
                             <!-- Text Color Swatches -->
                             <StackPanel Spacing="4">
@@ -489,6 +529,57 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- 11. ACROFORMS CARD (Visible when Form Field is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding FormFieldElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FormTextbox" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="AcroForm Properties" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Field Name / ID" Classes="inspector-label" />
+                                <TextBox Text="{Binding FormFieldElement.FieldName, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Field Type" Classes="inspector-label" />
+                                <TextBlock Text="{Binding FormFieldElement.FieldType}" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinAccentBrush}" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Validation Rule" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="None"><TextBlock Text="None" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="Email"><TextBlock Text="Email" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="Numeric"><TextBlock Text="123" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="Phone"><TextBlock Text="Phone" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetFormFieldValidationCommand}" CommandParameter="Date"><TextBlock Text="Date" FontSize="10" /></Button>
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Default Value" Classes="inspector-label" />
+                                <TextBox Text="{Binding FormFieldElement.DefaultValue, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Tooltip / Hint" Classes="inspector-label" />
+                                <TextBox Text="{Binding FormFieldElement.Tooltip, Mode=TwoWay}" Height="28" FontSize="12" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,*">
+                                <CheckBox Grid.Column="0" IsChecked="{Binding FormFieldElement.IsRequired, Mode=TwoWay}">
+                                    <TextBlock Text="Required" FontSize="11.5" />
+                                </CheckBox>
+                                <CheckBox Grid.Column="1" IsChecked="{Binding FormFieldElement.IsReadOnly, Mode=TwoWay}">
+                                    <TextBlock Text="Read Only" FontSize="11.5" />
+                                </CheckBox>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
                     <!-- 6. DIMENSIONS & POSITION CARD (Visible for any selected element) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding HasSelectedElement}">
@@ -520,6 +611,25 @@
                                     <NumericUpDown Value="{Binding SelectedElement.Height, Mode=TwoWay}" Minimum="5" Maximum="3000" Height="30" FontSize="12" />
                                 </StackPanel>
                             </Grid>
+
+                            <!-- Distribution Tools -->
+                            <StackPanel Spacing="3" Margin="0,4,0,0">
+                                <TextBlock Text="Smart Distribution" Classes="inspector-label" />
+                                <Grid ColumnDefinitions="*,*">
+                                    <Button Grid.Column="0" Classes="secondary-btn" Height="28" Margin="0,0,3,0" Command="{Binding DistributeHorizontallyCommand}">
+                                        <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="DistributeHorizontalCenter" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                                            <TextBlock Text="Distribute H" FontSize="10" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Grid.Column="1" Classes="secondary-btn" Height="28" Margin="3,0,0,0" Command="{Binding DistributeVerticallyCommand}">
+                                        <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="DistributeVerticalCenter" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                                            <TextBlock Text="Distribute V" FontSize="10" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
 
                             <!-- Actions Row (Front, Back, Duplicate, Delete) -->
                             <Grid ColumnDefinitions="*,*,*,*" Margin="0,4,0,0">

@@ -1,3 +1,4 @@
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
@@ -25,6 +26,9 @@ public partial class TextElementViewModel : ElementViewModelBase
     private bool _isUnderline;
 
     [ObservableProperty]
+    private bool _isStrikethrough;
+
+    [ObservableProperty]
     private string _textColorHex = "#201F1E";
 
     [ObservableProperty]
@@ -32,6 +36,9 @@ public partial class TextElementViewModel : ElementViewModelBase
 
     [ObservableProperty]
     private double _lineHeight = 1.4;
+
+    [ObservableProperty]
+    private double _characterSpacing = 0;
 
     [ObservableProperty]
     private double _padding = 6;
@@ -50,6 +57,58 @@ public partial class TextElementViewModel : ElementViewModelBase
 
     public override ElementKind Kind => ElementKind.Text;
     public override string DisplayName => Text.Length > 20 ? Text.Substring(0, 17) + "..." : (string.IsNullOrWhiteSpace(Text) ? "Text Box" : Text);
+
+    public void TransformUppercase()
+    {
+        if (!string.IsNullOrEmpty(Text)) Text = Text.ToUpperInvariant();
+    }
+
+    public void TransformLowercase()
+    {
+        if (!string.IsNullOrEmpty(Text)) Text = Text.ToLowerInvariant();
+    }
+
+    public void TransformTitleCase()
+    {
+        if (!string.IsNullOrEmpty(Text))
+        {
+            var ti = System.Globalization.CultureInfo.CurrentCulture.TextInfo;
+            Text = ti.ToTitleCase(Text.ToLower());
+        }
+    }
+
+    public void ToggleBulletList()
+    {
+        if (string.IsNullOrEmpty(Text)) return;
+        var lines = Text.Split('\n');
+        bool allBulleted = lines.All(l => l.TrimStart().StartsWith("• "));
+        if (allBulleted)
+        {
+            Text = string.Join('\n', lines.Select(l => l.TrimStart().StartsWith("• ") ? l.TrimStart().Substring(2) : l));
+        }
+        else
+        {
+            Text = string.Join('\n', lines.Select(l => string.IsNullOrWhiteSpace(l) ? l : (l.TrimStart().StartsWith("• ") ? l : $"• {l}")));
+        }
+    }
+
+    public void ToggleNumberedList()
+    {
+        if (string.IsNullOrEmpty(Text)) return;
+        var lines = Text.Split('\n');
+        int count = 1;
+        Text = string.Join('\n', lines.Select(l =>
+        {
+            if (string.IsNullOrWhiteSpace(l)) return l;
+            var trimmed = l.TrimStart();
+            int dotIdx = trimmed.IndexOf('.');
+            if (dotIdx > 0 && int.TryParse(trimmed.Substring(0, dotIdx), out _))
+            {
+                return trimmed.Substring(dotIdx + 1).TrimStart();
+            }
+            return $"{count++}. {trimmed}";
+        }));
+    }
 
     public override PdfElementBase ToModel()
     {
@@ -70,9 +129,11 @@ public partial class TextElementViewModel : ElementViewModelBase
             IsBold = IsBold,
             IsItalic = IsItalic,
             IsUnderline = IsUnderline,
+            IsStrikethrough = IsStrikethrough,
             TextColorHex = TextColorHex,
             Alignment = Alignment,
             LineHeight = LineHeight,
+            CharacterSpacing = CharacterSpacing,
             Padding = Padding,
             BackgroundColorHex = BackgroundColorHex,
             BorderColorHex = BorderColorHex,
@@ -101,9 +162,11 @@ public partial class TextElementViewModel : ElementViewModelBase
             IsBold = textModel.IsBold;
             IsItalic = textModel.IsItalic;
             IsUnderline = textModel.IsUnderline;
+            IsStrikethrough = textModel.IsStrikethrough;
             TextColorHex = textModel.TextColorHex;
             Alignment = textModel.Alignment;
             LineHeight = textModel.LineHeight;
+            CharacterSpacing = textModel.CharacterSpacing;
             Padding = textModel.Padding;
             BackgroundColorHex = textModel.BackgroundColorHex;
             BorderColorHex = textModel.BorderColorHex;

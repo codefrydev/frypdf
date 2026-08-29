@@ -295,6 +295,13 @@
         <dialogs:ExportSuccessDialog IsVisible="{Binding IsExportSuccessDialogOpen}" />
         <dialogs:CommandPaletteDialog IsVisible="{Binding IsCommandPaletteOpen}" />
         <dialogs:ShortcutsHelpDialog IsVisible="{Binding IsShortcutsHelpDialogOpen}" />
+        <dialogs:SignatureStudioDialog IsVisible="{Binding IsSignatureStudioOpen}" />
+        <dialogs:DocumentSecurityDialog IsVisible="{Binding IsSecurityDialogOpen}" />
+        <dialogs:PreflightDiagnosticsDialog IsVisible="{Binding IsPreflightDialogOpen}" />
+        <dialogs:HeaderFooterDialog IsVisible="{Binding IsHeaderFooterDialogOpen}" />
+        <dialogs:WatermarkManagerDialog IsVisible="{Binding IsWatermarkManagerOpen}" />
+        <dialogs:SearchRedactDialog IsVisible="{Binding IsSearchRedactDialogOpen}" />
+        <dialogs:CustomStampDialog IsVisible="{Binding IsCustomStampDialogOpen}" />
     </Grid>
 
 </Window>

@@ -27,7 +27,38 @@ public enum FormFieldType
     Radio,
     Dropdown,
     Signature,
-    Button
+    Button,
+    DatePicker,
+    Number,
+    SignatureLine
+}
+
+public enum FormValidationType
+{
+    None,
+    Email,
+    Numeric,
+    Phone,
+    Date,
+    CustomRegex
+}
+
+public enum SignatureStyle
+{
+    DrawnInk,
+    CursiveElegance,
+    SignatureCasual,
+    ClassicScript,
+    ModernHandwriting,
+    UploadedImage
+}
+
+public enum GridSnapSize
+{
+    None = 0,
+    Points10 = 10,
+    Points20 = 20,
+    Points50 = 50
 }
 
 public enum RedactionMode
@@ -42,7 +73,9 @@ public enum PageFormat
     A4,
     Letter,
     Legal,
-    Executive
+    Executive,
+    A3,
+    A5
 }
 
 public enum PageOrientation
@@ -145,7 +178,9 @@ public enum StampType
     Void,
     Completed,
     Final,
-    Expired
+    Expired,
+    Received,
+    Custom
 }
 
 public enum RibbonTabKind
@@ -155,8 +190,11 @@ public enum RibbonTabKind
     Edit,
     Comment,
     Insert,
+    Sign,
     Forms,
     Organize,
+    Protect,
+    Audit,
     Export
 }
 
@@ -169,7 +207,8 @@ public enum ToolMode
     Highlight,
     Draw,
     Form,
-    Redact
+    Redact,
+    Signature
 }
 
 public enum SidebarTabKind
@@ -178,3 +217,4 @@ public enum SidebarTabKind
     Outline,
     Comments
 }
+

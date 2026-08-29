@@ -126,9 +126,29 @@ public partial class MainViewModel
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Insert Highlighter Stroke", Subtitle = "Yellow semi-transparent highlight marker", Category = "Markup", IconKind = "Marker", Shortcut = "H", Action = () => AddInkElementCommand.Execute(true) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Insert Freehand Ink Drawing", Subtitle = "Freehand pen stroke vector element", Category = "Markup", IconKind = "DrawPen", Shortcut = "D", Action = () => AddInkElementCommand.Execute(false) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Insert Redaction Blackout Box", Subtitle = "Permanent FOIA / GDPR privileged blackout", Category = "Security", IconKind = "EyeOffOutline", Action = () => AddRedactionElementCommand.Execute("[REDACTED]") });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Search & Redact Pattern", Subtitle = "Auto-redact text occurrences on current page", Category = "Security", IconKind = "DatabaseSearchOutline", Action = () => OpenSearchRedactDialogCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Burn In All Redactions", Subtitle = "Permanently commit solid blackouts to PDF", Category = "Security", IconKind = "ShieldCheckOutline", Action = () => BurnInAllRedactionsCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Document Security & Passwords", Subtitle = "Configure password protection and permissions", Category = "Security", IconKind = "ShieldLockOutline", Action = () => OpenSecurityDialogCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Sanitize Document", Subtitle = "Scrub author metadata and internal review notes", Category = "Security", IconKind = "ShieldCheck", Action = () => SanitizeDocumentCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Apply Bates Numbering", Subtitle = "Sequential legal discovery numbering (CONF-BATES-000001)", Category = "Security", IconKind = "Numeric", Action = () => ApplyBatesNumberingCommand.Execute(null) });
 
-        // 7. Pages & Navigation
+        // 7. Fill & Sign Studio
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Open Signature Studio", Subtitle = "Draw, type cursive calligraphy, or upload digital signature", Category = "Sign", IconKind = "Draw", Action = () => OpenSignatureStudioCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Stamp Today's Date", Subtitle = "Insert dynamic verified date badge", Category = "Sign", IconKind = "CalendarClockOutline", Action = () => AddDateStampCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Stamp Signer Initials", Subtitle = "Insert circular monogram initial stamp", Category = "Sign", IconKind = "AccountOutline", Action = () => AddInitialsBadgeCommand.Execute("JD") });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Stamp Checkmark (✓)", Subtitle = "Insert green verification checkmark", Category = "Sign", IconKind = "CheckBold", Action = () => AddCheckmarkBadgeCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Stamp Cross (✕)", Subtitle = "Insert red rejection cross mark", Category = "Sign", IconKind = "CloseThick", Action = () => AddCrossBadgeCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Custom Stamp Creator", Subtitle = "Create timestamped custom legal certification stamp", Category = "Stamps", IconKind = "Stamp", Action = () => OpenCustomStampDialogCommand.Execute(null) });
+
+        // 8. Watermarks & Headers/Footers
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Header & Footer Studio", Subtitle = "Configure multi-zone header/footer with dynamic macros", Category = "Organize", IconKind = "PageLayoutHeaderFooter", Action = () => OpenHeaderFooterDialogCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Watermark Manager", Subtitle = "Apply CONFIDENTIAL/DRAFT watermark across all pages", Category = "Organize", IconKind = "Watermark", Action = () => OpenWatermarkManagerCommand.Execute(null) });
+
+        // 9. Preflight Audit & Health Diagnostics
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Preflight Health Check & Audit", Subtitle = "Inspect PDF compliance, fonts, broken links, accessibility", Category = "Audit", IconKind = "FileCheckOutline", Action = () => OpenPreflightDialogCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Export Comments Summary", Subtitle = "Export all review notes to Markdown document", Category = "Audit", IconKind = "CommentTextMultipleOutline", Action = () => ExportCommentsSummaryCommand.Execute(null) });
+
+        // 10. Pages & Navigation
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Add Blank Page", Subtitle = "Insert new page at end of document", Category = "Pages", IconKind = "FilePlusOutline", Shortcut = "⌘⇧N", Action = () => AddPageCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Duplicate Current Page", Subtitle = "Clone active page with all elements", Category = "Pages", IconKind = "FileMultipleOutline", Shortcut = "⌘⇧D", Action = () => DuplicateCurrentPageCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Rotate Page 90° Clockwise", Subtitle = "Rotate current page orientation", Category = "Pages", IconKind = "RotateRight", Shortcut = "⌘⇧R", Action = () => RotateCurrentPageCommand.Execute(null) });
@@ -136,7 +156,9 @@ public partial class MainViewModel
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Next Page", Subtitle = "Go to next document page", Category = "Navigation", IconKind = "ChevronRight", Shortcut = "PgDn", Action = () => NextPageCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Previous Page", Subtitle = "Go to previous document page", Category = "Navigation", IconKind = "ChevronLeft", Shortcut = "PgUp", Action = () => PreviousPageCommand.Execute(null) });
 
-        // 8. View & Zoom
+        // 11. View & Guides
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Toggle Canvas Grid", Subtitle = "Show/hide alignment grid dots", Category = "View", IconKind = "Grid", Action = () => ToggleGridCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Toggle Snap to Grid", Subtitle = "Snap elements to precise 20pt intervals", Category = "View", IconKind = "Magnet", Action = () => ToggleSnapToGridCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Zoom In", Subtitle = "Increase canvas scale by 10%", Category = "View", IconKind = "MagnifyPlusOutline", Shortcut = "⌘+", Action = () => ZoomInCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Zoom Out", Subtitle = "Decrease canvas scale by 10%", Category = "View", IconKind = "MagnifyMinusOutline", Shortcut = "⌘-", Action = () => ZoomOutCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Reset Zoom (100%)", Subtitle = "Reset canvas view to 1:1 scale", Category = "View", IconKind = "Magnify", Shortcut = "⌘0", Action = () => ResetZoomCommand.Execute(null) });

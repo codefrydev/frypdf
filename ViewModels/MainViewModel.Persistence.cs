@@ -218,7 +218,8 @@ public partial class MainViewModel
         {
             Title = DocumentTitle,
             Author = DocumentAuthor,
-            Subject = DocumentSubject
+            Subject = DocumentSubject,
+            SecuritySettings = SecuritySettings.Clone()
         };
 
         foreach (var pageVm in Pages)
@@ -234,6 +235,7 @@ public partial class MainViewModel
         DocumentTitle = model.Title;
         DocumentAuthor = model.Author;
         DocumentSubject = model.Subject;
+        SecuritySettings = model.SecuritySettings?.Clone() ?? new PdfSecuritySettings();
 
         Pages.Clear();
         foreach (var pageModel in model.Pages)

@@ -1,0 +1,118 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Dialogs.HeaderFooterDialog"
+             x:DataType="vm:MainViewModel">
+
+    <!-- Modal Backdrop -->
+    <Grid Background="#60000000">
+        <!-- Dialog Card -->
+        <Border Width="680"
+                Background="White"
+                BorderBrush="{StaticResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="10"
+                BoxShadow="0 20 60 #35000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Padding="24">
+
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- Header -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Border Width="30" Height="30" Background="{StaticResource WinAccentLightBrush}" CornerRadius="6">
+                                <materialIcons:MaterialIcon Kind="PageLayoutHeaderFooter" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Header &amp; Footer Layout Studio" FontSize="17" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="Customize 6 header and footer zones with dynamic macro variables ({P}, {N}, [Title], [Author], [Date])." FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding CloseHeaderFooterDialogCommand}">
+                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+                </Grid>
+
+                <!-- Body -->
+                <StackPanel Grid.Row="1" Spacing="16">
+
+                    <!-- Header Zones -->
+                    <Border Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Page Header (Top Margin)" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                                <StackPanel Grid.Column="0" Spacing="3">
+                                    <TextBlock Text="Header Left" FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" />
+                                    <TextBox Text="{Binding HeaderLeftText, Mode=TwoWay}" Height="32" FontSize="11.5" CornerRadius="5" PlaceholderText="e.g. [Title]" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="3">
+                                    <TextBlock Text="Header Center" FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" />
+                                    <TextBox Text="{Binding HeaderCenterText, Mode=TwoWay}" Height="32" FontSize="11.5" CornerRadius="5" PlaceholderText="e.g. Executive Summary" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Spacing="3">
+                                    <TextBlock Text="Header Right" FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" />
+                                    <TextBox Text="{Binding HeaderRightText, Mode=TwoWay}" Height="32" FontSize="11.5" CornerRadius="5" PlaceholderText="e.g. [Date]" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Footer Zones -->
+                    <Border Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Page Footer (Bottom Margin)" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                                <StackPanel Grid.Column="0" Spacing="3">
+                                    <TextBlock Text="Footer Left" FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" />
+                                    <TextBox Text="{Binding FooterLeftText, Mode=TwoWay}" Height="32" FontSize="11.5" CornerRadius="5" PlaceholderText="e.g. CONFIDENTIAL" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="3">
+                                    <TextBlock Text="Footer Center" FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" />
+                                    <TextBox Text="{Binding FooterCenterText, Mode=TwoWay}" Height="32" FontSize="11.5" CornerRadius="5" PlaceholderText="e.g. [Author]" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Spacing="3">
+                                    <TextBlock Text="Footer Right (Page #)" FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" />
+                                    <TextBox Text="{Binding FooterRightText, Mode=TwoWay}" Height="32" FontSize="11.5" CornerRadius="5" PlaceholderText="e.g. Page {P} of {N}" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Macro Help Tokens -->
+                    <Border Background="{StaticResource WinAccentLightBrush}" BorderBrush="{StaticResource WinAccentBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Supported Dynamic Macro Tokens:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource WinAccentBrush}" />
+                            <WrapPanel Orientation="Horizontal">
+                                <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,2" Margin="0,2,6,2"><TextBlock Text="{}{P} / [PageNumber]" FontSize="10" FontWeight="SemiBold" /></Border>
+                                <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,2" Margin="0,2,6,2"><TextBlock Text="{}{N} / [TotalPages]" FontSize="10" FontWeight="SemiBold" /></Border>
+                                <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,2" Margin="0,2,6,2"><TextBlock Text="[Title]" FontSize="10" FontWeight="SemiBold" /></Border>
+                                <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,2" Margin="0,2,6,2"><TextBlock Text="[Author]" FontSize="10" FontWeight="SemiBold" /></Border>
+                                <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,2" Margin="0,2,6,2"><TextBlock Text="[Date]" FontSize="10" FontWeight="SemiBold" /></Border>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Footer Buttons -->
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,20,0,0">
+                    <Button Grid.Column="0" Classes="secondary-btn" Height="34" Padding="14,0" Command="{Binding CloseHeaderFooterDialogCommand}">
+                        <TextBlock Text="Cancel" FontSize="12" />
+                    </Button>
+
+                    <Button Grid.Column="2" Classes="primary-btn" Height="34" Padding="18,0" Command="{Binding ApplyHeaderFooterToAllPagesCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="Check" Width="15" Height="15" Foreground="White" />
+                            <TextBlock Text="Apply to All Pages" FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

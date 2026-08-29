@@ -24,10 +24,25 @@ public partial class FormFieldElementViewModel : ElementViewModelBase
     private string _value = "";
 
     [ObservableProperty]
+    private string _defaultValue = "";
+
+    [ObservableProperty]
+    private string _tooltip = "";
+
+    [ObservableProperty]
     private bool _isRequired = true;
 
     [ObservableProperty]
+    private bool _isReadOnly = false;
+
+    [ObservableProperty]
     private bool _isChecked;
+
+    [ObservableProperty]
+    private FormValidationType _validationType = FormValidationType.None;
+
+    [ObservableProperty]
+    private string _customValidationRegex = "";
 
     [ObservableProperty]
     private string _borderColorHex = "#0F6CBD";
@@ -56,6 +71,22 @@ public partial class FormFieldElementViewModel : ElementViewModelBase
         IsChecked = !IsChecked;
     }
 
+    [RelayCommand]
+    public void AddOption(string? optionText)
+    {
+        string text = string.IsNullOrWhiteSpace(optionText) ? $"Option {Options.Count + 1}" : optionText.Trim();
+        Options.Add(text);
+    }
+
+    [RelayCommand]
+    public void RemoveOption(string? optionText)
+    {
+        if (optionText != null && Options.Contains(optionText))
+        {
+            Options.Remove(optionText);
+        }
+    }
+
     public override PdfElementBase ToModel()
     {
         var model = new PdfFormFieldElement
@@ -74,8 +105,13 @@ public partial class FormFieldElementViewModel : ElementViewModelBase
             Label = Label,
             Placeholder = Placeholder,
             Value = Value,
+            DefaultValue = DefaultValue,
+            Tooltip = Tooltip,
             IsRequired = IsRequired,
+            IsReadOnly = IsReadOnly,
             IsChecked = IsChecked,
+            ValidationType = ValidationType,
+            CustomValidationRegex = CustomValidationRegex,
             BorderColorHex = BorderColorHex,
             BackgroundColorHex = BackgroundColorHex,
             FontSize = FontSize,
@@ -103,8 +139,13 @@ public partial class FormFieldElementViewModel : ElementViewModelBase
             Label = form.Label;
             Placeholder = form.Placeholder;
             Value = form.Value;
+            DefaultValue = form.DefaultValue;
+            Tooltip = form.Tooltip;
             IsRequired = form.IsRequired;
+            IsReadOnly = form.IsReadOnly;
             IsChecked = form.IsChecked;
+            ValidationType = form.ValidationType;
+            CustomValidationRegex = form.CustomValidationRegex;
             BorderColorHex = form.BorderColorHex;
             BackgroundColorHex = form.BackgroundColorHex;
             FontSize = form.FontSize;

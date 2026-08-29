@@ -360,4 +360,152 @@ public partial class MainViewModel
             SelectPage(Pages[item.PageIndex - 1]);
         }
     }
+
+    // --- HEADER & FOOTER MANAGER ---
+
+    [RelayCommand]
+    public void OpenHeaderFooterDialog()
+    {
+        if (CurrentPage != null)
+        {
+            HeaderLeftText = CurrentPage.HeaderLeft ?? "";
+            HeaderRightText = CurrentPage.HeaderRight ?? "";
+            FooterLeftText = CurrentPage.FooterLeft ?? "CONFIDENTIAL & PROPRIETARY";
+            FooterRightText = CurrentPage.FooterRight ?? "Page {P} of {N}";
+        }
+        IsHeaderFooterDialogOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseHeaderFooterDialog()
+    {
+        IsHeaderFooterDialogOpen = false;
+    }
+
+    [RelayCommand]
+    public void ApplyHeaderFooterToAllPages()
+    {
+        for (int i = 0; i < Pages.Count; i++)
+        {
+            var p = Pages[i];
+            p.ShowHeaderFooter = true;
+            p.HeaderLeft = ExpandMacros(HeaderLeftText, i + 1, Pages.Count);
+            p.HeaderRight = ExpandMacros(HeaderRightText, i + 1, Pages.Count);
+            p.FooterLeft = ExpandMacros(FooterLeftText, i + 1, Pages.Count);
+            p.FooterRight = ExpandMacros(FooterRightText, i + 1, Pages.Count);
+        }
+
+        CloseHeaderFooterDialog();
+        ShowToast($"Updated headers & footers across {Pages.Count} pages", "PageLayoutHeaderFooter");
+    }
+
+    private string ExpandMacros(string? template, int pageNum, int totalPages)
+    {
+        if (string.IsNullOrEmpty(template)) return "";
+        return template
+            .Replace("{P}", pageNum.ToString())
+            .Replace("{N}", totalPages.ToString())
+            .Replace("[PageNumber]", pageNum.ToString())
+            .Replace("[TotalPages]", totalPages.ToString())
+            .Replace("[Title]", DocumentTitle)
+            .Replace("[Author]", DocumentAuthor)
+            .Replace("[Date]", DateTime.Now.ToString("yyyy-MM-dd"));
+    }
+
+    // --- DOCUMENT SECURITY & SANITIZATION ---
+
+    [RelayCommand]
+    public void OpenSecurityDialog()
+    {
+        IsSecurityDialogOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseSecurityDialog()
+    {
+        IsSecurityDialogOpen = false;
+        OnPropertyChanged(nameof(SecurityStatusDisplay));
+    }
+
+    [RelayCommand]
+    public void SanitizeDocument()
+    {
+        DocumentAuthor = "Anonymous";
+        DocumentSubject = "";
+
+        int commentsRemoved = 0;
+        foreach (var page in Pages)
+        {
+            var notes = page.Elements.OfType<StickyNoteElementViewModel>().ToList();
+            foreach (var note in notes)
+            {
+                page.RemoveElement(note);
+                commentsRemoved++;
+            }
+        }
+
+        SecuritySettings.ScrubMetadataOnExport = true;
+        SecuritySettings.RemoveCommentsOnExport = true;
+
+        RefreshComments();
+        ShowToast($"Sanitized document (cleared metadata & removed {commentsRemoved} internal review notes)", "ShieldCheck");
+    }
+
+    // --- PAGE SETUP & GEOMETRY COMMANDS ---
+
+    [RelayCommand]
+    public void SetPageFormat(string formatStr)
+    {
+        if (CurrentPage == null) return;
+        if (Enum.TryParse<PageFormat>(formatStr, true, out var format))
+        {
+            CurrentPage.Format = format;
+            double w = format switch
+            {
+                PageFormat.A4 => 800,
+                PageFormat.Letter => 816,
+                PageFormat.Legal => 816,
+                PageFormat.Executive => 700,
+                PageFormat.A3 => 1131,
+                PageFormat.A5 => 565,
+                _ => 800
+            };
+            double h = format switch
+            {
+                PageFormat.A4 => 1131,
+                PageFormat.Letter => 1056,
+                PageFormat.Legal => 1344,
+                PageFormat.Executive => 950,
+                PageFormat.A3 => 1600,
+                PageFormat.A5 => 800,
+                _ => 1131
+            };
+
+            if (CurrentPage.Orientation == PageOrientation.Landscape)
+            {
+                (w, h) = (h, w);
+            }
+
+            CurrentPage.Width = w;
+            CurrentPage.Height = h;
+            OnPropertyChanged(nameof(PageDimensionsDisplay));
+            ShowToast($"Page format changed to {format}", "AspectRatio");
+        }
+    }
+
+    [RelayCommand]
+    public void SetPageOrientation(string orientationStr)
+    {
+        if (CurrentPage == null) return;
+        if (Enum.TryParse<PageOrientation>(orientationStr, true, out var orient))
+        {
+            if (CurrentPage.Orientation != orient)
+            {
+                CurrentPage.Orientation = orient;
+                (CurrentPage.Width, CurrentPage.Height) = (CurrentPage.Height, CurrentPage.Width);
+                OnPropertyChanged(nameof(PageDimensionsDisplay));
+                ShowToast($"Orientation changed to {orient}", "PhoneRotateLandscape");
+            }
+        }
+    }
 }

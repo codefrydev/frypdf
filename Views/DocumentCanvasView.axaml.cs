@@ -234,6 +234,18 @@ public partial class DocumentCanvasView : UserControl
         if (_isResizingHandle && _draggedElement != null)
         {
             var el = _draggedElement;
+            if (ViewModel != null && ViewModel.SnapToGrid)
+            {
+                double snap = (double)(int)ViewModel.GridSnapSize;
+                if (snap > 1)
+                {
+                    el.X = Math.Round(el.X / snap) * snap;
+                    el.Y = Math.Round(el.Y / snap) * snap;
+                    el.Width = Math.Max(snap, Math.Round(el.Width / snap) * snap);
+                    el.Height = Math.Max(snap, Math.Round(el.Height / snap) * snap);
+                }
+            }
+
             double fromX = _resizeStartX, fromY = _resizeStartY, fromW = _resizeStartW, fromH = _resizeStartH;
             double toX = el.X, toY = el.Y, toW = el.Width, toH = el.Height;
             if (Math.Abs(toW - fromW) > 0.5 || Math.Abs(toH - fromH) > 0.5 || Math.Abs(toX - fromX) > 0.5 || Math.Abs(toY - fromY) > 0.5)
@@ -248,6 +260,16 @@ public partial class DocumentCanvasView : UserControl
         else if (_isDraggingElement && _draggedElement != null)
         {
             var el = _draggedElement;
+            if (ViewModel != null && ViewModel.SnapToGrid)
+            {
+                double snap = (double)(int)ViewModel.GridSnapSize;
+                if (snap > 1)
+                {
+                    el.X = Math.Round(el.X / snap) * snap;
+                    el.Y = Math.Round(el.Y / snap) * snap;
+                }
+            }
+
             double fromX = _dragStartElementX, fromY = _dragStartElementY;
             double toX = el.X, toY = el.Y;
             if (Math.Abs(toX - fromX) > 0.5 || Math.Abs(toY - fromY) > 0.5)

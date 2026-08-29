@@ -1,0 +1,140 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:services="using:PdfEditorApp.Services"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Dialogs.PreflightDiagnosticsDialog"
+             x:DataType="vm:MainViewModel">
+
+    <UserControl.Resources>
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+    </UserControl.Resources>
+
+    <!-- Modal Backdrop -->
+    <Grid Background="#60000000">
+        <!-- Dialog Card -->
+        <Border Width="720"
+                MaxHeight="620"
+                Background="White"
+                BorderBrush="{StaticResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="10"
+                BoxShadow="0 20 60 #35000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Padding="24">
+
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- Header -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Border Width="30" Height="30" Background="{StaticResource WinSuccessLightBrush}" CornerRadius="6">
+                                <materialIcons:MaterialIcon Kind="FileCheckOutline" Width="18" Height="18" Foreground="{StaticResource WinSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Preflight &amp; Document Health Audit" FontSize="17" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="Comprehensive validation for font readability, contrast (WCAG), graphics, security, and statistics." FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding ClosePreflightDialogCommand}">
+                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+                </Grid>
+
+                <!-- Scrollable Body -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Spacing="16">
+
+                        <!-- Health Score & Metric Summary Bar -->
+                        <Border Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <!-- Score Gauge -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                    <Border Width="56" Height="56" Background="{StaticResource WinSuccessLightBrush}" BorderBrush="{StaticResource WinSuccessBrush}" BorderThickness="2" CornerRadius="28" HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding ActiveAuditReport.Grade, FallbackValue='A+'}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource WinSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock Text="{Binding ActiveAuditReport.HealthScore, StringFormat='{}Health Score: {0}/100', FallbackValue='Health Score: 100/100'}" FontSize="13" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" />
+                                        <TextBlock Text="Publishing &amp; Print Ready" FontSize="11" Foreground="{StaticResource WinMutedBrush}" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Stats Pills -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                                    <StackPanel Spacing="1" HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding ActiveAuditReport.TotalWordCount, FallbackValue='0'}" FontSize="14" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" />
+                                        <TextBlock Text="Words" FontSize="10" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                    <Rectangle Width="1" Height="24" Fill="{StaticResource WinBorderBrush}" />
+                                    <StackPanel Spacing="1" HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding ActiveAuditReport.ReadingTimeDisplay, FallbackValue='1 min'}" FontSize="14" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" />
+                                        <TextBlock Text="Reading Time" FontSize="10" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                    <Rectangle Width="1" Height="24" Fill="{StaticResource WinBorderBrush}" />
+                                    <StackPanel Spacing="1" HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding ActiveAuditReport.TotalPages, FallbackValue='1'}" FontSize="14" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" />
+                                        <TextBlock Text="Pages" FontSize="10" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Inspection Findings List -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Audit Inspection Results" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+
+                            <ItemsControl ItemsSource="{Binding ActiveAuditReport.Issues}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="services:AuditIssueItem">
+                                        <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,0,0,6">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <!-- Severity Icon -->
+                                                <materialIcons:MaterialIcon Grid.Column="0" Kind="CheckCircleOutline" Width="18" Height="18" Foreground="{StaticResource WinSuccessBrush}" Margin="0,0,10,0" VerticalAlignment="Center"
+                                                                            IsVisible="{Binding Severity, Converter={StaticResource EqualityConverter}, ConverterParameter=Success}" />
+                                                <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertOutline" Width="18" Height="18" Foreground="#D97706" Margin="0,0,10,0" VerticalAlignment="Center"
+                                                                            IsVisible="{Binding Severity, Converter={StaticResource EqualityConverter}, ConverterParameter=Warning}" />
+                                                <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="18" Height="18" Foreground="{StaticResource WinDangerBrush}" Margin="0,0,10,0" VerticalAlignment="Center"
+                                                                            IsVisible="{Binding Severity, Converter={StaticResource EqualityConverter}, ConverterParameter=Error}" />
+                                                <materialIcons:MaterialIcon Grid.Column="0" Kind="InformationOutline" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" Margin="0,0,10,0" VerticalAlignment="Center"
+                                                                            IsVisible="{Binding Severity, Converter={StaticResource EqualityConverter}, ConverterParameter=Info}" />
+
+                                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" />
+                                                </StackPanel>
+
+                                                <!-- Page / Category Badge -->
+                                                <Border Grid.Column="2" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Category}" FontSize="9.5" FontWeight="Medium" Foreground="{StaticResource WinMutedBrush}" />
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Footer Buttons -->
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,20,0,0">
+                    <Button Grid.Column="0" Classes="secondary-btn" Height="34" Padding="14,0" Command="{Binding ExportPreflightReportCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="DownloadOutline" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                            <TextBlock Text="Export Audit Report" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="2" Classes="primary-btn" Height="34" Padding="18,0" Command="{Binding ClosePreflightDialogCommand}">
+                        <TextBlock Text="Close" FontSize="12" FontWeight="SemiBold" />
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

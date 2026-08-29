@@ -746,4 +746,153 @@ public class PdfEngineTests
         vm.UndoCommand.Execute(null);
         Assert.Equal(initialCount + 2, page.Elements.Count);
     }
+
+    [Fact]
+    public void SignatureService_GeneratesValidSignaturesAndInitials()
+    {
+        var sigService = new SignatureService();
+
+        var sig = sigService.CreateCursiveSignatureElement("Alexander Hamilton", SignatureStyle.CursiveElegance, 100, 200);
+        Assert.NotNull(sig);
+        Assert.Equal("Alexander Hamilton", sig.Text);
+        Assert.Equal("Georgia", sig.FontFamily);
+        Assert.True(sig.IsItalic);
+
+        var dateStamp = sigService.CreateDateStampElement(100, 200);
+        Assert.NotNull(dateStamp);
+        Assert.Contains(DateTime.Now.Year.ToString(), dateStamp.Text);
+
+        var initials = sigService.CreateInitialsElement("AH", 100, 200);
+        Assert.NotNull(initials);
+        Assert.Equal("AH", initials.Label);
+        Assert.Equal(ShapeType.Circle, initials.ShapeType);
+
+        var checkmark = sigService.CreateMarkupBadge("✓", "#16A34A", 100, 200);
+        Assert.NotNull(checkmark);
+        Assert.Equal("✓", checkmark.Label);
+    }
+
+    [Fact]
+    public void DocumentAuditService_EvaluatesHealthAndChecks()
+    {
+        var auditService = new DocumentAuditService();
+        var doc = _templateService.CreateAnnualReportTemplate();
+
+        var report = auditService.RunAudit(doc);
+        Assert.NotNull(report);
+        Assert.True(report.HealthScore >= 70);
+        Assert.NotEmpty(report.Grade);
+        Assert.Equal(3, report.TotalPages);
+        Assert.True(report.TotalWordCount > 0);
+        Assert.NotEmpty(report.Issues);
+    }
+
+    [Fact]
+    public void SecuritySettings_PasswordEncryptionAndPermissions_ExportPasses()
+    {
+        var doc = _templateService.CreateInvoiceTemplate();
+        doc.SecuritySettings.IsPasswordProtected = true;
+        doc.SecuritySettings.OpenPassword = "SecurePassword123!";
+        doc.SecuritySettings.AllowPrinting = true;
+        doc.SecuritySettings.AllowContentCopying = false;
+        doc.SecuritySettings.ScrubMetadataOnExport = true;
+
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(doc);
+        Assert.NotNull(pdfBytes);
+        Assert.True(pdfBytes.Length > 500);
+        Assert.Equal("%PDF-", Encoding.ASCII.GetString(pdfBytes, 0, 5));
+    }
+
+    [Fact]
+    public void DocumentSanitization_ClearsMetadataAndComments()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        var page = vm.CurrentPage!;
+        page.AddElement(new StickyNoteElementViewModel { NoteText = "Internal confidential review comment" });
+
+        vm.SanitizeDocument();
+        Assert.Equal("Anonymous", vm.DocumentAuthor);
+        Assert.Equal("", vm.DocumentSubject);
+        Assert.True(vm.SecuritySettings.ScrubMetadataOnExport);
+        Assert.True(vm.SecuritySettings.RemoveCommentsOnExport);
+        Assert.DoesNotContain(page.Elements, e => e is StickyNoteElementViewModel);
+    }
+
+    [Fact]
+    public void Typography_StrikethroughAndTextCase_TransformationsWork()
+    {
+        var textVm = new TextElementViewModel { Text = "hello world acrobat suite" };
+
+        textVm.TransformUppercase();
+        Assert.Equal("HELLO WORLD ACROBAT SUITE", textVm.Text);
+
+        textVm.TransformTitleCase();
+        Assert.Equal("Hello World Acrobat Suite", textVm.Text);
+
+        textVm.TransformLowercase();
+        Assert.Equal("hello world acrobat suite", textVm.Text);
+
+        textVm.ToggleBulletList();
+        Assert.StartsWith("• ", textVm.Text);
+
+        textVm.ToggleNumberedList();
+        Assert.StartsWith("1. ", textVm.Text);
+
+        textVm.IsStrikethrough = true;
+        var model = (PdfEditorApp.Models.Elements.PdfTextElement)textVm.ToModel();
+        Assert.True(model.IsStrikethrough);
+    }
+
+    [Fact]
+    public void AcroForms_ValidationAndOptions_WorkCorrectly()
+    {
+        var formVm = new FormFieldElementViewModel
+        {
+            FieldType = FormFieldType.Dropdown,
+            FieldName = "StateProvince",
+            ValidationType = FormValidationType.CustomRegex,
+            CustomValidationRegex = @"^[A-Z]{2}$",
+            IsReadOnly = false,
+            IsRequired = true,
+            DefaultValue = "CA",
+            Tooltip = "Select 2-letter state code"
+        };
+        formVm.Options.Clear();
+        formVm.AddOption("NY");
+        formVm.AddOption("TX");
+
+        Assert.Equal(2, formVm.Options.Count);
+
+        var model = (PdfEditorApp.Models.Elements.PdfFormFieldElement)formVm.ToModel();
+        Assert.Equal(FormFieldType.Dropdown, model.FieldType);
+        Assert.Equal("StateProvince", model.FieldName);
+        Assert.Equal(FormValidationType.CustomRegex, model.ValidationType);
+        Assert.Equal("CA", model.DefaultValue);
+        Assert.Equal(2, model.Options.Count);
+    }
+
+    [Fact]
+    public void SmartDistribution_DistributesElementsEvenly()
+    {
+        var vm = new MainViewModel(_exportService, _templateService, _persistenceService);
+        var page = vm.CurrentPage!;
+        page.Elements.Clear();
+
+        var el1 = new ShapeElementViewModel { X = 0, Y = 100, Width = 50, Height = 50 };
+        var el2 = new ShapeElementViewModel { X = 100, Y = 100, Width = 50, Height = 50 };
+        var el3 = new ShapeElementViewModel { X = 300, Y = 100, Width = 50, Height = 50 };
+
+        page.AddElement(el1);
+        page.AddElement(el2);
+        page.AddElement(el3);
+
+        vm.Inspector.UpdateSelection(el1, page);
+        vm.Inspector.DistributeHorizontally();
+
+        // Total span: 0 to 350 (width 350). Elements total width: 150. Remaining space: 200 / 2 = 100 gap.
+        // Expected X: el1 = 0, el2 = 150, el3 = 300.
+        Assert.Equal(0, el1.X);
+        Assert.Equal(150, el2.X);
+        Assert.Equal(300, el3.X);
+    }
 }

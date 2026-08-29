@@ -39,14 +39,29 @@ internal class QuestPdfDocumentWrapper : IDocument
         _model = model;
     }
 
-    public DocumentMetadata GetMetadata() => new()
+    public DocumentMetadata GetMetadata()
     {
-        Title = _model.Title,
-        Author = _model.Author,
-        Subject = _model.Subject,
-        CreationDate = _model.CreatedDate,
-        ModifiedDate = _model.ModifiedDate
-    };
+        if (_model.SecuritySettings.ScrubMetadataOnExport)
+        {
+            return new DocumentMetadata
+            {
+                Title = "Document",
+                Author = "Anonymous",
+                Subject = "",
+                CreationDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                ModifiedDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            };
+        }
+
+        return new DocumentMetadata
+        {
+            Title = _model.Title,
+            Author = _model.Author,
+            Subject = _model.Subject,
+            CreationDate = _model.CreatedDate,
+            ModifiedDate = _model.ModifiedDate
+        };
+    }
 
     public void Compose(IDocumentContainer container)
     {
@@ -60,6 +75,8 @@ internal class QuestPdfDocumentWrapper : IDocument
                     PageFormat.Letter => PageSizes.Letter,
                     PageFormat.Legal => PageSizes.Legal,
                     PageFormat.Executive => PageSizes.Executive,
+                    PageFormat.A3 => PageSizes.A3,
+                    PageFormat.A5 => PageSizes.A5,
                     _ => PageSizes.A4
                 };
 
@@ -73,14 +90,18 @@ internal class QuestPdfDocumentWrapper : IDocument
                 page.PageColor(pageModel.BackgroundColorHex);
                 page.DefaultTextStyle(x => x.FontFamily("Arial").FontSize(10).FontColor("#201F1E"));
 
-                // Header
-                if (pageModel.ShowHeaderFooter && (!string.IsNullOrEmpty(pageModel.HeaderLeft) || !string.IsNullOrEmpty(pageModel.HeaderRight)))
+                // Header (3-zone: Left, Center, Right)
+                if (pageModel.ShowHeaderFooter && (!string.IsNullOrEmpty(pageModel.HeaderLeft) || !string.IsNullOrEmpty(pageModel.HeaderCenter) || !string.IsNullOrEmpty(pageModel.HeaderRight)))
                 {
                     page.Header().PaddingBottom(12).Row(row =>
                     {
                         if (!string.IsNullOrEmpty(pageModel.HeaderLeft))
                         {
                             row.RelativeItem().Text(pageModel.HeaderLeft).FontSize(8).FontColor(Colors.Grey.Medium);
+                        }
+                        if (!string.IsNullOrEmpty(pageModel.HeaderCenter))
+                        {
+                            row.RelativeItem().AlignCenter().Text(pageModel.HeaderCenter).FontSize(8).FontColor(Colors.Grey.Medium);
                         }
                         if (!string.IsNullOrEmpty(pageModel.HeaderRight))
                         {
@@ -108,16 +129,24 @@ internal class QuestPdfDocumentWrapper : IDocument
 
                     foreach (var element in sortedElements)
                     {
+                        if (_model.SecuritySettings.RemoveCommentsOnExport && element is PdfStickyNoteElement)
+                        {
+                            continue;
+                        }
                         ComposeElement(col, element);
                     }
                 });
 
-                // Footer
+                // Footer (3-zone: Left, Center, Right)
                 if (pageModel.ShowHeaderFooter)
                 {
                     page.Footer().PaddingTop(12).Row(row =>
                     {
                         row.RelativeItem().Text(pageModel.FooterLeft ?? "CONFIDENTIAL & PROPRIETARY").FontSize(8).FontColor(Colors.Grey.Medium);
+                        if (!string.IsNullOrEmpty(pageModel.FooterCenter))
+                        {
+                            row.RelativeItem().AlignCenter().Text(pageModel.FooterCenter).FontSize(8).FontColor(Colors.Grey.Medium);
+                        }
                         row.RelativeItem().AlignRight().Text(text =>
                         {
                             text.DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Grey.Medium));
@@ -163,6 +192,7 @@ internal class QuestPdfDocumentWrapper : IDocument
                         if (textEl.IsBold) span.Bold();
                         if (textEl.IsItalic) span.Italic();
                         if (textEl.IsUnderline) span.Underline();
+                        if (textEl.IsStrikethrough) span.Strikethrough();
                     });
                 });
                 break;

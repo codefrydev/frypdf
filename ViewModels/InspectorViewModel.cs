@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
@@ -637,6 +638,159 @@ public partial class InspectorViewModel : ViewModelBase
                 () => { el.Content = oldContent; el.Label = oldLabel; },
                 () => { el.Content = newContent; el.Label = newLabel; }
             );
+        }
+    }
+
+    // --- TYPOGRAPHY EXTENSIONS ---
+
+    [RelayCommand]
+    public void ToggleStrikethrough()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            bool oldVal = el.IsStrikethrough;
+            bool newVal = !oldVal;
+            el.IsStrikethrough = newVal;
+            UndoRedo?.RecordAction(
+                newVal ? "Format Strikethrough" : "Remove Strikethrough",
+                () => el.IsStrikethrough = oldVal,
+                () => el.IsStrikethrough = newVal
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void TransformTextCase(string caseType)
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            string oldText = el.Text;
+            if (caseType.Equals("Upper", StringComparison.OrdinalIgnoreCase)) el.TransformUppercase();
+            else if (caseType.Equals("Lower", StringComparison.OrdinalIgnoreCase)) el.TransformLowercase();
+            else if (caseType.Equals("Title", StringComparison.OrdinalIgnoreCase)) el.TransformTitleCase();
+            string newText = el.Text;
+
+            UndoRedo?.RecordAction(
+                $"Case: {caseType}",
+                () => el.Text = oldText,
+                () => el.Text = newText
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleBullets()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            string oldText = el.Text;
+            el.ToggleBulletList();
+            string newText = el.Text;
+
+            UndoRedo?.RecordAction(
+                "Toggle Bullet List",
+                () => el.Text = oldText,
+                () => el.Text = newText
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleNumbering()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            string oldText = el.Text;
+            el.ToggleNumberedList();
+            string newText = el.Text;
+
+            UndoRedo?.RecordAction(
+                "Toggle Numbered List",
+                () => el.Text = oldText,
+                () => el.Text = newText
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void SetTextBackground(string hex)
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            string oldHex = el.BackgroundColorHex;
+            el.BackgroundColorHex = hex;
+            UndoRedo?.RecordAction(
+                "Text Background Color",
+                () => el.BackgroundColorHex = oldHex,
+                () => el.BackgroundColorHex = hex
+            );
+        }
+    }
+
+    // --- FORM FIELD VALIDATION ---
+
+    [RelayCommand]
+    public void SetFormFieldValidation(string valTypeStr)
+    {
+        if (FormFieldElement != null && Enum.TryParse<FormValidationType>(valTypeStr, true, out var valType))
+        {
+            var el = FormFieldElement;
+            var oldType = el.ValidationType;
+            el.ValidationType = valType;
+            UndoRedo?.RecordAction(
+                $"Field Validation: {valType}",
+                () => el.ValidationType = oldType,
+                () => el.ValidationType = valType
+            );
+        }
+    }
+
+    // --- SMART DISTRIBUTION & MATCH SIZES ---
+
+    [RelayCommand]
+    public void DistributeHorizontally()
+    {
+        if (SelectedPage != null && SelectedPage.Elements.Count >= 3)
+        {
+            var elements = SelectedPage.Elements.OrderBy(e => e.X).ToList();
+            double minX = elements.First().X;
+            double maxX = elements.Last().X + elements.Last().Width;
+            double totalElementWidth = elements.Sum(e => e.Width);
+            double totalSpace = maxX - minX - totalElementWidth;
+            double gap = totalSpace / (elements.Count - 1);
+
+            double currentX = minX;
+            foreach (var el in elements)
+            {
+                el.X = currentX;
+                currentX += el.Width + gap;
+            }
+        }
+    }
+
+    [RelayCommand]
+    public void DistributeVertically()
+    {
+        if (SelectedPage != null && SelectedPage.Elements.Count >= 3)
+        {
+            var elements = SelectedPage.Elements.OrderBy(e => e.Y).ToList();
+            double minY = elements.First().Y;
+            double maxY = elements.Last().Y + elements.Last().Height;
+            double totalElementHeight = elements.Sum(e => e.Height);
+            double totalSpace = maxY - minY - totalElementHeight;
+            double gap = totalSpace / (elements.Count - 1);
+
+            double currentY = minY;
+            foreach (var el in elements)
+            {
+                el.Y = currentY;
+                currentY += el.Height + gap;
+            }
         }
     }
 }

@@ -11,8 +11,13 @@ public class PdfFormFieldElement : PdfElementBase
     public string Label { get; set; } = "Full Name:";
     public string Placeholder { get; set; } = "Enter your full legal name...";
     public string Value { get; set; } = "";
+    public string DefaultValue { get; set; } = "";
+    public string Tooltip { get; set; } = "";
     public bool IsRequired { get; set; } = true;
+    public bool IsReadOnly { get; set; } = false;
     public bool IsChecked { get; set; } = false;
+    public FormValidationType ValidationType { get; set; } = FormValidationType.None;
+    public string CustomValidationRegex { get; set; } = "";
     public string BorderColorHex { get; set; } = "#0F6CBD";
     public string BackgroundColorHex { get; set; } = "#F8FAFC";
     public double FontSize { get; set; } = 12;

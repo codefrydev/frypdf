@@ -1,0 +1,129 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Dialogs.WatermarkManagerDialog"
+             x:DataType="vm:MainViewModel">
+
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+    </UserControl.Resources>
+
+    <!-- Modal Backdrop -->
+    <Grid Background="#60000000">
+        <!-- Dialog Card -->
+        <Border Width="640"
+                Background="White"
+                BorderBrush="{StaticResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="10"
+                BoxShadow="0 20 60 #35000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Padding="24">
+
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- Header -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Border Width="30" Height="30" Background="#FEF2F2" CornerRadius="6">
+                                <materialIcons:MaterialIcon Kind="Watermark" Width="18" Height="18" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Document Watermark Studio" FontSize="17" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="Apply diagonal semi-transparent security stamps across all pages in the document." FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding CloseWatermarkManagerCommand}">
+                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+                </Grid>
+
+                <!-- Body -->
+                <StackPanel Grid.Row="1" Spacing="14">
+
+                    <!-- Watermark Text & Presets -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Watermark Text" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                        <TextBox Text="{Binding WatermarkPresetText, Mode=TwoWay}"
+                                 Height="36" FontSize="13" CornerRadius="6"
+                                 Padding="10,8" PlaceholderText="e.g. CONFIDENTIAL, DRAFT, COPY..." />
+
+                        <!-- Quick Presets -->
+                        <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Button Classes="secondary-btn" Height="24" Padding="6,2" Margin="0,0,6,0" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).AddWatermarkElementCommand}" CommandParameter="CONFIDENTIAL">
+                                <TextBlock Text="CONFIDENTIAL" FontSize="10" />
+                            </Button>
+                            <Button Classes="secondary-btn" Height="24" Padding="6,2" Margin="0,0,6,0" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).AddWatermarkElementCommand}" CommandParameter="DRAFT">
+                                <TextBlock Text="DRAFT" FontSize="10" />
+                            </Button>
+                            <Button Classes="secondary-btn" Height="24" Padding="6,2" Margin="0,0,6,0" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).AddWatermarkElementCommand}" CommandParameter="INTERNAL ONLY">
+                                <TextBlock Text="INTERNAL ONLY" FontSize="10" />
+                            </Button>
+                            <Button Classes="secondary-btn" Height="24" Padding="6,2" Margin="0,0,6,0" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).AddWatermarkElementCommand}" CommandParameter="DO NOT DUPLICATE">
+                                <TextBlock Text="DO NOT COPY" FontSize="10" />
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <!-- Opacity & Angle -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="14">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Opacity" FontSize="11" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="1" Text="{Binding WatermarkOpacity, StringFormat='{}{0:P0}'}" FontSize="11" Foreground="{StaticResource WinMutedBrush}" />
+                            </Grid>
+                            <Slider Value="{Binding WatermarkOpacity, Mode=TwoWay}" Minimum="0.05" Maximum="0.6" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Rotation Angle" FontSize="11" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="1" Text="{Binding WatermarkAngle, StringFormat='{}{0:F0}°'}" FontSize="11" Foreground="{StaticResource WinMutedBrush}" />
+                            </Grid>
+                            <Slider Value="{Binding WatermarkAngle, Mode=TwoWay}" Minimum="-90" Maximum="90" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Color Swatches -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Watermark Color" FontSize="11" FontWeight="SemiBold" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Button Width="24" Height="24" CornerRadius="12" Background="#DC2626" />
+                            <Button Width="24" Height="24" CornerRadius="12" Background="#0F6CBD" />
+                            <Button Width="24" Height="24" CornerRadius="12" Background="#64748B" />
+                            <Button Width="24" Height="24" CornerRadius="12" Background="#EA580C" />
+                            <Button Width="24" Height="24" CornerRadius="12" Background="#16A34A" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Footer Buttons -->
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,20,0,0">
+                    <Button Grid.Column="0" Classes="secondary-btn" Height="34" Padding="14,0" Command="{Binding RemoveAllWatermarksCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <materialIcons:MaterialIcon Kind="DeleteOutline" Width="15" Height="15" Foreground="{StaticResource WinDangerBrush}" />
+                            <TextBlock Text="Remove All" FontSize="12" Foreground="{StaticResource WinDangerBrush}" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="2" Classes="secondary-btn" Height="34" Padding="14,0" Margin="0,0,8,0" Command="{Binding CloseWatermarkManagerCommand}">
+                        <TextBlock Text="Cancel" FontSize="12" />
+                    </Button>
+
+                    <Button Grid.Column="3" Classes="primary-btn" Height="34" Padding="18,0" Command="{Binding ApplyWatermarkToAllPagesCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="Watermark" Width="15" Height="15" Foreground="White" />
+                            <TextBlock Text="Apply to All Pages" FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

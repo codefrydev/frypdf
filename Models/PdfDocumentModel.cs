@@ -13,6 +13,7 @@ public class PdfDocumentModel
     public DateTime ModifiedDate { get; set; } = DateTime.Now;
 
     public List<PdfPageModel> Pages { get; set; } = new();
+    public PdfSecuritySettings SecuritySettings { get; set; } = new();
 
     public PdfDocumentModel Clone()
     {
@@ -23,7 +24,8 @@ public class PdfDocumentModel
             Author = Author,
             Subject = Subject,
             CreatedDate = CreatedDate,
-            ModifiedDate = DateTime.Now
+            ModifiedDate = DateTime.Now,
+            SecuritySettings = SecuritySettings.Clone()
         };
 
         foreach (var page in Pages)

@@ -11,6 +11,12 @@ namespace PdfEditorApp.Models.Elements;
 [JsonDerivedType(typeof(PdfChartElement), typeDiscriminator: "chart")]
 [JsonDerivedType(typeof(PdfTableElement), typeDiscriminator: "table")]
 [JsonDerivedType(typeof(PdfWatermarkElement), typeDiscriminator: "watermark")]
+[JsonDerivedType(typeof(PdfFormFieldElement), typeDiscriminator: "formfield")]
+[JsonDerivedType(typeof(PdfQrCodeElement), typeDiscriminator: "qrcode")]
+[JsonDerivedType(typeof(PdfBarcodeElement), typeDiscriminator: "barcode")]
+[JsonDerivedType(typeof(PdfRedactionElement), typeDiscriminator: "redaction")]
+[JsonDerivedType(typeof(PdfInkElement), typeDiscriminator: "ink")]
+[JsonDerivedType(typeof(PdfStickyNoteElement), typeDiscriminator: "stickynote")]
 public abstract class PdfElementBase
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");

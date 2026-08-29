@@ -20,8 +20,10 @@ public class PdfPageModel
 
     public bool ShowHeaderFooter { get; set; } = true;
     public string? HeaderLeft { get; set; }
+    public string? HeaderCenter { get; set; }
     public string? HeaderRight { get; set; }
     public string? FooterLeft { get; set; } = "CONFIDENTIAL & PROPRIETARY";
+    public string? FooterCenter { get; set; }
     public string? FooterRight { get; set; } = "Page {P} of {N}";
 
     public PdfWatermarkElement? Watermark { get; set; }
@@ -42,8 +44,10 @@ public class PdfPageModel
             BackgroundColorHex = BackgroundColorHex,
             ShowHeaderFooter = ShowHeaderFooter,
             HeaderLeft = HeaderLeft,
+            HeaderCenter = HeaderCenter,
             HeaderRight = HeaderRight,
             FooterLeft = FooterLeft,
+            FooterCenter = FooterCenter,
             FooterRight = FooterRight,
             Watermark = (PdfWatermarkElement?)Watermark?.Clone()
         };

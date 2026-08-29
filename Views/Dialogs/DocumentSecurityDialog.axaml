@@ -1,0 +1,131 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:models="using:PdfEditorApp.Models"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Dialogs.DocumentSecurityDialog"
+             x:DataType="vm:MainViewModel">
+
+    <!-- Modal Backdrop -->
+    <Grid Background="#60000000">
+        <!-- Dialog Card -->
+        <Border Width="640"
+                Background="White"
+                BorderBrush="{StaticResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="10"
+                BoxShadow="0 20 60 #35000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Padding="24">
+
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- Header -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Border Width="30" Height="30" Background="{StaticResource WinDangerLightBrush}" CornerRadius="6">
+                                <materialIcons:MaterialIcon Kind="ShieldLockOutline" Width="18" Height="18" Foreground="{StaticResource WinDangerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Document Security &amp; Permissions" FontSize="17" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="Protect document with AES encryption, granular permission controls, and metadata scrubbing." FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding CloseSecurityDialogCommand}">
+                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+                </Grid>
+
+                <!-- Body -->
+                <StackPanel Grid.Row="1" Spacing="16">
+
+                    <!-- Section 1: Password Protection -->
+                    <Border Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <StackPanel Spacing="10">
+                            <CheckBox IsChecked="{Binding SecuritySettings.IsPasswordProtected, Mode=TwoWay}">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="Require a password to open this document" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                                    <TextBlock Text="All document contents and attachments will be encrypted upon export." FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" />
+                                </StackPanel>
+                            </CheckBox>
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="24,4,0,0" IsVisible="{Binding SecuritySettings.IsPasswordProtected}">
+                                <StackPanel Grid.Column="0" Spacing="4">
+                                    <TextBlock Text="Document Open Password" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                                    <TextBox Text="{Binding SecuritySettings.OpenPassword, Mode=TwoWay}"
+                                             PasswordChar="●" Height="32" FontSize="12" CornerRadius="6" PlaceholderText="Enter secret password..." />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Spacing="4">
+                                    <TextBlock Text="Permissions / Master Password" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                                    <TextBox Text="{Binding SecuritySettings.PermissionsPassword, Mode=TwoWay}"
+                                             PasswordChar="●" Height="32" FontSize="12" CornerRadius="6" PlaceholderText="Optional master password..." />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Section 2: Granular Permissions -->
+                    <Border Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Document Access &amp; Permissions" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" Margin="0,4,0,0">
+                                <CheckBox Grid.Row="0" Grid.Column="0" Margin="0,3" IsChecked="{Binding SecuritySettings.AllowPrinting, Mode=TwoWay}">
+                                    <TextBlock Text="Allow High-Resolution Printing" FontSize="11.5" />
+                                </CheckBox>
+
+                                <CheckBox Grid.Row="0" Grid.Column="1" Margin="0,3" IsChecked="{Binding SecuritySettings.AllowContentCopying, Mode=TwoWay}">
+                                    <TextBlock Text="Allow Text &amp; Graphics Copying" FontSize="11.5" />
+                                </CheckBox>
+
+                                <CheckBox Grid.Row="1" Grid.Column="0" Margin="0,3" IsChecked="{Binding SecuritySettings.AllowModifications, Mode=TwoWay}">
+                                    <TextBlock Text="Allow Page Insert &amp; Rotate" FontSize="11.5" />
+                                </CheckBox>
+
+                                <CheckBox Grid.Row="1" Grid.Column="1" Margin="0,3" IsChecked="{Binding SecuritySettings.AllowAnnotations, Mode=TwoWay}">
+                                    <TextBlock Text="Allow Commenting &amp; Fill Forms" FontSize="11.5" />
+                                </CheckBox>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Section 3: Privacy & Sanitization -->
+                    <Border Background="{StaticResource WinAccentLightBrush}" BorderBrush="{StaticResource WinAccentBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="3" VerticalAlignment="Center">
+                                <TextBlock Text="Sanitize &amp; Remove Hidden Metadata" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="Scrub author names, creation history, and internal review sticky notes before sharing." FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" />
+                            </StackPanel>
+
+                            <Button Grid.Column="1" Classes="secondary-btn" Height="32" Padding="12,0" VerticalAlignment="Center" Command="{Binding SanitizeDocumentCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="ShieldCheck" Width="15" Height="15" Foreground="{StaticResource WinAccentBrush}" />
+                                    <TextBlock Text="Sanitize Now" FontSize="11.5" FontWeight="Medium" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <!-- Footer Buttons -->
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,20,0,0">
+                    <Button Grid.Column="0" Classes="secondary-btn" Height="34" Padding="14,0" Command="{Binding CloseSecurityDialogCommand}">
+                        <TextBlock Text="Cancel" FontSize="12" />
+                    </Button>
+
+                    <Button Grid.Column="2" Classes="primary-btn" Height="34" Padding="18,0" Command="{Binding CloseSecurityDialogCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="Check" Width="15" Height="15" Foreground="White" />
+                            <TextBlock Text="Apply Security Settings" FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

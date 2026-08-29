@@ -10,9 +10,11 @@ public class PdfTextElement : PdfElementBase
     public bool IsBold { get; set; } = false;
     public bool IsItalic { get; set; } = false;
     public bool IsUnderline { get; set; } = false;
+    public bool IsStrikethrough { get; set; } = false;
     public string TextColorHex { get; set; } = "#201F1E";
     public TextAlignmentMode Alignment { get; set; } = TextAlignmentMode.Left;
     public double LineHeight { get; set; } = 1.4;
+    public double CharacterSpacing { get; set; } = 0;
     public double Padding { get; set; } = 4;
     public string BackgroundColorHex { get; set; } = "#00000000"; // Transparent by default
     public string BorderColorHex { get; set; } = "#00000000";

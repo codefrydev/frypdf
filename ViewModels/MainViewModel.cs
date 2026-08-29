@@ -17,6 +17,8 @@ public partial class MainViewModel : ViewModelBase
     private readonly IPdfExportService _exportService;
     private readonly ITemplateService _templateService;
     private readonly IProjectPersistenceService _persistenceService;
+    private readonly IDocumentAuditService _auditService;
+    private readonly ISignatureService _signatureService;
 
     private ElementViewModelBase? _clipboardElement;
     private CancellationTokenSource? _toastCts;
@@ -53,6 +55,16 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private PageViewModel? _currentPage;
 
+    // Canvas Grid & Snap-to-Grid
+    [ObservableProperty]
+    private bool _showGrid;
+
+    [ObservableProperty]
+    private bool _snapToGrid;
+
+    [ObservableProperty]
+    private GridSnapSize _gridSnapSize = GridSnapSize.Points20;
+
     // Toast HUD State
     [ObservableProperty]
     private string _toastMessage = "";
@@ -62,6 +74,82 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isToastVisible;
+
+    // Acrobat Suite Dialogs State
+    [ObservableProperty]
+    private bool _isSignatureStudioOpen;
+
+    [ObservableProperty]
+    private string _signatureSignerName = "Jane Doe";
+
+    [ObservableProperty]
+    private SignatureStyle _selectedSignatureStyle = SignatureStyle.CursiveElegance;
+
+    [ObservableProperty]
+    private bool _isSecurityDialogOpen;
+
+    [ObservableProperty]
+    private PdfSecuritySettings _securitySettings = new();
+
+    [ObservableProperty]
+    private bool _isPreflightDialogOpen;
+
+    [ObservableProperty]
+    private DocumentAuditReport? _activeAuditReport;
+
+    [ObservableProperty]
+    private bool _isHeaderFooterDialogOpen;
+
+    [ObservableProperty]
+    private string _headerLeftText = "";
+
+    [ObservableProperty]
+    private string _headerCenterText = "";
+
+    [ObservableProperty]
+    private string _headerRightText = "";
+
+    [ObservableProperty]
+    private string _footerLeftText = "CONFIDENTIAL & PROPRIETARY";
+
+    [ObservableProperty]
+    private string _footerCenterText = "";
+
+    [ObservableProperty]
+    private string _footerRightText = "Page {P} of {N}";
+
+    [ObservableProperty]
+    private bool _isWatermarkManagerOpen;
+
+    [ObservableProperty]
+    private string _watermarkPresetText = "CONFIDENTIAL";
+
+    [ObservableProperty]
+    private string _watermarkColorHex = "#DC2626";
+
+    [ObservableProperty]
+    private double _watermarkOpacity = 0.15;
+
+    [ObservableProperty]
+    private double _watermarkAngle = -35;
+
+    [ObservableProperty]
+    private bool _isSearchRedactDialogOpen;
+
+    [ObservableProperty]
+    private string _searchRedactQuery = "";
+
+    [ObservableProperty]
+    private string _selectedExemptionCode = "[REDACTED - (b)(4) PRIVILEGED]";
+
+    [ObservableProperty]
+    private bool _isCustomStampDialogOpen;
+
+    [ObservableProperty]
+    private string _customStampText = "CERTIFIED TRUE COPY";
+
+    [ObservableProperty]
+    private string _customStampColorHex = "#0F6CBD";
 
     // Collections
     public ObservableCollection<PageViewModel> Pages { get; } = new();
@@ -77,21 +165,26 @@ public partial class MainViewModel : ViewModelBase
     public int CurrentPageNumber => CurrentPage != null ? Pages.IndexOf(CurrentPage) + 1 : 1;
     public int TotalPagesCount => Pages.Count;
     public string PageDimensionsDisplay => CurrentPage != null ? $"{CurrentPage.Width:F0} × {CurrentPage.Height:F0} pt" : "800 × 1131 pt";
+    public string SecurityStatusDisplay => SecuritySettings.IsPasswordProtected ? "Protected (Password Required)" : "Standard (No Security)";
 
     // --- CONSTRUCTORS ---
 
-    public MainViewModel() : this(new PdfExportService(), new TemplateService(), new ProjectPersistenceService())
+    public MainViewModel() : this(new PdfExportService(), new TemplateService(), new ProjectPersistenceService(), new DocumentAuditService(), new SignatureService())
     {
     }
 
     public MainViewModel(
         IPdfExportService exportService,
         ITemplateService templateService,
-        IProjectPersistenceService persistenceService)
+        IProjectPersistenceService persistenceService,
+        IDocumentAuditService? auditService = null,
+        ISignatureService? signatureService = null)
     {
         _exportService = exportService;
         _templateService = templateService;
         _persistenceService = persistenceService;
+        _auditService = auditService ?? new DocumentAuditService();
+        _signatureService = signatureService ?? new SignatureService();
 
         // Connect undo/redo service to inspector
         Inspector.UndoRedo = UndoRedo;

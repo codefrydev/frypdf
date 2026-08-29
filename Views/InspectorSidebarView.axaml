@@ -137,26 +137,28 @@
                             <!-- Card Title -->
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="ShapeOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Shape Properties" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Shape Geometry (15 Styles)" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
-                            <!-- Shape Type Selector -->
-                            <StackPanel Spacing="3">
-                                <TextBlock Text="Shape Geometry" Classes="inspector-label" />
-                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                    <Button Classes="secondary-btn" Height="26" Padding="6,2"
-                                            Command="{Binding SetShapeTypeCommand}" CommandParameter="Rectangle">
-                                        <TextBlock Text="Rect" FontSize="10.5" />
-                                    </Button>
-                                    <Button Classes="secondary-btn" Height="26" Padding="6,2"
-                                            Command="{Binding SetShapeTypeCommand}" CommandParameter="RoundedRectangle">
-                                        <TextBlock Text="Rounded" FontSize="10.5" />
-                                    </Button>
-                                    <Button Classes="secondary-btn" Height="26" Padding="6,2"
-                                            Command="{Binding SetShapeTypeCommand}" CommandParameter="Circle">
-                                        <TextBlock Text="Circle" FontSize="10.5" />
-                                    </Button>
-                                </StackPanel>
+                            <!-- Shape Type Selector Grid -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Select Preset Geometry" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Rectangle"><TextBlock Text="Rect" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RoundedRectangle"><TextBlock Text="Rounded" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Circle"><TextBlock Text="Circle" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Triangle"><TextBlock Text="Triangle" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Diamond"><TextBlock Text="Diamond" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Pentagon"><TextBlock Text="Pentagon" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Hexagon"><TextBlock Text="Hexagon" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Octagon"><TextBlock Text="Octagon" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Star5"><TextBlock Text="★ Star 5" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Star4Badge"><TextBlock Text="✦ Badge" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="ArrowRight"><TextBlock Text="➔ Arrow" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Callout"><TextBlock Text="💬 Callout" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Heart"><TextBlock Text="♥ Heart" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Cloud"><TextBlock Text="☁ Cloud" FontSize="10" /></Button>
+                                </WrapPanel>
                             </StackPanel>
 
                             <!-- Fill Color Swatches -->
@@ -198,13 +200,28 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- 3. TABLE STRUCTURE CARD (Visible when Table is selected) -->
+                    <!-- 3. TABLE STRUCTURE & STYLES CARD (Visible when Table is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding TableElement, Converter={StaticResource NullToBooleanConverter}}">
                         <StackPanel Spacing="10">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="TableLarge" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Table Controls" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Table Styles &amp; Controls" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- Table Style Presets -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Table Style Presets (8 Styles)" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="EnterpriseBlue"><TextBlock Text="Enterprise" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="ModernMinimal"><TextBlock Text="Minimal" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="DarkModeSlate"><TextBlock Text="Dark Slate" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="ZebraStriped"><TextBlock Text="Zebra" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="EmeraldGreen"><TextBlock Text="Emerald" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="AmberAccent"><TextBlock Text="Amber" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="FinancialBordered"><TextBlock Text="Financial" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding TableElement.ApplyPresetStyleCommand}" CommandParameter="CompactClean"><TextBlock Text="Clean" FontSize="10" /></Button>
+                                </WrapPanel>
                             </StackPanel>
 
                             <Grid ColumnDefinitions="*,*" Margin="0,2">
@@ -243,13 +260,32 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- 4. CHART DATA CARD (Visible when Chart is selected) -->
+                    <!-- 4. CHART CONFIG & TYPES CARD (Visible when Chart is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding ChartElement, Converter={StaticResource NullToBooleanConverter}}">
                         <StackPanel Spacing="10">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="ChartBar" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Chart Config" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Chart Types (13 Kinds)" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- Chart Types Selector -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Select Chart Kind" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="BarColumn"><TextBlock Text="Columns" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="HorizontalBar"><TextBlock Text="H-Bar" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="Line"><TextBlock Text="Line" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="Area"><TextBlock Text="Area" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="DonutPie"><TextBlock Text="Donut" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="StackedBar"><TextBlock Text="Stacked" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="Radar"><TextBlock Text="Radar" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="Funnel"><TextBlock Text="Funnel" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="Waterfall"><TextBlock Text="Waterfall" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="GaugeProgress"><TextBlock Text="Gauge" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="StepLine"><TextBlock Text="Step" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ChartElement.SetChartTypeCommand}" CommandParameter="Pyramid"><TextBlock Text="Pyramid" FontSize="10" /></Button>
+                                </WrapPanel>
                             </StackPanel>
 
                             <StackPanel Spacing="3">
@@ -257,16 +293,16 @@
                                 <TextBox Text="{Binding ChartElement.Title, Mode=TwoWay}" Height="28" FontSize="12" />
                             </StackPanel>
 
-                            <Grid ColumnDefinitions="*,*">
+                            <Grid ColumnDefinitions="*,*" Margin="0,2">
                                 <Button Grid.Column="0" Classes="secondary-btn" Height="28" Margin="0,0,3,0"
-                                        Command="{Binding ChartElement.AddDataPointCommand}" ToolTip.Tip="Add Data Point">
+                                        Command="{Binding ChartElement.AddDataPointCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
                                         <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinAccentBrush}" />
                                         <TextBlock Text="Add Point" FontSize="11" />
                                     </StackPanel>
                                 </Button>
                                 <Button Grid.Column="1" Classes="secondary-btn" Height="28" Margin="3,0,0,0"
-                                        Command="{Binding ChartElement.RemoveDataPointCommand}" ToolTip.Tip="Remove Data Point">
+                                        Command="{Binding ChartElement.RemoveDataPointCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
                                         <materialIcons:MaterialIcon Kind="Minus" Width="14" Height="14" Foreground="{StaticResource WinDangerBrush}" />
                                         <TextBlock Text="Del Point" FontSize="11" />
@@ -340,7 +376,20 @@
                         <StackPanel Spacing="10">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="Qrcode" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="QR Code Settings" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="QR Code Presets &amp; Settings" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- QR Presets -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Quick Payload Presets" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding QrCodeElement.ApplyPresetTypeCommand}" CommandParameter="Url"><TextBlock Text="🔗 URL" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding QrCodeElement.ApplyPresetTypeCommand}" CommandParameter="Wifi"><TextBlock Text="📶 Wi-Fi" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding QrCodeElement.ApplyPresetTypeCommand}" CommandParameter="VCard"><TextBlock Text="👤 vCard" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding QrCodeElement.ApplyPresetTypeCommand}" CommandParameter="Email"><TextBlock Text="✉ Email" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding QrCodeElement.ApplyPresetTypeCommand}" CommandParameter="PhoneCall"><TextBlock Text="📞 Phone" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding QrCodeElement.ApplyPresetTypeCommand}" CommandParameter="GeoLocation"><TextBlock Text="📍 GPS" FontSize="10" /></Button>
+                                </WrapPanel>
                             </StackPanel>
 
                             <StackPanel Spacing="3">
@@ -361,7 +410,21 @@
                         <StackPanel Spacing="10">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="Barcode" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Barcode Settings" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Barcode Standards (7 Formats)" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- Barcode Formats -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Select Barcode Standard" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="Code128"><TextBlock Text="Code128" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="Code39"><TextBlock Text="Code39" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="Ean13"><TextBlock Text="EAN-13" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="UpcA"><TextBlock Text="UPC-A" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="Itf14"><TextBlock Text="ITF-14" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="Codabar"><TextBlock Text="Codabar" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding BarcodeElement.SetFormatCommand}" CommandParameter="Pdf417"><TextBlock Text="PDF417" FontSize="10" /></Button>
+                                </WrapPanel>
                             </StackPanel>
 
                             <StackPanel Spacing="3">

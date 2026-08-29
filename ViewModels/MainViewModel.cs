@@ -668,20 +668,28 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public void AddChartElement()
+    public void AddChartElement(string? chartTypeStr = "BarColumn")
     {
         if (CurrentPage == null) return;
+
+        var chartType = ChartType.BarColumn;
+        if (!string.IsNullOrEmpty(chartTypeStr) && Enum.TryParse<ChartType>(chartTypeStr, true, out var parsed))
+        {
+            chartType = parsed;
+        }
 
         var chartEl = new ChartElementViewModel
         {
             X = 100,
             Y = 250,
             Width = 400,
-            Height = 220
+            Height = 220,
+            ChartType = chartType,
+            Title = $"{chartType} Chart Analysis"
         };
 
         CurrentPage.AddElement(chartEl);
-        UpdateStatus("Added Chart Element");
+        UpdateStatus($"Added {chartType} Chart");
     }
 
     [RelayCommand]

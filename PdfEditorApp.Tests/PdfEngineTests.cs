@@ -241,4 +241,83 @@ public class PdfEngineTests
         Assert.Equal("CONF-BATES-000002", vm.Pages[1].FooterLeft);
         Assert.Equal("CONF-BATES-000003", vm.Pages[2].FooterLeft);
     }
+
+    [Fact]
+    public void ExpandedCharts_And_Shapes_Generate_ValidPdf()
+    {
+        var doc = new PdfDocumentModel { Title = "Multi-Chart & Multi-Shape Showcase" };
+        var page = new PdfPageModel { PageNumber = 1, Width = 800, Height = 1100 };
+
+        // Test Horizontal Bar, Donut Pie, and Column Charts
+        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfChartElement
+        {
+            Title = "Departmental Efficiency",
+            ChartType = ChartType.HorizontalBar,
+            Categories = new System.Collections.Generic.List<string> { "Dev", "QA", "Sales" },
+            Values = new System.Collections.Generic.List<double> { 8.5, 7.2, 9.1 },
+            ValueLabels = new System.Collections.Generic.List<string> { "85%", "72%", "91%" }
+        });
+
+        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfChartElement
+        {
+            Title = "Budget Allocation",
+            ChartType = ChartType.DonutPie,
+            Categories = new System.Collections.Generic.List<string> { "Engineering", "Marketing", "Legal" },
+            Values = new System.Collections.Generic.List<double> { 50, 30, 20 },
+            ValueLabels = new System.Collections.Generic.List<string> { "$5M", "$3M", "$2M" }
+        });
+
+        // Test Shapes
+        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfShapeElement
+        {
+            ShapeType = ShapeType.Star5,
+            FillColorHex = "#F59E0B"
+        });
+
+        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfShapeElement
+        {
+            ShapeType = ShapeType.Heart,
+            FillColorHex = "#DC2626"
+        });
+
+        doc.Pages.Add(page);
+
+        byte[] pdf = _exportService.GeneratePdfBytes(doc);
+        Assert.NotNull(pdf);
+        Assert.Equal("%PDF-", Encoding.ASCII.GetString(pdf, 0, 5));
+    }
+
+    [Fact]
+    public void TablePresets_And_BarcodeFormats_ApplyCorrectly()
+    {
+        var tableVm = new PdfEditorApp.ViewModels.ElementViewModels.TableElementViewModel();
+        tableVm.ApplyPresetStyleCommand.Execute("EnterpriseBlue");
+        Assert.Equal("#0F6CBD", tableVm.HeaderBackgroundHex);
+        Assert.Equal("#F0F7FD", tableVm.AlternateRowBackgroundHex);
+
+        tableVm.ApplyPresetStyleCommand.Execute("DarkModeSlate");
+        Assert.Equal("#1E293B", tableVm.HeaderBackgroundHex);
+
+        var barcodeVm = new PdfEditorApp.ViewModels.ElementViewModels.BarcodeElementViewModel();
+        barcodeVm.SetFormatCommand.Execute("Ean13");
+        Assert.Equal("Ean13", barcodeVm.BarcodeFormat);
+
+        barcodeVm.SetFormatCommand.Execute("Pdf417");
+        Assert.Equal("Pdf417", barcodeVm.BarcodeFormat);
+    }
+
+    [Fact]
+    public void QrCodePresets_ApplyAccuratePayloads()
+    {
+        var qrVm = new PdfEditorApp.ViewModels.ElementViewModels.QrCodeElementViewModel();
+        qrVm.ApplyPresetTypeCommand.Execute("Wifi");
+        Assert.Contains("WIFI:S:", qrVm.Content);
+        Assert.Equal("SCAN TO CONNECT WI-FI", qrVm.Label);
+
+        qrVm.ApplyPresetTypeCommand.Execute("VCard");
+        Assert.Contains("BEGIN:VCARD", qrVm.Content);
+
+        qrVm.ApplyPresetTypeCommand.Execute("PhoneCall");
+        Assert.StartsWith("tel:", qrVm.Content);
+    }
 }

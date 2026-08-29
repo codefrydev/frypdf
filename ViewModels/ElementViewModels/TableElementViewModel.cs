@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -99,6 +100,65 @@ public partial class TableElementViewModel : ElementViewModelBase
                 }
             }
             OnPropertyChanged(nameof(DisplayName));
+        }
+    }
+
+    [RelayCommand]
+    public void ApplyPresetStyle(string styleStr)
+    {
+        if (Enum.TryParse<TablePresetStyle>(styleStr, true, out var style))
+        {
+            switch (style)
+            {
+                case TablePresetStyle.ModernMinimal:
+                    HeaderBackgroundHex = "#F1F5F9";
+                    HeaderTextHex = "#0F172A";
+                    AlternateRowBackgroundHex = "#FFFFFF";
+                    BorderColorHex = "#E2E8F0";
+                    break;
+                case TablePresetStyle.EnterpriseBlue:
+                    HeaderBackgroundHex = "#0F6CBD";
+                    HeaderTextHex = "#FFFFFF";
+                    AlternateRowBackgroundHex = "#F0F7FD";
+                    BorderColorHex = "#CBD5E1";
+                    break;
+                case TablePresetStyle.DarkModeSlate:
+                    HeaderBackgroundHex = "#1E293B";
+                    HeaderTextHex = "#FFFFFF";
+                    AlternateRowBackgroundHex = "#F8FAFC";
+                    BorderColorHex = "#334155";
+                    break;
+                case TablePresetStyle.ZebraStriped:
+                    HeaderBackgroundHex = "#475569";
+                    HeaderTextHex = "#FFFFFF";
+                    AlternateRowBackgroundHex = "#F1F5F9";
+                    BorderColorHex = "#CBD5E1";
+                    break;
+                case TablePresetStyle.EmeraldGreen:
+                    HeaderBackgroundHex = "#047857";
+                    HeaderTextHex = "#FFFFFF";
+                    AlternateRowBackgroundHex = "#ECFDF5";
+                    BorderColorHex = "#A7F3D0";
+                    break;
+                case TablePresetStyle.AmberAccent:
+                    HeaderBackgroundHex = "#D97706";
+                    HeaderTextHex = "#FFFFFF";
+                    AlternateRowBackgroundHex = "#FFFBEB";
+                    BorderColorHex = "#FDE68A";
+                    break;
+                case TablePresetStyle.FinancialBordered:
+                    HeaderBackgroundHex = "#0F172A";
+                    HeaderTextHex = "#FFFFFF";
+                    AlternateRowBackgroundHex = "#FFFFFF";
+                    BorderColorHex = "#0F172A";
+                    break;
+                case TablePresetStyle.CompactClean:
+                    HeaderBackgroundHex = "#E2E8F0";
+                    HeaderTextHex = "#1E293B";
+                    AlternateRowBackgroundHex = "#FAFAFA";
+                    BorderColorHex = "#E2E8F0";
+                    break;
+            }
         }
     }
 

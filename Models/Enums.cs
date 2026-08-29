@@ -62,14 +62,77 @@ public enum TextAlignmentMode
 public enum ShapeType
 {
     Rectangle,
-    Card,
     RoundedRectangle,
     Circle,
+    Triangle,
+    RightTriangle,
+    Diamond,
+    Pentagon,
+    Hexagon,
+    Octagon,
+    Star5,
+    Star4Badge,
+    ArrowRight,
+    ArrowLeft,
+    Callout,
+    Heart,
+    Cloud,
     Line,
     Arrow,
     Star,
-    Callout,
+    Card,
     StickyNote
+}
+
+public enum ChartType
+{
+    BarColumn,
+    HorizontalBar,
+    Line,
+    Area,
+    DonutPie,
+    StackedBar,
+    ScatterPlot,
+    Radar,
+    Funnel,
+    Waterfall,
+    GaugeProgress,
+    StepLine,
+    Pyramid
+}
+
+public enum TablePresetStyle
+{
+    ModernMinimal,
+    EnterpriseBlue,
+    DarkModeSlate,
+    ZebraStriped,
+    FinancialBordered,
+    EmeraldGreen,
+    AmberAccent,
+    CompactClean
+}
+
+public enum BarcodeType
+{
+    Code128,
+    Code39,
+    Ean13,
+    UpcA,
+    Itf14,
+    Codabar,
+    Pdf417
+}
+
+public enum QrCodePresetKind
+{
+    Url,
+    Wifi,
+    VCard,
+    PlainText,
+    Email,
+    PhoneCall,
+    GeoLocation
 }
 
 public enum StampType

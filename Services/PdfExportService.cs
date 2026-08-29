@@ -242,25 +242,78 @@ internal class QuestPdfDocumentWrapper : IDocument
             case PdfChartElement chartEl:
                 col.Item().Border(1).BorderColor(chartEl.BorderColorHex).Background(chartEl.BackgroundColorHex).Padding(10).Column(chartCol =>
                 {
-                    chartCol.Item().AlignCenter().Text(chartEl.Title).FontSize(9).Bold().FontColor(Colors.Grey.Darken2);
-                    chartCol.Item().PaddingTop(8).Row(chartRow =>
-                    {
-                        for (int i = 0; i < chartEl.Categories.Count; i++)
-                        {
-                            var idx = i;
-                            var cat = chartEl.Categories[idx];
-                            var valLabel = idx < chartEl.ValueLabels.Count ? chartEl.ValueLabels[idx] : "";
-                            var barColor = idx < chartEl.BarColorsHex.Count ? chartEl.BarColorsHex[idx] : "#0F6CBD";
-                            var val = idx < chartEl.Values.Count ? (float)chartEl.Values[idx] : 1f;
+                    chartCol.Item().AlignCenter().Text($"{chartEl.Title} ({chartEl.ChartType})").FontSize(9.5f).Bold().FontColor(Colors.Grey.Darken3);
 
-                            chartRow.RelativeItem().PaddingHorizontal(4).Column(barCol =>
+                    if (chartEl.ChartType == ChartType.HorizontalBar)
+                    {
+                        chartCol.Item().PaddingTop(8).Column(hCol =>
+                        {
+                            hCol.Spacing(4);
+                            for (int i = 0; i < chartEl.Categories.Count; i++)
                             {
-                                barCol.Item().AlignCenter().Text(valLabel).FontSize(8).Bold();
-                                barCol.Item().Height(val * 20).Background(barColor).CornerRadius(2);
-                                barCol.Item().PaddingTop(2).AlignCenter().Text(cat).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                var idx = i;
+                                var cat = chartEl.Categories[idx];
+                                var valLabel = idx < chartEl.ValueLabels.Count ? chartEl.ValueLabels[idx] : "";
+                                var barColor = idx < chartEl.BarColorsHex.Count ? chartEl.BarColorsHex[idx] : "#0F6CBD";
+                                var val = idx < chartEl.Values.Count ? (float)chartEl.Values[idx] : 1f;
+
+                                hCol.Item().Row(hRow =>
+                                {
+                                    hRow.AutoItem().Width(40).Text(cat).FontSize(8).FontColor(Colors.Grey.Darken2);
+                                    hRow.RelativeItem().Height(10).Background(Colors.Grey.Lighten3).Row(progRow =>
+                                    {
+                                        progRow.RelativeItem(Math.Min(10f, Math.Max(0.5f, val))).Background(barColor).CornerRadius(2);
+                                        progRow.RelativeItem(Math.Max(0.1f, 10f - val));
+                                    });
+                                    hRow.AutoItem().PaddingLeft(6).Text(valLabel).FontSize(8).Bold();
+                                });
+                            }
+                        });
+                    }
+                    else if (chartEl.ChartType == ChartType.DonutPie)
+                    {
+                        chartCol.Item().PaddingTop(8).Row(pRow =>
+                        {
+                            pRow.AutoItem().Width(60).Height(60).Border(6).BorderColor(chartEl.BarColorsHex.FirstOrDefault() ?? "#0F6CBD").Background(Colors.Grey.Lighten4).AlignCenter().AlignMiddle().Text("DONUT").FontSize(8).Bold();
+                            pRow.RelativeItem().PaddingLeft(12).Column(legendCol =>
+                            {
+                                legendCol.Spacing(3);
+                                for (int i = 0; i < chartEl.Categories.Count; i++)
+                                {
+                                    var idx = i;
+                                    var cat = chartEl.Categories[idx];
+                                    var valLabel = idx < chartEl.ValueLabels.Count ? chartEl.ValueLabels[idx] : "";
+                                    var barColor = idx < chartEl.BarColorsHex.Count ? chartEl.BarColorsHex[idx] : "#0F6CBD";
+                                    legendCol.Item().Row(lr =>
+                                    {
+                                        lr.AutoItem().Width(8).Height(8).Background(barColor).CornerRadius(2);
+                                        lr.RelativeItem().PaddingLeft(6).Text($"{cat}: {valLabel}").FontSize(8).FontColor(Colors.Grey.Darken2);
+                                    });
+                                }
                             });
-                        }
-                    });
+                        });
+                    }
+                    else
+                    {
+                        chartCol.Item().PaddingTop(8).Row(chartRow =>
+                        {
+                            for (int i = 0; i < chartEl.Categories.Count; i++)
+                            {
+                                var idx = i;
+                                var cat = chartEl.Categories[idx];
+                                var valLabel = idx < chartEl.ValueLabels.Count ? chartEl.ValueLabels[idx] : "";
+                                var barColor = idx < chartEl.BarColorsHex.Count ? chartEl.BarColorsHex[idx] : "#0F6CBD";
+                                var val = idx < chartEl.Values.Count ? (float)chartEl.Values[idx] : 1f;
+
+                                chartRow.RelativeItem().PaddingHorizontal(4).Column(barCol =>
+                                {
+                                    barCol.Item().AlignCenter().Text(valLabel).FontSize(8).Bold();
+                                    barCol.Item().Height(val * 20).Background(barColor).CornerRadius(2);
+                                    barCol.Item().PaddingTop(2).AlignCenter().Text(cat).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                });
+                            }
+                        });
+                    }
                 });
                 break;
 

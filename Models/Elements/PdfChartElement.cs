@@ -7,6 +7,7 @@ public class PdfChartElement : PdfElementBase
     public override ElementKind Kind => ElementKind.Chart;
 
     public string Title { get; set; } = "Revenue Growth (Q1-Q4)";
+    public ChartType ChartType { get; set; } = ChartType.BarColumn;
     public List<string> Categories { get; set; } = new() { "Q1", "Q2", "Q3", "Q4" };
     public List<double> Values { get; set; } = new() { 1.2, 1.8, 2.5, 3.1 };
     public List<string> ValueLabels { get; set; } = new() { "$1.2B", "$1.8B", "$2.5B", "$3.1B" };

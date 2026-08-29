@@ -23,10 +23,22 @@ public partial class ChartElementViewModel : ElementViewModelBase
     private string _title = "Revenue Growth (Q1-Q4)";
 
     [ObservableProperty]
+    private ChartType _chartType = ChartType.BarColumn;
+
+    [ObservableProperty]
     private string _backgroundColorHex = "#FAFAFA";
 
     [ObservableProperty]
     private string _borderColorHex = "#E2E8F0";
+
+    [RelayCommand]
+    public void SetChartType(string typeStr)
+    {
+        if (Enum.TryParse<ChartType>(typeStr, true, out var type))
+        {
+            ChartType = type;
+        }
+    }
 
     public ObservableCollection<ChartBarItem> Bars { get; } = new();
 

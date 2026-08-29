@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
 
@@ -20,6 +21,12 @@ public partial class BarcodeElementViewModel : ElementViewModelBase
 
     [ObservableProperty]
     private bool _showText = true;
+
+    [RelayCommand]
+    public void SetFormat(string formatStr)
+    {
+        BarcodeFormat = formatStr;
+    }
 
     public override ElementKind Kind => ElementKind.Barcode;
     public override string DisplayName => $"Barcode ({CodeValue})";

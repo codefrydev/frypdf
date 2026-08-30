@@ -56,11 +56,14 @@ public partial class MainViewModel
                 {
                     exportPath = file.Path.LocalPath;
                 }
+                else
+                {
+                    UpdateStatus("Export cancelled.");
+                    return;
+                }
             }
-
-            if (string.IsNullOrEmpty(exportPath))
+            else
             {
-                // Fallback to Desktop directory
                 exportPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), defaultFileName);
             }
 
@@ -105,9 +108,13 @@ public partial class MainViewModel
                 {
                     savePath = file.Path.LocalPath;
                 }
+                else
+                {
+                    UpdateStatus("Save cancelled.");
+                    return;
+                }
             }
-
-            if (string.IsNullOrEmpty(savePath))
+            else
             {
                 savePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), defaultFileName);
             }

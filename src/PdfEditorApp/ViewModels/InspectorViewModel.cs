@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -27,6 +28,12 @@ public partial class InspectorViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _hasSelectedElement;
+
+    [ObservableProperty]
+    private bool _hasMultiSelection;
+
+    [ObservableProperty]
+    private int _selectionCount;
 
     [ObservableProperty]
     private bool _isTextElement;
@@ -189,6 +196,9 @@ public partial class InspectorViewModel : ViewModelBase
         SelectedPage = page;
 
         HasSelectedElement = element != null;
+        HasMultiSelection = page != null && page.SelectedElements.Count > 1;
+        SelectionCount = page != null ? page.SelectedElements.Count : (element != null ? 1 : 0);
+
         IsTextElement = element is TextElementViewModel;
         IsShapeElement = element is ShapeElementViewModel;
         IsImageElement = element is ImageElementViewModel;
@@ -349,10 +359,31 @@ public partial class InspectorViewModel : ViewModelBase
     [RelayCommand]
     public void DeleteSelectedElement()
     {
-        if (SelectedElement != null && SelectedPage != null)
+        if (SelectedPage == null) return;
+        var page = SelectedPage;
+
+        if (page.SelectedElements.Count > 1)
+        {
+            var targets = page.SelectedElements.ToList();
+            foreach (var el in targets) page.RemoveElement(el);
+            UpdateSelection(null, page);
+
+            UndoRedo?.RecordAction(
+                $"Delete {targets.Count} Elements",
+                () => {
+                    foreach (var el in targets) page.AddElement(el);
+                    page.SelectElements(targets);
+                    UpdateSelection(page.SelectedElement, page);
+                },
+                () => {
+                    foreach (var el in targets) page.RemoveElement(el);
+                    UpdateSelection(null, page);
+                }
+            );
+        }
+        else if (SelectedElement != null)
         {
             var el = SelectedElement;
-            var page = SelectedPage;
             page.RemoveElement(el);
             UpdateSelection(null, page);
 
@@ -367,15 +398,73 @@ public partial class InspectorViewModel : ViewModelBase
     [RelayCommand]
     public void DuplicateSelectedElement()
     {
-        if (SelectedElement != null && SelectedPage != null)
+        if (SelectedPage == null) return;
+        var page = SelectedPage;
+
+        if (page.SelectedElements.Count > 1)
+        {
+            var targets = page.SelectedElements.ToList();
+            var newElements = new List<ElementViewModelBase>();
+
+            foreach (var el in targets)
+            {
+                var model = el.ToModel();
+                var clone = model.Clone();
+                clone.Id = Guid.NewGuid().ToString("N");
+                clone.X += 20;
+                clone.Y += 20;
+
+                ElementViewModelBase newVm = clone.Kind switch
+                {
+                    ElementKind.Text => new TextElementViewModel(),
+                    ElementKind.Heading => new TextElementViewModel(),
+                    ElementKind.Shape => new ShapeElementViewModel(),
+                    ElementKind.Image => new ImageElementViewModel(),
+                    ElementKind.Divider => new DividerElementViewModel(),
+                    ElementKind.Table => new TableElementViewModel(),
+                    ElementKind.Chart => new ChartElementViewModel(),
+                    ElementKind.Watermark => new WatermarkElementViewModel(),
+                    ElementKind.FormField => new FormFieldElementViewModel(),
+                    ElementKind.QrCode => new QrCodeElementViewModel(),
+                    ElementKind.Barcode => new BarcodeElementViewModel(),
+                    ElementKind.Redaction => new RedactionElementViewModel(),
+                    ElementKind.Ink => new InkElementViewModel(),
+                    ElementKind.StickyNote => new StickyNoteElementViewModel(),
+                    ElementKind.Measurement => new MeasurementElementViewModel(),
+                    _ => new TextElementViewModel()
+                };
+
+                newVm.LoadFromModel(clone);
+                page.AddElement(newVm);
+                newElements.Add(newVm);
+            }
+
+            page.SelectElements(newElements);
+            UpdateSelection(page.SelectedElement, page);
+
+            UndoRedo?.RecordAction(
+                $"Duplicate {targets.Count} Elements",
+                () => {
+                    foreach (var el in newElements) page.RemoveElement(el);
+                    page.SelectElements(targets);
+                    UpdateSelection(page.SelectedElement, page);
+                },
+                () => {
+                    foreach (var el in newElements) page.AddElement(el);
+                    page.SelectElements(newElements);
+                    UpdateSelection(page.SelectedElement, page);
+                }
+            );
+        }
+        else if (SelectedElement != null)
         {
             var model = SelectedElement.ToModel();
             var clone = model.Clone();
-            clone.Id = Guid.NewGuid().ToString();
+            clone.Id = Guid.NewGuid().ToString("N");
             clone.X += 20;
             clone.Y += 20;
 
-            ElementViewModelBase? newVm = clone.Kind switch
+            ElementViewModelBase newVm = clone.Kind switch
             {
                 ElementKind.Text => new TextElementViewModel(),
                 ElementKind.Heading => new TextElementViewModel(),
@@ -391,11 +480,11 @@ public partial class InspectorViewModel : ViewModelBase
                 ElementKind.Redaction => new RedactionElementViewModel(),
                 ElementKind.Ink => new InkElementViewModel(),
                 ElementKind.StickyNote => new StickyNoteElementViewModel(),
+                ElementKind.Measurement => new MeasurementElementViewModel(),
                 _ => new TextElementViewModel()
             };
 
             newVm.LoadFromModel(clone);
-            var page = SelectedPage;
             page.AddElement(newVm);
             UpdateSelection(newVm, page);
 
@@ -587,16 +676,36 @@ public partial class InspectorViewModel : ViewModelBase
     [RelayCommand]
     public void AlignLeft()
     {
-        if (SelectedElement != null)
+        if (SelectedPage == null) return;
+        var page = SelectedPage;
+
+        if (page.SelectedElements.Count > 1)
+        {
+            var targets = page.SelectedElements.ToList();
+            double minX = targets.Min(e => e.X);
+            var prevPositions = targets.Select(e => (Element: e, e.X, e.Y)).ToList();
+
+            foreach (var el in targets) el.X = minX;
+            page.UpdateSelectionBoundingBox();
+
+            UndoRedo?.RecordAction(
+                "Align Left",
+                () => { foreach (var item in prevPositions) item.Element.X = item.X; page.UpdateSelectionBoundingBox(); },
+                () => { foreach (var el in targets) el.X = minX; page.UpdateSelectionBoundingBox(); }
+            );
+        }
+        else if (SelectedElement != null)
         {
             var el = SelectedElement;
             double oldX = el.X;
-            el.X = 60;
-            double newX = el.X;
+            double newX = 60.0;
+            el.X = newX;
+            page.UpdateSelectionBoundingBox();
+
             UndoRedo?.RecordAction(
-                "Align Left",
-                () => el.X = oldX,
-                () => el.X = newX
+                "Align Left to Margin",
+                () => { el.X = oldX; page.UpdateSelectionBoundingBox(); },
+                () => { el.X = newX; page.UpdateSelectionBoundingBox(); }
             );
         }
     }
@@ -604,16 +713,38 @@ public partial class InspectorViewModel : ViewModelBase
     [RelayCommand]
     public void AlignCenter()
     {
-        if (SelectedElement != null && SelectedPage != null)
+        if (SelectedPage == null) return;
+        var page = SelectedPage;
+
+        if (page.SelectedElements.Count > 1)
+        {
+            var targets = page.SelectedElements.ToList();
+            double minX = targets.Min(e => e.X);
+            double maxX = targets.Max(e => e.X + Math.Max(1, e.Width));
+            double centerX = (minX + maxX) / 2.0;
+            var prevPositions = targets.Select(e => (Element: e, e.X, e.Y)).ToList();
+
+            foreach (var el in targets) el.X = centerX - (el.Width / 2.0);
+            page.UpdateSelectionBoundingBox();
+
+            UndoRedo?.RecordAction(
+                "Align Center",
+                () => { foreach (var item in prevPositions) item.Element.X = item.X; page.UpdateSelectionBoundingBox(); },
+                () => { foreach (var el in targets) el.X = centerX - (el.Width / 2.0); page.UpdateSelectionBoundingBox(); }
+            );
+        }
+        else if (SelectedElement != null)
         {
             var el = SelectedElement;
             double oldX = el.X;
-            el.X = Math.Max(0, (SelectedPage.Width - el.Width) / 2);
-            double newX = el.X;
+            double newX = Math.Max(0, (page.Width - el.Width) / 2.0);
+            el.X = newX;
+            page.UpdateSelectionBoundingBox();
+
             UndoRedo?.RecordAction(
-                "Align Center",
-                () => el.X = oldX,
-                () => el.X = newX
+                "Align Center on Page",
+                () => { el.X = oldX; page.UpdateSelectionBoundingBox(); },
+                () => { el.X = newX; page.UpdateSelectionBoundingBox(); }
             );
         }
     }
@@ -621,16 +752,36 @@ public partial class InspectorViewModel : ViewModelBase
     [RelayCommand]
     public void AlignRight()
     {
-        if (SelectedElement != null && SelectedPage != null)
+        if (SelectedPage == null) return;
+        var page = SelectedPage;
+
+        if (page.SelectedElements.Count > 1)
+        {
+            var targets = page.SelectedElements.ToList();
+            double maxX = targets.Max(e => e.X + Math.Max(1, e.Width));
+            var prevPositions = targets.Select(e => (Element: e, e.X, e.Y)).ToList();
+
+            foreach (var el in targets) el.X = maxX - el.Width;
+            page.UpdateSelectionBoundingBox();
+
+            UndoRedo?.RecordAction(
+                "Align Right",
+                () => { foreach (var item in prevPositions) item.Element.X = item.X; page.UpdateSelectionBoundingBox(); },
+                () => { foreach (var el in targets) el.X = maxX - el.Width; page.UpdateSelectionBoundingBox(); }
+            );
+        }
+        else if (SelectedElement != null)
         {
             var el = SelectedElement;
             double oldX = el.X;
-            el.X = Math.Max(0, SelectedPage.Width - el.Width - 60);
-            double newX = el.X;
+            double newX = Math.Max(0, page.Width - el.Width - 60.0);
+            el.X = newX;
+            page.UpdateSelectionBoundingBox();
+
             UndoRedo?.RecordAction(
-                "Align Right",
-                () => el.X = oldX,
-                () => el.X = newX
+                "Align Right to Margin",
+                () => { el.X = oldX; page.UpdateSelectionBoundingBox(); },
+                () => { el.X = newX; page.UpdateSelectionBoundingBox(); }
             );
         }
     }
@@ -638,16 +789,36 @@ public partial class InspectorViewModel : ViewModelBase
     [RelayCommand]
     public void AlignTop()
     {
-        if (SelectedElement != null)
+        if (SelectedPage == null) return;
+        var page = SelectedPage;
+
+        if (page.SelectedElements.Count > 1)
+        {
+            var targets = page.SelectedElements.ToList();
+            double minY = targets.Min(e => e.Y);
+            var prevPositions = targets.Select(e => (Element: e, e.X, e.Y)).ToList();
+
+            foreach (var el in targets) el.Y = minY;
+            page.UpdateSelectionBoundingBox();
+
+            UndoRedo?.RecordAction(
+                "Align Top",
+                () => { foreach (var item in prevPositions) item.Element.Y = item.Y; page.UpdateSelectionBoundingBox(); },
+                () => { foreach (var el in targets) el.Y = minY; page.UpdateSelectionBoundingBox(); }
+            );
+        }
+        else if (SelectedElement != null)
         {
             var el = SelectedElement;
             double oldY = el.Y;
-            el.Y = 60;
-            double newY = el.Y;
+            double newY = 60.0;
+            el.Y = newY;
+            page.UpdateSelectionBoundingBox();
+
             UndoRedo?.RecordAction(
-                "Align Top",
-                () => el.Y = oldY,
-                () => el.Y = newY
+                "Align Top to Margin",
+                () => { el.Y = oldY; page.UpdateSelectionBoundingBox(); },
+                () => { el.Y = newY; page.UpdateSelectionBoundingBox(); }
             );
         }
     }
@@ -655,16 +826,38 @@ public partial class InspectorViewModel : ViewModelBase
     [RelayCommand]
     public void AlignMiddle()
     {
-        if (SelectedElement != null && SelectedPage != null)
+        if (SelectedPage == null) return;
+        var page = SelectedPage;
+
+        if (page.SelectedElements.Count > 1)
+        {
+            var targets = page.SelectedElements.ToList();
+            double minY = targets.Min(e => e.Y);
+            double maxY = targets.Max(e => e.Y + Math.Max(1, e.Height));
+            double centerY = (minY + maxY) / 2.0;
+            var prevPositions = targets.Select(e => (Element: e, e.X, e.Y)).ToList();
+
+            foreach (var el in targets) el.Y = centerY - (el.Height / 2.0);
+            page.UpdateSelectionBoundingBox();
+
+            UndoRedo?.RecordAction(
+                "Align Middle",
+                () => { foreach (var item in prevPositions) item.Element.Y = item.Y; page.UpdateSelectionBoundingBox(); },
+                () => { foreach (var el in targets) el.Y = centerY - (el.Height / 2.0); page.UpdateSelectionBoundingBox(); }
+            );
+        }
+        else if (SelectedElement != null)
         {
             var el = SelectedElement;
             double oldY = el.Y;
-            el.Y = Math.Max(0, (SelectedPage.Height - el.Height) / 2);
-            double newY = el.Y;
+            double newY = Math.Max(0, (page.Height - el.Height) / 2.0);
+            el.Y = newY;
+            page.UpdateSelectionBoundingBox();
+
             UndoRedo?.RecordAction(
-                "Align Middle",
-                () => el.Y = oldY,
-                () => el.Y = newY
+                "Align Middle on Page",
+                () => { el.Y = oldY; page.UpdateSelectionBoundingBox(); },
+                () => { el.Y = newY; page.UpdateSelectionBoundingBox(); }
             );
         }
     }
@@ -672,24 +865,162 @@ public partial class InspectorViewModel : ViewModelBase
     [RelayCommand]
     public void AlignBottom()
     {
-        if (SelectedElement != null && SelectedPage != null)
+        if (SelectedPage == null) return;
+        var page = SelectedPage;
+
+        if (page.SelectedElements.Count > 1)
+        {
+            var targets = page.SelectedElements.ToList();
+            double maxY = targets.Max(e => e.Y + Math.Max(1, e.Height));
+            var prevPositions = targets.Select(e => (Element: e, e.X, e.Y)).ToList();
+
+            foreach (var el in targets) el.Y = maxY - el.Height;
+            page.UpdateSelectionBoundingBox();
+
+            UndoRedo?.RecordAction(
+                "Align Bottom",
+                () => { foreach (var item in prevPositions) item.Element.Y = item.Y; page.UpdateSelectionBoundingBox(); },
+                () => { foreach (var el in targets) el.Y = maxY - el.Height; page.UpdateSelectionBoundingBox(); }
+            );
+        }
+        else if (SelectedElement != null)
         {
             var el = SelectedElement;
             double oldY = el.Y;
-            el.Y = Math.Max(0, SelectedPage.Height - el.Height - 60);
-            double newY = el.Y;
+            double newY = Math.Max(0, page.Height - el.Height - 60.0);
+            el.Y = newY;
+            page.UpdateSelectionBoundingBox();
+
             UndoRedo?.RecordAction(
-                "Align Bottom",
-                () => el.Y = oldY,
-                () => el.Y = newY
+                "Align Bottom to Margin",
+                () => { el.Y = oldY; page.UpdateSelectionBoundingBox(); },
+                () => { el.Y = newY; page.UpdateSelectionBoundingBox(); }
             );
         }
     }
 
     [RelayCommand]
+    public void DistributeHorizontally()
+    {
+        if (SelectedPage == null) return;
+        var page = SelectedPage;
+
+        var targets = page.SelectedElements.Count >= 3 ? page.SelectedElements.ToList() : page.Elements.ToList();
+        if (targets.Count < 3) return;
+
+        var sorted = targets.OrderBy(e => e.X).ToList();
+        double firstX = sorted.First().X;
+        double lastRight = sorted.Last().X + sorted.Last().Width;
+        double totalElementsWidth = sorted.Sum(e => e.Width);
+        double totalSpan = lastRight - firstX;
+        double totalGaps = totalSpan - totalElementsWidth;
+        double gap = Math.Max(0, totalGaps / (sorted.Count - 1));
+
+        var prevPositions = sorted.Select(e => (Element: e, e.X, e.Y)).ToList();
+        double curX = firstX;
+        var newPositions = new List<(ElementViewModelBase Element, double X)>();
+
+        for (int i = 0; i < sorted.Count; i++)
+        {
+            var el = sorted[i];
+            if (i == 0)
+            {
+                newPositions.Add((el, firstX));
+                curX += el.Width + gap;
+            }
+            else if (i == sorted.Count - 1)
+            {
+                newPositions.Add((el, lastRight - el.Width));
+            }
+            else
+            {
+                newPositions.Add((el, curX));
+                curX += el.Width + gap;
+            }
+        }
+
+        foreach (var p in newPositions) p.Element.X = p.X;
+        page.UpdateSelectionBoundingBox();
+
+        UndoRedo?.RecordAction(
+            "Distribute Horizontally",
+            () => { foreach (var p in prevPositions) p.Element.X = p.X; page.UpdateSelectionBoundingBox(); },
+            () => { foreach (var p in newPositions) p.Element.X = p.X; page.UpdateSelectionBoundingBox(); }
+        );
+    }
+
+    [RelayCommand]
+    public void DistributeVertically()
+    {
+        if (SelectedPage == null) return;
+        var page = SelectedPage;
+
+        var targets = page.SelectedElements.Count >= 3 ? page.SelectedElements.ToList() : page.Elements.ToList();
+        if (targets.Count < 3) return;
+
+        var sorted = targets.OrderBy(e => e.Y).ToList();
+        double firstY = sorted.First().Y;
+        double lastBottom = sorted.Last().Y + sorted.Last().Height;
+        double totalElementsHeight = sorted.Sum(e => e.Height);
+        double totalSpan = lastBottom - firstY;
+        double totalGaps = totalSpan - totalElementsHeight;
+        double gap = Math.Max(0, totalGaps / (sorted.Count - 1));
+
+        var prevPositions = sorted.Select(e => (Element: e, e.X, e.Y)).ToList();
+        double curY = firstY;
+        var newPositions = new List<(ElementViewModelBase Element, double Y)>();
+
+        for (int i = 0; i < sorted.Count; i++)
+        {
+            var el = sorted[i];
+            if (i == 0)
+            {
+                newPositions.Add((el, firstY));
+                curY += el.Height + gap;
+            }
+            else if (i == sorted.Count - 1)
+            {
+                newPositions.Add((el, lastBottom - el.Height));
+            }
+            else
+            {
+                newPositions.Add((el, curY));
+                curY += el.Height + gap;
+            }
+        }
+
+        foreach (var p in newPositions) p.Element.Y = p.Y;
+        page.UpdateSelectionBoundingBox();
+
+        UndoRedo?.RecordAction(
+            "Distribute Vertically",
+            () => { foreach (var p in prevPositions) p.Element.Y = p.Y; page.UpdateSelectionBoundingBox(); },
+            () => { foreach (var p in newPositions) p.Element.Y = p.Y; page.UpdateSelectionBoundingBox(); }
+        );
+    }
+
+    [RelayCommand]
     public void ToggleLock()
     {
-        if (SelectedElement != null)
+        if (SelectedPage == null) return;
+        var page = SelectedPage;
+
+        if (page.SelectedElements.Count > 1)
+        {
+            var targets = page.SelectedElements.ToList();
+            bool allLocked = targets.All(e => e.IsLocked);
+            bool targetLock = !allLocked;
+            var prevStates = targets.Select(e => (Element: e, e.IsLocked)).ToList();
+
+            foreach (var el in targets) el.IsLocked = targetLock;
+
+            UndoRedo?.RecordAction(
+                targetLock ? $"Lock {targets.Count} Elements" : $"Unlock {targets.Count} Elements",
+                () => { foreach (var item in prevStates) item.Element.IsLocked = item.IsLocked; },
+                () => { foreach (var el in targets) el.IsLocked = targetLock; }
+            );
+        }
+        else if (SelectedElement != null)
         {
             var el = SelectedElement;
             bool oldLock = el.IsLocked;
@@ -885,50 +1216,6 @@ public partial class InspectorViewModel : ViewModelBase
                 () => el.ValidationType = oldType,
                 () => el.ValidationType = valType
             );
-        }
-    }
-
-    // --- SMART DISTRIBUTION & MATCH SIZES ---
-
-    [RelayCommand]
-    public void DistributeHorizontally()
-    {
-        if (SelectedPage != null && SelectedPage.Elements.Count >= 3)
-        {
-            var elements = SelectedPage.Elements.OrderBy(e => e.X).ToList();
-            double minX = elements.First().X;
-            double maxX = elements.Last().X + elements.Last().Width;
-            double totalElementWidth = elements.Sum(e => e.Width);
-            double totalSpace = maxX - minX - totalElementWidth;
-            double gap = totalSpace / (elements.Count - 1);
-
-            double currentX = minX;
-            foreach (var el in elements)
-            {
-                el.X = currentX;
-                currentX += el.Width + gap;
-            }
-        }
-    }
-
-    [RelayCommand]
-    public void DistributeVertically()
-    {
-        if (SelectedPage != null && SelectedPage.Elements.Count >= 3)
-        {
-            var elements = SelectedPage.Elements.OrderBy(e => e.Y).ToList();
-            double minY = elements.First().Y;
-            double maxY = elements.Last().Y + elements.Last().Height;
-            double totalElementHeight = elements.Sum(e => e.Height);
-            double totalSpace = maxY - minY - totalElementHeight;
-            double gap = totalSpace / (elements.Count - 1);
-
-            double currentY = minY;
-            foreach (var el in elements)
-            {
-                el.Y = currentY;
-                currentY += el.Height + gap;
-            }
         }
     }
 

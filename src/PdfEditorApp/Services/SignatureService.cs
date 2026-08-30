@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
 
@@ -19,9 +21,12 @@ public interface ISignatureService
     List<SignaturePresetStyle> GetAvailableSignatureStyles();
     PdfTextElement CreateCursiveSignatureElement(string signerName, SignatureStyle style, double x = 100, double y = 200);
     PdfShapeElement CreateSignatureBoxElement(string signerName, string title = "Authorized Signatory", double x = 100, double y = 200);
+    PdfShapeElement CreateCryptographicSignatureSeal(string signerName, string organization, string reason, string sha256Fingerprint, double x = 100, double y = 200);
     PdfTextElement CreateDateStampElement(double x = 100, double y = 200);
     PdfShapeElement CreateInitialsElement(string initials, double x = 100, double y = 200);
     PdfShapeElement CreateMarkupBadge(string symbol, string colorHex, double x = 100, double y = 200);
+    PdfFormFieldElement CreateFormFieldElement(FormFieldType fieldType, string fieldName, double x = 100, double y = 200, double width = 180, double height = 32);
+    string ComputeDocumentSha256(PdfDocumentModel document);
 }
 
 public class SignatureService : ISignatureService
@@ -83,9 +88,29 @@ public class SignatureService : ISignatureService
             FillColorHex = "#F8FAFC",
             StrokeColorHex = "#0F6CBD",
             StrokeThickness = 1.5,
-            Label = $"DIGITALLY SIGNED & VERIFIED\n{signerName}\n{DateTime.Now:yyyy-MM-dd HH:mm:ss} UTC",
+            Label = $"DIGITALLY SIGNED & VERIFIED\n{signerName} ({title})\n{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
             LabelColorHex = "#0F6CBD",
             LabelFontSize = 10
+        };
+    }
+
+    public PdfShapeElement CreateCryptographicSignatureSeal(string signerName, string organization, string reason, string sha256Fingerprint, double x = 100, double y = 200)
+    {
+        string shortFingerprint = sha256Fingerprint.Length > 16 ? sha256Fingerprint.Substring(0, 16) : sha256Fingerprint;
+        return new PdfShapeElement
+        {
+            X = x,
+            Y = y,
+            Width = 320,
+            Height = 100,
+            ShapeType = ShapeType.RoundedRectangle,
+            CornerRadius = 8,
+            FillColorHex = "#F0FDF4", // Light emerald tint
+            StrokeColorHex = "#16A34A", // Emerald green border
+            StrokeThickness = 1.5,
+            Label = $"CRYPTOGRAPHIC X.509 DIGITAL SEAL\nSigner: {signerName} • {organization}\nReason: {reason}\nDigest: SHA256:{shortFingerprint}...\nVerified: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
+            LabelColorHex = "#15803D",
+            LabelFontSize = 9.5
         };
     }
 
@@ -141,5 +166,40 @@ public class SignatureService : ISignatureService
             LabelColorHex = colorHex,
             LabelFontSize = 18
         };
+    }
+
+    public PdfFormFieldElement CreateFormFieldElement(FormFieldType fieldType, string fieldName, double x = 100, double y = 200, double width = 180, double height = 32)
+    {
+        return new PdfFormFieldElement
+        {
+            X = x,
+            Y = y,
+            Width = width,
+            Height = height,
+            FieldType = fieldType,
+            FieldName = fieldName,
+            DefaultValue = fieldType == FormFieldType.Checkbox ? "false" : ""
+        };
+    }
+
+    public string ComputeDocumentSha256(PdfDocumentModel document)
+    {
+        var sb = new StringBuilder();
+        sb.Append(document.Title).Append('|');
+        sb.Append(document.Author).Append('|');
+        sb.Append(document.Subject).Append('|');
+        sb.Append(document.Pages.Count).Append('|');
+
+        foreach (var page in document.Pages)
+        {
+            sb.Append(page.PageNumber).Append(':').Append(page.Elements.Count).Append('|');
+            foreach (var el in page.Elements)
+            {
+                sb.Append(el.Kind).Append('@').Append(el.X).Append(',').Append(el.Y).Append(';');
+            }
+        }
+
+        byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString()));
+        return Convert.ToHexString(hash);
     }
 }

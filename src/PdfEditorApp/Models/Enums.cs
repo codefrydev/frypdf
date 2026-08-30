@@ -75,6 +75,9 @@ public enum CompareDiffType
     ElementRemoved,
     ElementModified,
     TextModified,
+    FormattingModified,
+    MetadataModified,
+    SecurityModified,
     PageCountChanged
 }
 
@@ -258,6 +261,7 @@ public enum ToolMode
 {
     Select,
     Pan,
+    Zoom,
     Text,
     Shape,
     Highlight,

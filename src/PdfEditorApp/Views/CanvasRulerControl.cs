@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
@@ -64,6 +65,17 @@ public class CanvasRulerControl : Control
         set => SetValue(PageDimensionProperty, value);
     }
 
+    // Static cached drawing resources (Zero GC allocations per mouse move)
+    private static readonly IBrush s_bgBrush = new SolidColorBrush(Color.Parse("#F8FAFC"));
+    private static readonly IPen s_borderPen = new Pen(new SolidColorBrush(Color.Parse("#E2E8F0")), 1);
+    private static readonly IPen s_tickPen = new Pen(new SolidColorBrush(Color.Parse("#94A3B8")), 1);
+    private static readonly IPen s_majorTickPen = new Pen(new SolidColorBrush(Color.Parse("#64748B")), 1);
+    private static readonly IPen s_pageBorderPen = new Pen(new SolidColorBrush(Color.Parse("#CBD5E1")), 1.5);
+    private static readonly IPen s_cursorPen = new Pen(new SolidColorBrush(Color.Parse("#0F6CBD")), 1.5);
+    private static readonly IBrush s_pageShadeBrush = new SolidColorBrush(Color.Parse("#FFFFFF"));
+    private static readonly IBrush s_labelBrush = new SolidColorBrush(Color.Parse("#64748B"));
+    private static readonly Typeface s_typeface = new("Segoe UI, -apple-system, sans-serif");
+
     static CanvasRulerControl()
     {
         AffectsRender<CanvasRulerControl>(
@@ -83,20 +95,14 @@ public class CanvasRulerControl : Control
         if (bounds.Width <= 0 || bounds.Height <= 0) return;
 
         bool isHorizontal = Orientation == Orientation.Horizontal;
-        var bgBrush = new SolidColorBrush(Color.Parse("#F8FAFC"));
-        var borderPen = new Pen(new SolidColorBrush(Color.Parse("#E2E8F0")), 1);
-        var tickPen = new Pen(new SolidColorBrush(Color.Parse("#94A3B8")), 1);
-        var majorTickPen = new Pen(new SolidColorBrush(Color.Parse("#64748B")), 1);
-        var pageBorderPen = new Pen(new SolidColorBrush(Color.Parse("#CBD5E1")), 1.5);
-        var cursorPen = new Pen(new SolidColorBrush(Color.Parse("#0F6CBD")), 1.5);
 
         // Draw ruler background
-        context.FillRectangle(bgBrush, new Rect(0, 0, bounds.Width, bounds.Height));
+        context.FillRectangle(s_bgBrush, new Rect(0, 0, bounds.Width, bounds.Height));
 
         if (isHorizontal)
         {
             // Bottom edge border
-            context.DrawLine(borderPen, new Point(0, bounds.Height), new Point(bounds.Width, bounds.Height));
+            context.DrawLine(s_borderPen, new Point(0, bounds.Height), new Point(bounds.Width, bounds.Height));
 
             double zoom = Math.Max(0.1, ZoomLevel);
             double stepPts = Unit == RulerUnit.Inches ? 72.0 : (Unit == RulerUnit.Millimeters ? 72.0 / 2.54 : 50.0);
@@ -106,10 +112,9 @@ public class CanvasRulerControl : Control
             double endX = startX + (PageDimension * zoom);
 
             // Draw page range shade
-            var pageShadeBrush = new SolidColorBrush(Color.Parse("#FFFFFF"));
-            context.FillRectangle(pageShadeBrush, new Rect(Math.Max(0, startX), 0, Math.Max(0, endX - Math.Max(0, startX)), bounds.Height));
-            context.DrawLine(pageBorderPen, new Point(startX, 0), new Point(startX, bounds.Height));
-            context.DrawLine(pageBorderPen, new Point(endX, 0), new Point(endX, bounds.Height));
+            context.FillRectangle(s_pageShadeBrush, new Rect(Math.Max(0, startX), 0, Math.Max(0, endX - Math.Max(0, startX)), bounds.Height));
+            context.DrawLine(s_pageBorderPen, new Point(startX, 0), new Point(startX, bounds.Height));
+            context.DrawLine(s_pageBorderPen, new Point(endX, 0), new Point(endX, bounds.Height));
 
             // Draw ticks across canvas
             double maxPts = PageDimension + 200;
@@ -121,7 +126,7 @@ public class CanvasRulerControl : Control
                 bool isMajor = Math.Abs(pt % stepPts) < 0.01;
                 double tickH = isMajor ? bounds.Height * 0.55 : bounds.Height * 0.25;
 
-                context.DrawLine(isMajor ? majorTickPen : tickPen, new Point(x, bounds.Height - tickH), new Point(x, bounds.Height));
+                context.DrawLine(isMajor ? s_majorTickPen : s_tickPen, new Point(x, bounds.Height - tickH), new Point(x, bounds.Height));
 
                 if (isMajor)
                 {
@@ -136,9 +141,9 @@ public class CanvasRulerControl : Control
                         label,
                         CultureInfo.InvariantCulture,
                         FlowDirection.LeftToRight,
-                        new Typeface("Segoe UI, -apple-system, sans-serif"),
+                        s_typeface,
                         8.5,
-                        new SolidColorBrush(Color.Parse("#64748B"))
+                        s_labelBrush
                     );
 
                     context.DrawText(formattedText, new Point(x + 2, 2));
@@ -151,14 +156,14 @@ public class CanvasRulerControl : Control
                 double cursorX = startX + (CursorPosition * zoom);
                 if (cursorX >= 0 && cursorX <= bounds.Width)
                 {
-                    context.DrawLine(cursorPen, new Point(cursorX, 0), new Point(cursorX, bounds.Height));
+                    context.DrawLine(s_cursorPen, new Point(cursorX, 0), new Point(cursorX, bounds.Height));
                 }
             }
         }
         else
         {
             // Right edge border
-            context.DrawLine(borderPen, new Point(bounds.Width, 0), new Point(bounds.Width, bounds.Height));
+            context.DrawLine(s_borderPen, new Point(bounds.Width, 0), new Point(bounds.Width, bounds.Height));
 
             double zoom = Math.Max(0.1, ZoomLevel);
             double stepPts = Unit == RulerUnit.Inches ? 72.0 : (Unit == RulerUnit.Millimeters ? 72.0 / 2.54 : 50.0);
@@ -168,10 +173,9 @@ public class CanvasRulerControl : Control
             double endY = startY + (PageDimension * zoom);
 
             // Draw page range shade
-            var pageShadeBrush = new SolidColorBrush(Color.Parse("#FFFFFF"));
-            context.FillRectangle(pageShadeBrush, new Rect(0, Math.Max(0, startY), bounds.Width, Math.Max(0, endY - Math.Max(0, startY))));
-            context.DrawLine(pageBorderPen, new Point(0, startY), new Point(bounds.Width, startY));
-            context.DrawLine(pageBorderPen, new Point(0, endY), new Point(bounds.Width, endY));
+            context.FillRectangle(s_pageShadeBrush, new Rect(0, Math.Max(0, startY), bounds.Width, Math.Max(0, endY - Math.Max(0, startY))));
+            context.DrawLine(s_pageBorderPen, new Point(0, startY), new Point(bounds.Width, startY));
+            context.DrawLine(s_pageBorderPen, new Point(0, endY), new Point(bounds.Width, endY));
 
             // Draw ticks across canvas
             double maxPts = PageDimension + 200;
@@ -183,7 +187,7 @@ public class CanvasRulerControl : Control
                 bool isMajor = Math.Abs(pt % stepPts) < 0.01;
                 double tickW = isMajor ? bounds.Width * 0.55 : bounds.Width * 0.25;
 
-                context.DrawLine(isMajor ? majorTickPen : tickPen, new Point(bounds.Width - tickW, y), new Point(bounds.Width, y));
+                context.DrawLine(isMajor ? s_majorTickPen : s_tickPen, new Point(bounds.Width - tickW, y), new Point(bounds.Width, y));
 
                 if (isMajor)
                 {
@@ -198,9 +202,9 @@ public class CanvasRulerControl : Control
                         label,
                         CultureInfo.InvariantCulture,
                         FlowDirection.LeftToRight,
-                        new Typeface("Segoe UI, -apple-system, sans-serif"),
+                        s_typeface,
                         8.0,
-                        new SolidColorBrush(Color.Parse("#64748B"))
+                        s_labelBrush
                     );
 
                     context.DrawText(formattedText, new Point(2, y + 2));
@@ -213,7 +217,7 @@ public class CanvasRulerControl : Control
                 double cursorY = startY + (CursorPosition * zoom);
                 if (cursorY >= 0 && cursorY <= bounds.Height)
                 {
-                    context.DrawLine(cursorPen, new Point(0, cursorY), new Point(bounds.Width, cursorY));
+                    context.DrawLine(s_cursorPen, new Point(0, cursorY), new Point(bounds.Width, cursorY));
                 }
             }
         }

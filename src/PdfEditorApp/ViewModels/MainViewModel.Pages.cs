@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
+using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
 namespace PdfEditorApp.ViewModels;
@@ -232,6 +233,24 @@ public partial class MainViewModel
 
             ShowToast($"Moved Page {idx + 1} to position {idx + 2}", "ChevronDown");
         }
+    }
+
+    public void ReorderPage(int fromIndex, int toIndex)
+    {
+        if (fromIndex < 0 || fromIndex >= Pages.Count || toIndex < 0 || toIndex >= Pages.Count || fromIndex == toIndex)
+            return;
+
+        Pages.Move(fromIndex, toIndex);
+        RenumberPages();
+        SelectPage(Pages[toIndex]);
+
+        UndoRedo.RecordAction(
+            $"Reorder Page {fromIndex + 1} to {toIndex + 1}",
+            () => { Pages.Move(toIndex, fromIndex); RenumberPages(); SelectPage(Pages[fromIndex]); },
+            () => { Pages.Move(fromIndex, toIndex); RenumberPages(); SelectPage(Pages[toIndex]); }
+        );
+
+        ShowToast($"Reordered Page {fromIndex + 1} to position {toIndex + 1}", "SwapVertical");
     }
 
     // --- PAGE NAVIGATION SHORTCUT COMMANDS ---
@@ -535,55 +554,70 @@ public partial class MainViewModel
         IsSplitExtractDialogOpen = false;
         if (Pages.Count == 0) return;
 
+        var currentDoc = ToDocumentModel();
+
         if (SplitExtractMode == SplitExtractMode.ExtractSelectedPages)
         {
             if (CurrentPage != null)
             {
-                var singlePageModel = CurrentPage.ToModel();
-                var newDoc = new PdfDocumentModel
-                {
-                    Title = $"{System.IO.Path.GetFileNameWithoutExtension(DocumentTitle)}_Page_{CurrentPageNumber}.pdf",
-                    Author = DocumentAuthor,
-                    Subject = $"Extracted Page {CurrentPageNumber} from {DocumentTitle}"
-                };
-                newDoc.Pages.Add(singlePageModel);
-                LoadFromDocumentModel(newDoc);
-                ShowToast($"Extracted Page {CurrentPageNumber} to new project", "CallSplit");
+                int currentIdx = Math.Clamp(Pages.IndexOf(CurrentPage), 0, Pages.Count - 1);
+                var extracted = _pageOrganizerService.ExtractPages(currentDoc, new[] { currentIdx });
+                LoadFromDocumentModel(extracted);
+                ShowToast($"Extracted Page {currentIdx + 1} to new active project", "CallSplit");
             }
         }
         else if (SplitExtractMode == SplitExtractMode.SplitEveryNPages)
         {
             int interval = Math.Max(1, SplitPageInterval);
-            int splits = (int)Math.Ceiling((double)Pages.Count / interval);
-            ShowToast($"Document partitioned into {splits} split sections ({interval} pages/file)", "CallSplit");
+            var parts = _pageOrganizerService.SplitEveryNPages(currentDoc, interval);
+            if (parts.Count > 0)
+            {
+                // Open first split part as active document
+                LoadFromDocumentModel(parts[0]);
+                ShowToast($"Document split into {parts.Count} parts (Loaded Part 1 of {parts.Count})", "CallSplit");
+            }
         }
         else if (SplitExtractMode == SplitExtractMode.SplitByPageRanges)
         {
-            ShowToast($"Applied custom split ranges: {SplitPageRanges}", "CallSplit");
+            var parts = _pageOrganizerService.SplitByRanges(currentDoc, SplitPageRanges);
+            if (parts.Count > 0)
+            {
+                LoadFromDocumentModel(parts[0]);
+                ShowToast($"Split document into {parts.Count} ranges (Loaded Range 1)", "CallSplit");
+            }
+            else
+            {
+                ShowToast("Invalid page ranges specified (e.g. use '1-2, 3-4')", "AlertCircleOutline");
+            }
         }
     }
 
     [RelayCommand]
     public void BatchRotatePages(string target)
     {
-        int count = 0;
-        for (int i = 0; i < Pages.Count; i++)
+        var targetEnum = target.ToLowerInvariant() switch
         {
-            int pageNum = i + 1;
-            bool shouldRotate = target.ToLowerInvariant() switch
-            {
-                "all" => true,
-                "even" => (pageNum % 2 == 0),
-                "odd" => (pageNum % 2 != 0),
-                _ => true
-            };
+            "all" => PageFilterTarget.All,
+            "even" => PageFilterTarget.EvenPages,
+            "odd" => PageFilterTarget.OddPages,
+            "landscape" => PageFilterTarget.LandscapePages,
+            "portrait" => PageFilterTarget.PortraitPages,
+            _ => PageFilterTarget.All
+        };
 
-            if (shouldRotate)
+        var doc = ToDocumentModel();
+        int rotatedCount = _pageOrganizerService.BatchRotatePages(doc, targetEnum, 90);
+        if (rotatedCount > 0)
+        {
+            for (int i = 0; i < doc.Pages.Count && i < Pages.Count; i++)
             {
-                Pages[i].RotateClockwise();
-                count++;
+                Pages[i].RotationAngle = doc.Pages[i].RotationAngle;
             }
+            ShowToast($"Rotated {rotatedCount} {target} pages by 90°", "RotateRight");
         }
-        ShowToast($"Rotated {count} pages 90° CW", "RotateRight");
+        else
+        {
+            ShowToast($"No {target} pages matched for rotation", "InformationOutline");
+        }
     }
 }

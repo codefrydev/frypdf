@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
@@ -62,25 +64,115 @@ public partial class PageViewModel : ViewModelBase
     [ObservableProperty]
     private ElementViewModelBase? _selectedElement;
 
+    [ObservableProperty]
+    private bool _hasMultiSelection;
+
+    [ObservableProperty]
+    private int _selectionCount;
+
+    [ObservableProperty]
+    private Rect _selectionBoundingBox;
+
     public ObservableCollection<ElementViewModelBase> Elements { get; } = new();
 
+    public ObservableCollection<ElementViewModelBase> SelectedElements { get; } = new();
+
     public event Action<ElementViewModelBase?>? SelectionChanged;
+    public event Action? MultiSelectionChanged;
 
     public void SelectElement(ElementViewModelBase? element)
     {
+        SelectedElements.Clear();
+
         foreach (var el in Elements)
         {
             el.IsSelected = (el == element);
             if (!el.IsSelected) el.IsInEditMode = false;
         }
 
+        if (element != null)
+        {
+            SelectedElements.Add(element);
+        }
+
         SelectedElement = element;
+        HasMultiSelection = false;
+        SelectionCount = SelectedElements.Count;
+        UpdateSelectionBoundingBox();
+
         SelectionChanged?.Invoke(element);
+        MultiSelectionChanged?.Invoke();
+    }
+
+    public void ToggleElementSelection(ElementViewModelBase element)
+    {
+        if (SelectedElements.Contains(element))
+        {
+            element.IsSelected = false;
+            element.IsInEditMode = false;
+            SelectedElements.Remove(element);
+        }
+        else
+        {
+            element.IsSelected = true;
+            SelectedElements.Add(element);
+        }
+
+        SelectedElement = SelectedElements.LastOrDefault();
+        HasMultiSelection = SelectedElements.Count > 1;
+        SelectionCount = SelectedElements.Count;
+        UpdateSelectionBoundingBox();
+
+        SelectionChanged?.Invoke(SelectedElement);
+        MultiSelectionChanged?.Invoke();
+    }
+
+    public void SelectElements(IEnumerable<ElementViewModelBase> elements)
+    {
+        var targetSet = new HashSet<ElementViewModelBase>(elements);
+        SelectedElements.Clear();
+
+        foreach (var el in Elements)
+        {
+            bool isSel = targetSet.Contains(el);
+            el.IsSelected = isSel;
+            if (!isSel) el.IsInEditMode = false;
+            if (isSel) SelectedElements.Add(el);
+        }
+
+        SelectedElement = SelectedElements.LastOrDefault();
+        HasMultiSelection = SelectedElements.Count > 1;
+        SelectionCount = SelectedElements.Count;
+        UpdateSelectionBoundingBox();
+
+        SelectionChanged?.Invoke(SelectedElement);
+        MultiSelectionChanged?.Invoke();
+    }
+
+    public void SelectAll()
+    {
+        SelectElements(Elements);
     }
 
     public void ClearSelection()
     {
         SelectElement(null);
+    }
+
+    public void UpdateSelectionBoundingBox()
+    {
+        if (SelectedElements.Count == 0)
+        {
+            SelectionBoundingBox = default;
+            return;
+        }
+
+        double minX = SelectedElements.Min(e => e.X);
+        double minY = SelectedElements.Min(e => e.Y);
+        double maxX = SelectedElements.Max(e => e.X + Math.Max(1, e.Width));
+        double maxY = SelectedElements.Max(e => e.Y + Math.Max(1, e.Height));
+
+        SelectionBoundingBox = new Rect(minX, minY, Math.Max(1, maxX - minX), Math.Max(1, maxY - minY));
     }
 
     public void AddElement(ElementViewModelBase element)
@@ -93,11 +185,22 @@ public partial class PageViewModel : ViewModelBase
 
     public void RemoveElement(ElementViewModelBase element)
     {
+        if (SelectedElements.Contains(element))
+        {
+            SelectedElements.Remove(element);
+            element.IsSelected = false;
+        }
+
         if (SelectedElement == element)
         {
-            SelectElement(null);
+            SelectedElement = SelectedElements.LastOrDefault();
         }
+
         Elements.Remove(element);
+        HasMultiSelection = SelectedElements.Count > 1;
+        SelectionCount = SelectedElements.Count;
+        UpdateSelectionBoundingBox();
+        SelectionChanged?.Invoke(SelectedElement);
     }
 
     public void BringToFront(ElementViewModelBase element)
@@ -206,6 +309,11 @@ public partial class PageViewModel : ViewModelBase
         FooterRight = model.FooterRight;
 
         Elements.Clear();
+        SelectedElements.Clear();
+        SelectedElement = null;
+        HasMultiSelection = false;
+        SelectionCount = 0;
+
         foreach (var elModel in model.Elements)
         {
             ElementViewModelBase vm = elModel switch

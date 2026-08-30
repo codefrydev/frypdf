@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,8 +24,10 @@ public partial class MainViewModel : ViewModelBase
     private readonly ISignatureService _signatureService;
     private readonly ISmartPlacementService _placementService;
     private readonly IRecentDocumentsService _recentService;
+    private readonly IPageOrganizerService _pageOrganizerService;
 
     public ISmartPlacementService SmartPlacement => _placementService;
+    public IPageOrganizerService PageOrganizer => _pageOrganizerService;
 
     // --- HOME / EDITOR VIEW-SWITCHING ---
 
@@ -36,7 +40,7 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>ViewModel for the Home / Start Screen.</summary>
     public HomeViewModel Home { get; }
 
-    private ElementViewModelBase? _clipboardElement;
+    private List<ElementViewModelBase> _clipboardElements = new();
     private CancellationTokenSource? _toastCts;
 
     // --- CORE OBSERVABLE PROPERTIES ---
@@ -76,17 +80,24 @@ public partial class MainViewModel : ViewModelBase
         if (oldValue != null)
         {
             oldValue.SelectionChanged -= OnElementSelectionChanged;
+            oldValue.MultiSelectionChanged -= OnMultiSelectionChanged;
         }
 
         if (newValue != null)
         {
             newValue.SelectionChanged += OnElementSelectionChanged;
+            newValue.MultiSelectionChanged += OnMultiSelectionChanged;
             Inspector.UpdateSelection(newValue.SelectedElement, newValue);
         }
         else
         {
             Inspector.UpdateSelection(null, null);
         }
+    }
+
+    private void OnMultiSelectionChanged()
+    {
+        Inspector.UpdateSelection(CurrentPage?.SelectedElement, CurrentPage);
     }
 
     // Canvas Grid & Snap-to-Grid
@@ -284,7 +295,7 @@ public partial class MainViewModel : ViewModelBase
 
     // --- CONSTRUCTORS ---
 
-    public MainViewModel() : this(new PdfExportService(), new TemplateService(), new ProjectPersistenceService(), new DocumentAuditService(), new SignatureService(), new SmartPlacementService(), new RecentDocumentsService())
+    public MainViewModel() : this(new PdfExportService(), new TemplateService(), new ProjectPersistenceService(), new DocumentAuditService(), new SignatureService(), new SmartPlacementService(), new RecentDocumentsService(), new PageOrganizerService())
     {
     }
 
@@ -295,7 +306,8 @@ public partial class MainViewModel : ViewModelBase
         IDocumentAuditService? auditService = null,
         ISignatureService? signatureService = null,
         ISmartPlacementService? placementService = null,
-        IRecentDocumentsService? recentService = null)
+        IRecentDocumentsService? recentService = null,
+        IPageOrganizerService? pageOrganizerService = null)
     {
         _exportService = exportService;
         _templateService = templateService;
@@ -304,6 +316,7 @@ public partial class MainViewModel : ViewModelBase
         _signatureService = signatureService ?? new SignatureService();
         _placementService = placementService ?? new SmartPlacementService();
         _recentService = recentService ?? new RecentDocumentsService();
+        _pageOrganizerService = pageOrganizerService ?? new PageOrganizerService();
 
         // Connect undo/redo service to inspector
         Inspector.UndoRedo = UndoRedo;
@@ -349,9 +362,15 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>Switches to the editor and loads a project from a file path.</summary>
     public void OpenEditorWithFile(string path)
     {
+        _ = OpenEditorWithFileAsync(path);
+    }
+
+    /// <summary>Asynchronously switches to the editor and loads a project from a file path.</summary>
+    public async Task OpenEditorWithFileAsync(string path)
+    {
         try
         {
-            var model = _persistenceService.LoadProjectAsync(path).GetAwaiter().GetResult();
+            var model = await _persistenceService.LoadProjectAsync(path);
             if (model != null)
             {
                 LoadFromDocumentModel(model);
@@ -496,47 +515,60 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void Copy()
     {
-        if (CurrentPage?.SelectedElement != null)
+        if (CurrentPage == null) return;
+        if (CurrentPage.SelectedElements.Count > 0)
         {
-            _clipboardElement = CurrentPage.SelectedElement;
-            ShowToast($"Copied: {_clipboardElement.DisplayName}", "ContentCopy");
+            _clipboardElements = CurrentPage.SelectedElements.ToList();
+            ShowToast(_clipboardElements.Count == 1 ? $"Copied: {_clipboardElements[0].DisplayName}" : $"Copied {_clipboardElements.Count} Elements", "ContentCopy");
         }
     }
 
     [RelayCommand]
     public void Cut()
     {
-        if (CurrentPage?.SelectedElement != null)
-        {
-            _clipboardElement = CurrentPage.SelectedElement;
-            var elToRemove = CurrentPage.SelectedElement;
-            var page = CurrentPage;
-            page.RemoveElement(elToRemove);
+        if (CurrentPage == null || CurrentPage.SelectedElements.Count == 0) return;
+        _clipboardElements = CurrentPage.SelectedElements.ToList();
+        var page = CurrentPage;
+        var targets = _clipboardElements.ToList();
 
-            UndoRedo.RecordAction(
-                $"Cut {elToRemove.DisplayName}",
-                () => page.AddElement(elToRemove),
-                () => page.RemoveElement(elToRemove)
-            );
+        foreach (var el in targets) page.RemoveElement(el);
+        Inspector.UpdateSelection(null, page);
 
-            ShowToast($"Cut: {_clipboardElement.DisplayName}", "ContentCut");
-        }
+        UndoRedo.RecordAction(
+            targets.Count == 1 ? $"Cut {targets[0].DisplayName}" : $"Cut {targets.Count} Elements",
+            () => {
+                foreach (var el in targets) page.AddElement(el);
+                page.SelectElements(targets);
+                Inspector.UpdateSelection(page.SelectedElement, page);
+            },
+            () => {
+                foreach (var el in targets) page.RemoveElement(el);
+                Inspector.UpdateSelection(null, page);
+            }
+        );
+
+        ShowToast(targets.Count == 1 ? $"Cut: {targets[0].DisplayName}" : $"Cut {targets.Count} Elements", "ContentCut");
     }
 
     [RelayCommand]
     public void Paste()
     {
-        if (_clipboardElement != null && CurrentPage != null)
+        if (_clipboardElements.Count == 0 || CurrentPage == null) return;
+        var page = CurrentPage;
+        var newVms = new List<ElementViewModelBase>();
+
+        if (_clipboardElements.Count == 1)
         {
-            var model = _clipboardElement.ToModel();
+            var el = _clipboardElements[0];
+            var model = el.ToModel();
             var clone = model.Clone();
-            clone.Id = Guid.NewGuid().ToString();
+            clone.Id = Guid.NewGuid().ToString("N");
 
             var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, clone.Width, clone.Height);
             clone.X = posX;
             clone.Y = posY;
 
-            ElementViewModelBase? newVm = clone.Kind switch
+            ElementViewModelBase newVm = clone.Kind switch
             {
                 ElementKind.Text => new TextElementViewModel(),
                 ElementKind.Heading => new TextElementViewModel(),
@@ -557,46 +589,86 @@ public partial class MainViewModel : ViewModelBase
             };
 
             newVm.LoadFromModel(clone);
-            AddElementWithUndo(newVm, $"Paste {newVm.DisplayName}");
+            page.AddElement(newVm);
+            newVms.Add(newVm);
         }
+        else
+        {
+            double minX = _clipboardElements.Min(e => e.X);
+            double minY = _clipboardElements.Min(e => e.Y);
+            double maxX = _clipboardElements.Max(e => e.X + e.Width);
+            double maxY = _clipboardElements.Max(e => e.Y + e.Height);
+            double groupW = maxX - minX;
+            double groupH = maxY - minY;
+
+            var (targetX, targetY) = _placementService.GetPlacementPosition(CurrentPage, groupW, groupH);
+            double offsetX = targetX - minX;
+            double offsetY = targetY - minY;
+
+            foreach (var el in _clipboardElements)
+            {
+                var model = el.ToModel();
+                var clone = model.Clone();
+                clone.Id = Guid.NewGuid().ToString("N");
+                clone.X += offsetX;
+                clone.Y += offsetY;
+
+                ElementViewModelBase newVm = clone.Kind switch
+                {
+                    ElementKind.Text => new TextElementViewModel(),
+                    ElementKind.Heading => new TextElementViewModel(),
+                    ElementKind.Shape => new ShapeElementViewModel(),
+                    ElementKind.Image => new ImageElementViewModel(),
+                    ElementKind.Divider => new DividerElementViewModel(),
+                    ElementKind.Table => new TableElementViewModel(),
+                    ElementKind.Chart => new ChartElementViewModel(),
+                    ElementKind.Watermark => new WatermarkElementViewModel(),
+                    ElementKind.FormField => new FormFieldElementViewModel(),
+                    ElementKind.QrCode => new QrCodeElementViewModel(),
+                    ElementKind.Barcode => new BarcodeElementViewModel(),
+                    ElementKind.Redaction => new RedactionElementViewModel(),
+                    ElementKind.Ink => new InkElementViewModel(),
+                    ElementKind.StickyNote => new StickyNoteElementViewModel(),
+                    ElementKind.Measurement => new MeasurementElementViewModel(),
+                    _ => new TextElementViewModel()
+                };
+
+                newVm.LoadFromModel(clone);
+                page.AddElement(newVm);
+                newVms.Add(newVm);
+            }
+        }
+
+        page.SelectElements(newVms);
+        Inspector.UpdateSelection(page.SelectedElement, page);
+
+        UndoRedo.RecordAction(
+            newVms.Count == 1 ? $"Paste {newVms[0].DisplayName}" : $"Paste {newVms.Count} Elements",
+            () => {
+                foreach (var el in newVms) page.RemoveElement(el);
+                Inspector.UpdateSelection(null, page);
+            },
+            () => {
+                foreach (var el in newVms) page.AddElement(el);
+                page.SelectElements(newVms);
+                Inspector.UpdateSelection(page.SelectedElement, page);
+            }
+        );
+
+        ShowToast(newVms.Count == 1 ? $"Pasted: {newVms[0].DisplayName}" : $"Pasted {newVms.Count} Elements", "ContentPaste");
     }
 
     [RelayCommand]
     public void Duplicate()
     {
-        if (CurrentPage?.SelectedElement != null)
-        {
-            var model = CurrentPage.SelectedElement.ToModel();
-            var clone = model.Clone();
-            clone.Id = Guid.NewGuid().ToString();
+        Inspector.DuplicateSelectedElementCommand.Execute(null);
+    }
 
-            var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, clone.Width, clone.Height);
-            clone.X = posX;
-            clone.Y = posY;
-
-            ElementViewModelBase? newVm = clone.Kind switch
-            {
-                ElementKind.Text => new TextElementViewModel(),
-                ElementKind.Heading => new TextElementViewModel(),
-                ElementKind.Shape => new ShapeElementViewModel(),
-                ElementKind.Image => new ImageElementViewModel(),
-                ElementKind.Divider => new DividerElementViewModel(),
-                ElementKind.Table => new TableElementViewModel(),
-                ElementKind.Chart => new ChartElementViewModel(),
-                ElementKind.Watermark => new WatermarkElementViewModel(),
-                ElementKind.FormField => new FormFieldElementViewModel(),
-                ElementKind.QrCode => new QrCodeElementViewModel(),
-                ElementKind.Barcode => new BarcodeElementViewModel(),
-                ElementKind.Redaction => new RedactionElementViewModel(),
-                ElementKind.Ink => new InkElementViewModel(),
-                ElementKind.StickyNote => new StickyNoteElementViewModel(),
-                ElementKind.Measurement => new MeasurementElementViewModel(),
-                _ => new TextElementViewModel()
-            };
-
-            newVm.LoadFromModel(clone);
-            AddElementWithUndo(newVm, $"Duplicate {newVm.DisplayName}");
-        }
+    [RelayCommand]
+    public void SelectAll()
+    {
+        CurrentPage?.SelectAll();
+        Inspector.UpdateSelection(CurrentPage?.SelectedElement, CurrentPage);
     }
 
     // --- ZOOM COMMANDS ---
@@ -604,14 +676,14 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void ZoomIn()
     {
-        ZoomLevel = Math.Min(2.5, Math.Round(ZoomLevel + 0.1, 2));
+        ZoomLevel = Math.Clamp(Math.Round(ZoomLevel * 1.2, 2), 0.1, 5.0);
         ShowToast($"Zoom: {(int)(ZoomLevel * 100)}%", "MagnifyPlusOutline");
     }
 
     [RelayCommand]
     public void ZoomOut()
     {
-        ZoomLevel = Math.Max(0.4, Math.Round(ZoomLevel - 0.1, 2));
+        ZoomLevel = Math.Clamp(Math.Round(ZoomLevel / 1.2, 2), 0.1, 5.0);
         ShowToast($"Zoom: {(int)(ZoomLevel * 100)}%", "MagnifyMinusOutline");
     }
 
@@ -629,10 +701,38 @@ public partial class MainViewModel : ViewModelBase
         ShowToast("Fit to Width", "ArrowExpandHorizontal");
     }
 
+    public void FitToWidthDynamic(double viewportWidth)
+    {
+        if (CurrentPage != null && viewportWidth > 100)
+        {
+            ZoomLevel = Math.Clamp(Math.Round((viewportWidth - 64.0) / CurrentPage.Width, 2), 0.1, 5.0);
+            ShowToast($"Fit to Width ({(int)(ZoomLevel * 100)}%)", "ArrowExpandHorizontal");
+        }
+        else
+        {
+            FitToWidth();
+        }
+    }
+
     [RelayCommand]
     public void FitToPage()
     {
         ZoomLevel = 0.85;
         ShowToast("Fit to Page", "FitToPageOutline");
+    }
+
+    public void FitToPageDynamic(double viewportWidth, double viewportHeight)
+    {
+        if (CurrentPage != null && viewportWidth > 100 && viewportHeight > 100)
+        {
+            double scaleX = (viewportWidth - 64.0) / CurrentPage.Width;
+            double scaleY = (viewportHeight - 64.0) / CurrentPage.Height;
+            ZoomLevel = Math.Clamp(Math.Round(Math.Min(scaleX, scaleY), 2), 0.1, 5.0);
+            ShowToast($"Fit to Page ({(int)(ZoomLevel * 100)}%)", "FitToPageOutline");
+        }
+        else
+        {
+            FitToPage();
+        }
     }
 }

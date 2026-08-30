@@ -687,6 +687,71 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
+    public void AutoFixPreflightIssues()
+    {
+        var docModel = ToDocumentModel();
+        int fixedCount = _auditService.AutoFixAllIssues(docModel);
+
+        if (fixedCount > 0)
+        {
+            for (int pIdx = 0; pIdx < docModel.Pages.Count && pIdx < Pages.Count; pIdx++)
+            {
+                var pModel = docModel.Pages[pIdx];
+                var pVm = Pages[pIdx];
+
+                for (int eIdx = 0; eIdx < pModel.Elements.Count && eIdx < pVm.Elements.Count; eIdx++)
+                {
+                    var elModel = pModel.Elements[eIdx];
+                    var elVm = pVm.Elements[eIdx];
+
+                    if (elModel is PdfTextElement textModel && elVm is TextElementViewModel textVm)
+                    {
+                        textVm.TextColorHex = textModel.TextColorHex;
+                    }
+                    else if (elModel is PdfImageElement imgModel && elVm is ImageElementViewModel imgVm)
+                    {
+                        imgVm.AltText = imgModel.AltText;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(docModel.Title)) DocumentTitle = docModel.Title;
+
+            ActiveAuditReport = _auditService.RunAudit(docModel);
+            ShowToast($"Auto-remediated {fixedCount} compliance issues", "CheckCircleOutline");
+        }
+        else
+        {
+            ShowToast("No auto-fixable issues detected", "InformationOutline");
+        }
+    }
+
+    [RelayCommand]
+    public void NavigateToPreflightIssue(AuditIssueItem? issue)
+    {
+        if (issue == null) return;
+
+        int pageIdx = Math.Clamp(issue.PageIndex - 1, 0, Pages.Count - 1);
+        if (pageIdx >= 0 && pageIdx < Pages.Count)
+        {
+            CurrentPage = Pages[pageIdx];
+
+            if (!string.IsNullOrWhiteSpace(issue.ElementId))
+            {
+                var el = CurrentPage.Elements.FirstOrDefault(e => e.Id == issue.ElementId);
+                if (el != null)
+                {
+                    CurrentPage.SelectElement(el);
+                    Inspector.UpdateSelection(el, CurrentPage);
+                }
+            }
+
+            IsPreflightDialogOpen = false;
+            ShowToast($"Jumped to Page {issue.PageIndex}: {issue.Title}", "Magnify");
+        }
+    }
+
+    [RelayCommand]
     public void ClosePreflightDialog()
     {
         IsPreflightDialogOpen = false;
@@ -716,7 +781,7 @@ public partial class MainViewModel
         }
 
         string reportText = sb.ToString();
-        string reportPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{System.IO.Path.GetFileNameWithoutExtension(DocumentTitle)}_Audit_Report.md");
+        string reportPath = "";
 
         if (StorageProvider != null)
         {
@@ -726,7 +791,19 @@ public partial class MainViewModel
                 DefaultExtension = "md",
                 SuggestedFileName = $"{System.IO.Path.GetFileNameWithoutExtension(DocumentTitle)}_Audit_Report.md"
             });
-            if (file != null) reportPath = file.Path.LocalPath;
+            if (file != null)
+            {
+                reportPath = file.Path.LocalPath;
+            }
+            else
+            {
+                UpdateStatus("Export cancelled.");
+                return;
+            }
+        }
+        else
+        {
+            reportPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{System.IO.Path.GetFileNameWithoutExtension(DocumentTitle)}_Audit_Report.md");
         }
 
         await System.IO.File.WriteAllTextAsync(reportPath, reportText);
@@ -756,7 +833,7 @@ public partial class MainViewModel
             }
         }
 
-        string exportPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{System.IO.Path.GetFileNameWithoutExtension(DocumentTitle)}_Review_Notes.md");
+        string exportPath = "";
         if (StorageProvider != null)
         {
             var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
@@ -765,11 +842,23 @@ public partial class MainViewModel
                 DefaultExtension = "md",
                 SuggestedFileName = $"{System.IO.Path.GetFileNameWithoutExtension(DocumentTitle)}_Review_Notes.md"
             });
-            if (file != null) exportPath = file.Path.LocalPath;
+            if (file != null)
+            {
+                exportPath = file.Path.LocalPath;
+            }
+            else
+            {
+                UpdateStatus("Export cancelled.");
+                return;
+            }
+        }
+        else
+        {
+            exportPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{System.IO.Path.GetFileNameWithoutExtension(DocumentTitle)}_Review_Notes.md");
         }
 
         await System.IO.File.WriteAllTextAsync(exportPath, sb.ToString());
-        ShowToast($"Exported comments summary to {System.IO.Path.GetFileName(exportPath)}", "CommentTextMultipleOutline");
+        ShowToast($"Saved review summary to {System.IO.Path.GetFileName(exportPath)}", "CommentTextMultipleOutline");
     }
 
     // --- CANVAS GRID & SNAP COMMANDS ---
@@ -1137,6 +1226,12 @@ public partial class MainViewModel
     public void ToggleTheme()
     {
         IsDarkMode = !IsDarkMode;
+        if (Avalonia.Application.Current != null)
+        {
+            Avalonia.Application.Current.RequestedThemeVariant = IsDarkMode
+                ? Avalonia.Styling.ThemeVariant.Dark
+                : Avalonia.Styling.ThemeVariant.Light;
+        }
         ShowToast(IsDarkMode ? "Switched to Fluent Dark Studio" : "Switched to Fluent Light Studio", "ThemeLightDark");
     }
 }

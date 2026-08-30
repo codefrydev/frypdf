@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace PdfEditorApp.Services;
 
@@ -26,32 +27,26 @@ public class UndoRedoAction
 
 public class UndoRedoService : IUndoRedoService
 {
-    private readonly Stack<UndoRedoAction> _undoStack = new();
+    private readonly LinkedList<UndoRedoAction> _undoList = new();
     private readonly Stack<UndoRedoAction> _redoStack = new();
     private const int MaxHistorySize = 100;
 
-    public bool CanUndo => _undoStack.Count > 0;
+    public bool CanUndo => _undoList.Count > 0;
     public bool CanRedo => _redoStack.Count > 0;
 
-    public string? NextUndoDescription => _undoStack.Count > 0 ? _undoStack.Peek().Description : null;
+    public string? NextUndoDescription => _undoList.Last?.Value.Description;
     public string? NextRedoDescription => _redoStack.Count > 0 ? _redoStack.Peek().Description : null;
 
     public event EventHandler? StateChanged;
 
     public void RecordAction(string description, Action undoAction, Action redoAction)
     {
-        if (_undoStack.Count >= MaxHistorySize)
+        if (_undoList.Count >= MaxHistorySize)
         {
-            var list = new List<UndoRedoAction>(_undoStack);
-            list.RemoveAt(list.Count - 1);
-            _undoStack.Clear();
-            for (int i = list.Count - 1; i >= 0; i--)
-            {
-                _undoStack.Push(list[i]);
-            }
+            _undoList.RemoveFirst();
         }
 
-        _undoStack.Push(new UndoRedoAction
+        _undoList.AddLast(new UndoRedoAction
         {
             Description = description,
             UndoAction = undoAction,
@@ -64,14 +59,20 @@ public class UndoRedoService : IUndoRedoService
 
     public string? Undo()
     {
-        if (_undoStack.Count == 0) return null;
+        if (_undoList.Count == 0) return null;
 
-        var action = _undoStack.Pop();
+        var node = _undoList.Last!;
+        _undoList.RemoveLast();
+        var action = node.Value;
+
         try
         {
             action.UndoAction();
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[UndoRedoService] Error during Undo '{action.Description}': {ex}");
+        }
 
         _redoStack.Push(action);
         StateChanged?.Invoke(this, EventArgs.Empty);
@@ -87,16 +88,19 @@ public class UndoRedoService : IUndoRedoService
         {
             action.RedoAction();
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[UndoRedoService] Error during Redo '{action.Description}': {ex}");
+        }
 
-        _undoStack.Push(action);
+        _undoList.AddLast(action);
         StateChanged?.Invoke(this, EventArgs.Empty);
         return action.Description;
     }
 
     public void Clear()
     {
-        _undoStack.Clear();
+        _undoList.Clear();
         _redoStack.Clear();
         StateChanged?.Invoke(this, EventArgs.Empty);
     }

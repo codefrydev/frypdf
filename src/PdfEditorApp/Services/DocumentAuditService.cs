@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
@@ -8,11 +10,17 @@ namespace PdfEditorApp.Services;
 
 public class AuditIssueItem
 {
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Severity { get; set; } = "Info"; // "Success", "Warning", "Error", "Info"
-    public string Category { get; set; } = "General"; // "Typography", "Images", "Accessibility", "Security", "Structure"
+    public string Category { get; set; } = "General"; // "Accessibility", "Typography", "Images", "PDF/A", "Security", "Structure"
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
     public int PageIndex { get; set; } = 1;
+    public string? ElementId { get; set; }
+    public string? RecommendedFix { get; set; }
+    public bool CanAutoFix { get; set; }
+    public double? MeasuredValue { get; set; }
+    public double? RequiredThreshold { get; set; }
 }
 
 public class DocumentAuditReport
@@ -33,6 +41,10 @@ public class DocumentAuditReport
     public int RedactionsCount { get; set; } = 0;
     public int SignaturesCount { get; set; } = 0;
 
+    public int AccessibilityIssuesCount { get; set; } = 0;
+    public int PdfAComplianceScore { get; set; } = 100;
+    public int PrintReadyScore { get; set; } = 100;
+
     public List<string> UniqueFontsUsed { get; set; } = new();
     public List<AuditIssueItem> Issues { get; set; } = new();
 
@@ -49,6 +61,10 @@ public class DocumentAuditReport
 public interface IDocumentAuditService
 {
     DocumentAuditReport RunAudit(PdfDocumentModel document);
+    int AutoFixContrastIssues(PdfDocumentModel document);
+    int AutoFixMetadataIssues(PdfDocumentModel document);
+    int AutoFixMissingAltText(PdfDocumentModel document);
+    int AutoFixAllIssues(PdfDocumentModel document);
 }
 
 public class DocumentAuditService : IDocumentAuditService
@@ -62,12 +78,63 @@ public class DocumentAuditService : IDocumentAuditService
 
         var allFonts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         int totalWords = 0;
-        int penaltyScore = 0;
+        int accessibilityViolations = 0;
+        int pdfAPenalties = 0;
+        int printPenalties = 0;
+        int smallFontCount = 0;
+        int placeholderCount = 0;
+        int emptyPagesCount = 0;
+        int incompleteTablesCount = 0;
+        int unsanitizedRedactionsCount = 0;
 
+        // 1. PDF/A Metadata Validation
+        if (string.IsNullOrWhiteSpace(document.Title) || document.Title.Equals("Untitled Document", StringComparison.OrdinalIgnoreCase))
+        {
+            report.Issues.Add(new AuditIssueItem
+            {
+                Severity = "Warning",
+                Category = "PDF/A",
+                Title = "Missing Document Title",
+                Description = "A descriptive Title metadata entry is required for PDF/A archival and PDF/UA accessibility compliance.",
+                PageIndex = 1,
+                CanAutoFix = true,
+                RecommendedFix = "Set Title to project or file name"
+            });
+            pdfAPenalties += 10;
+        }
+        else
+        {
+            report.Issues.Add(new AuditIssueItem
+            {
+                Severity = "Success",
+                Category = "PDF/A",
+                Title = "Document Title Present",
+                Description = $"Document title '{document.Title}' conforms to metadata standards.",
+                PageIndex = 1
+            });
+        }
+
+        if (string.IsNullOrWhiteSpace(document.Author))
+        {
+            report.Issues.Add(new AuditIssueItem
+            {
+                Severity = "Info",
+                Category = "PDF/A",
+                Title = "Missing Author Metadata",
+                Description = "Author metadata is not configured. Setting Author improves document attribution in enterprise archiving.",
+                PageIndex = 1,
+                CanAutoFix = true,
+                RecommendedFix = "Set Author to current user or company name"
+            });
+            pdfAPenalties += 5;
+        }
+
+        // 2. Page & Element Inspections
         for (int pIdx = 0; pIdx < document.Pages.Count; pIdx++)
         {
             var page = document.Pages[pIdx];
             int pageNum = pIdx + 1;
+            string pageBgHex = string.IsNullOrWhiteSpace(page.BackgroundColorHex) ? "#FFFFFF" : page.BackgroundColorHex;
 
             if (page.Elements.Count == 0)
             {
@@ -75,11 +142,11 @@ public class DocumentAuditService : IDocumentAuditService
                 {
                     Severity = "Warning",
                     Category = "Structure",
-                    Title = $"Empty Page Detected",
-                    Description = $"Page {pageNum} contains no text, shape, or graphic elements.",
+                    Title = "Empty Page Detected",
+                    Description = $"Page {pageNum} contains zero elements.",
                     PageIndex = pageNum
                 });
-                penaltyScore += 5;
+                emptyPagesCount++;
             }
 
             foreach (var element in page.Elements)
@@ -109,13 +176,15 @@ public class DocumentAuditService : IDocumentAuditService
                                     Severity = "Warning",
                                     Category = "Typography",
                                     Title = "Placeholder / Sample Text",
-                                    Description = $"Unedited boilerplate found in text box on Page {pageNum}.",
-                                    PageIndex = pageNum
+                                    Description = $"Boilerplate placeholder found on Page {pageNum}: \"{GetTextSnippet(textEl.Text)}\".",
+                                    PageIndex = pageNum,
+                                    ElementId = textEl.Id
                                 });
-                                penaltyScore += 3;
+                                placeholderCount++;
                             }
                         }
 
+                        // Font size checks
                         if (textEl.FontSize < 8.0)
                         {
                             report.Issues.Add(new AuditIssueItem
@@ -123,44 +192,112 @@ public class DocumentAuditService : IDocumentAuditService
                                 Severity = "Warning",
                                 Category = "Typography",
                                 Title = "Small Font Size (< 8pt)",
-                                Description = $"Text with font size {textEl.FontSize:F1}pt may be difficult to read when printed.",
-                                PageIndex = pageNum
+                                Description = $"Text with font size {textEl.FontSize:F1}pt on Page {pageNum} may be illegible when printed.",
+                                PageIndex = pageNum,
+                                ElementId = textEl.Id,
+                                MeasuredValue = textEl.FontSize,
+                                RequiredThreshold = 8.0
                             });
-                            penaltyScore += 2;
+                            smallFontCount++;
+                            printPenalties += 3;
                         }
 
-                        // Contrast check for light text on white backgrounds
-                        if (page.BackgroundColorHex.Equals("#FFFFFF", StringComparison.OrdinalIgnoreCase) ||
-                            page.BackgroundColorHex.Equals("#FFF", StringComparison.OrdinalIgnoreCase))
+                        // Mathematical WCAG 2.1 Contrast Ratio Check
+                        string fgColor = string.IsNullOrWhiteSpace(textEl.TextColorHex) ? "#000000" : textEl.TextColorHex;
+                        string effectiveBg = !string.IsNullOrWhiteSpace(textEl.BackgroundColorHex) && !textEl.BackgroundColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase)
+                            ? textEl.BackgroundColorHex
+                            : pageBgHex;
+
+                        double contrastRatio = CalculateContrastRatio(fgColor, effectiveBg);
+                        bool isLargeText = textEl.FontSize >= 18.0 || (textEl.FontSize >= 14.0 && textEl.IsBold);
+                        double requiredAaRatio = isLargeText ? 3.0 : 4.5;
+                        double requiredAaaRatio = isLargeText ? 4.5 : 7.0;
+
+                        if (contrastRatio < requiredAaRatio)
                         {
-                            if (textEl.TextColorHex.Equals("#FFFFFF", StringComparison.OrdinalIgnoreCase) ||
-                                textEl.TextColorHex.Equals("#FEFEFE", StringComparison.OrdinalIgnoreCase) ||
-                                textEl.TextColorHex.StartsWith("#F", StringComparison.OrdinalIgnoreCase))
+                            accessibilityViolations++;
+                            report.Issues.Add(new AuditIssueItem
                             {
-                                report.Issues.Add(new AuditIssueItem
-                                {
-                                    Severity = "Error",
-                                    Category = "Accessibility",
-                                    Title = "Low Text Contrast (WCAG)",
-                                    Description = $"Light text on white canvas background on Page {pageNum} violates WCAG AA readability standards.",
-                                    PageIndex = pageNum
-                                });
-                                penaltyScore += 8;
-                            }
+                                Severity = "Error",
+                                Category = "Accessibility",
+                                Title = "WCAG 2.1 AA Contrast Failure",
+                                Description = $"Text \"{GetTextSnippet(textEl.Text)}\" on Page {pageNum} has a contrast ratio of {contrastRatio:F2}:1 (Required: {requiredAaRatio:F1}:1).",
+                                PageIndex = pageNum,
+                                ElementId = textEl.Id,
+                                MeasuredValue = contrastRatio,
+                                RequiredThreshold = requiredAaRatio,
+                                CanAutoFix = true,
+                                RecommendedFix = $"Change text color to {GetCompliantColor(fgColor, effectiveBg)}"
+                            });
+                            accessibilityViolations++;
+                        }
+                        else if (contrastRatio < requiredAaaRatio)
+                        {
+                            report.Issues.Add(new AuditIssueItem
+                            {
+                                Severity = "Info",
+                                Category = "Accessibility",
+                                Title = "WCAG 2.1 AAA Contrast Advisory",
+                                Description = $"Text on Page {pageNum} meets AA standard ({contrastRatio:F2}:1) but falls below enhanced AAA standard ({requiredAaaRatio:F1}:1).",
+                                PageIndex = pageNum,
+                                ElementId = textEl.Id,
+                                MeasuredValue = contrastRatio,
+                                RequiredThreshold = requiredAaaRatio
+                            });
                         }
                         break;
 
                     case PdfImageElement imgEl:
                         report.ImageElementsCount++;
-                        if (string.IsNullOrWhiteSpace(imgEl.ImagePath))
+
+                        // Effective DPI Analysis
+                        var dims = TryGetImageDimensions(imgEl.ImagePath);
+                        if (dims.HasValue && imgEl.Width > 0 && imgEl.Height > 0)
+                        {
+                            double dpiX = dims.Value.Width / (imgEl.Width / 72.0);
+                            double dpiY = dims.Value.Height / (imgEl.Height / 72.0);
+                            double minDpi = Math.Min(dpiX, dpiY);
+
+                            if (minDpi < 150.0)
+                            {
+                                report.Issues.Add(new AuditIssueItem
+                                {
+                                    Severity = "Warning",
+                                    Category = "Images",
+                                    Title = "Low Image Resolution (< 150 DPI)",
+                                    Description = $"Image on Page {pageNum} has an effective resolution of {minDpi:F0} DPI. Professional printing requires at least 300 DPI.",
+                                    PageIndex = pageNum,
+                                    ElementId = imgEl.Id,
+                                    MeasuredValue = minDpi,
+                                    RequiredThreshold = 300.0
+                                });
+                                printPenalties += 10;
+                            }
+                            else if (minDpi > 600.0)
+                            {
+                                report.Issues.Add(new AuditIssueItem
+                                {
+                                    Severity = "Info",
+                                    Category = "Images",
+                                    Title = "High Image Resolution (> 600 DPI)",
+                                    Description = $"Image on Page {pageNum} is {minDpi:F0} DPI. Consider downsampling to 300 DPI to reduce PDF file size.",
+                                    PageIndex = pageNum,
+                                    ElementId = imgEl.Id,
+                                    MeasuredValue = minDpi,
+                                    RequiredThreshold = 600.0
+                                });
+                            }
+                        }
+                        else if (string.IsNullOrWhiteSpace(imgEl.ImagePath))
                         {
                             report.Issues.Add(new AuditIssueItem
                             {
                                 Severity = "Info",
                                 Category = "Images",
-                                Title = "Placeholder Image Element",
-                                Description = $"Graphic box on Page {pageNum} is using a placeholder rendering.",
-                                PageIndex = pageNum
+                                Title = "Placeholder Image Box",
+                                Description = $"Image placeholder on Page {pageNum} has no image file loaded.",
+                                PageIndex = pageNum,
+                                ElementId = imgEl.Id
                             });
                         }
                         break;
@@ -182,11 +319,12 @@ public class DocumentAuditService : IDocumentAuditService
                             {
                                 Severity = "Warning",
                                 Category = "Structure",
-                                Title = "Empty Table Structure",
-                                Description = $"Table on Page {pageNum} has zero rows or columns configured.",
-                                PageIndex = pageNum
+                                Title = "Incomplete Table Structure",
+                                Description = $"Table on Page {pageNum} has zero rows or column headers configured.",
+                                PageIndex = pageNum,
+                                ElementId = tblEl.Id
                             });
-                            penaltyScore += 4;
+                            incompleteTablesCount++;
                         }
                         break;
 
@@ -206,26 +344,28 @@ public class DocumentAuditService : IDocumentAuditService
                         report.RedactionsCount++;
                         report.Issues.Add(new AuditIssueItem
                         {
-                            Severity = "Info",
+                            Severity = "Warning",
                             Category = "Security",
-                            Title = "Active Redaction Overlay",
-                            Description = $"Redaction marked ({redEl.ExemptionCode}) on Page {pageNum}. Ensure redactions are permanently applied before public distribution.",
-                            PageIndex = pageNum
+                            Title = "Unsanitized Redaction Mark",
+                            Description = $"Redaction overlay ({redEl.ExemptionCode}) on Page {pageNum} is active. Ensure redactions are permanently burned in before external sharing.",
+                            PageIndex = pageNum,
+                            ElementId = redEl.Id
                         });
+                        unsanitizedRedactionsCount++;
                         break;
                 }
             }
         }
 
-        // Summary Positive Checks
+        // 3. Positive Summary Checks
         if (allFonts.Count > 0 && allFonts.Count <= 3)
         {
             report.Issues.Add(new AuditIssueItem
             {
                 Severity = "Success",
                 Category = "Typography",
-                Title = "Consistent Font Hierarchy",
-                Description = $"Document utilizes a clean palette of {allFonts.Count} font families ({string.Join(", ", allFonts)}).",
+                Title = "Harmonious Font Hierarchy",
+                Description = $"Document utilizes a concise set of {allFonts.Count} font families ({string.Join(", ", allFonts)}).",
                 PageIndex = 1
             });
         }
@@ -235,11 +375,10 @@ public class DocumentAuditService : IDocumentAuditService
             {
                 Severity = "Warning",
                 Category = "Typography",
-                Title = "Excessive Font Variations",
+                Title = "Excessive Font Diversity",
                 Description = $"Document uses {allFonts.Count} distinct fonts. Standard publishing guidelines recommend 2-3 fonts maximum.",
                 PageIndex = 1
             });
-            penaltyScore += 4;
         }
 
         if (document.SecuritySettings.IsPasswordProtected)
@@ -248,19 +387,19 @@ public class DocumentAuditService : IDocumentAuditService
             {
                 Severity = "Success",
                 Category = "Security",
-                Title = "Document Encryption Configured",
-                Description = "Document is protected with password security and restricted permissions.",
+                Title = "Document Encryption Active",
+                Description = "Document is secured with password protection and restricted permissions.",
                 PageIndex = 1
             });
         }
 
-        if (document.Pages.All(p => p.ShowHeaderFooter))
+        if (document.Pages.Count > 0 && document.Pages.All(p => p.ShowHeaderFooter))
         {
             report.Issues.Add(new AuditIssueItem
             {
                 Severity = "Success",
                 Category = "Structure",
-                Title = "Pagination & Header Continuity",
+                Title = "Structured Pagination & Footers",
                 Description = "All document pages have structured headers and sequential footers enabled.",
                 PageIndex = 1
             });
@@ -269,8 +408,18 @@ public class DocumentAuditService : IDocumentAuditService
         report.UniqueFontsUsed = allFonts.OrderBy(f => f).ToList();
         report.TotalWordCount = totalWords;
         report.EstimatedReadingTimeSeconds = (int)Math.Ceiling(totalWords / 3.3); // ~200 WPM
+        report.AccessibilityIssuesCount = accessibilityViolations;
+        report.PdfAComplianceScore = Math.Clamp(100 - pdfAPenalties, 0, 100);
+        report.PrintReadyScore = Math.Clamp(100 - printPenalties, 0, 100);
 
-        int calculatedScore = Math.Clamp(100 - penaltyScore, 20, 100);
+        int typographyPenalty = Math.Min(12, (allFonts.Count > 4 ? 4 : 0) + smallFontCount * 1 + placeholderCount * 2);
+        int structurePenalty = Math.Min(12, emptyPagesCount * 5 + incompleteTablesCount * 4);
+        int accessibilityPenalty = Math.Min(15, accessibilityViolations * 4);
+        int securityPenalty = Math.Min(8, unsanitizedRedactionsCount * 3);
+        int metadataPenalty = Math.Min(10, pdfAPenalties);
+
+        int totalPenalty = typographyPenalty + structurePenalty + accessibilityPenalty + securityPenalty + metadataPenalty;
+        int calculatedScore = Math.Clamp(100 - totalPenalty, 20, 100);
         report.HealthScore = calculatedScore;
         report.Grade = calculatedScore switch
         {
@@ -283,4 +432,233 @@ public class DocumentAuditService : IDocumentAuditService
 
         return report;
     }
+
+    public int AutoFixContrastIssues(PdfDocumentModel document)
+    {
+        int fixedCount = 0;
+        foreach (var page in document.Pages)
+        {
+            string pageBgHex = string.IsNullOrWhiteSpace(page.BackgroundColorHex) ? "#FFFFFF" : page.BackgroundColorHex;
+
+            foreach (var element in page.Elements)
+            {
+                if (element is PdfTextElement textEl)
+                {
+                    string fgColor = string.IsNullOrWhiteSpace(textEl.TextColorHex) ? "#000000" : textEl.TextColorHex;
+                    string effectiveBg = !string.IsNullOrWhiteSpace(textEl.BackgroundColorHex) && !textEl.BackgroundColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase)
+                        ? textEl.BackgroundColorHex
+                        : pageBgHex;
+
+                    double ratio = CalculateContrastRatio(fgColor, effectiveBg);
+                    bool isLargeText = textEl.FontSize >= 18.0 || (textEl.FontSize >= 14.0 && textEl.IsBold);
+                    double requiredRatio = isLargeText ? 3.0 : 4.5;
+
+                    if (ratio < requiredRatio)
+                    {
+                        textEl.TextColorHex = GetCompliantColor(fgColor, effectiveBg);
+                        fixedCount++;
+                    }
+                }
+            }
+        }
+        return fixedCount;
+    }
+
+    public int AutoFixMetadataIssues(PdfDocumentModel document)
+    {
+        int fixedCount = 0;
+        if (string.IsNullOrWhiteSpace(document.Title) || document.Title.Equals("Untitled Document", StringComparison.OrdinalIgnoreCase))
+        {
+            document.Title = "Document Publication";
+            fixedCount++;
+        }
+        if (string.IsNullOrWhiteSpace(document.Author))
+        {
+            document.Author = Environment.UserName;
+            fixedCount++;
+        }
+        return fixedCount;
+    }
+
+    public int AutoFixMissingAltText(PdfDocumentModel document)
+    {
+        int fixedCount = 0;
+        int imgIndex = 1;
+        foreach (var page in document.Pages)
+        {
+            foreach (var element in page.Elements)
+            {
+                if (element is PdfImageElement imgEl && (string.IsNullOrWhiteSpace(imgEl.AltText) || imgEl.AltText.Equals("Image", StringComparison.OrdinalIgnoreCase)))
+                {
+                    imgEl.AltText = $"Document Figure {imgIndex++}";
+                    fixedCount++;
+                }
+            }
+        }
+        return fixedCount;
+    }
+
+    public int AutoFixAllIssues(PdfDocumentModel document)
+    {
+        int total = 0;
+        total += AutoFixContrastIssues(document);
+        total += AutoFixMetadataIssues(document);
+        total += AutoFixMissingAltText(document);
+        return total;
+    }
+
+    #region Mathematical WCAG 2.1 Calculations
+
+    public static (double R, double G, double B) ParseRgb(string hex)
+    {
+        if (string.IsNullOrWhiteSpace(hex)) return (0, 0, 0);
+        hex = hex.Trim().TrimStart('#');
+        if (hex.Length == 3)
+        {
+            hex = $"{hex[0]}{hex[0]}{hex[1]}{hex[1]}{hex[2]}{hex[2]}";
+        }
+        else if (hex.Length == 8)
+        {
+            hex = hex.Substring(2, 6);
+        }
+        else if (hex.Length != 6)
+        {
+            return (0, 0, 0);
+        }
+
+        if (int.TryParse(hex.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int r) &&
+            int.TryParse(hex.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int g) &&
+            int.TryParse(hex.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int b))
+        {
+            return (r / 255.0, g / 255.0, b / 255.0);
+        }
+        return (0, 0, 0);
+    }
+
+    public static double CalculateRelativeLuminance(string hex)
+    {
+        var (r, g, b) = ParseRgb(hex);
+
+        static double ToLinear(double c) => (c <= 0.04045) ? c / 12.92 : Math.Pow((c + 0.055) / 1.055, 2.4);
+
+        double rLinear = ToLinear(r);
+        double gLinear = ToLinear(g);
+        double bLinear = ToLinear(b);
+
+        return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
+    }
+
+    public static double CalculateContrastRatio(string fgHex, string bgHex)
+    {
+        double l1 = CalculateRelativeLuminance(fgHex);
+        double l2 = CalculateRelativeLuminance(bgHex);
+
+        double lighter = Math.Max(l1, l2);
+        double darker = Math.Min(l1, l2);
+
+        return Math.Round((lighter + 0.05) / (darker + 0.05), 2);
+    }
+
+    public static string GetCompliantColor(string currentFgHex, string bgHex, double targetRatio = 4.5)
+    {
+        double bgLuminance = CalculateRelativeLuminance(bgHex);
+        return bgLuminance > 0.5 ? "#0F172A" : "#FFFFFF";
+    }
+
+    #endregion
+
+    #region Fast Image Dimensions Header Inspector
+
+    public static (int Width, int Height)? TryGetImageDimensions(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) return null;
+
+        try
+        {
+            using var stream = File.OpenRead(path);
+            using var reader = new BinaryReader(stream);
+
+            byte[] magic = reader.ReadBytes(8);
+            if (magic.Length < 8) return null;
+
+            // PNG magic: 89 50 4E 47 0D 0A 1A 0A
+            if (magic[0] == 0x89 && magic[1] == 0x50 && magic[2] == 0x4E && magic[3] == 0x47)
+            {
+                stream.Seek(16, SeekOrigin.Begin);
+                byte[] wBytes = reader.ReadBytes(4);
+                byte[] hBytes = reader.ReadBytes(4);
+                if (BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(wBytes);
+                    Array.Reverse(hBytes);
+                }
+                int w = BitConverter.ToInt32(wBytes, 0);
+                int h = BitConverter.ToInt32(hBytes, 0);
+                return (w, h);
+            }
+
+            // GIF: "GIF87a" or "GIF89a"
+            if (magic[0] == 'G' && magic[1] == 'I' && magic[2] == 'F')
+            {
+                stream.Seek(6, SeekOrigin.Begin);
+                int w = reader.ReadUInt16();
+                int h = reader.ReadUInt16();
+                return (w, h);
+            }
+
+            // BMP: "BM"
+            if (magic[0] == 'B' && magic[1] == 'M')
+            {
+                stream.Seek(18, SeekOrigin.Begin);
+                int w = reader.ReadInt32();
+                int h = Math.Abs(reader.ReadInt32());
+                return (w, h);
+            }
+
+            // JPEG
+            if (magic[0] == 0xFF && magic[1] == 0xD8)
+            {
+                stream.Seek(2, SeekOrigin.Begin);
+                while (stream.Position < stream.Length)
+                {
+                    byte markerPrefix = reader.ReadByte();
+                    if (markerPrefix != 0xFF) break;
+                    byte marker = reader.ReadByte();
+                    if (marker == 0xC0 || marker == 0xC1 || marker == 0xC2)
+                    {
+                        reader.ReadUInt16(); // length
+                        reader.ReadByte();   // precision
+                        int h = (reader.ReadByte() << 8) | reader.ReadByte();
+                        int w = (reader.ReadByte() << 8) | reader.ReadByte();
+                        return (w, h);
+                    }
+                    else if (marker == 0xD9 || marker == 0xDA)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        int length = (reader.ReadByte() << 8) | reader.ReadByte();
+                        if (length < 2) break;
+                        stream.Seek(length - 2, SeekOrigin.Current);
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Ignore format parse failures
+        }
+
+        return null;
+    }
+
+    private static string GetTextSnippet(string? text, int maxLen = 30)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return "";
+        string clean = text.Trim().Replace('\r', ' ').Replace('\n', ' ');
+        return clean.Length <= maxLen ? clean : $"{clean.Substring(0, maxLen)}...";
+    }
+
+    #endregion
 }

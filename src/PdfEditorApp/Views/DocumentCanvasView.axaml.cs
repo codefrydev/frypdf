@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -12,13 +14,17 @@ public partial class DocumentCanvasView : UserControl
 {
     private bool _isDraggingElement;
     private bool _isResizingHandle;
+    private bool _isMarqueeSelecting;
+    private Point _marqueeStartPoint;
     private string? _activeResizeHandle;
     private Point _lastPointerPosition;
     private ElementViewModelBase? _draggedElement;
+    private List<ElementViewModelBase> _draggedElements = new();
 
     // Movement & Resize Undo Tracking
     private double _dragStartElementX;
     private double _dragStartElementY;
+    private List<(ElementViewModelBase Element, double X, double Y)> _dragStartPositions = new();
     private double _resizeStartX;
     private double _resizeStartY;
     private double _resizeStartW;
@@ -35,9 +41,14 @@ public partial class DocumentCanvasView : UserControl
     {
         InitializeComponent();
 
+        GestureRecognizers.Add(new PinchGestureRecognizer());
+
         AddHandler(PointerMovedEvent, OnGlobalPointerMoved, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, OnGlobalPointerReleased, RoutingStrategies.Tunnel);
         AddHandler(PointerWheelChangedEvent, OnCanvasPointerWheelChanged, RoutingStrategies.Tunnel);
+        AddHandler(PinchEvent, OnCanvasPinch, RoutingStrategies.Tunnel);
+        AddHandler(PinchEndedEvent, OnCanvasPinchEnded, RoutingStrategies.Tunnel);
+        AddHandler(DoubleTappedEvent, OnCanvasDoubleTapped, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, OnCanvasKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnCanvasKeyUp, RoutingStrategies.Tunnel);
     }
@@ -81,17 +92,73 @@ public partial class DocumentCanvasView : UserControl
     private void OnCanvasPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
         bool isCtrlOrCmd = e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
-        if (isCtrlOrCmd && ViewModel != null)
+        if (isCtrlOrCmd && ViewModel != null && CanvasScrollViewer != null && PageElementsCanvas != null)
         {
-            if (e.Delta.Y > 0)
+            var pointerPos = e.GetPosition(PageElementsCanvas);
+            double oldZoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+            double canvasX = pointerPos.X / oldZoom;
+            double canvasY = pointerPos.Y / oldZoom;
+
+            double zoomFactor = e.Delta.Y > 0 ? 1.15 : (1.0 / 1.15);
+            double newZoom = Math.Clamp(Math.Round(oldZoom * zoomFactor, 2), 0.1, 5.0);
+
+            if (Math.Abs(newZoom - oldZoom) > 0.001)
             {
-                ViewModel.ZoomInCommand.Execute(null);
+                ViewModel.ZoomLevel = newZoom;
+
+                // Adjust scroll offset so (canvasX, canvasY) remains anchored under the pointer
+                var mouseInViewer = e.GetPosition(CanvasScrollViewer);
+                double targetOffsetX = (canvasX * newZoom) - mouseInViewer.X;
+                double targetOffsetY = (canvasY * newZoom) - mouseInViewer.Y;
+                CanvasScrollViewer.Offset = new Vector(Math.Max(0, targetOffsetX), Math.Max(0, targetOffsetY));
             }
-            else if (e.Delta.Y < 0)
-            {
-                ViewModel.ZoomOutCommand.Execute(null);
-            }
+
             UpdateViewportOnPlacementService();
+            e.Handled = true;
+        }
+        else if (e.KeyModifiers.HasFlag(KeyModifiers.Shift) && CanvasScrollViewer != null)
+        {
+            // Shift + Wheel -> Horizontal scroll
+            double delta = e.Delta.Y != 0 ? e.Delta.Y : e.Delta.X;
+            CanvasScrollViewer.Offset = new Vector(
+                Math.Max(0, CanvasScrollViewer.Offset.X - (delta * 40)),
+                CanvasScrollViewer.Offset.Y);
+            e.Handled = true;
+        }
+    }
+
+    private void OnCanvasPinch(object? sender, PinchEventArgs e)
+    {
+        if (ViewModel != null && CanvasScrollViewer != null)
+        {
+            double oldZoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+            double newZoom = Math.Clamp(Math.Round(oldZoom * e.Scale, 2), 0.1, 5.0);
+            if (Math.Abs(newZoom - oldZoom) > 0.005)
+            {
+                ViewModel.ZoomLevel = newZoom;
+            }
+            e.Handled = true;
+        }
+    }
+
+    private void OnCanvasPinchEnded(object? sender, PinchEndedEventArgs e)
+    {
+        UpdateViewportOnPlacementService();
+        e.Handled = true;
+    }
+
+    private void OnCanvasDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (ViewModel == null || CanvasScrollViewer == null) return;
+
+        if (ViewModel.ActiveToolMode == Models.ToolMode.Pan || _isSpacePressed)
+        {
+            ViewModel.FitToPageDynamic(CanvasScrollViewer.Viewport.Width, CanvasScrollViewer.Viewport.Height);
+            e.Handled = true;
+        }
+        else if (ViewModel.ActiveToolMode == Models.ToolMode.Zoom)
+        {
+            ViewModel.ResetZoom();
             e.Handled = true;
         }
     }
@@ -102,8 +169,8 @@ public partial class DocumentCanvasView : UserControl
 
         var pointerPoint = e.GetCurrentPoint(this);
 
-        // Middle button click or Spacebar held => Pan mode
-        if (_isSpacePressed || pointerPoint.Properties.IsMiddleButtonPressed)
+        // Middle button click, Spacebar held, or Pan Tool mode => Pan mode
+        if (_isSpacePressed || pointerPoint.Properties.IsMiddleButtonPressed || ViewModel.ActiveToolMode == Models.ToolMode.Pan)
         {
             _isPanning = true;
             _panStart = e.GetPosition(this);
@@ -111,8 +178,29 @@ public partial class DocumentCanvasView : UserControl
             {
                 _scrollStart = new Vector(CanvasScrollViewer.Offset.X, CanvasScrollViewer.Offset.Y);
             }
+            Cursor = new Cursor(StandardCursorType.Hand);
             e.Handled = true;
             return;
+        }
+
+        // Zoom Tool mode => Click to Zoom In / Alt-Click to Zoom Out
+        if (ViewModel.ActiveToolMode == Models.ToolMode.Zoom)
+        {
+            if (pointerPoint.Properties.IsLeftButtonPressed)
+            {
+                bool isAlt = e.KeyModifiers.HasFlag(KeyModifiers.Alt);
+                if (isAlt)
+                {
+                    ViewModel.ZoomOut();
+                }
+                else
+                {
+                    ViewModel.ZoomIn();
+                }
+                UpdateViewportOnPlacementService();
+                e.Handled = true;
+                return;
+            }
         }
 
         var pos = e.GetPosition(PageElementsCanvas);
@@ -150,14 +238,32 @@ public partial class DocumentCanvasView : UserControl
             _resizeStartW = ink.Width;
             _resizeStartH = ink.Height;
             _lastPointerPosition = pos;
+            e.Pointer.Capture(this);
             e.Handled = true;
             return;
         }
 
-        // If clicking directly on the canvas background in select mode, deselect all elements
-        if (e.Source is ScrollViewer || (e.Source is Border b && b.Name == null && b.Child is Grid))
+        // Marquee Selection Drag on background
+        bool isToggle = e.KeyModifiers.HasFlag(KeyModifiers.Shift) || e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
+        if (!isToggle)
         {
-            ViewModel?.CurrentPage?.ClearSelection();
+            ViewModel.CurrentPage.ClearSelection();
+        }
+
+        if (pointerPoint.Properties.IsLeftButtonPressed)
+        {
+            _isMarqueeSelecting = true;
+            _marqueeStartPoint = pos;
+            if (MarqueeSelectionBox != null)
+            {
+                Canvas.SetLeft(MarqueeSelectionBox, pos.X);
+                Canvas.SetTop(MarqueeSelectionBox, pos.Y);
+                MarqueeSelectionBox.Width = 0;
+                MarqueeSelectionBox.Height = 0;
+                MarqueeSelectionBox.IsVisible = true;
+            }
+            e.Pointer.Capture(this);
+            e.Handled = true;
         }
     }
 
@@ -171,13 +277,23 @@ public partial class DocumentCanvasView : UserControl
             {
                 _scrollStart = new Vector(CanvasScrollViewer.Offset.X, CanvasScrollViewer.Offset.Y);
             }
+            e.Pointer.Capture(this);
             e.Handled = true;
             return;
         }
 
         if (sender is Control control && control.DataContext is ElementViewModelBase elementVm)
         {
-            ViewModel?.CurrentPage?.SelectElement(elementVm);
+            bool isToggle = e.KeyModifiers.HasFlag(KeyModifiers.Shift) || e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
+
+            if (isToggle)
+            {
+                ViewModel?.CurrentPage?.ToggleElementSelection(elementVm);
+            }
+            else if (!elementVm.IsSelected)
+            {
+                ViewModel?.CurrentPage?.SelectElement(elementVm);
+            }
 
             if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed && PageElementsCanvas != null && ViewModel != null)
             {
@@ -186,13 +302,18 @@ public partial class DocumentCanvasView : UserControl
                 ViewModel.SmartPlacement.SetContextMenuPointer(pos.X / zoom, pos.Y / zoom);
             }
 
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && ViewModel?.CurrentPage != null)
             {
                 _isDraggingElement = true;
                 _draggedElement = elementVm;
+                _draggedElements = ViewModel.CurrentPage.SelectedElements.ToList();
+                if (!_draggedElements.Contains(elementVm)) _draggedElements.Add(elementVm);
+                _dragStartPositions = _draggedElements.Select(el => (Element: el, el.X, el.Y)).ToList();
+
                 _dragStartElementX = elementVm.X;
                 _dragStartElementY = elementVm.Y;
                 _lastPointerPosition = e.GetPosition(PageElementsCanvas);
+                e.Pointer.Capture(this);
                 e.Handled = true;
             }
         }
@@ -210,6 +331,7 @@ public partial class DocumentCanvasView : UserControl
             _resizeStartW = elementVm.Width;
             _resizeStartH = elementVm.Height;
             _lastPointerPosition = e.GetPosition(PageElementsCanvas);
+            e.Pointer.Capture(this);
             e.Handled = true;
         }
     }
@@ -263,7 +385,36 @@ public partial class DocumentCanvasView : UserControl
             ViewModel.CursorCanvasY = Math.Max(0, pPos.Y / z);
         }
 
-        if (PageElementsCanvas == null || _draggedElement == null || ViewModel?.CurrentPage == null) return;
+        if (_isMarqueeSelecting && PageElementsCanvas != null && ViewModel?.CurrentPage != null)
+        {
+            var curPos = e.GetPosition(PageElementsCanvas);
+            double minX = Math.Min(_marqueeStartPoint.X, curPos.X);
+            double minY = Math.Min(_marqueeStartPoint.Y, curPos.Y);
+            double w = Math.Abs(curPos.X - _marqueeStartPoint.X);
+            double h = Math.Abs(curPos.Y - _marqueeStartPoint.Y);
+
+            if (MarqueeSelectionBox != null)
+            {
+                Canvas.SetLeft(MarqueeSelectionBox, minX);
+                Canvas.SetTop(MarqueeSelectionBox, minY);
+                MarqueeSelectionBox.Width = w;
+                MarqueeSelectionBox.Height = h;
+            }
+
+            double z = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+            var marqueeRect = new Rect(minX / z, minY / z, Math.Max(1, w / z), Math.Max(1, h / z));
+
+            var intersecting = ViewModel.CurrentPage.Elements
+                .Where(el => marqueeRect.Intersects(new Rect(el.X, el.Y, Math.Max(1, el.Width), Math.Max(1, el.Height))))
+                .ToList();
+
+            ViewModel.CurrentPage.SelectElements(intersecting);
+            e.Handled = true;
+            return;
+        }
+
+        if (PageElementsCanvas == null || ViewModel?.CurrentPage == null) return;
+        if (!_isResizingHandle && !_isDraggingElement) return;
 
         var currentPos = e.GetPosition(PageElementsCanvas);
         double deltaX = currentPos.X - _lastPointerPosition.X;
@@ -273,15 +424,20 @@ public partial class DocumentCanvasView : UserControl
         deltaX /= zoom;
         deltaY /= zoom;
 
-        if (_isResizingHandle && !string.IsNullOrEmpty(_activeResizeHandle))
+        if (_isResizingHandle && _draggedElement != null && !string.IsNullOrEmpty(_activeResizeHandle))
         {
             _draggedElement.Resize(_activeResizeHandle, deltaX, deltaY);
             _lastPointerPosition = currentPos;
+            ViewModel.CurrentPage.UpdateSelectionBoundingBox();
         }
-        else if (_isDraggingElement)
+        else if (_isDraggingElement && _draggedElements.Count > 0)
         {
-            _draggedElement.MoveBy(deltaX, deltaY, ViewModel.CurrentPage.Width, ViewModel.CurrentPage.Height);
+            foreach (var el in _draggedElements)
+            {
+                el.MoveBy(deltaX, deltaY, ViewModel.CurrentPage.Width, ViewModel.CurrentPage.Height);
+            }
             _lastPointerPosition = currentPos;
+            ViewModel.CurrentPage.UpdateSelectionBoundingBox();
         }
     }
 
@@ -292,7 +448,12 @@ public partial class DocumentCanvasView : UserControl
 
     private void OnGlobalPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        if (_isResizingHandle && _draggedElement != null)
+        if (_isMarqueeSelecting)
+        {
+            if (MarqueeSelectionBox != null) MarqueeSelectionBox.IsVisible = false;
+            _isMarqueeSelecting = false;
+        }
+        else if (_isResizingHandle && _draggedElement != null)
         {
             var el = _draggedElement;
             if (ViewModel != null && ViewModel.SnapToGrid)
@@ -313,40 +474,77 @@ public partial class DocumentCanvasView : UserControl
             {
                 ViewModel?.UndoRedo.RecordAction(
                     $"Resize {el.DisplayName}",
-                    () => { el.X = fromX; el.Y = fromY; el.Width = fromW; el.Height = fromH; },
-                    () => { el.X = toX; el.Y = toY; el.Width = toW; el.Height = toH; }
+                    () => { el.X = fromX; el.Y = fromY; el.Width = fromW; el.Height = fromH; ViewModel?.CurrentPage?.UpdateSelectionBoundingBox(); },
+                    () => { el.X = toX; el.Y = toY; el.Width = toW; el.Height = toH; ViewModel?.CurrentPage?.UpdateSelectionBoundingBox(); }
                 );
             }
         }
-        else if (_isDraggingElement && _draggedElement != null)
+        else if (_isDraggingElement && _draggedElements.Count > 0)
         {
-            var el = _draggedElement;
             if (ViewModel != null && ViewModel.SnapToGrid)
             {
                 double snap = (double)(int)ViewModel.GridSnapSize;
                 if (snap > 1)
                 {
-                    el.X = Math.Round(el.X / snap) * snap;
-                    el.Y = Math.Round(el.Y / snap) * snap;
+                    foreach (var el in _draggedElements)
+                    {
+                        el.X = Math.Round(el.X / snap) * snap;
+                        el.Y = Math.Round(el.Y / snap) * snap;
+                    }
                 }
             }
 
-            double fromX = _dragStartElementX, fromY = _dragStartElementY;
-            double toX = el.X, toY = el.Y;
-            if (Math.Abs(toX - fromX) > 0.5 || Math.Abs(toY - fromY) > 0.5)
+            var initialPositions = _dragStartPositions.ToList();
+            var finalPositions = _draggedElements.Select(el => (Element: el, el.X, el.Y)).ToList();
+
+            bool anyMoved = false;
+            for (int i = 0; i < initialPositions.Count; i++)
             {
+                if (Math.Abs(initialPositions[i].X - finalPositions[i].X) > 0.5 || Math.Abs(initialPositions[i].Y - finalPositions[i].Y) > 0.5)
+                {
+                    anyMoved = true;
+                    break;
+                }
+            }
+
+            if (anyMoved)
+            {
+                string desc = _draggedElements.Count == 1 ? $"Move {_draggedElements[0].DisplayName}" : $"Move {_draggedElements.Count} Elements";
                 ViewModel?.UndoRedo.RecordAction(
-                    $"Move {el.DisplayName}",
-                    () => { el.X = fromX; el.Y = fromY; },
-                    () => { el.X = toX; el.Y = toY; }
+                    desc,
+                    () => {
+                        foreach (var p in initialPositions) { p.Element.X = p.X; p.Element.Y = p.Y; }
+                        ViewModel?.CurrentPage?.UpdateSelectionBoundingBox();
+                    },
+                    () => {
+                        foreach (var p in finalPositions) { p.Element.X = p.X; p.Element.Y = p.Y; }
+                        ViewModel?.CurrentPage?.UpdateSelectionBoundingBox();
+                    }
                 );
             }
         }
 
+        e.Pointer.Capture(null);
         _isDraggingElement = false;
         _isResizingHandle = false;
         _activeResizeHandle = null;
         _draggedElement = null;
+        _draggedElements.Clear();
+        _dragStartPositions.Clear();
+        _isPanning = false;
+    }
+
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+    {
+        base.OnPointerCaptureLost(e);
+        if (MarqueeSelectionBox != null) MarqueeSelectionBox.IsVisible = false;
+        _isMarqueeSelecting = false;
+        _isDraggingElement = false;
+        _isResizingHandle = false;
+        _activeResizeHandle = null;
+        _draggedElement = null;
+        _draggedElements.Clear();
+        _dragStartPositions.Clear();
         _isPanning = false;
     }
 
@@ -390,6 +588,35 @@ public partial class DocumentCanvasView : UserControl
         {
             switch (e.Key)
             {
+                case Key.D0:
+                case Key.NumPad0:
+                    ViewModel.FitToPageDynamic(CanvasScrollViewer?.Viewport.Width ?? 800, CanvasScrollViewer?.Viewport.Height ?? 800);
+                    e.Handled = true;
+                    break;
+                case Key.D1:
+                case Key.NumPad1:
+                    ViewModel.ResetZoom();
+                    e.Handled = true;
+                    break;
+                case Key.D2:
+                case Key.NumPad2:
+                    ViewModel.FitToWidthDynamic(CanvasScrollViewer?.Viewport.Width ?? 800);
+                    e.Handled = true;
+                    break;
+                case Key.OemPlus:
+                case Key.Add:
+                    ViewModel.ZoomIn();
+                    e.Handled = true;
+                    break;
+                case Key.OemMinus:
+                case Key.Subtract:
+                    ViewModel.ZoomOut();
+                    e.Handled = true;
+                    break;
+                case Key.A:
+                    ViewModel.CurrentPage?.SelectAll();
+                    e.Handled = true;
+                    break;
                 case Key.C:
                     ViewModel.CopyCommand.Execute(null);
                     e.Handled = true;
@@ -482,16 +709,20 @@ public partial class DocumentCanvasView : UserControl
                     ViewModel.SetToolModeCommand.Execute("Select");
                     e.Handled = true;
                     break;
+                case Key.H:
+                    ViewModel.SetToolModeCommand.Execute("Pan");
+                    e.Handled = true;
+                    break;
+                case Key.Z:
+                    ViewModel.SetToolModeCommand.Execute("Zoom");
+                    e.Handled = true;
+                    break;
                 case Key.T:
                     ViewModel.AddTextElementCommand.Execute(null);
                     e.Handled = true;
                     break;
                 case Key.R:
                     ViewModel.AddShapeElementCommand.Execute("Rectangle");
-                    e.Handled = true;
-                    break;
-                case Key.H:
-                    ViewModel.AddInkElementCommand.Execute(true);
                     e.Handled = true;
                     break;
                 case Key.N:

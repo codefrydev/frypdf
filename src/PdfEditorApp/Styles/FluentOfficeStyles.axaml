@@ -2,45 +2,91 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <Styles.Resources>
-        <!-- Modern Fluent & Studio Color Palette -->
-        <Color x:Key="WinBgColor">#F8FAFC</Color>
-        <Color x:Key="WinPanelColor">#FFFFFF</Color>
-        <Color x:Key="WinBorderColor">#E2E8F0</Color>
-        <Color x:Key="WinBorderSubtleColor">#F1F5F9</Color>
-        <Color x:Key="WinHoverColor">#F1F5F9</Color>
-        <Color x:Key="WinActiveColor">#E2E8F0</Color>
-        <Color x:Key="WinTextColor">#0F172A</Color>
-        <Color x:Key="WinMutedColor">#64748B</Color>
-        <Color x:Key="WinSubtleColor">#94A3B8</Color>
-        <Color x:Key="WinAccentColor">#0F6CBD</Color>
-        <Color x:Key="WinAccentHoverColor">#0C599B</Color>
-        <Color x:Key="WinAccentLightColor">#EFF6FF</Color>
-        <Color x:Key="WinAccentBorderColor">#BFDBFE</Color>
-        <Color x:Key="WinDangerColor">#DC2626</Color>
-        <Color x:Key="WinDangerLightColor">#FEF2F2</Color>
-        <Color x:Key="WinDangerBorderColor">#FECACA</Color>
-        <Color x:Key="WinSuccessColor">#16A34A</Color>
-        <Color x:Key="WinSuccessLightColor">#F0FDF4</Color>
 
-        <SolidColorBrush x:Key="WinBgBrush" Color="{StaticResource WinBgColor}" />
-        <SolidColorBrush x:Key="WinPanelBrush" Color="{StaticResource WinPanelColor}" />
-        <SolidColorBrush x:Key="WinBorderBrush" Color="{StaticResource WinBorderColor}" />
-        <SolidColorBrush x:Key="WinBorderSubtleBrush" Color="{StaticResource WinBorderSubtleColor}" />
-        <SolidColorBrush x:Key="WinHoverBrush" Color="{StaticResource WinHoverColor}" />
-        <SolidColorBrush x:Key="WinActiveBrush" Color="{StaticResource WinActiveColor}" />
-        <SolidColorBrush x:Key="WinTextBrush" Color="{StaticResource WinTextColor}" />
-        <SolidColorBrush x:Key="WinMutedBrush" Color="{StaticResource WinMutedColor}" />
-        <SolidColorBrush x:Key="WinSubtleBrush" Color="{StaticResource WinSubtleColor}" />
-        <SolidColorBrush x:Key="WinAccentBrush" Color="{StaticResource WinAccentColor}" />
-        <SolidColorBrush x:Key="WinAccentHoverBrush" Color="{StaticResource WinAccentHoverColor}" />
-        <SolidColorBrush x:Key="WinAccentLightBrush" Color="{StaticResource WinAccentLightColor}" />
-        <SolidColorBrush x:Key="WinAccentBorderBrush" Color="{StaticResource WinAccentBorderColor}" />
-        <SolidColorBrush x:Key="WinDangerBrush" Color="{StaticResource WinDangerColor}" />
-        <SolidColorBrush x:Key="WinDangerLightBrush" Color="{StaticResource WinDangerLightColor}" />
-        <SolidColorBrush x:Key="WinDangerBorderBrush" Color="{StaticResource WinDangerBorderColor}" />
-        <SolidColorBrush x:Key="WinSuccessBrush" Color="{StaticResource WinSuccessColor}" />
-        <SolidColorBrush x:Key="WinSuccessLightBrush" Color="{StaticResource WinSuccessLightColor}" />
+
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="WinBgBrush" Color="#F8FAFC" />
+                    <SolidColorBrush x:Key="WinPanelBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="WinBorderBrush" Color="#E2E8F0" />
+                    <SolidColorBrush x:Key="WinBorderSubtleBrush" Color="#F1F5F9" />
+                    <SolidColorBrush x:Key="WinHoverBrush" Color="#F1F5F9" />
+                    <SolidColorBrush x:Key="WinActiveBrush" Color="#E2E8F0" />
+                    <SolidColorBrush x:Key="WinTextBrush" Color="#0F172A" />
+                    <SolidColorBrush x:Key="WinMutedBrush" Color="#64748B" />
+                    <SolidColorBrush x:Key="WinSubtleBrush" Color="#94A3B8" />
+                    <SolidColorBrush x:Key="WinAccentBrush" Color="#0F6CBD" />
+                    <SolidColorBrush x:Key="WinAccentHoverBrush" Color="#0C599B" />
+                    <SolidColorBrush x:Key="WinAccentLightBrush" Color="#EFF6FF" />
+                    <SolidColorBrush x:Key="WinAccentBorderBrush" Color="#BFDBFE" />
+                    <SolidColorBrush x:Key="WinDangerBrush" Color="#DC2626" />
+                    <SolidColorBrush x:Key="WinDangerLightBrush" Color="#FEF2F2" />
+                    <SolidColorBrush x:Key="WinDangerBorderBrush" Color="#FECACA" />
+                    <SolidColorBrush x:Key="WinSuccessBrush" Color="#16A34A" />
+                    <SolidColorBrush x:Key="WinSuccessLightBrush" Color="#F0FDF4" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="WinBgBrush" Color="#0F172A" />
+                    <SolidColorBrush x:Key="WinPanelBrush" Color="#1E293B" />
+                    <SolidColorBrush x:Key="WinBorderBrush" Color="#334155" />
+                    <SolidColorBrush x:Key="WinBorderSubtleBrush" Color="#1E293B" />
+                    <SolidColorBrush x:Key="WinHoverBrush" Color="#334155" />
+                    <SolidColorBrush x:Key="WinActiveBrush" Color="#475569" />
+                    <SolidColorBrush x:Key="WinTextBrush" Color="#F8FAFC" />
+                    <SolidColorBrush x:Key="WinMutedBrush" Color="#94A3B8" />
+                    <SolidColorBrush x:Key="WinSubtleBrush" Color="#64748B" />
+                    <SolidColorBrush x:Key="WinAccentBrush" Color="#38BDF8" />
+                    <SolidColorBrush x:Key="WinAccentHoverBrush" Color="#0EA5E9" />
+                    <SolidColorBrush x:Key="WinAccentLightBrush" Color="#0C4A6E" />
+                    <SolidColorBrush x:Key="WinAccentBorderBrush" Color="#0284C7" />
+                    <SolidColorBrush x:Key="WinDangerBrush" Color="#EF4444" />
+                    <SolidColorBrush x:Key="WinDangerLightBrush" Color="#450A0A" />
+                    <SolidColorBrush x:Key="WinDangerBorderBrush" Color="#7F1D1D" />
+                    <SolidColorBrush x:Key="WinSuccessBrush" Color="#22C55E" />
+                    <SolidColorBrush x:Key="WinSuccessLightBrush" Color="#052E16" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <Color x:Key="WinBgColor">#F8FAFC</Color>
+            <Color x:Key="WinPanelColor">#FFFFFF</Color>
+            <Color x:Key="WinBorderColor">#E2E8F0</Color>
+            <Color x:Key="WinBorderSubtleColor">#F1F5F9</Color>
+            <Color x:Key="WinHoverColor">#F1F5F9</Color>
+            <Color x:Key="WinActiveColor">#E2E8F0</Color>
+            <Color x:Key="WinTextColor">#0F172A</Color>
+            <Color x:Key="WinMutedColor">#64748B</Color>
+            <Color x:Key="WinSubtleColor">#94A3B8</Color>
+            <Color x:Key="WinAccentColor">#0F6CBD</Color>
+            <Color x:Key="WinAccentHoverColor">#0C599B</Color>
+            <Color x:Key="WinAccentLightColor">#EFF6FF</Color>
+            <Color x:Key="WinAccentBorderColor">#BFDBFE</Color>
+            <Color x:Key="WinDangerColor">#DC2626</Color>
+            <Color x:Key="WinDangerLightColor">#FEF2F2</Color>
+            <Color x:Key="WinDangerBorderColor">#FECACA</Color>
+            <Color x:Key="WinSuccessColor">#16A34A</Color>
+            <Color x:Key="WinSuccessLightColor">#F0FDF4</Color>
+
+            <SolidColorBrush x:Key="WinBgBrush" Color="{StaticResource WinBgColor}" />
+            <SolidColorBrush x:Key="WinPanelBrush" Color="{StaticResource WinPanelColor}" />
+            <SolidColorBrush x:Key="WinBorderBrush" Color="{StaticResource WinBorderColor}" />
+            <SolidColorBrush x:Key="WinBorderSubtleBrush" Color="{StaticResource WinBorderSubtleColor}" />
+            <SolidColorBrush x:Key="WinHoverBrush" Color="{StaticResource WinHoverColor}" />
+            <SolidColorBrush x:Key="WinActiveBrush" Color="{StaticResource WinActiveColor}" />
+            <SolidColorBrush x:Key="WinTextBrush" Color="{StaticResource WinTextColor}" />
+            <SolidColorBrush x:Key="WinMutedBrush" Color="{StaticResource WinMutedColor}" />
+            <SolidColorBrush x:Key="WinSubtleBrush" Color="{StaticResource WinSubtleColor}" />
+            <SolidColorBrush x:Key="WinAccentBrush" Color="{StaticResource WinAccentColor}" />
+            <SolidColorBrush x:Key="WinAccentHoverBrush" Color="{StaticResource WinAccentHoverColor}" />
+            <SolidColorBrush x:Key="WinAccentLightBrush" Color="{StaticResource WinAccentLightColor}" />
+            <SolidColorBrush x:Key="WinAccentBorderBrush" Color="{StaticResource WinAccentBorderColor}" />
+            <SolidColorBrush x:Key="WinDangerBrush" Color="{StaticResource WinDangerColor}" />
+            <SolidColorBrush x:Key="WinDangerLightBrush" Color="{StaticResource WinDangerLightColor}" />
+            <SolidColorBrush x:Key="WinDangerBorderBrush" Color="{StaticResource WinDangerBorderColor}" />
+            <SolidColorBrush x:Key="WinSuccessBrush" Color="{StaticResource WinSuccessColor}" />
+            <SolidColorBrush x:Key="WinSuccessLightBrush" Color="{StaticResource WinSuccessLightColor}" />
+        </ResourceDictionary>
     </Styles.Resources>
 
     <!-- Global Application Typography & Controls Default Polish -->

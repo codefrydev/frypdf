@@ -105,7 +105,8 @@
               RowDefinitions="Auto,Auto,*,Auto">
 
             <!-- 1. Top Modern Title Bar -->
-            <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" Height="44" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="14,0">
+            <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" Height="44" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="14,0"
+                    IsVisible="{Binding !IsPresentationMode}">
                 <Grid ColumnDefinitions="Auto,*,Auto">
 
                     <!-- Left: App Icon, Brand & Document Title -->
@@ -203,18 +204,20 @@
             </Border>
 
             <!-- 2. Ribbon Menu & Toolbars -->
-            <views:RibbonView Grid.Row="1" />
+            <views:RibbonView Grid.Row="1" IsVisible="{Binding !IsPresentationMode}" />
 
             <!-- 3. Main Workspace: Left Thumbnails + Center Document Canvas + Right Inspector -->
             <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto">
                 <!-- Left: Thumbnails Sidebar -->
-                <views:ThumbnailSidebarView Grid.Column="0" />
+                <views:ThumbnailSidebarView Grid.Column="0" IsVisible="{Binding !IsPresentationMode}" />
 
                 <!-- Center: Interactive PDF Document Canvas -->
                 <views:DocumentCanvasView Grid.Column="1" />
 
                 <!-- Right: Format & Properties Inspector -->
-                <views:InspectorSidebarView Grid.Column="2" DataContext="{Binding Inspector}" />
+                <Panel Grid.Column="2" IsVisible="{Binding !IsPresentationMode}">
+                    <views:InspectorSidebarView DataContext="{Binding Inspector}" />
+                </Panel>
             </Grid>
 
             <!-- 4. Bottom Status Bar -->

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using QRCoder;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
 
@@ -23,9 +24,15 @@ public class PdfExportService : IPdfExportService
         return document.GeneratePdf();
     }
 
+    public Task<byte[]> ExportToBytesAsync(PdfDocumentModel model)
+    {
+        return Task.Run(() => GeneratePdfBytes(model));
+    }
+
     public async Task ExportToFileAsync(PdfDocumentModel model, string filePath)
     {
-        var bytes = GeneratePdfBytes(model);
+        // Generate on background thread using an immutable model clone or bytes
+        byte[] bytes = await ExportToBytesAsync(model);
         await File.WriteAllBytesAsync(filePath, bytes);
     }
 }
@@ -69,63 +76,55 @@ internal class QuestPdfDocumentWrapper : IDocument
         {
             container.Page(page =>
             {
-                var pageSize = pageModel.Format switch
-                {
-                    PageFormat.A4 => PageSizes.A4,
-                    PageFormat.Letter => PageSizes.Letter,
-                    PageFormat.Legal => PageSizes.Legal,
-                    PageFormat.Executive => PageSizes.Executive,
-                    PageFormat.A3 => PageSizes.A3,
-                    PageFormat.A5 => PageSizes.A5,
-                    _ => PageSizes.A4
-                };
+                float pageW = (float)pageModel.Width;
+                float pageH = (float)pageModel.Height;
 
-                if (pageModel.Orientation == PageOrientation.Landscape)
-                {
-                    pageSize = pageSize.Landscape();
-                }
+                if (pageW <= 0) pageW = 595.28f; // Standard A4 points
+                if (pageH <= 0) pageH = 841.89f;
 
-                page.Size(pageSize);
-                page.Margin(36);
+                page.Size(new PageSize(pageW, pageH));
+                page.Margin(0);
                 page.PageColor(pageModel.BackgroundColorHex);
                 page.DefaultTextStyle(x => x.FontFamily("Arial").FontSize(10).FontColor("#201F1E"));
 
-                // Header (3-zone: Left, Center, Right)
-                if (pageModel.ShowHeaderFooter && (!string.IsNullOrEmpty(pageModel.HeaderLeft) || !string.IsNullOrEmpty(pageModel.HeaderCenter) || !string.IsNullOrEmpty(pageModel.HeaderRight)))
+                // Absolute Layout Content via Layers
+                page.Content().Layers(layers =>
                 {
-                    page.Header().PaddingBottom(12).Row(row =>
+                    // Primary Base Layer
+                    layers.PrimaryLayer().Element(c => c.Width(pageW).Height(pageH));
+
+                    // Header Zone (if enabled)
+                    if (pageModel.ShowHeaderFooter && (!string.IsNullOrEmpty(pageModel.HeaderLeft) || !string.IsNullOrEmpty(pageModel.HeaderCenter) || !string.IsNullOrEmpty(pageModel.HeaderRight)))
                     {
-                        if (!string.IsNullOrEmpty(pageModel.HeaderLeft))
+                        layers.Layer().PaddingLeft(36).PaddingTop(18).Width(pageW - 72).Height(24).Row(row =>
                         {
-                            row.RelativeItem().Text(pageModel.HeaderLeft).FontSize(8).FontColor(Colors.Grey.Medium);
-                        }
-                        if (!string.IsNullOrEmpty(pageModel.HeaderCenter))
-                        {
-                            row.RelativeItem().AlignCenter().Text(pageModel.HeaderCenter).FontSize(8).FontColor(Colors.Grey.Medium);
-                        }
-                        if (!string.IsNullOrEmpty(pageModel.HeaderRight))
-                        {
-                            row.RelativeItem().AlignRight().Text(pageModel.HeaderRight).FontSize(8).FontColor(Colors.Grey.Medium);
-                        }
-                    });
-                }
+                            if (!string.IsNullOrEmpty(pageModel.HeaderLeft))
+                                row.RelativeItem().Text(pageModel.HeaderLeft).FontSize(8).FontColor(Colors.Grey.Medium);
+                            if (!string.IsNullOrEmpty(pageModel.HeaderCenter))
+                                row.RelativeItem().AlignCenter().Text(pageModel.HeaderCenter).FontSize(8).FontColor(Colors.Grey.Medium);
+                            if (!string.IsNullOrEmpty(pageModel.HeaderRight))
+                                row.RelativeItem().AlignRight().Text(pageModel.HeaderRight).FontSize(8).FontColor(Colors.Grey.Medium);
+                        });
+                    }
 
-                // Watermark
-                if (pageModel.Watermark != null && !string.IsNullOrWhiteSpace(pageModel.Watermark.Text))
-                {
-                    page.Foreground().AlignCenter().AlignMiddle().Rotate((float)pageModel.Watermark.Angle)
-                        .Text(pageModel.Watermark.Text)
-                        .FontSize((float)pageModel.Watermark.FontSize)
-                        .FontColor(pageModel.Watermark.ColorHex)
-                        .Bold();
-                }
+                    // Watermark (if present)
+                    if (pageModel.Watermark != null && !string.IsNullOrWhiteSpace(pageModel.Watermark.Text))
+                    {
+                        layers.Layer().AlignCenter().AlignMiddle().Rotate((float)pageModel.Watermark.Angle)
+                            .Text(pageModel.Watermark.Text)
+                            .FontSize((float)pageModel.Watermark.FontSize)
+                            .FontColor(pageModel.Watermark.ColorHex)
+                            .Bold();
+                    }
 
-                // Content Elements ordered by ZIndex layering, then Y and X positions
-                page.Content().Column(col =>
-                {
-                    col.Spacing(12);
+                    // Elements ordered by ZIndex
+                    var sortedElements = pageModel.Elements
+                        .OrderBy(e => e.ZIndex)
+                        .ThenBy(e => e.Y)
+                        .ThenBy(e => e.X)
+                        .ToList();
 
-                    var sortedElements = pageModel.Elements.OrderBy(e => e.ZIndex).ThenBy(e => e.Y).ThenBy(e => e.X).ToList();
+                    var redactionBoxes = pageModel.Elements.OfType<PdfRedactionElement>().ToList();
 
                     foreach (var element in sortedElements)
                     {
@@ -133,313 +132,408 @@ internal class QuestPdfDocumentWrapper : IDocument
                         {
                             continue;
                         }
-                        ComposeElement(col, element);
+
+                        float elX = (float)element.X;
+                        float elY = (float)element.Y;
+                        float elW = (float)Math.Max(1, element.Width);
+                        float elH = (float)Math.Max(1, element.Height);
+
+                        // Permanent Redaction Sanitization: Strip underlying text/images completely covered by a redaction box
+                        if (element is PdfTextElement or PdfImageElement)
+                        {
+                            bool isFullyCovered = redactionBoxes.Any(r =>
+                                r.X <= elX + 1 &&
+                                r.Y <= elY + 1 &&
+                                (r.X + r.Width) >= (elX + elW - 1) &&
+                                (r.Y + r.Height) >= (elY + elH - 1));
+
+                            if (isFullyCovered)
+                            {
+                                continue;
+                            }
+                        }
+
+                        layers.Layer().Element(layerContainer =>
+                        {
+                            var c = layerContainer
+                                .PaddingLeft(elX)
+                                .PaddingTop(elY)
+                                .Width(elW)
+                                .Height(elH);
+
+                            if (element.Rotation != 0)
+                            {
+                                c = c.Rotate((float)element.Rotation);
+                            }
+
+                            ComposeElement(c, element);
+                        });
+                    }
+
+                    // Footer Zone (if enabled)
+                    if (pageModel.ShowHeaderFooter)
+                    {
+                        layers.Layer().PaddingLeft(36).PaddingTop(pageH - 32).Width(pageW - 72).Height(24).Row(row =>
+                        {
+                            row.RelativeItem().Text(pageModel.FooterLeft ?? "CONFIDENTIAL & PROPRIETARY").FontSize(8).FontColor(Colors.Grey.Medium);
+                            if (!string.IsNullOrEmpty(pageModel.FooterCenter))
+                            {
+                                row.RelativeItem().AlignCenter().Text(pageModel.FooterCenter).FontSize(8).FontColor(Colors.Grey.Medium);
+                            }
+                            row.RelativeItem().AlignRight().Text(text =>
+                            {
+                                text.DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Grey.Medium));
+                                text.Span("Page ");
+                                text.CurrentPageNumber();
+                                text.Span(" of ");
+                                text.TotalPages();
+                            });
+                        });
                     }
                 });
-
-                // Footer (3-zone: Left, Center, Right)
-                if (pageModel.ShowHeaderFooter)
-                {
-                    page.Footer().PaddingTop(12).Row(row =>
-                    {
-                        row.RelativeItem().Text(pageModel.FooterLeft ?? "CONFIDENTIAL & PROPRIETARY").FontSize(8).FontColor(Colors.Grey.Medium);
-                        if (!string.IsNullOrEmpty(pageModel.FooterCenter))
-                        {
-                            row.RelativeItem().AlignCenter().Text(pageModel.FooterCenter).FontSize(8).FontColor(Colors.Grey.Medium);
-                        }
-                        row.RelativeItem().AlignRight().Text(text =>
-                        {
-                            text.DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Grey.Medium));
-                            text.Span("Page ");
-                            text.CurrentPageNumber();
-                            text.Span(" of ");
-                            text.TotalPages();
-                        });
-                    });
-                }
             });
         }
     }
 
-    private void ComposeElement(ColumnDescriptor col, PdfElementBase element)
+    private void ComposeElement(IContainer container, PdfElementBase element)
     {
         switch (element)
         {
             case PdfTextElement textEl:
-                col.Item().Padding((float)textEl.Padding).Element(c =>
-                {
-                    var container = c;
-                    if (textEl.BorderThickness > 0 && textEl.BorderColorHex != "#00000000")
-                    {
-                        container = container.Border((float)textEl.BorderThickness).BorderColor(textEl.BorderColorHex).Padding(6);
-                    }
-
-                    if (textEl.BackgroundColorHex != "#00000000")
-                    {
-                        container = container.Background(textEl.BackgroundColorHex);
-                    }
-
-                    container.Text(text =>
-                    {
-                        if (textEl.Alignment == TextAlignmentMode.Center) text.AlignCenter();
-                        else if (textEl.Alignment == TextAlignmentMode.Right) text.AlignRight();
-                        else if (textEl.Alignment == TextAlignmentMode.Justify) text.Justify();
-
-                        var span = text.Span(textEl.Text)
-                            .FontSize((float)textEl.FontSize)
-                            .FontColor(textEl.TextColorHex);
-
-                        if (textEl.IsBold) span.Bold();
-                        if (textEl.IsItalic) span.Italic();
-                        if (textEl.IsUnderline) span.Underline();
-                        if (textEl.IsStrikethrough) span.Strikethrough();
-                    });
-                });
+                ComposeText(container, textEl);
                 break;
 
             case PdfShapeElement shapeEl:
-                // Skip full-page decorative border frames from taking up vertical column height
-                if (shapeEl.Height > 300 && (shapeEl.FillColorHex == "#00000000" || shapeEl.FillColorHex.StartsWith("#00")))
-                {
-                    break;
-                }
-
-                col.Item().Element(c =>
-                {
-                    var container = c;
-                    if (shapeEl.Height <= 250)
-                    {
-                        container = container.Height((float)Math.Max(shapeEl.Height, 20));
-                    }
-
-                    container = container.Background(shapeEl.FillColorHex)
-                                         .Border((float)shapeEl.StrokeThickness)
-                                         .BorderColor(shapeEl.StrokeColorHex)
-                                         .CornerRadius((float)shapeEl.CornerRadius);
-
-                    if (!string.IsNullOrEmpty(shapeEl.Label))
-                    {
-                        container.Padding(6).AlignCenter().AlignMiddle().Text(shapeEl.Label)
-                            .FontSize((float)shapeEl.LabelFontSize)
-                            .FontColor(shapeEl.LabelColorHex ?? "#201F1E")
-                            .Bold();
-                    }
-                });
+                ComposeShape(container, shapeEl);
                 break;
 
             case PdfDividerElement divEl:
-                col.Item().LineHorizontal((float)divEl.Thickness).LineColor(divEl.ColorHex);
+                container.AlignMiddle().LineHorizontal((float)divEl.Thickness).LineColor(divEl.ColorHex);
                 break;
 
             case PdfTableElement tableEl:
-                col.Item().Table(table =>
-                {
-                    table.ColumnsDefinition(columns =>
-                    {
-                        for (int i = 0; i < tableEl.Headers.Count; i++)
-                        {
-                            columns.RelativeColumn();
-                        }
-                    });
-
-                    // Headers
-                    table.Header(header =>
-                    {
-                        foreach (var h in tableEl.Headers)
-                        {
-                            header.Cell().Background(tableEl.HeaderBackgroundHex).Padding(6).Text(h)
-                                .FontColor(tableEl.HeaderTextHex)
-                                .Bold()
-                                .FontSize(9);
-                        }
-                    });
-
-                    // Rows
-                    int rowIndex = 0;
-                    foreach (var row in tableEl.Rows)
-                    {
-                        var bg = (rowIndex % 2 == 1) ? tableEl.AlternateRowBackgroundHex : "#FFFFFF";
-                        foreach (var cellText in row)
-                        {
-                            table.Cell().Background(bg).BorderBottom(0.5f).BorderColor(tableEl.BorderColorHex).Padding(5).Text(cellText)
-                                .FontSize(9);
-                        }
-                        rowIndex++;
-                    }
-                });
+                ComposeTable(container, tableEl);
                 break;
 
             case PdfChartElement chartEl:
-                col.Item().Border(1).BorderColor(chartEl.BorderColorHex).Background(chartEl.BackgroundColorHex).Padding(10).Column(chartCol =>
-                {
-                    chartCol.Item().AlignCenter().Text($"{chartEl.Title} ({chartEl.ChartType})").FontSize(9.5f).Bold().FontColor(Colors.Grey.Darken3);
-
-                    if (chartEl.ChartType == ChartType.HorizontalBar)
-                    {
-                        chartCol.Item().PaddingTop(8).Column(hCol =>
-                        {
-                            hCol.Spacing(4);
-                            for (int i = 0; i < chartEl.Categories.Count; i++)
-                            {
-                                var idx = i;
-                                var cat = chartEl.Categories[idx];
-                                var valLabel = idx < chartEl.ValueLabels.Count ? chartEl.ValueLabels[idx] : "";
-                                var barColor = idx < chartEl.BarColorsHex.Count ? chartEl.BarColorsHex[idx] : "#0F6CBD";
-                                var val = idx < chartEl.Values.Count ? (float)chartEl.Values[idx] : 1f;
-
-                                hCol.Item().Row(hRow =>
-                                {
-                                    hRow.AutoItem().Width(40).Text(cat).FontSize(8).FontColor(Colors.Grey.Darken2);
-                                    hRow.RelativeItem().Height(10).Background(Colors.Grey.Lighten3).Row(progRow =>
-                                    {
-                                        progRow.RelativeItem(Math.Min(10f, Math.Max(0.5f, val))).Background(barColor).CornerRadius(2);
-                                        progRow.RelativeItem(Math.Max(0.1f, 10f - val));
-                                    });
-                                    hRow.AutoItem().PaddingLeft(6).Text(valLabel).FontSize(8).Bold();
-                                });
-                            }
-                        });
-                    }
-                    else if (chartEl.ChartType == ChartType.DonutPie)
-                    {
-                        chartCol.Item().PaddingTop(8).Row(pRow =>
-                        {
-                            pRow.AutoItem().Width(60).Height(60).Border(6).BorderColor(chartEl.BarColorsHex.FirstOrDefault() ?? "#0F6CBD").Background(Colors.Grey.Lighten4).AlignCenter().AlignMiddle().Text("DONUT").FontSize(8).Bold();
-                            pRow.RelativeItem().PaddingLeft(12).Column(legendCol =>
-                            {
-                                legendCol.Spacing(3);
-                                for (int i = 0; i < chartEl.Categories.Count; i++)
-                                {
-                                    var idx = i;
-                                    var cat = chartEl.Categories[idx];
-                                    var valLabel = idx < chartEl.ValueLabels.Count ? chartEl.ValueLabels[idx] : "";
-                                    var barColor = idx < chartEl.BarColorsHex.Count ? chartEl.BarColorsHex[idx] : "#0F6CBD";
-                                    legendCol.Item().Row(lr =>
-                                    {
-                                        lr.AutoItem().Width(8).Height(8).Background(barColor).CornerRadius(2);
-                                        lr.RelativeItem().PaddingLeft(6).Text($"{cat}: {valLabel}").FontSize(8).FontColor(Colors.Grey.Darken2);
-                                    });
-                                }
-                            });
-                        });
-                    }
-                    else
-                    {
-                        chartCol.Item().PaddingTop(8).Row(chartRow =>
-                        {
-                            for (int i = 0; i < chartEl.Categories.Count; i++)
-                            {
-                                var idx = i;
-                                var cat = chartEl.Categories[idx];
-                                var valLabel = idx < chartEl.ValueLabels.Count ? chartEl.ValueLabels[idx] : "";
-                                var barColor = idx < chartEl.BarColorsHex.Count ? chartEl.BarColorsHex[idx] : "#0F6CBD";
-                                var val = idx < chartEl.Values.Count ? (float)chartEl.Values[idx] : 1f;
-
-                                chartRow.RelativeItem().PaddingHorizontal(4).Column(barCol =>
-                                {
-                                    barCol.Item().AlignCenter().Text(valLabel).FontSize(8).Bold();
-                                    barCol.Item().Height(val * 20).Background(barColor).CornerRadius(2);
-                                    barCol.Item().PaddingTop(2).AlignCenter().Text(cat).FontSize(8).FontColor(Colors.Grey.Darken1);
-                                });
-                            }
-                        });
-                    }
-                });
+                ComposeChart(container, chartEl);
                 break;
 
             case PdfImageElement imgEl:
-                if (!string.IsNullOrEmpty(imgEl.ImagePath) && File.Exists(imgEl.ImagePath))
-                {
-                    col.Item().Image(imgEl.ImagePath).FitArea();
-                }
-                else
-                {
-                    col.Item().Height((float)imgEl.Height).Border(1).BorderColor(imgEl.BorderColorHex).Background("#F3F2F1").AlignCenter().AlignMiddle()
-                        .Text(imgEl.AltText).FontSize(11).FontColor(Colors.Grey.Medium);
-                }
-                break;
-
-            case PdfFormFieldElement formEl:
-                col.Item().Border(1).BorderColor(formEl.BorderColorHex).Background(formEl.BackgroundColorHex).Padding(8).Column(fCol =>
-                {
-                    fCol.Item().Row(r =>
-                    {
-                        r.RelativeItem().Text(formEl.Label).FontSize(9).Bold().FontColor(Colors.Grey.Darken3);
-                        if (formEl.IsRequired)
-                        {
-                            r.AutoItem().Text("* Required").FontSize(7.5f).FontColor(Colors.Red.Medium);
-                        }
-                    });
-
-                    if (formEl.FieldType == FormFieldType.Checkbox)
-                    {
-                        fCol.Item().PaddingTop(4).Row(r =>
-                        {
-                            r.AutoItem().Width(12).Height(12).Border(1).BorderColor(Colors.Grey.Darken2).Background(formEl.IsChecked ? Colors.Blue.Lighten4 : Colors.White);
-                            r.RelativeItem().PaddingLeft(6).Text(formEl.IsChecked ? "[X] Checked" : "[ ] Unchecked").FontSize(8.5f);
-                        });
-                    }
-                    else if (formEl.FieldType == FormFieldType.Signature)
-                    {
-                        fCol.Item().PaddingTop(6).BorderBottom(1).BorderColor(Colors.Grey.Medium).PaddingBottom(4).Text(string.IsNullOrEmpty(formEl.Value) ? "Digitally Verified Signer Placeholder" : formEl.Value).FontSize(10).Italic().FontColor(Colors.Blue.Darken2);
-                    }
-                    else
-                    {
-                        fCol.Item().PaddingTop(4).Border(1).BorderColor(Colors.Grey.Lighten1).Background(Colors.White).Padding(4).Text(string.IsNullOrEmpty(formEl.Value) ? formEl.Placeholder : formEl.Value).FontSize(9).FontColor(string.IsNullOrEmpty(formEl.Value) ? Colors.Grey.Medium : Colors.Black);
-                    }
-                });
+                ComposeImage(container, imgEl);
                 break;
 
             case PdfQrCodeElement qrEl:
-                col.Item().Border(1).BorderColor(Colors.Grey.Lighten2).Background(Colors.White).Padding(8).Column(qCol =>
-                {
-                    qCol.Item().AlignCenter().Width(70).Height(70).Border(2).BorderColor(qrEl.DarkColorHex).Background(Colors.Grey.Lighten4).AlignCenter().AlignMiddle().Text("QR CODE").FontSize(8).Bold();
-                    qCol.Item().PaddingTop(4).AlignCenter().Text(qrEl.Label).FontSize(7.5f).Bold().FontColor(Colors.Grey.Darken2);
-                    qCol.Item().AlignCenter().Text(qrEl.Content).FontSize(6.5f).FontColor(Colors.Blue.Darken2);
-                });
+                ComposeQrCode(container, qrEl);
                 break;
 
             case PdfBarcodeElement barEl:
-                col.Item().Border(1).BorderColor(Colors.Grey.Lighten2).Background(Colors.White).Padding(6).Column(bCol =>
-                {
-                    bCol.Item().AlignCenter().Height(24).Background(Colors.Grey.Lighten3).AlignCenter().AlignMiddle().Text("|| | ||| | || |||| | |||").FontSize(14).Bold().FontColor(barEl.BarColorHex);
-                    if (barEl.ShowText)
-                    {
-                        bCol.Item().PaddingTop(2).AlignCenter().Text(barEl.CodeValue).FontSize(8).FontColor(Colors.Grey.Darken3);
-                    }
-                });
+                ComposeBarcode(container, barEl);
+                break;
+
+            case PdfFormFieldElement formEl:
+                ComposeFormField(container, formEl);
                 break;
 
             case PdfRedactionElement redEl:
-                col.Item().Background(redEl.FillColorHex).Border((float)redEl.BorderThickness).BorderColor(redEl.BorderColorHex).Padding(6).AlignCenter().AlignMiddle()
+                container.Background(redEl.FillColorHex).Border((float)redEl.BorderThickness).BorderColor(redEl.BorderColorHex).Padding(4).AlignCenter().AlignMiddle()
                     .Text(redEl.ShowOverlayText ? redEl.ExemptionCode : "").FontSize(8.5f).Bold().FontColor(redEl.TextColorHex);
                 break;
 
             case PdfInkElement inkEl:
-                col.Item().Height((float)inkEl.StrokeThickness).Background(inkEl.StrokeColorHex);
+                container.Background(inkEl.StrokeColorHex);
                 break;
 
             case PdfStickyNoteElement noteEl:
-                col.Item().Border(1).BorderColor(noteEl.BorderColorHex).Background(noteEl.ColorHex).Padding(8).Column(nCol =>
-                {
-                    nCol.Item().Row(r =>
-                    {
-                        r.RelativeItem().Text($"📌 {noteEl.Author}").FontSize(8.5f).Bold().FontColor("#78350F");
-                        r.AutoItem().Text(noteEl.Timestamp).FontSize(7.5f).FontColor("#92400E");
-                    });
-                    nCol.Item().PaddingTop(4).Text(noteEl.NoteText).FontSize(8.5f).FontColor("#78350F");
-                    nCol.Item().PaddingTop(4).Text($"Status: {noteEl.Status}").FontSize(7.5f).Bold().FontColor("#B45309");
-                });
+                ComposeStickyNote(container, noteEl);
                 break;
 
             case PdfMeasurementElement measEl:
-                col.Item().PaddingVertical(4).Row(mRow =>
+                container.PaddingVertical(2).Row(mRow =>
                 {
-                    mRow.AutoItem().Text("|").FontSize(10).Bold().FontColor(measEl.StrokeColorHex);
+                    mRow.AutoItem().Text("|").FontSize(9).Bold().FontColor(measEl.StrokeColorHex);
                     mRow.RelativeItem().BorderBottom((float)measEl.StrokeThickness).BorderColor(measEl.StrokeColorHex).PaddingBottom(2).AlignCenter().Text(measEl.GetFormattedDistance()).FontSize((float)measEl.FontSize).Bold().FontColor(measEl.StrokeColorHex);
-                    mRow.AutoItem().Text("|").FontSize(10).Bold().FontColor(measEl.StrokeColorHex);
+                    mRow.AutoItem().Text("|").FontSize(9).Bold().FontColor(measEl.StrokeColorHex);
                 });
                 break;
         }
+    }
+
+    private void ComposeText(IContainer container, PdfTextElement textEl)
+    {
+        var target = container;
+
+        if (textEl.CornerRadius > 0)
+        {
+            target = target.CornerRadius((float)textEl.CornerRadius);
+        }
+
+        if (textEl.BorderThickness > 0 && textEl.BorderColorHex != "#00000000" && !textEl.BorderColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+        {
+            target = target.Border((float)textEl.BorderThickness).BorderColor(textEl.BorderColorHex);
+        }
+
+        if (textEl.BackgroundColorHex != "#00000000" && !textEl.BackgroundColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+        {
+            target = target.Background(textEl.BackgroundColorHex);
+        }
+
+        target.Padding((float)textEl.Padding).Text(text =>
+        {
+            if (textEl.Alignment == TextAlignmentMode.Center) text.AlignCenter();
+            else if (textEl.Alignment == TextAlignmentMode.Right) text.AlignRight();
+            else if (textEl.Alignment == TextAlignmentMode.Justify) text.Justify();
+
+            var span = text.Span(textEl.Text ?? "")
+                .FontFamily(textEl.FontFamily ?? "Arial")
+                .FontSize((float)textEl.FontSize)
+                .FontColor(textEl.TextColorHex);
+
+            if (textEl.LineHeight > 0.1) span.LineHeight((float)textEl.LineHeight);
+            if (textEl.IsBold) span.Bold();
+            if (textEl.IsItalic) span.Italic();
+            if (textEl.IsUnderline) span.Underline();
+            if (textEl.IsStrikethrough) span.Strikethrough();
+        });
+    }
+
+    private void ComposeShape(IContainer container, PdfShapeElement shapeEl)
+    {
+        var target = container;
+
+        if (shapeEl.ShapeType == ShapeType.Circle)
+        {
+            target = target.CornerRadius((float)Math.Max(shapeEl.Width, shapeEl.Height) / 2);
+        }
+        else if (shapeEl.CornerRadius > 0)
+        {
+            target = target.CornerRadius((float)shapeEl.CornerRadius);
+        }
+
+        if (!string.IsNullOrEmpty(shapeEl.FillColorHex) && shapeEl.FillColorHex != "#00000000" && !shapeEl.FillColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+        {
+            target = target.Background(shapeEl.FillColorHex);
+        }
+
+        if (shapeEl.StrokeThickness > 0 && !string.IsNullOrEmpty(shapeEl.StrokeColorHex) && shapeEl.StrokeColorHex != "#00000000" && !shapeEl.StrokeColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+        {
+            target = target.Border((float)shapeEl.StrokeThickness).BorderColor(shapeEl.StrokeColorHex);
+        }
+
+        if (!string.IsNullOrEmpty(shapeEl.Label))
+        {
+            target.Padding(4).AlignCenter().AlignMiddle().Text(shapeEl.Label)
+                .FontSize((float)shapeEl.LabelFontSize)
+                .FontColor(shapeEl.LabelColorHex ?? "#201F1E")
+                .Bold();
+        }
+    }
+
+    private void ComposeTable(IContainer container, PdfTableElement tableEl)
+    {
+        container.Border(1).BorderColor(tableEl.BorderColorHex).Table(table =>
+        {
+            table.ColumnsDefinition(columns =>
+            {
+                for (int i = 0; i < Math.Max(1, tableEl.Headers.Count); i++)
+                {
+                    columns.RelativeColumn();
+                }
+            });
+
+            // Headers
+            if (tableEl.Headers.Count > 0)
+            {
+                table.Header(header =>
+                {
+                    foreach (var h in tableEl.Headers)
+                    {
+                        header.Cell().Background(tableEl.HeaderBackgroundHex).Padding(5).Text(h)
+                            .FontColor(tableEl.HeaderTextHex)
+                            .Bold()
+                            .FontSize(8.5f);
+                    }
+                });
+            }
+
+            // Rows
+            int rowIndex = 0;
+            foreach (var row in tableEl.Rows)
+            {
+                var bg = (rowIndex % 2 == 1) ? tableEl.AlternateRowBackgroundHex : "#FFFFFF";
+                foreach (var cellText in row)
+                {
+                    table.Cell().Background(bg).BorderBottom(0.5f).BorderColor(tableEl.BorderColorHex).Padding(4).Text(cellText)
+                        .FontSize(8);
+                }
+                rowIndex++;
+            }
+        });
+    }
+
+    private void ComposeChart(IContainer container, PdfChartElement chartEl)
+    {
+        container.Border(1).BorderColor(chartEl.BorderColorHex).Background(chartEl.BackgroundColorHex).Padding(8).Column(chartCol =>
+        {
+            chartCol.Item().AlignCenter().Text($"{chartEl.Title}").FontSize(9f).Bold().FontColor(Colors.Grey.Darken3);
+
+            if (chartEl.ChartType == ChartType.HorizontalBar)
+            {
+                chartCol.Item().PaddingTop(6).Column(hCol =>
+                {
+                    hCol.Spacing(3);
+                    for (int i = 0; i < chartEl.Categories.Count; i++)
+                    {
+                        var idx = i;
+                        var cat = chartEl.Categories[idx];
+                        var valLabel = idx < chartEl.ValueLabels.Count ? chartEl.ValueLabels[idx] : "";
+                        var barColor = idx < chartEl.BarColorsHex.Count ? chartEl.BarColorsHex[idx] : "#0F6CBD";
+                        var val = idx < chartEl.Values.Count ? (float)chartEl.Values[idx] : 1f;
+
+                        hCol.Item().Row(hRow =>
+                        {
+                            hRow.AutoItem().Width(40).Text(cat).FontSize(7.5f).FontColor(Colors.Grey.Darken2);
+                            hRow.RelativeItem().Height(8).Background(Colors.Grey.Lighten3).Row(progRow =>
+                            {
+                                progRow.RelativeItem(Math.Min(10f, Math.Max(0.5f, val))).Background(barColor).CornerRadius(2);
+                                progRow.RelativeItem(Math.Max(0.1f, 10f - val));
+                            });
+                            hRow.AutoItem().PaddingLeft(4).Text(valLabel).FontSize(7.5f).Bold();
+                        });
+                    }
+                });
+            }
+            else
+            {
+                chartCol.Item().PaddingTop(6).Row(chartRow =>
+                {
+                    for (int i = 0; i < chartEl.Categories.Count; i++)
+                    {
+                        var idx = i;
+                        var cat = chartEl.Categories[idx];
+                        var valLabel = idx < chartEl.ValueLabels.Count ? chartEl.ValueLabels[idx] : "";
+                        var barColor = idx < chartEl.BarColorsHex.Count ? chartEl.BarColorsHex[idx] : "#0F6CBD";
+                        var val = idx < chartEl.Values.Count ? (float)chartEl.Values[idx] : 1f;
+
+                        chartRow.RelativeItem().PaddingHorizontal(2).Column(barCol =>
+                        {
+                            barCol.Item().AlignCenter().Text(valLabel).FontSize(7.5f).Bold();
+                            barCol.Item().Height(Math.Max(6, val * 14)).Background(barColor).CornerRadius(2);
+                            barCol.Item().PaddingTop(2).AlignCenter().Text(cat).FontSize(7f).FontColor(Colors.Grey.Darken1);
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    private void ComposeImage(IContainer container, PdfImageElement imgEl)
+    {
+        if (!string.IsNullOrEmpty(imgEl.ImagePath) && File.Exists(imgEl.ImagePath))
+        {
+            try
+            {
+                container.Image(imgEl.ImagePath).FitArea();
+                return;
+            }
+            catch { }
+        }
+
+        container.Border(1).BorderColor(imgEl.BorderColorHex).Background("#F3F2F1").AlignCenter().AlignMiddle()
+            .Text(imgEl.AltText ?? "Image").FontSize(10).FontColor(Colors.Grey.Medium);
+    }
+
+    private void ComposeQrCode(IContainer container, PdfQrCodeElement qrEl)
+    {
+        try
+        {
+            using var generator = new QRCodeGenerator();
+            using var qrData = generator.CreateQrCode(qrEl.Content ?? "https://github.com", QRCodeGenerator.ECCLevel.M);
+            using var qrCode = new PngByteQRCode(qrData);
+            byte[] qrBytes = qrCode.GetGraphic(20);
+
+            container.Border(1).BorderColor(Colors.Grey.Lighten2).Background(Colors.White).Padding(4).Column(qCol =>
+            {
+                qCol.Item().AlignCenter().Image(qrBytes).FitArea();
+                if (!string.IsNullOrEmpty(qrEl.Label))
+                {
+                    qCol.Item().PaddingTop(2).AlignCenter().Text(qrEl.Label).FontSize(7f).Bold().FontColor(Colors.Grey.Darken2);
+                }
+            });
+        }
+        catch
+        {
+            container.Border(1).BorderColor(Colors.Grey.Lighten2).Background(Colors.White).AlignCenter().AlignMiddle()
+                .Text("QR CODE").FontSize(8).Bold();
+        }
+    }
+
+    private void ComposeBarcode(IContainer container, PdfBarcodeElement barEl)
+    {
+        container.Border(1).BorderColor(Colors.Grey.Lighten2).Background(Colors.White).Padding(4).Column(bCol =>
+        {
+            // Algorithmic barcode stripes
+            bCol.Item().AlignCenter().Height(22).Row(r =>
+            {
+                string val = barEl.CodeValue ?? "12345678";
+                foreach (char c in val)
+                {
+                    int pattern = (int)c % 5;
+                    r.AutoItem().Width(pattern == 0 ? 1 : (pattern == 1 ? 2 : (pattern == 2 ? 1.5f : 3))).Background(barEl.BarColorHex);
+                    r.AutoItem().Width(pattern % 2 == 0 ? 1 : 2).Background(Colors.White);
+                }
+            });
+
+            if (barEl.ShowText && !string.IsNullOrEmpty(barEl.CodeValue))
+            {
+                bCol.Item().PaddingTop(2).AlignCenter().Text(barEl.CodeValue).FontSize(7.5f).FontColor(Colors.Grey.Darken3);
+            }
+        });
+    }
+
+    private void ComposeFormField(IContainer container, PdfFormFieldElement formEl)
+    {
+        container.Border(1).BorderColor(formEl.BorderColorHex).Background(formEl.BackgroundColorHex).Padding(4).Column(fCol =>
+        {
+            fCol.Item().Row(r =>
+            {
+                r.RelativeItem().Text(formEl.Label).FontSize(8).Bold().FontColor(Colors.Grey.Darken3);
+                if (formEl.IsRequired)
+                {
+                    r.AutoItem().Text("* Required").FontSize(7f).FontColor(Colors.Red.Medium);
+                }
+            });
+
+            if (formEl.FieldType == FormFieldType.Checkbox)
+            {
+                fCol.Item().PaddingTop(2).Row(r =>
+                {
+                    r.AutoItem().Width(10).Height(10).Border(1).BorderColor(Colors.Grey.Darken2).Background(formEl.IsChecked ? Colors.Blue.Lighten4 : Colors.White);
+                    r.RelativeItem().PaddingLeft(4).Text(formEl.IsChecked ? "[X] Checked" : "[ ] Unchecked").FontSize(7.5f);
+                });
+            }
+            else if (formEl.FieldType == FormFieldType.Signature)
+            {
+                fCol.Item().PaddingTop(4).BorderBottom(1).BorderColor(Colors.Grey.Medium).PaddingBottom(2).Text(string.IsNullOrEmpty(formEl.Value) ? "Authorized Signature" : formEl.Value).FontSize(8.5f).Italic().FontColor(Colors.Blue.Darken2);
+            }
+            else
+            {
+                fCol.Item().PaddingTop(2).Border(1).BorderColor(Colors.Grey.Lighten1).Background(Colors.White).Padding(2).Text(string.IsNullOrEmpty(formEl.Value) ? formEl.Placeholder : formEl.Value).FontSize(7.5f).FontColor(string.IsNullOrEmpty(formEl.Value) ? Colors.Grey.Medium : Colors.Black);
+            }
+        });
+    }
+
+    private void ComposeStickyNote(IContainer container, PdfStickyNoteElement noteEl)
+    {
+        container.Border(1).BorderColor(noteEl.BorderColorHex).Background(noteEl.ColorHex).Padding(6).Column(nCol =>
+        {
+            nCol.Item().Row(r =>
+            {
+                r.RelativeItem().Text($"📌 {noteEl.Author}").FontSize(8f).Bold().FontColor("#78350F");
+                r.AutoItem().Text(noteEl.Timestamp).FontSize(7f).FontColor("#92400E");
+            });
+            nCol.Item().PaddingTop(2).Text(noteEl.NoteText).FontSize(7.5f).FontColor("#78350F");
+            nCol.Item().PaddingTop(2).Text($"Status: {noteEl.Status}").FontSize(7f).Bold().FontColor("#B45309");
+        });
     }
 }

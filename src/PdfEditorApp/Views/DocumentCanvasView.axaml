@@ -1020,11 +1020,42 @@
                                            VerticalAlignment="Center" />
                             </Grid>
                         </Border>
+                        <!-- Marquee Selection Rectangle Overlay -->
+                        <Canvas Width="{Binding CurrentPage.Width, FallbackValue=800}"
+                                Height="{Binding CurrentPage.Height, FallbackValue=1131}"
+                                IsHitTestVisible="False">
+                            <Border x:Name="MarqueeSelectionBox"
+                                    IsVisible="False"
+                                    Background="#180F6CBD"
+                                    BorderBrush="#0F6CBD"
+                                    BorderThickness="1"
+                                    CornerRadius="2"
+                                    Canvas.Left="0"
+                                    Canvas.Top="0"
+                                    Width="0"
+                                    Height="0" />
+                        </Canvas>
                     </Grid>
                 </Border>
             </LayoutTransformControl>
         </Grid>
     </ScrollViewer>
+
+    <!-- Multi-Selection Summary Pill Overlay -->
+    <Border IsVisible="{Binding CurrentPage.HasMultiSelection, FallbackValue=False}"
+            Background="#0F6CBD"
+            CornerRadius="12"
+            Padding="12,5"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Margin="0,16,0,0"
+            BoxShadow="0 4 12 #40000000"
+            IsHitTestVisible="False">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+            <materialIcons:MaterialIcon Kind="SelectMultiple" Width="15" Height="15" Foreground="White" />
+            <TextBlock Text="{Binding CurrentPage.SelectionCount, StringFormat='{}{0} Elements Selected'}" Foreground="White" FontWeight="SemiBold" FontSize="12" />
+        </StackPanel>
+    </Border>
 
     <!-- Floating In-Canvas Find & Replace HUD Bar -->
     <views:FindReplaceBarView HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,16,24,0" IsVisible="{Binding IsFindReplaceOpen}" />

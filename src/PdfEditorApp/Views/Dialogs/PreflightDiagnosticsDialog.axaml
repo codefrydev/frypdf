@@ -14,8 +14,8 @@
     <!-- Modal Backdrop -->
     <Grid Background="#60000000">
         <!-- Dialog Card -->
-        <Border Width="720"
-                MaxHeight="620"
+        <Border Width="760"
+                MaxHeight="660"
                 Background="White"
                 BorderBrush="{StaticResource WinBorderBrush}"
                 BorderThickness="1"
@@ -30,12 +30,12 @@
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
                     <StackPanel Grid.Column="0" Spacing="4">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border Width="30" Height="30" Background="{StaticResource WinSuccessLightBrush}" CornerRadius="6">
+                            <Border Width="32" Height="32" Background="{StaticResource WinSuccessLightBrush}" CornerRadius="6">
                                 <materialIcons:MaterialIcon Kind="FileCheckOutline" Width="18" Height="18" Foreground="{StaticResource WinSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <TextBlock Text="Preflight &amp; Document Health Audit" FontSize="17" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                         </StackPanel>
-                        <TextBlock Text="Comprehensive validation for font readability, contrast (WCAG), graphics, security, and statistics." FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                        <TextBlock Text="Automated verification for WCAG 2.1 contrast, image DPI resolution, PDF/A archival compliance, and typography." FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
                     </StackPanel>
 
                     <Button Grid.Column="1"
@@ -55,12 +55,16 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <!-- Score Gauge -->
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                                    <Border Width="56" Height="56" Background="{StaticResource WinSuccessLightBrush}" BorderBrush="{StaticResource WinSuccessBrush}" BorderThickness="2" CornerRadius="28" HorizontalAlignment="Center">
-                                        <TextBlock Text="{Binding ActiveAuditReport.Grade, FallbackValue='A+'}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource WinSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <Border Width="58" Height="58" Background="{StaticResource WinSuccessLightBrush}" BorderBrush="{StaticResource WinSuccessBrush}" BorderThickness="2" CornerRadius="29" HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding ActiveAuditReport.Grade, FallbackValue='A+'}" FontSize="19" FontWeight="Bold" Foreground="{StaticResource WinSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <StackPanel VerticalAlignment="Center" Spacing="2">
-                                        <TextBlock Text="{Binding ActiveAuditReport.HealthScore, StringFormat='{}Health Score: {0}/100', FallbackValue='Health Score: 100/100'}" FontSize="13" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" />
-                                        <TextBlock Text="Publishing &amp; Print Ready" FontSize="11" Foreground="{StaticResource WinMutedBrush}" />
+                                    <StackPanel VerticalAlignment="Center" Spacing="3">
+                                        <TextBlock Text="{Binding ActiveAuditReport.HealthScore, StringFormat='{}Health Score: {0}/100', FallbackValue='Health Score: 100/100'}" FontSize="13.5" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{Binding ActiveAuditReport.PdfAComplianceScore, StringFormat='{}PDF/A: {0}%'}" FontSize="10.5" Foreground="#0F6CBD" FontWeight="SemiBold" />
+                                            <TextBlock Text="•" FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" />
+                                            <TextBlock Text="{Binding ActiveAuditReport.PrintReadyScore, StringFormat='{}Print: {0}%'}" FontSize="10.5" Foreground="#10B981" FontWeight="SemiBold" />
+                                        </StackPanel>
                                     </StackPanel>
                                 </StackPanel>
 
@@ -86,12 +90,20 @@
 
                         <!-- Inspection Findings List -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Audit Inspection Results" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Audit Inspection Results" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Classes="secondary-btn" Height="28" Padding="10,0" Command="{Binding AutoFixPreflightIssuesCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="AutoFix" Width="13" Height="13" Foreground="#0F6CBD" />
+                                        <TextBlock Text="Auto-Fix Remediation" FontSize="11" FontWeight="SemiBold" Foreground="#0F6CBD" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
 
                             <ItemsControl ItemsSource="{Binding ActiveAuditReport.Issues}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="services:AuditIssueItem">
-                                        <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,0,0,6">
+                                        <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,6">
                                             <Grid ColumnDefinitions="Auto,*,Auto">
                                                 <!-- Severity Icon -->
                                                 <materialIcons:MaterialIcon Grid.Column="0" Kind="CheckCircleOutline" Width="18" Height="18" Foreground="{StaticResource WinSuccessBrush}" Margin="0,0,10,0" VerticalAlignment="Center"
@@ -103,15 +115,28 @@
                                                 <materialIcons:MaterialIcon Grid.Column="0" Kind="InformationOutline" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" Margin="0,0,10,0" VerticalAlignment="Center"
                                                                             IsVisible="{Binding Severity, Converter={StaticResource EqualityConverter}, ConverterParameter=Info}" />
 
-                                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                                                <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                                                        <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="3" Padding="5,1">
+                                                            <TextBlock Text="{Binding Category}" FontSize="9" FontWeight="Medium" Foreground="{StaticResource WinMutedBrush}" />
+                                                        </Border>
+                                                    </StackPanel>
                                                     <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" />
                                                 </StackPanel>
 
-                                                <!-- Page / Category Badge -->
-                                                <Border Grid.Column="2" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Category}" FontSize="9.5" FontWeight="Medium" Foreground="{StaticResource WinMutedBrush}" />
-                                                </Border>
+                                                <!-- Action / Page Link Badge -->
+                                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,3">
+                                                        <TextBlock Text="{Binding PageIndex, StringFormat='{}Page {0}'}" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinMutedBrush}" />
+                                                    </Border>
+                                                    <Button Classes="mini-tool-btn" Width="26" Height="26"
+                                                            Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).NavigateToPreflightIssueCommand}"
+                                                            CommandParameter="{Binding .}"
+                                                            ToolTip.Tip="Jump to Element on Canvas">
+                                                        <materialIcons:MaterialIcon Kind="ArrowRightCircleOutline" Width="14" Height="14" Foreground="#0F6CBD" />
+                                                    </Button>
+                                                </StackPanel>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>

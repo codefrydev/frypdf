@@ -34,6 +34,9 @@ public class DocumentDifferenceItem
         CompareDiffType.ElementRemoved => "#DC2626",
         CompareDiffType.ElementModified => "#0F6CBD",
         CompareDiffType.TextModified => "#D97706",
+        CompareDiffType.FormattingModified => "#7C3AED",
+        CompareDiffType.SecurityModified => "#E11D48",
+        CompareDiffType.MetadataModified => "#2563EB",
         _ => "#475569"
     };
     public string BadgeIcon => DiffType switch
@@ -42,6 +45,9 @@ public class DocumentDifferenceItem
         CompareDiffType.ElementRemoved => "MinusCircleOutline",
         CompareDiffType.ElementModified => "PencilOutline",
         CompareDiffType.TextModified => "FormatColorText",
+        CompareDiffType.FormattingModified => "FormatFont",
+        CompareDiffType.SecurityModified => "ShieldAlertOutline",
+        CompareDiffType.MetadataModified => "TagOutline",
         _ => "InformationOutline"
     };
 }

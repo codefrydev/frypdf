@@ -86,6 +86,7 @@ public partial class HomeViewModel : ViewModelBase
 
     public bool IsHomeSection => SelectedNavSection == HomeNavSection.Home;
     public bool IsNewDocumentSection => SelectedNavSection == HomeNavSection.NewDocument;
+    public bool IsPdfReaderSection => SelectedNavSection == HomeNavSection.PdfReader;
     public bool IsToolsSection => SelectedNavSection is >= HomeNavSection.AllTools and <= HomeNavSection.AiAndAutomation;
     public bool IsStarredSection => SelectedNavSection == HomeNavSection.Starred;
     public bool IsTrashSection => SelectedNavSection == HomeNavSection.Trash;
@@ -330,6 +331,7 @@ public partial class HomeViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(IsHomeSection));
         OnPropertyChanged(nameof(IsNewDocumentSection));
+        OnPropertyChanged(nameof(IsPdfReaderSection));
         OnPropertyChanged(nameof(IsToolsSection));
         OnPropertyChanged(nameof(IsStarredSection));
         OnPropertyChanged(nameof(IsTrashSection));
@@ -651,14 +653,7 @@ public partial class HomeViewModel : ViewModelBase
     [RelayCommand]
     public void OpenInViewer(string? filePath)
     {
-        if (!string.IsNullOrEmpty(filePath))
-        {
-            OpenInViewerRequested?.Invoke(filePath);
-        }
-        else
-        {
-            OpenFileRequested?.Invoke();
-        }
+        OpenInViewerRequested?.Invoke(filePath ?? string.Empty);
     }
 
     [RelayCommand]

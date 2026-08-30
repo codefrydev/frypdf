@@ -437,6 +437,7 @@ public partial class MainViewModel : ViewModelBase
         PdfViewer.BackToHomeRequested += NavigateToHome;
         PdfViewer.RunToolRequested += (toolId, path) => OpenToolWithInitialFile(toolId, path);
         PdfViewer.ShowToastRequested += (msg) => ShowToast(msg);
+        PdfViewer.OpenFileRequested += () => _ = OpenPdfToReadWithPickerAsync();
 
         // Set up Home page and wire its navigation events
         Home = new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, toolViewModelFactory, _themeService);
@@ -583,9 +584,56 @@ public partial class MainViewModel : ViewModelBase
     }
 
     /// <summary>Opens any PDF in the dedicated PDF Viewer subsystem.</summary>
+    [RelayCommand]
+    public void OpenPdfReader()
+    {
+        _ = OpenPdfToReadWithPickerAsync();
+    }
+
+    /// <summary>Opens any PDF in the dedicated PDF Viewer subsystem.</summary>
     public void OpenInViewer(string path)
     {
-        _ = OpenInViewerAsync(path);
+        if (string.IsNullOrEmpty(path))
+        {
+            _ = OpenPdfToReadWithPickerAsync();
+        }
+        else
+        {
+            _ = OpenInViewerAsync(path);
+        }
+    }
+
+    /// <summary>Prompts user to select a PDF file and opens it in PDF Reader mode.</summary>
+    public async Task OpenPdfToReadWithPickerAsync()
+    {
+        try
+        {
+            if (StorageProvider != null)
+            {
+                var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = "Open PDF Document to Read (PDF Reader Mode)",
+                    AllowMultiple = false,
+                    FileTypeFilter = new[]
+                    {
+                        new FilePickerFileType("PDF Documents (*.pdf)")
+                        {
+                            Patterns = new[] { "*.pdf" }
+                        }
+                    }
+                });
+
+                if (files.Count > 0)
+                {
+                    string chosenPath = files[0].Path.LocalPath;
+                    await OpenInViewerAsync(chosenPath);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Could not open PDF: {ex.Message}", "AlertCircleOutline");
+        }
     }
 
     /// <summary>Asynchronously opens a PDF document in the viewer.</summary>
@@ -593,8 +641,16 @@ public partial class MainViewModel : ViewModelBase
     {
         try
         {
+            // Immediately transition to PDF Viewer with zero delay
+            DocumentTitle = Path.GetFileName(path);
+            IsHomePageVisible = false;
+            IsEditorVisible = false;
+            IsPdfViewerVisible = true;
+            ShowToast($"Opening: {Path.GetFileName(path)}", "FilePdfBox");
+
             PdfViewer.StorageProvider = StorageProvider;
             await PdfViewer.LoadDocumentAsync(path);
+
             _recentService.Add(new RecentDocumentItem
             {
                 FilePath = path,
@@ -602,10 +658,6 @@ public partial class MainViewModel : ViewModelBase
                 LastOpened = DateTime.UtcNow
             });
             Home.RefreshRecent();
-            IsHomePageVisible = false;
-            IsEditorVisible = false;
-            IsPdfViewerVisible = true;
-            ShowToast($"Viewing: {Path.GetFileName(path)}", "FilePdfBox");
         }
         catch (Exception ex)
         {

@@ -108,7 +108,21 @@
                             </Grid>
                         </Button>
 
-                        <!-- 2. Start a New Document / Templates -->
+                        <!-- 2. PDF Reader Mode (Acrobat-Style) -->
+                        <Button Classes="nav-tab-btn"
+                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=PdfReader}"
+                                Command="{Binding SelectNavSectionCommand}"
+                                CommandParameter="PdfReader">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <materialIcons:MaterialIcon Grid.Column="0" Kind="BookOpenPageVariantOutline" Width="18" Height="18" Foreground="#DC2626" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="PDF Reader" VerticalAlignment="Center" />
+                                <Border Grid.Column="2" Background="#FEE2E2" CornerRadius="4" Padding="5,1">
+                                    <TextBlock Text="Read" FontSize="10" FontWeight="Bold" Foreground="#DC2626" />
+                                </Border>
+                            </Grid>
+                        </Button>
+
+                        <!-- 3. Start a New Document / Templates -->
                         <Button Classes="nav-tab-btn"
                                 Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=NewDocument}"
                                 Command="{Binding SelectNavSectionCommand}"
@@ -122,7 +136,7 @@
                             </Grid>
                         </Button>
 
-                        <!-- 3. All Tools -->
+                        <!-- 4. All Tools -->
                         <Button Classes="nav-tab-btn"
                                 Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=AllTools}"
                                 Command="{Binding SelectNavSectionCommand}"
@@ -412,19 +426,22 @@
                         <!-- Page 1: Overview Dashboard -->
                         <views:HomeDashboardView IsVisible="{Binding IsHomeSection}" />
 
-                        <!-- Page 2: Start a New Document (Template Gallery) -->
+                        <!-- Page 2: Dedicated PDF Reader Landing Page -->
+                        <views:PdfReaderLandingPageView IsVisible="{Binding IsPdfReaderSection}" />
+
+                        <!-- Page 3: Start a New Document (Template Gallery) -->
                         <views:NewDocumentPageView IsVisible="{Binding IsNewDocumentSection}" />
 
-                        <!-- Page 3: PDF Tools Studio (All 32 Tools) -->
+                        <!-- Page 4: PDF Tools Studio (All 32 Tools) -->
                         <views:PdfToolsStudioView IsVisible="{Binding IsToolsSection}" />
 
-                        <!-- Page 4: Starred Tools -->
+                        <!-- Page 5: Starred Tools -->
                         <views:StarredToolsPageView IsVisible="{Binding IsStarredSection}" />
 
-                        <!-- Page 5: Trash & Storage Cache Cleaner -->
+                        <!-- Page 6: Trash & Storage Cache Cleaner -->
                         <views:TrashCachePageView IsVisible="{Binding IsTrashSection}" />
 
-                        <!-- Page 6: Open Source Licenses & Third-Party Tools -->
+                        <!-- Page 7: Open Source Licenses & Third-Party Tools -->
                         <views:LicensingPageView IsVisible="{Binding IsLicensingSection}" />
                     </Panel>
                 </ScrollViewer>

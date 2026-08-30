@@ -114,7 +114,7 @@ public class PdfImportService : IPdfImportService
                     // We render a crisp base image of the page to ensure 100% visual layout fidelity
                     try
                     {
-                        using var pngStream = PdfPigExtensions.GetPageAsPng(doc, pageNumber, 1.5f, 90);
+                        using var pngStream = PdfPigExtensions.GetPageAsPng(doc, pageNumber, 2.75f, 100);
                         if (pngStream != null && pngStream.Length > 0)
                         {
                             byte[] bgBytes = pngStream.ToArray();

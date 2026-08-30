@@ -25,9 +25,24 @@ public class PdfEngineTests
         byte[] pdfBytes = _exportService.GeneratePdfBytes(model);
         using var doc = UglyToad.PdfPig.PdfDocument.Open(pdfBytes);
         UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.AddSkiaPageFactory(doc);
-        using var pngStream = UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.GetPageAsPng(doc, 1, 2.0f, 90);
-        Assert.NotNull(pngStream);
-        Assert.True(pngStream.Length > 0);
+
+        // 1. Direct SKPicture (Vector representation)
+        using var picture = UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.GetPageAsSKPicture(doc, 1);
+        Assert.NotNull(picture);
+        Assert.True(picture.CullRect.Width > 0);
+        Assert.True(picture.CullRect.Height > 0);
+
+        // 2. Direct SKBitmap (Raw in-memory raster)
+        using var skBitmap = UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.GetPageAsSKBitmap(doc, 1, 2.5f, SkiaSharp.SKColors.White);
+        Assert.NotNull(skBitmap);
+        Assert.True(skBitmap.Width > 0);
+        Assert.True(skBitmap.Height > 0);
+
+        // 3. Encoded PNG stream verification
+        using var image = SkiaSharp.SKImage.FromBitmap(skBitmap);
+        using var data = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+        Assert.NotNull(data);
+        Assert.True(data.Size > 0);
     }
 
     [Fact]

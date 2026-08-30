@@ -416,6 +416,7 @@ public enum HomeNavSection
 {
     Home,
     NewDocument,
+    PdfReader,
     AllTools,
     OrganizeAndPage,
     OptimizeAndSecurity,
@@ -428,11 +429,27 @@ public enum HomeNavSection
     Licensing
 }
 
+public enum PdfReaderTheme
+{
+    Default,
+    Sepia,
+    Dark,
+    HighContrast
+}
+
+public enum PdfViewLayoutMode
+{
+    ContinuousScroll,
+    SinglePage,
+    TwoPageSpread
+}
+
 public enum AppThemeMode
 {
     System,
     Light,
     Dark
 }
+
 
 

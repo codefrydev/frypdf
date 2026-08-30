@@ -144,7 +144,7 @@
                         </Grid>
                     </Button>
 
-                    <!-- Card 3: Open in PDF Viewer -->
+                    <!-- Card 3: Open in PDF Reader -->
                     <Button Command="{Binding OpenInViewerCommand}"
                             Background="{DynamicResource WinPanelBrush}"
                             BorderBrush="{DynamicResource WinBorderBrush}"
@@ -154,14 +154,15 @@
                             Margin="0,0,8,0"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
-                            Cursor="Hand">
+                            Cursor="Hand"
+                            ToolTip.Tip="Open any PDF directly in pure Adobe Acrobat-style Reader mode">
                         <Grid ColumnDefinitions="Auto,*">
-                            <Border Grid.Column="0" Width="36" Height="36" Background="#9333EA" CornerRadius="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Border Grid.Column="0" Width="36" Height="36" Background="#DC2626" CornerRadius="10" Margin="0,0,10,0" VerticalAlignment="Center">
                                 <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="18" Height="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="PDF Viewer" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                                <TextBlock Text="High-res viewing &amp; search" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" />
+                                <TextBlock Text="PDF Reader" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                <TextBlock Text="Acrobat reading &amp; search" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" />
                             </StackPanel>
                         </Grid>
                     </Button>

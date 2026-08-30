@@ -1,0 +1,347 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:models="using:PdfEditorApp.Models"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="PdfEditorApp.Views.PdfReaderLandingPageView"
+             x:DataType="vm:HomeViewModel">
+
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="Border.reader-feature-card">
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="18,16" />
+            <Setter Property="BoxShadow" Value="0 2 6 #08000000" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.reader-feature-card:pointerover">
+            <Setter Property="RenderTransform" Value="translateY(-2px)" />
+            <Setter Property="BoxShadow" Value="0 6 16 #150F6CBD" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel Margin="32,24,32,32">
+
+        <!-- ========================================== -->
+        <!-- 1. HERO BANNER: PDF READER LAUNCHER        -->
+        <!-- ========================================== -->
+        <Border Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="32,28"
+                Margin="0,0,0,24"
+                BoxShadow="0 2 12 #0A000000">
+            <Grid ColumnDefinitions="*,Auto">
+
+                <!-- Left Info & CTA -->
+                <StackPanel Grid.Column="0" Spacing="10" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Border Background="#FEE2E2" CornerRadius="6" Padding="8,3">
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FilePdfBox" Width="16" Height="16" Foreground="#DC2626" />
+                                <TextBlock Text="PDF Reader Mode" FontSize="11" FontWeight="Bold" Foreground="#DC2626" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="6" Padding="8,3">
+                            <TextBlock Text="Adobe Acrobat Style" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        </Border>
+                    </StackPanel>
+
+                    <TextBlock Text="Read, Navigate &amp; Annotate PDFs"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource WinTextBrush}" />
+
+                    <TextBlock Text="Read PDFs comfortably with continuous vertical scroll, single page, or two-page book spreads. Enjoy night mode, warm sepia, text search, bookmarks outline, and highlight annotations without altering document layout."
+                               FontSize="13"
+                               Foreground="{DynamicResource WinMutedBrush}"
+                               MaxWidth="640"
+                               TextWrapping="Wrap" />
+
+                    <!-- Actions Row -->
+                    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,10,0,0">
+                        <!-- Primary Open PDF to Read Button -->
+                        <Button Command="{Binding OpenInViewerCommand}"
+                                Background="#DC2626"
+                                Foreground="White"
+                                CornerRadius="8"
+                                Padding="20,12"
+                                FontSize="13.5"
+                                FontWeight="Bold"
+                                Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="18" Height="18" Foreground="White" />
+                                <TextBlock Text="Open PDF to Read" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Secondary Explore Tools Button -->
+                        <Button Command="{Binding SelectNavSectionCommand}"
+                                CommandParameter="AllTools"
+                                Background="{DynamicResource WinInputBgBrush}"
+                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                BorderThickness="1"
+                                Foreground="{DynamicResource WinTextBrush}"
+                                CornerRadius="8"
+                                Padding="16,12"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="ViewGridOutline" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
+                                <TextBlock Text="Browse 32 PDF Tools" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Right Visual Badge -->
+                <Border Grid.Column="1"
+                        Width="140"
+                        Height="140"
+                        Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="20"
+                        Margin="24,0,0,0"
+                        VerticalAlignment="Center"
+                        BoxShadow="0 4 16 #10000000">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
+                        <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="54" Height="54" Foreground="#DC2626" HorizontalAlignment="Center" />
+                        <TextBlock Text="FryPDF Reader" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+        </Border>
+
+        <!-- ========================================== -->
+        <!-- 2. KEY READER FEATURES SHOWCASE (6 CARDS)  -->
+        <!-- ========================================== -->
+        <TextBlock Text="Reading Features &amp; Capabilities" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,0,0,12" />
+
+        <UniformGrid Columns="3" Margin="0,0,0,24">
+
+            <!-- Card 1: Multi-Layout Modes -->
+            <Border Classes="reader-feature-card" Margin="0,0,12,12">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="#EFF6FF" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
+                        <materialIcons:MaterialIcon Kind="ViewHeadline" Width="22" Height="22" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Spacing="3">
+                        <TextBlock Text="3 Multi-Layout Modes" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Read with continuous vertical scroll, clean single-page fit, or facing two-page book and magazine spreads." FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Card 2: Eye-Comfort Reading Themes -->
+            <Border Classes="reader-feature-card" Margin="0,0,12,12">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="#FEF3C7" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
+                        <materialIcons:MaterialIcon Kind="WeatherNight" Width="22" Height="22" Foreground="#D97706" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Spacing="3">
+                        <TextBlock Text="Eye-Comfort Themes" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Switch between Daylight White, warm Sepia Book paper, OLED Dark night mode, and High Contrast mode." FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Card 3: In-Document Full-Text Search -->
+            <Border Classes="reader-feature-card" Margin="0,0,0,12">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="#ECFDF5" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
+                        <materialIcons:MaterialIcon Kind="Magnify" Width="22" Height="22" Foreground="#059669" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Spacing="3">
+                        <TextBlock Text="Instant Text Search" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Search words and phrases across hundreds of pages with live match counters, snippets, and jump navigation." FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Card 4: Document Outline Bookmarks -->
+            <Border Classes="reader-feature-card" Margin="0,0,12,0">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="#EEF2FF" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
+                        <materialIcons:MaterialIcon Kind="BookmarkOutline" Width="22" Height="22" Foreground="#4F46E5" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Spacing="3">
+                        <TextBlock Text="Table of Contents" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Navigate large reports, eBooks, and academic papers easily via hierarchical document bookmarks." FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Card 5: Review Annotations -->
+            <Border Classes="reader-feature-card" Margin="0,0,12,0">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="#FDF2F8" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
+                        <materialIcons:MaterialIcon Kind="FormatColorHighlight" Width="22" Height="22" Foreground="#DB2777" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Spacing="3">
+                        <TextBlock Text="Review Annotations" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Highlight passages in multiple colors, add sticky notes, and apply audit stamps without mutating layout." FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Card 6: Studio Transition Bridge -->
+            <Border Classes="reader-feature-card" Margin="0,0,0,0">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="#F0FDF4" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
+                        <materialIcons:MaterialIcon Kind="DrawPen" Width="22" Height="22" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Spacing="3">
+                        <TextBlock Text="1-Click Studio Bridge" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Transition smoothly from reading into FryPDF Studio Editor if you ever need to edit text, fonts, or images." FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+        </UniformGrid>
+
+        <!-- ========================================== -->
+        <!-- 3. RECENT PDFS SECTION                     -->
+        <!-- ========================================== -->
+        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12" VerticalAlignment="Center">
+            <TextBlock Grid.Column="0" Text="Read Recent Documents" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+            <Button Grid.Column="1"
+                    Command="{Binding OpenInViewerCommand}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Foreground="{DynamicResource WinAccentBrush}"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Cursor="Hand">
+                Open another PDF →
+            </Button>
+        </Grid>
+
+        <!-- Empty state when no recents -->
+        <Border IsVisible="{Binding !HasRecentDocuments}"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="32,28">
+            <StackPanel HorizontalAlignment="Center" Spacing="8">
+                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
+                <TextBlock Text="No recent PDF documents" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                <Button Command="{Binding OpenInViewerCommand}"
+                        Content="Open a PDF to start reading"
+                        Background="{DynamicResource WinAccentLightBrush}"
+                        Foreground="{DynamicResource WinAccentBrush}"
+                        FontWeight="SemiBold"
+                        FontSize="12"
+                        Padding="14,6"
+                        CornerRadius="6"
+                        HorizontalAlignment="Center"
+                        Margin="0,4,0,0" />
+            </StackPanel>
+        </Border>
+
+        <!-- Recent Documents Grid for Reader -->
+        <ItemsControl IsVisible="{Binding HasRecentDocuments}"
+                      ItemsSource="{Binding RecentDocuments}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="models:RecentDocumentItem">
+                    <Border Width="240"
+                            Background="{DynamicResource WinPanelBrush}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="12"
+                            Margin="0,0,12,12"
+                            BoxShadow="0 2 6 #08000000">
+                        <Grid RowDefinitions="Auto,Auto">
+                            <!-- Top Document Info -->
+                            <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,10">
+                                <Border Grid.Column="0" Width="34" Height="34" Background="#FEE2E2" CornerRadius="8" Margin="0,0,10,0" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding RelativeTime}" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Bottom Action Buttons: Read in Reader vs Edit in Studio -->
+                            <Grid Grid.Row="1" ColumnDefinitions="*,*">
+                                <!-- Read in PDF Reader Button -->
+                                <Button Grid.Column="0"
+                                        Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenInViewerCommand}"
+                                        CommandParameter="{Binding FilePath}"
+                                        Background="#DC2626"
+                                        Foreground="White"
+                                        CornerRadius="6"
+                                        Padding="8,5"
+                                        Margin="0,0,4,0"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        FontSize="11"
+                                        FontWeight="SemiBold"
+                                        Cursor="Hand"
+                                        ToolTip.Tip="Read in pure PDF Reader Mode">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="13" Height="13" Foreground="White" />
+                                        <TextBlock Text="Read" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Edit in Studio Button -->
+                                <Button Grid.Column="1"
+                                        Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenRecentCommand}"
+                                        CommandParameter="{Binding FilePath}"
+                                        Background="{DynamicResource WinInputBgBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        Foreground="{DynamicResource WinTextBrush}"
+                                        CornerRadius="6"
+                                        Padding="8,5"
+                                        Margin="4,0,0,0"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        FontSize="11"
+                                        FontWeight="Medium"
+                                        Cursor="Hand"
+                                        ToolTip.Tip="Open in Studio Canvas Editor">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <materialIcons:MaterialIcon Kind="DrawPen" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                                        <TextBlock Text="Edit" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+    </StackPanel>
+</UserControl>

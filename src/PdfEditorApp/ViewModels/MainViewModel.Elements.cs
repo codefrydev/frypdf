@@ -107,6 +107,229 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
+    public void AddMedalBadgeElement()
+    {
+        if (CurrentPage == null) return;
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 140, 170);
+
+        var badgeEl = new ShapeElementViewModel
+        {
+            X = posX,
+            Y = posY,
+            Width = 140,
+            Height = 170,
+            ShapeType = ShapeType.MedalRibbonBadge,
+            FillColorHex = "#F59E0B",
+            StrokeColorHex = "#B45309",
+            StrokeThickness = 2.5,
+            SecondaryFillColorHex = "#990000",
+            ZIndex = 5
+        };
+
+        AddElementWithUndo(badgeEl, "Added Medal Ribbon Badge");
+    }
+
+    [RelayCommand]
+    public void AddLaurelSealElement()
+    {
+        if (CurrentPage == null) return;
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 110, 110);
+
+        var sealEl = new ShapeElementViewModel
+        {
+            X = posX,
+            Y = posY,
+            Width = 110,
+            Height = 110,
+            ShapeType = ShapeType.LaurelWreathSeal,
+            FillColorHex = "#FEF3C7",
+            StrokeColorHex = "#B45309",
+            StrokeThickness = 2.0,
+            Label = "OFFICIAL",
+            LabelColorHex = "#92400E",
+            LabelFontSize = 10,
+            ZIndex = 5
+        };
+
+        AddElementWithUndo(sealEl, "Added Laurel Gold Seal");
+    }
+
+    [RelayCommand]
+    public void AddRibbonBannerElement()
+    {
+        if (CurrentPage == null) return;
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 320, 50);
+
+        var bannerEl = new ShapeElementViewModel
+        {
+            X = posX,
+            Y = posY,
+            Width = 320,
+            Height = 50,
+            ShapeType = ShapeType.RibbonBanner,
+            FillColorHex = "#990000",
+            StrokeColorHex = "#F59E0B",
+            StrokeThickness = 1.5,
+            Label = "AWARD OF EXCELLENCE",
+            LabelColorHex = "#FFFFFF",
+            LabelFontSize = 13,
+            ZIndex = 5
+        };
+
+        AddElementWithUndo(bannerEl, "Added Ribbon Banner");
+    }
+
+    [RelayCommand]
+    public void AddCornerAccentElement(string? corner = "TopLeft")
+    {
+        if (CurrentPage == null) return;
+
+        bool isBottomRight = string.Equals(corner, "BottomRight", StringComparison.OrdinalIgnoreCase);
+        double w = 240;
+        double h = 240;
+        double posX = isBottomRight ? Math.Max(0, CurrentPage.Width - w) : 0;
+        double posY = isBottomRight ? Math.Max(0, CurrentPage.Height - h) : 0;
+
+        var cornerEl = new ShapeElementViewModel
+        {
+            X = posX,
+            Y = posY,
+            Width = w,
+            Height = h,
+            ShapeType = isBottomRight ? ShapeType.CornerPolygonalAccentBottomRight : ShapeType.CornerPolygonalAccentTopLeft,
+            FillColorHex = "#990000",
+            StrokeColorHex = "#F59E0B",
+            StrokeThickness = 2.0,
+            ZIndex = 1
+        };
+
+        AddElementWithUndo(cornerEl, $"Added Corner Accent ({corner})");
+    }
+
+    [RelayCommand]
+    public void AddSignatureBlock()
+    {
+        if (CurrentPage == null) return;
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 260, 110);
+
+        var scriptEl = new TextElementViewModel
+        {
+            X = posX,
+            Y = posY,
+            Width = 260,
+            Height = 45,
+            Text = "John Smith",
+            FontSize = 28,
+            FontFamily = "Great Vibes",
+            IsItalic = true,
+            TextColorHex = "#1E293B",
+            Alignment = TextAlignmentMode.Center,
+            ZIndex = 5
+        };
+
+        var lineEl = new DividerElementViewModel
+        {
+            X = posX,
+            Y = posY + 50,
+            Width = 260,
+            Thickness = 1.5,
+            ColorHex = "#1E293B",
+            ZIndex = 5
+        };
+
+        var nameEl = new TextElementViewModel
+        {
+            X = posX,
+            Y = posY + 58,
+            Width = 260,
+            Height = 24,
+            Text = "Mr. John Smith",
+            FontSize = 15,
+            FontFamily = "Inter",
+            IsBold = true,
+            TextColorHex = "#1E293B",
+            Alignment = TextAlignmentMode.Center,
+            ZIndex = 5
+        };
+
+        var titleEl = new TextElementViewModel
+        {
+            X = posX,
+            Y = posY + 82,
+            Width = 260,
+            Height = 22,
+            Text = "President & Dean",
+            FontSize = 13,
+            FontFamily = "Inter",
+            TextColorHex = "#64748B",
+            Alignment = TextAlignmentMode.Center,
+            ZIndex = 5
+        };
+
+        AddElementWithUndo(scriptEl, "Added Signature Block");
+        if (CurrentPage != null)
+        {
+            CurrentPage.AddElement(lineEl);
+            CurrentPage.AddElement(nameEl);
+            CurrentPage.AddElement(titleEl);
+        }
+    }
+
+    [RelayCommand]
+    public void AddDateBlock()
+    {
+        if (CurrentPage == null) return;
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 240, 70);
+
+        var dateEl = new TextElementViewModel
+        {
+            X = posX,
+            Y = posY,
+            Width = 240,
+            Height = 28,
+            Text = DateTime.Now.ToString("MMMM dd, yyyy"),
+            FontSize = 15,
+            FontFamily = "Inter",
+            IsBold = true,
+            TextColorHex = "#1E293B",
+            Alignment = TextAlignmentMode.Center,
+            ZIndex = 5
+        };
+
+        var lineEl = new DividerElementViewModel
+        {
+            X = posX,
+            Y = posY + 32,
+            Width = 240,
+            Thickness = 1.5,
+            ColorHex = "#1E293B",
+            ZIndex = 5
+        };
+
+        var labelEl = new TextElementViewModel
+        {
+            X = posX,
+            Y = posY + 40,
+            Width = 240,
+            Height = 24,
+            Text = "Date of Issuance",
+            FontSize = 14,
+            FontFamily = "Inter",
+            IsBold = true,
+            TextColorHex = "#1E293B",
+            Alignment = TextAlignmentMode.Center,
+            ZIndex = 5
+        };
+
+        AddElementWithUndo(dateEl, "Added Date Block");
+        if (CurrentPage != null)
+        {
+            CurrentPage.AddElement(lineEl);
+            CurrentPage.AddElement(labelEl);
+        }
+    }
+
+    [RelayCommand]
     public async Task AddImageElementAsync()
     {
         if (CurrentPage == null) return;

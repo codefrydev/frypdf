@@ -830,28 +830,19 @@
                                 <!-- 9. QR CODE ELEMENT TEMPLATE -->
                                 <DataTemplate DataType="elvm:QrCodeElementViewModel">
                                     <Grid Width="{Binding Width}" Height="{Binding Height}" PointerPressed="OnElementPointerPressed">
-                                        <Border Background="White"
+                                        <Border Background="{Binding LightColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderBrush="#E2E8F0"
                                                 BorderThickness="1"
                                                 CornerRadius="6"
-                                                Padding="8"
+                                                Padding="6"
                                                 BoxShadow="0 1 4 #08000000">
                                             <Grid RowDefinitions="*,Auto">
-                                                <!-- High-contrast vector stylized QR Matrix Preview -->
-                                                <Grid Grid.Row="0" Width="96" Height="96" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <!-- QR Corner Markers -->
-                                                    <Border Width="26" Height="26" BorderBrush="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" BorderThickness="3" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3">
-                                                        <Border Background="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" />
-                                                    </Border>
-                                                    <Border Width="26" Height="26" BorderBrush="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" BorderThickness="3" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="3">
-                                                        <Border Background="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" />
-                                                    </Border>
-                                                    <Border Width="26" Height="26" BorderBrush="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" BorderThickness="3" HorizontalAlignment="Left" VerticalAlignment="Bottom" Padding="3">
-                                                        <Border Background="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" />
-                                                    </Border>
-                                                    <!-- QR Center Matrix Simulation -->
-                                                    <materialIcons:MaterialIcon Kind="Qrcode" Width="48" Height="48" Foreground="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                </Grid>
+                                                <!-- Live scannable QR Code Image -->
+                                                <Image Grid.Row="0"
+                                                       Source="{Binding QrBitmap}"
+                                                       Stretch="Uniform"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
                                                 <TextBlock Grid.Row="1" Text="{Binding Label}" FontSize="8" FontWeight="Bold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0" TextWrapping="Wrap" TextAlignment="Center" />
                                             </Grid>
                                         </Border>

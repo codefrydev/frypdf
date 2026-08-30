@@ -229,8 +229,8 @@
                                                             <!-- QR Code Mini Template -->
                                                             <DataTemplate DataType="elvm:QrCodeElementViewModel">
                                                                 <Border Width="{Binding Width}" Height="{Binding Height}"
-                                                                        Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4" Padding="6">
-                                                                    <materialIcons:MaterialIcon Kind="Qrcode" Width="48" Height="48" Foreground="{Binding DarkColorHex, Converter={StaticResource HexToBrushConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                        Background="{Binding LightColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4" Padding="4">
+                                                                    <Image Source="{Binding QrBitmap}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                                 </Border>
                                                             </DataTemplate>
 

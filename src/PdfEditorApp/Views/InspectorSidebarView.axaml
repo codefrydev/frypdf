@@ -14,6 +14,7 @@
         <converters:DoubleToThicknessConverter x:Key="DoubleToThickness" />
         <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:EqualityToBooleanConverter x:Key="EnumToBooleanConverter" />
     </UserControl.Resources>
 
     <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1,0,0,0" Width="310">
@@ -410,32 +411,38 @@
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="ShapeOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
                                 <TextBlock Text="Shape Geometry &amp; Badges" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
-                            </StackPanel>
-
-                            <!-- Shape Type Selector Grid -->
+                            </StackPanel>                            <!-- Shape Type Selector Grid -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Preset Geometry (21 Shapes)" Classes="inspector-label" />
+                                <TextBlock Text="Preset Geometry (Certificates &amp; Polygons)" Classes="inspector-label" />
                                 <WrapPanel Orientation="Horizontal">
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Rectangle"><TextBlock Text="Rect" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RoundedRectangle"><TextBlock Text="Rounded" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Circle"><TextBlock Text="Circle" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="MedalRibbonBadge"><TextBlock Text="🎖 Medal Ribbon" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="LaurelWreathSeal"><TextBlock Text="🌿 Laurel Seal" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RosetteSeal"><TextBlock Text="🏵 Rosette" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RibbonBanner"><TextBlock Text="🎗 Banner" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CornerPolygonalAccentTopLeft"><TextBlock Text="📐 Corner TL" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CornerPolygonalAccentBottomRight"><TextBlock Text="📐 Corner BR" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="ShieldBadge"><TextBlock Text="🛡 Shield" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Star5"><TextBlock Text="★ Star 5" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Star8Badge"><TextBlock Text="✦ Star 8" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Triangle"><TextBlock Text="Triangle" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RightTriangle"><TextBlock Text="Rt. Tri" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Diamond"><TextBlock Text="Diamond" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Pentagon"><TextBlock Text="Pentagon" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Hexagon"><TextBlock Text="Hexagon" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Octagon"><TextBlock Text="Octagon" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Star5"><TextBlock Text="★ Star 5" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Star4Badge"><TextBlock Text="✦ Badge" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="ArrowRight"><TextBlock Text="➔ Arrow R" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="ArrowLeft"><TextBlock Text="⬅ Arrow L" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Callout"><TextBlock Text="💬 Callout" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Heart"><TextBlock Text="♥ Heart" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Cloud"><TextBlock Text="☁ Cloud" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Line"><TextBlock Text="— Line" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Card"><TextBlock Text="🗂 Card" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="StickyNote"><TextBlock Text="📌 Note" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Chevron"><TextBlock Text="Chevron" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Trapezoid"><TextBlock Text="Trapezoid" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Parallelogram"><TextBlock Text="Parallelogram" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CustomSvgPath"><TextBlock Text="🖋 Custom SVG" FontSize="10" /></Button>
                                 </WrapPanel>
+                            </StackPanel>
+
+                            <!-- Custom SVG Path Data (Visible when CustomSvgPath is selected) -->
+                            <StackPanel Spacing="3" IsVisible="{Binding ShapeElement.ShapeType, Converter={StaticResource EqualityConverter}, ConverterParameter=CustomSvgPath}">
+                                <TextBlock Text="Custom Vector Path (SVG 'd')" Classes="inspector-label" />
+                                <TextBox Text="{Binding ShapeElement.CustomPathData, Mode=TwoWay}"
+                                         AcceptsReturn="True" TextWrapping="Wrap" Height="50" FontSize="11"
+                                         PlaceholderText="e.g. M 0,0 L 100,0 L 50,100 Z" />
                             </StackPanel>
 
                             <!-- Fill Color Swatches & Custom ColorPicker -->
@@ -478,6 +485,33 @@
                                 </StackPanel>
                             </StackPanel>
 
+                            <!-- Secondary Color (for Medal Ribbons / Dual-Tone Polygons) -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Secondary / Ribbon Tail Color" Classes="inspector-label" />
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Secondary Accent Color">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding ShapeElement.SecondaryFillColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24" Background="{Binding ShapeElement.SecondaryFillColorHex, Converter={StaticResource HexToBrushConverter}}" />
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Ribbon" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
+                                    <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" Background="#990000" Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}" CommandParameter="#990000" ToolTip.Tip="Crimson Red" />
+                                    <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" Background="#0F172A" Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}" CommandParameter="#0F172A" ToolTip.Tip="Navy Slate" />
+                                    <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" Background="#D97706" Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}" CommandParameter="#D97706" ToolTip.Tip="Gold Amber" />
+                                    <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" Background="#16A34A" Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}" CommandParameter="#16A34A" ToolTip.Tip="Emerald" />
+                                </StackPanel>
+                            </StackPanel>
+
                             <!-- Stroke / Border Color Swatches & Custom ColorPicker -->
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Border / Stroke Color" Classes="inspector-label" />
@@ -500,7 +534,7 @@
                                                 </Border.Background>
                                             </Border>
                                             <Border Margin="3.5" CornerRadius="9" Background="White">
-                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <materialIcons:MaterialIcon Kind="SquareOutline" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
                                         </Grid>
                                     </Button>
@@ -1027,7 +1061,7 @@
                         <StackPanel Spacing="10">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="Qrcode" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="QR Code Settings &amp; Presets" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="QR Code Studio &amp; Presets" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
                             <StackPanel Spacing="3">
@@ -1038,13 +1072,18 @@
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="VCard"><TextBlock Text="👤 vCard" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="Email"><TextBlock Text="✉ Email" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="PhoneCall"><TextBlock Text="📞 Phone" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="Sms"><TextBlock Text="💬 SMS" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="CryptoAddress"><TextBlock Text="₿ Crypto" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="GeoLocation"><TextBlock Text="📍 GPS" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="EventCalendar"><TextBlock Text="📅 Event" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding ApplyQrPresetCommand}" CommandParameter="PlainText"><TextBlock Text="📄 Text" FontSize="10" /></Button>
                                 </WrapPanel>
                             </StackPanel>
 
                             <StackPanel Spacing="3">
                                 <TextBlock Text="Target URL / Payload" Classes="inspector-label" />
-                                <TextBox Text="{Binding QrCodeElement.Content, Mode=TwoWay}" Height="28" FontSize="12" />
+                                <TextBox Text="{Binding QrCodeElement.Content, Mode=TwoWay}"
+                                         AcceptsReturn="True" TextWrapping="Wrap" Height="50" FontSize="11" />
                             </StackPanel>
 
                             <StackPanel Spacing="3">
@@ -1052,6 +1091,26 @@
                                 <TextBox Text="{Binding QrCodeElement.Label, Mode=TwoWay}" Height="28" FontSize="12" />
                             </StackPanel>
 
+                            <!-- Error Correction Level (ECC) -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Error Correction (ECC)" Classes="inspector-label" />
+                                <Grid ColumnDefinitions="*,*,*,*">
+                                    <Button Grid.Column="0" Classes="secondary-btn" Height="24" Padding="2" Margin="1" Command="{Binding SetQrCodeEccLevelCommand}" CommandParameter="L" ToolTip.Tip="Low (7% recovery)">
+                                        <TextBlock Text="L (7%)" FontSize="9.5" HorizontalAlignment="Center" />
+                                    </Button>
+                                    <Button Grid.Column="1" Classes="secondary-btn" Height="24" Padding="2" Margin="1" Command="{Binding SetQrCodeEccLevelCommand}" CommandParameter="M" ToolTip.Tip="Medium (15% recovery)">
+                                        <TextBlock Text="M (15%)" FontSize="9.5" HorizontalAlignment="Center" />
+                                    </Button>
+                                    <Button Grid.Column="2" Classes="secondary-btn" Height="24" Padding="2" Margin="1" Command="{Binding SetQrCodeEccLevelCommand}" CommandParameter="Q" ToolTip.Tip="Quartile (25% recovery)">
+                                        <TextBlock Text="Q (25%)" FontSize="9.5" HorizontalAlignment="Center" />
+                                    </Button>
+                                    <Button Grid.Column="3" Classes="secondary-btn" Height="24" Padding="2" Margin="1" Command="{Binding SetQrCodeEccLevelCommand}" CommandParameter="H" ToolTip.Tip="High (30% recovery)">
+                                        <TextBlock Text="H (30%)" FontSize="9.5" HorizontalAlignment="Center" />
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Foreground (Dark) Color -->
                             <StackPanel Spacing="4">
                                 <TextBlock Text="QR Code Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
@@ -1088,6 +1147,38 @@
                                     </ItemsControl>
                                 </StackPanel>
                             </StackPanel>
+
+                            <!-- Background (Light) Color -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Background Color" Classes="inspector-label" />
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom QR Background Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding QrCodeElement.LightColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24" Background="{Binding QrCodeElement.LightColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="#CBD5E1" BorderThickness="1" />
+                                            <Border Margin="3.5" CornerRadius="9" Background="Transparent">
+                                                <materialIcons:MaterialIcon Kind="FormatColorFill" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
+                                    <Button Width="20" Height="20" Margin="1.5" CornerRadius="10" Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" Command="{Binding SetQrCodeLightColorCommand}" CommandParameter="#FFFFFF" ToolTip.Tip="White" />
+                                    <Button Width="20" Height="20" Margin="1.5" CornerRadius="10" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" Command="{Binding SetQrCodeLightColorCommand}" CommandParameter="#F8FAFC" ToolTip.Tip="Slate Light" />
+                                    <Button Width="20" Height="20" Margin="1.5" CornerRadius="10" Background="#FEF3C7" BorderBrush="#CBD5E1" BorderThickness="1" Command="{Binding SetQrCodeLightColorCommand}" CommandParameter="#FEF3C7" ToolTip.Tip="Amber Light" />
+                                    <Button Width="20" Height="20" Margin="1.5" CornerRadius="10" Background="#EFF6FF" BorderBrush="#CBD5E1" BorderThickness="1" Command="{Binding SetQrCodeLightColorCommand}" CommandParameter="#EFF6FF" ToolTip.Tip="Blue Light" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Quiet Zones Toggle -->
+                            <CheckBox IsChecked="{Binding QrCodeElement.DrawQuietZones, Mode=TwoWay}">
+                                <TextBlock Text="Include Quiet Zones (Margin)" FontSize="11" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                            </CheckBox>
                         </StackPanel>
                     </Border>
 

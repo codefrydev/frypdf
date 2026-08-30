@@ -18,6 +18,8 @@ public class TemplateService : ITemplateService
         RegisterTemplate(new ResumeTemplate());
         RegisterTemplate(new AcademicPaperTemplate());
         RegisterTemplate(new CertificateTemplate());
+        RegisterTemplate(new CertificateNavyGoldTemplate());
+        RegisterTemplate(new DiplomaAcademicTemplate());
         RegisterTemplate(_blankTemplate);
     }
 
@@ -50,6 +52,10 @@ public class TemplateService : ITemplateService
     public PdfDocumentModel CreateAcademicPaperTemplate() => CreateTemplate("academic");
 
     public PdfDocumentModel CreateCertificateTemplate() => CreateTemplate("certificate");
+
+    public PdfDocumentModel CreateCertificateNavyGoldTemplate() => CreateTemplate("certificatenavygold");
+
+    public PdfDocumentModel CreateDiplomaAcademicTemplate() => CreateTemplate("diploma");
 
     public PdfDocumentModel CreateBlankDocument(PageFormat format = PageFormat.A4, PageOrientation orientation = PageOrientation.Portrait)
     {

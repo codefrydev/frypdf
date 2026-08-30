@@ -488,6 +488,51 @@
                                 </StackPanel>
                                 <TextBlock Grid.Row="1" Text="Visual Elements" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
+
+                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+
+                            <!-- Certificates & Decorative Badges Group -->
+                            <Grid RowDefinitions="*,Auto">
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Classes="tool-btn" Command="{Binding AddMedalBadgeElementCommand}" ToolTip.Tip="Insert Award Medal with Ribbon Tails">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="Medal" Width="20" Height="20" Foreground="#D97706" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Medal Badge" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddLaurelSealElementCommand}" ToolTip.Tip="Insert Official Laurel Wreath Seal">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="Seal" Width="20" Height="20" Foreground="#F59E0B" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Laurel Seal" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddRibbonBannerElementCommand}" ToolTip.Tip="Insert Ceremonial Ribbon Banner">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="Ribbon" Width="20" Height="20" Foreground="#990000" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Banner" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddCornerAccentElementCommand}" CommandParameter="TopLeft" ToolTip.Tip="Insert Polygonal Corner Geometric Accent">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="VectorPolygon" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Corner Art" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddSignatureBlockCommand}" ToolTip.Tip="Insert Complete Signature Line with Name and Title">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="Signature" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Signature Line" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddDateBlockCommand}" ToolTip.Tip="Insert Date of Issuance Block">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="CalendarCheck" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Date Block" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock Grid.Row="1" Text="Certificates &amp; Badges" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                            </Grid>
                         </StackPanel>
 
                         <!-- ================= TAB: FILL & SIGN ================= -->

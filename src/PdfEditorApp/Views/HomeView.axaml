@@ -497,7 +497,7 @@
                                 </StackPanel>
                             </Button>
 
-                            <!-- Certificate -->
+                            <!-- Certificate of Achievement (Red & Gold) -->
                             <Button Command="{Binding SelectTemplateCommand}"
                                     CommandParameter="certificate"
                                     IsVisible="{Binding IsCertificateTemplateVisible}"
@@ -512,26 +512,113 @@
                                             BoxShadow="0 2 6 #14000000">
                                         <Border.Styles>
                                             <Style Selector="Border:pointerover">
-                                                <Setter Property="BoxShadow" Value="0 4 16 #22F59E0B" />
+                                                <Setter Property="BoxShadow" Value="0 4 16 #22990000" />
                                             </Style>
                                         </Border.Styles>
-                                        <Grid Background="#FFFBEB">
-                                            <Border BorderBrush="#F59E0B" BorderThickness="3" CornerRadius="6" Margin="6">
+                                        <Grid Background="#FEF2F2">
+                                            <!-- Geometric Corner Styling -->
+                                            <Path Data="M 0,0 L 40,0 L 0,40 Z" Fill="#990000" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                                            <Path Data="M 40,40 L 0,40 L 40,0 Z" Fill="#990000" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+                                            <Border BorderBrush="#F59E0B" BorderThickness="1.5" CornerRadius="4" Margin="10">
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
-                                                    <materialIcons:MaterialIcon Kind="Star" Width="22" Height="22" Foreground="#F59E0B" HorizontalAlignment="Center" />
-                                                    <Border Height="2" Width="60" CornerRadius="1" Background="#D97706" />
-                                                    <Border Height="2" Width="40" CornerRadius="1" Background="#FCD34D" />
+                                                    <materialIcons:MaterialIcon Kind="CertificateOutline" Width="24" Height="24" Foreground="#990000" HorizontalAlignment="Center" />
+                                                    <Border Height="2" Width="60" CornerRadius="1" Background="#990000" />
+                                                    <Border Height="2" Width="40" CornerRadius="1" Background="#F59E0B" />
                                                 </StackPanel>
                                             </Border>
                                         </Grid>
                                     </Border>
                                     <StackPanel Spacing="2">
-                                        <TextBlock Text="Certificate"
+                                        <TextBlock Text="Certificate of Achievement"
                                                    FontSize="12.5"
                                                    FontWeight="SemiBold"
                                                    Foreground="#0F172A"
                                                    TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Text="Certificates"
+                                        <TextBlock Text="Red &amp; Gold Award"
+                                                   FontSize="11"
+                                                   Foreground="#94A3B8" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Executive Certificate of Honor (Navy & Gold) -->
+                            <Button Command="{Binding SelectTemplateCommand}"
+                                    CommandParameter="certificatenavygold"
+                                    IsVisible="{Binding IsCertificateNavyGoldTemplateVisible}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    Cursor="Hand">
+                                <StackPanel Width="140" Spacing="8">
+                                    <Border Width="140" Height="110"
+                                            CornerRadius="8"
+                                            ClipToBounds="True"
+                                            BoxShadow="0 2 6 #14000000">
+                                        <Border.Styles>
+                                            <Style Selector="Border:pointerover">
+                                                <Setter Property="BoxShadow" Value="0 4 16 #221E3A8A" />
+                                            </Style>
+                                        </Border.Styles>
+                                        <Grid Background="#F0F4F8">
+                                            <Path Data="M 0,0 L 35,0 L 0,35 Z" Fill="#0F172A" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                                            <Path Data="M 35,35 L 0,35 L 35,0 Z" Fill="#0F172A" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+                                            <Border BorderBrush="#D97706" BorderThickness="1.5" CornerRadius="4" Margin="10">
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
+                                                    <materialIcons:MaterialIcon Kind="ShieldCrownOutline" Width="24" Height="24" Foreground="#0F172A" HorizontalAlignment="Center" />
+                                                    <Border Height="2" Width="60" CornerRadius="1" Background="#0F172A" />
+                                                    <Border Height="2" Width="40" CornerRadius="1" Background="#D97706" />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Executive Honor"
+                                                   FontSize="12.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#0F172A"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="Navy &amp; Gold Crest"
+                                                   FontSize="11"
+                                                   Foreground="#94A3B8" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Collegiate Academic Diploma -->
+                            <Button Command="{Binding SelectTemplateCommand}"
+                                    CommandParameter="diploma"
+                                    IsVisible="{Binding IsDiplomaAcademicTemplateVisible}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    Cursor="Hand">
+                                <StackPanel Width="140" Spacing="8">
+                                    <Border Width="140" Height="110"
+                                            CornerRadius="8"
+                                            ClipToBounds="True"
+                                            BoxShadow="0 2 6 #14000000">
+                                        <Border.Styles>
+                                            <Style Selector="Border:pointerover">
+                                                <Setter Property="BoxShadow" Value="0 4 16 #2278350F" />
+                                            </Style>
+                                        </Border.Styles>
+                                        <Grid Background="#FFFBEB">
+                                            <Border BorderBrush="#78350F" BorderThickness="2.5" CornerRadius="4" Margin="8">
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
+                                                    <materialIcons:MaterialIcon Kind="SchoolOutline" Width="24" Height="24" Foreground="#78350F" HorizontalAlignment="Center" />
+                                                    <Border Height="2" Width="60" CornerRadius="1" Background="#78350F" />
+                                                    <Border Height="2" Width="40" CornerRadius="1" Background="#D97706" />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Academic Diploma"
+                                                   FontSize="12.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#0F172A"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="Collegiate Degree"
                                                    FontSize="11"
                                                    Foreground="#94A3B8" />
                                     </StackPanel>

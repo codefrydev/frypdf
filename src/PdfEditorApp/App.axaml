@@ -1,12 +1,24 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:PdfEditorApp"
+             xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.App"
              RequestedThemeVariant="Light">
 
     <Application.Resources>
         <ResourceDictionary>
+            <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+            <converters:HexToColorConverter x:Key="HexToColorConverter" />
+            <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+            <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+            <converters:EqualityToBooleanConverter x:Key="EnumToBooleanConverter" />
+            <converters:EqualityToBooleanConverter x:Key="EqualityToBooleanConverter" />
+            <converters:DoubleToThicknessConverter x:Key="DoubleToThickness" />
+            <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
+            <converters:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
+            <converters:StringToFontFamilyConverter x:Key="StringToFontFamilyConverter" />
+
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <Color x:Key="WinBgColor">#F8FAFC</Color>

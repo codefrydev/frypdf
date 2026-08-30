@@ -336,6 +336,64 @@ public class PdfEngineTests
 
         qrVm.ApplyPresetTypeCommand.Execute("PhoneCall");
         Assert.StartsWith("tel:", qrVm.Content);
+
+        qrVm.ApplyPresetTypeCommand.Execute("Sms");
+        Assert.StartsWith("SMSTO:", qrVm.Content);
+
+        qrVm.ApplyPresetTypeCommand.Execute("CryptoAddress");
+        Assert.StartsWith("bitcoin:", qrVm.Content);
+
+        qrVm.ApplyPresetTypeCommand.Execute("EventCalendar");
+        Assert.Contains("BEGIN:VEVENT", qrVm.Content);
+    }
+
+    [Fact]
+    public void QrCodeHelper_GeneratesValidPngAndAvaloniaBitmapWithCustomColorsAndEcc()
+    {
+        // 1. Generate PNG bytes with custom colors
+        byte[] pngBytes = QrCodeHelper.GeneratePngBytes(
+            "https://github.com/PrashantUnity/PDFCreator",
+            darkHex: "#0F6CBD",
+            lightHex: "#EFF6FF",
+            ecc: QrCodeEccLevel.H,
+            pixelsPerModule: 12,
+            drawQuietZones: true);
+
+        Assert.NotNull(pngBytes);
+        Assert.True(pngBytes.Length > 100);
+        // Verify PNG magic signature: 0x89, 'P', 'N', 'G'
+        Assert.Equal(0x89, pngBytes[0]);
+        Assert.Equal((byte)'P', pngBytes[1]);
+        Assert.Equal((byte)'N', pngBytes[2]);
+        Assert.Equal((byte)'G', pngBytes[3]);
+
+        // 2. Generate PNG bytes with custom wifi and error correction
+        byte[] wifiBytes = QrCodeHelper.GeneratePngBytes(
+            "WIFI:S:TestNetwork;T:WPA2;P:Secret123;;",
+            darkHex: "#990000",
+            lightHex: "#FFFFFF",
+            ecc: QrCodeEccLevel.Q);
+
+        Assert.NotNull(wifiBytes);
+        Assert.True(wifiBytes.Length > 100);
+        Assert.Equal(0x89, wifiBytes[0]);
+    }
+
+    [Fact]
+    public void QrCodeElementViewModel_LiveBitmapUpdates_OnPropertyChanged()
+    {
+        var vm = new PdfEditorApp.ViewModels.ElementViewModels.QrCodeElementViewModel();
+        Assert.NotNull(vm.QrPngBytes);
+        Assert.True(vm.QrPngBytes.Length > 0);
+
+        vm.Content = "https://codefrydev.com/docs";
+        Assert.NotNull(vm.QrPngBytes);
+
+        vm.DarkColorHex = "#16A34A";
+        Assert.NotNull(vm.QrPngBytes);
+
+        vm.EccLevel = QrCodeEccLevel.H;
+        Assert.NotNull(vm.QrPngBytes);
     }
 
     [Fact]
@@ -1372,6 +1430,166 @@ public class PdfEngineTests
         // Close dialog
         vm.CloseNewDocumentDialog();
         Assert.False(vm.IsNewDocumentDialogOpen);
+    }
+
+    [Fact]
+    public void CertificateOfAchievement_RedAndGold_HasFullVectorAccentsAndMatchesReferenceImage()
+    {
+        var model = _templateService.CreateCertificateTemplate();
+        Assert.NotNull(model);
+        Assert.Single(model.Pages);
+        Assert.Equal("Certificate_of_Achievement.pdf", model.Title);
+
+        var page = model.Pages[0];
+        Assert.Equal(PageOrientation.Landscape, page.Orientation);
+        Assert.NotEmpty(page.Elements);
+
+        // Verify corner polygonal shapes exist
+        var shapes = page.Elements.OfType<PdfShapeElement>().ToList();
+        Assert.True(shapes.Count >= 7, "Must contain all corner polygon wedges, accents, and medal badge");
+
+        // Verify medal ribbon badge
+        var medal = shapes.FirstOrDefault(s => s.ShapeType == ShapeType.MedalRibbonBadge);
+        Assert.NotNull(medal);
+        Assert.Equal("#F59E0B", medal.FillColorHex);
+        Assert.Equal("#990000", medal.SecondaryFillColorHex);
+
+        // Verify typography elements
+        var texts = page.Elements.OfType<PdfTextElement>().ToList();
+        Assert.Contains(texts, t => t.Text == "CERTIFICATE" && t.TextColorHex == "#990000");
+        Assert.Contains(texts, t => t.Text == "OF ACHIEVEMENT");
+        Assert.Contains(texts, t => t.Text.Contains("THIS CERTIFICATE IS PROUDLY PRESENTED TO"));
+        Assert.Contains(texts, t => t.Text == "Name Surname" && t.FontFamily == "Great Vibes");
+        Assert.Contains(texts, t => t.Text.Contains("National Science and Math's Quiz"));
+        Assert.Contains(texts, t => t.Text == "Dictate" && t.FontFamily == "Great Vibes");
+        Assert.Contains(texts, t => t.Text == "Mr. John Smith");
+        Assert.Contains(texts, t => t.Text == "President");
+        Assert.Contains(texts, t => t.Text == "Date");
+
+        // Verify PDF byte export
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(model);
+        Assert.NotNull(pdfBytes);
+        Assert.True(pdfBytes.Length > 2000);
+        Assert.Equal("%PDF-", Encoding.ASCII.GetString(pdfBytes, 0, 5));
+    }
+
+    [Fact]
+    public void CertificateNavyGoldAndDiploma_ProduceValidPdfBytes()
+    {
+        var navyCert = _templateService.CreateCertificateNavyGoldTemplate();
+        Assert.NotNull(navyCert);
+        byte[] navyBytes = _exportService.GeneratePdfBytes(navyCert);
+        Assert.NotNull(navyBytes);
+        Assert.True(navyBytes.Length > 1500);
+        Assert.Equal("%PDF-", Encoding.ASCII.GetString(navyBytes, 0, 5));
+
+        var diploma = _templateService.CreateDiplomaAcademicTemplate();
+        Assert.NotNull(diploma);
+        byte[] diplomaBytes = _exportService.GeneratePdfBytes(diploma);
+        Assert.NotNull(diplomaBytes);
+        Assert.True(diplomaBytes.Length > 1500);
+        Assert.Equal("%PDF-", Encoding.ASCII.GetString(diplomaBytes, 0, 5));
+    }
+
+    [Fact]
+    public void SvgShapeHelper_AllShapeTypes_GenerateValidSvgPaths()
+    {
+        foreach (ShapeType type in Enum.GetValues<ShapeType>())
+        {
+            string path = SvgShapeHelper.GetVectorPath(type, 200, 150, 8, "M 0,0 L 50,50 Z");
+            Assert.False(string.IsNullOrWhiteSpace(path), $"Path for {type} should not be empty");
+            Assert.StartsWith("M", path);
+
+            var element = new PdfShapeElement
+            {
+                ShapeType = type,
+                Width = 200,
+                Height = 150,
+                FillColorHex = "#990000",
+                StrokeColorHex = "#F59E0B",
+                StrokeThickness = 2.0,
+                CustomPathData = type == ShapeType.CustomSvgPath ? "M 0,0 L 100,0 L 50,100 Z" : null
+            };
+
+            string svg = SvgShapeHelper.GenerateSvgMarkup(element);
+            Assert.Contains("<svg", svg);
+            Assert.Contains("viewBox", svg);
+            Assert.Contains("</svg>", svg);
+        }
+    }
+
+    [Fact]
+    public async Task ShapeElement_CustomPathDataAndColors_PersistCorrectly()
+    {
+        var model = new PdfDocumentModel { Title = "ShapePersistenceTest.pdf" };
+        var page = new PdfPageModel { Width = 800, Height = 600 };
+        page.Elements.Add(new PdfShapeElement
+        {
+            ShapeType = ShapeType.CustomSvgPath,
+            CustomPathData = "M 0,0 L 220,0 L 160,380 Z",
+            FillColorHex = "#990000",
+            StrokeColorHex = "#F59E0B",
+            StrokeThickness = 2.5,
+            SecondaryFillColorHex = "#D97706",
+            SecondaryStrokeColorHex = "#B45309",
+            X = 50,
+            Y = 50,
+            Width = 220,
+            Height = 380
+        });
+        model.Pages.Add(page);
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"shape_test_{Guid.NewGuid():N}.frypdf");
+        try
+        {
+            await _persistenceService.SaveProjectAsync(model, tempPath);
+            var loaded = await _persistenceService.LoadProjectAsync(tempPath);
+
+            Assert.NotNull(loaded);
+            Assert.Single(loaded.Pages);
+            var loadedShape = Assert.IsType<PdfShapeElement>(loaded.Pages[0].Elements[0]);
+            Assert.Equal(ShapeType.CustomSvgPath, loadedShape.ShapeType);
+            Assert.Equal("M 0,0 L 220,0 L 160,380 Z", loadedShape.CustomPathData);
+            Assert.Equal("#990000", loadedShape.FillColorHex);
+            Assert.Equal("#F59E0B", loadedShape.StrokeColorHex);
+            Assert.Equal("#D97706", loadedShape.SecondaryFillColorHex);
+            Assert.Equal("#B45309", loadedShape.SecondaryStrokeColorHex);
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
+
+    [Fact]
+    public void MainViewModel_CertificateQuickInsertionCommands_FunctionProperly()
+    {
+        var vm = new MainViewModel();
+
+        Assert.NotNull(vm.CurrentPage);
+        int initialCount = vm.CurrentPage.Elements.Count;
+
+        vm.AddMedalBadgeElement();
+        Assert.Equal(initialCount + 1, vm.CurrentPage.Elements.Count);
+        Assert.IsType<ShapeElementViewModel>(vm.CurrentPage.Elements.Last());
+
+        vm.AddLaurelSealElement();
+        Assert.Equal(initialCount + 2, vm.CurrentPage.Elements.Count);
+
+        vm.AddRibbonBannerElement();
+        Assert.Equal(initialCount + 3, vm.CurrentPage.Elements.Count);
+
+        vm.AddCornerAccentElement("TopLeft");
+        Assert.Equal(initialCount + 4, vm.CurrentPage.Elements.Count);
+
+        vm.AddCornerAccentElement("BottomRight");
+        Assert.Equal(initialCount + 5, vm.CurrentPage.Elements.Count);
+
+        vm.AddSignatureBlock();
+        Assert.True(vm.CurrentPage.Elements.Count >= initialCount + 9);
+
+        vm.AddDateBlock();
+        Assert.True(vm.CurrentPage.Elements.Count >= initialCount + 12);
     }
 }
 

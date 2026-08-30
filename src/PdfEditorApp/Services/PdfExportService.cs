@@ -16,6 +16,40 @@ public class PdfExportService : IPdfExportService
     static PdfExportService()
     {
         QuestPDF.Settings.License = LicenseType.Community;
+        RegisterEmbeddedFonts();
+    }
+
+    private static void RegisterEmbeddedFonts()
+    {
+        try
+        {
+            string[] searchPaths =
+            {
+                Path.Combine(AppContext.BaseDirectory, "Assets", "Fonts"),
+                Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "Assets", "Fonts"),
+                Path.Combine(Directory.GetCurrentDirectory(), "src", "PdfEditorApp", "Assets", "Fonts"),
+                Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Fonts")
+            };
+
+            foreach (var basePath in searchPaths)
+            {
+                if (Directory.Exists(basePath))
+                {
+                    var ttfFiles = Directory.GetFiles(basePath, "*.ttf");
+                    foreach (var ttf in ttfFiles)
+                    {
+                        try
+                        {
+                            using var stream = File.OpenRead(ttf);
+                            QuestPDF.Drawing.FontManager.RegisterFont(stream);
+                        }
+                        catch { }
+                    }
+                    break;
+                }
+            }
+        }
+        catch { }
     }
 
     public byte[] GeneratePdfBytes(PdfDocumentModel model)
@@ -299,33 +333,65 @@ internal class QuestPdfDocumentWrapper : IDocument
 
     private void ComposeShape(IContainer container, PdfShapeElement shapeEl)
     {
-        var target = container;
+        if (shapeEl.ShapeType == ShapeType.Rectangle && shapeEl.CornerRadius <= 0 && string.IsNullOrEmpty(shapeEl.CustomPathData))
+        {
+            var target = container;
 
-        if (shapeEl.ShapeType == ShapeType.Circle)
-        {
-            target = target.CornerRadius((float)Math.Max(shapeEl.Width, shapeEl.Height) / 2);
-        }
-        else if (shapeEl.CornerRadius > 0)
-        {
-            target = target.CornerRadius((float)shapeEl.CornerRadius);
+            if (!string.IsNullOrEmpty(shapeEl.FillColorHex) && shapeEl.FillColorHex != "#00000000" && !shapeEl.FillColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+            {
+                target = target.Background(shapeEl.FillColorHex);
+            }
+
+            if (shapeEl.StrokeThickness > 0 && !string.IsNullOrEmpty(shapeEl.StrokeColorHex) && shapeEl.StrokeColorHex != "#00000000" && !shapeEl.StrokeColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+            {
+                target = target.Border((float)shapeEl.StrokeThickness).BorderColor(shapeEl.StrokeColorHex);
+            }
+
+            if (!string.IsNullOrEmpty(shapeEl.Label))
+            {
+                target.Padding(4).AlignCenter().AlignMiddle().Text(shapeEl.Label)
+                    .FontSize((float)shapeEl.LabelFontSize)
+                    .FontColor(shapeEl.LabelColorHex ?? "#201F1E")
+                    .Bold();
+            }
+            return;
         }
 
-        if (!string.IsNullOrEmpty(shapeEl.FillColorHex) && shapeEl.FillColorHex != "#00000000" && !shapeEl.FillColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+        try
         {
-            target = target.Background(shapeEl.FillColorHex);
+            string svgMarkup = SvgShapeHelper.GenerateSvgMarkup(shapeEl);
+            container.Svg(svgMarkup);
         }
-
-        if (shapeEl.StrokeThickness > 0 && !string.IsNullOrEmpty(shapeEl.StrokeColorHex) && shapeEl.StrokeColorHex != "#00000000" && !shapeEl.StrokeColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+        catch
         {
-            target = target.Border((float)shapeEl.StrokeThickness).BorderColor(shapeEl.StrokeColorHex);
-        }
+            var target = container;
 
-        if (!string.IsNullOrEmpty(shapeEl.Label))
-        {
-            target.Padding(4).AlignCenter().AlignMiddle().Text(shapeEl.Label)
-                .FontSize((float)shapeEl.LabelFontSize)
-                .FontColor(shapeEl.LabelColorHex ?? "#201F1E")
-                .Bold();
+            if (shapeEl.ShapeType == ShapeType.Circle)
+            {
+                target = target.CornerRadius((float)Math.Max(shapeEl.Width, shapeEl.Height) / 2);
+            }
+            else if (shapeEl.CornerRadius > 0)
+            {
+                target = target.CornerRadius((float)shapeEl.CornerRadius);
+            }
+
+            if (!string.IsNullOrEmpty(shapeEl.FillColorHex) && shapeEl.FillColorHex != "#00000000" && !shapeEl.FillColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+            {
+                target = target.Background(shapeEl.FillColorHex);
+            }
+
+            if (shapeEl.StrokeThickness > 0 && !string.IsNullOrEmpty(shapeEl.StrokeColorHex) && shapeEl.StrokeColorHex != "#00000000" && !shapeEl.StrokeColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+            {
+                target = target.Border((float)shapeEl.StrokeThickness).BorderColor(shapeEl.StrokeColorHex);
+            }
+
+            if (!string.IsNullOrEmpty(shapeEl.Label))
+            {
+                target.Padding(4).AlignCenter().AlignMiddle().Text(shapeEl.Label)
+                    .FontSize((float)shapeEl.LabelFontSize)
+                    .FontColor(shapeEl.LabelColorHex ?? "#201F1E")
+                    .Bold();
+            }
         }
     }
 
@@ -447,12 +513,17 @@ internal class QuestPdfDocumentWrapper : IDocument
     {
         try
         {
-            using var generator = new QRCodeGenerator();
-            using var qrData = generator.CreateQrCode(qrEl.Content ?? "https://github.com", QRCodeGenerator.ECCLevel.M);
-            using var qrCode = new PngByteQRCode(qrData);
-            byte[] qrBytes = qrCode.GetGraphic(20);
+            byte[] qrBytes = QrCodeHelper.GeneratePngBytes(
+                qrEl.Content,
+                qrEl.DarkColorHex,
+                qrEl.LightColorHex,
+                qrEl.EccLevel,
+                pixelsPerModule: 20,
+                drawQuietZones: qrEl.DrawQuietZones);
 
-            container.Border(1).BorderColor(Colors.Grey.Lighten2).Background(Colors.White).Padding(4).Column(qCol =>
+            string bgHex = !string.IsNullOrWhiteSpace(qrEl.LightColorHex) ? qrEl.LightColorHex : "#FFFFFF";
+
+            container.Border(1).BorderColor(Colors.Grey.Lighten2).Background(bgHex).Padding(4).Column(qCol =>
             {
                 qCol.Item().AlignCenter().Image(qrBytes).FitArea();
                 if (!string.IsNullOrEmpty(qrEl.Label))

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Services;
 
 namespace PdfEditorApp.ViewModels.ElementViewModels;
 
@@ -35,84 +36,28 @@ public partial class ShapeElementViewModel : ElementViewModelBase
     [ObservableProperty]
     private double _labelFontSize = 12;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PathData))]
+    private string? _customPathData;
+
+    [ObservableProperty]
+    private string? _secondaryFillColorHex;
+
+    [ObservableProperty]
+    private string? _secondaryStrokeColorHex;
+
     public override ElementKind Kind => ElementKind.Shape;
     public override string DisplayName => string.IsNullOrEmpty(Label) ? $"Shape ({ShapeType})" : Label;
 
-    public string PathData => GetVectorPath();
+    public string PathData => SvgShapeHelper.GetVectorPath(ShapeType, Width, Height, CornerRadius, CustomPathData);
 
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
-        if (e.PropertyName is nameof(Width) or nameof(Height) or nameof(CornerRadius) or nameof(ShapeType))
+        if (e.PropertyName is nameof(Width) or nameof(Height) or nameof(CornerRadius) or nameof(ShapeType) or nameof(CustomPathData))
         {
             OnPropertyChanged(nameof(PathData));
         }
-    }
-
-    private string GetVectorPath()
-    {
-        double w = Math.Max(20, Width);
-        double h = Math.Max(20, Height);
-        double r = Math.Min(CornerRadius > 0 ? CornerRadius : 8, Math.Min(w / 2, h / 2));
-
-        return ShapeType switch
-        {
-            ShapeType.RoundedRectangle =>
-                $"M {r:F1},0 L {w - r:F1},0 A {r:F1},{r:F1} 0 0 1 {w:F1},{r:F1} L {w:F1},{h - r:F1} A {r:F1},{r:F1} 0 0 1 {w - r:F1},{h:F1} L {r:F1},{h:F1} A {r:F1},{r:F1} 0 0 1 0,{h - r:F1} L 0,{r:F1} A {r:F1},{r:F1} 0 0 1 {r:F1},0 Z",
-
-            ShapeType.Circle =>
-                $"M {w / 2:F1},0 A {w / 2:F1},{h / 2:F1} 0 1 1 {w / 2:F1},{h:F1} A {w / 2:F1},{h / 2:F1} 0 1 1 {w / 2:F1},0 Z",
-
-            ShapeType.Triangle =>
-                $"M {w / 2:F1},0 L {w:F1},{h:F1} L 0,{h:F1} Z",
-
-            ShapeType.RightTriangle =>
-                $"M 0,0 L {w:F1},{h:F1} L 0,{h:F1} Z",
-
-            ShapeType.Diamond =>
-                $"M {w / 2:F1},0 L {w:F1},{h / 2:F1} L {w / 2:F1},{h:F1} L 0,{h / 2:F1} Z",
-
-            ShapeType.Pentagon =>
-                $"M {w / 2:F1},0 L {w:F1},{h * 0.38:F1} L {w * 0.81:F1},{h:F1} L {w * 0.19:F1},{h:F1} L 0,{h * 0.38:F1} Z",
-
-            ShapeType.Hexagon =>
-                $"M {w * 0.25:F1},0 L {w * 0.75:F1},0 L {w:F1},{h / 2:F1} L {w * 0.75:F1},{h:F1} L {w * 0.25:F1},{h:F1} L 0,{h / 2:F1} Z",
-
-            ShapeType.Octagon =>
-                $"M {w * 0.3:F1},0 L {w * 0.7:F1},0 L {w:F1},{h * 0.3:F1} L {w:F1},{h * 0.7:F1} L {w * 0.7:F1},{h:F1} L {w * 0.3:F1},{h:F1} L 0,{h * 0.7:F1} L 0,{h * 0.3:F1} Z",
-
-            ShapeType.Star5 or ShapeType.Star =>
-                $"M {w * 0.5:F1},0 L {w * 0.62:F1},{h * 0.35:F1} L {w:F1},{h * 0.35:F1} L {w * 0.69:F1},{h * 0.57:F1} L {w * 0.81:F1},{h:F1} L {w * 0.5:F1},{h * 0.75:F1} L {w * 0.19:F1},{h:F1} L {w * 0.31:F1},{h * 0.57:F1} L 0,{h * 0.35:F1} L {w * 0.38:F1},{h * 0.35:F1} Z",
-
-            ShapeType.Star4Badge =>
-                $"M {w * 0.5:F1},0 L {w * 0.65:F1},{h * 0.35:F1} L {w:F1},{h * 0.5:F1} L {w * 0.65:F1},{h * 0.65:F1} L {w * 0.5:F1},{h:F1} L {w * 0.35:F1},{h * 0.65:F1} L 0,{h * 0.5:F1} L {w * 0.35:F1},{h * 0.35:F1} Z",
-
-            ShapeType.ArrowRight or ShapeType.Arrow =>
-                $"M 0,{h * 0.3:F1} L {w * 0.6:F1},{h * 0.3:F1} L {w * 0.6:F1},0 L {w:F1},{h * 0.5:F1} L {w * 0.6:F1},{h:F1} L {w * 0.6:F1},{h * 0.7:F1} L 0,{h * 0.7:F1} Z",
-
-            ShapeType.ArrowLeft =>
-                $"M {w:F1},{h * 0.3:F1} L {w * 0.4:F1},{h * 0.3:F1} L {w * 0.4:F1},0 L 0,{h * 0.5:F1} L {w * 0.4:F1},{h:F1} L {w * 0.4:F1},{h * 0.7:F1} L {w:F1},{h * 0.7:F1} Z",
-
-            ShapeType.Callout =>
-                $"M 0,0 L {w:F1},0 L {w:F1},{h * 0.75:F1} L {w * 0.55:F1},{h * 0.75:F1} L {w * 0.3:F1},{h:F1} L {w * 0.35:F1},{h * 0.75:F1} L 0,{h * 0.75:F1} Z",
-
-            ShapeType.Heart =>
-                $"M {w * 0.5:F1},{h * 0.25:F1} C {w * 0.3:F1},0 0,{h * 0.2:F1} 0,{h * 0.45:F1} C 0,{h * 0.7:F1} {w * 0.3:F1},{h * 0.85:F1} {w * 0.5:F1},{h:F1} C {w * 0.7:F1},{h * 0.85:F1} {w:F1},{h * 0.7:F1} {w:F1},{h * 0.45:F1} C {w:F1},{h * 0.2:F1} {w * 0.7:F1},0 {w * 0.5:F1},{h * 0.25:F1} Z",
-
-            ShapeType.Cloud =>
-                $"M {w * 0.2:F1},{h * 0.7:F1} A {w * 0.15:F1},{h * 0.2:F1} 0 0 1 {w * 0.35:F1},{h * 0.3:F1} A {w * 0.25:F1},{h * 0.3:F1} 0 0 1 {w * 0.75:F1},{h * 0.35:F1} A {w * 0.18:F1},{h * 0.22:F1} 0 0 1 {w * 0.9:F1},{h * 0.7:F1} Z",
-
-            ShapeType.Line =>
-                $"M 0,{h / 2:F1} L {w:F1},{h / 2:F1}",
-
-            ShapeType.Card =>
-                $"M {r:F1},0 L {w - r:F1},0 A {r:F1},{r:F1} 0 0 1 {w:F1},{r:F1} L {w:F1},{h - r:F1} A {r:F1},{r:F1} 0 0 1 {w - r:F1},{h:F1} L {r:F1},{h:F1} A {r:F1},{r:F1} 0 0 1 0,{h - r:F1} L 0,{r:F1} A {r:F1},{r:F1} 0 0 1 {r:F1},0 Z",
-
-            ShapeType.StickyNote =>
-                $"M 0,0 L {w - 18:F1},0 L {w:F1},18 L {w:F1},{h:F1} L 0,{h:F1} Z M {w - 18:F1},0 L {w - 18:F1},18 L {w:F1},18",
-
-            _ => $"M 0,0 L {w:F1},0 L {w:F1},{h:F1} L 0,{h:F1} Z"
-        };
     }
 
     public override PdfElementBase ToModel()
@@ -135,7 +80,10 @@ public partial class ShapeElementViewModel : ElementViewModelBase
             CornerRadius = CornerRadius,
             Label = Label,
             LabelColorHex = LabelColorHex,
-            LabelFontSize = LabelFontSize
+            LabelFontSize = LabelFontSize,
+            CustomPathData = CustomPathData,
+            SecondaryFillColorHex = SecondaryFillColorHex,
+            SecondaryStrokeColorHex = SecondaryStrokeColorHex
         };
     }
 
@@ -161,6 +109,9 @@ public partial class ShapeElementViewModel : ElementViewModelBase
             Label = shape.Label;
             LabelColorHex = shape.LabelColorHex;
             LabelFontSize = shape.LabelFontSize;
+            CustomPathData = shape.CustomPathData;
+            SecondaryFillColorHex = shape.SecondaryFillColorHex;
+            SecondaryStrokeColorHex = shape.SecondaryStrokeColorHex;
         }
     }
 }

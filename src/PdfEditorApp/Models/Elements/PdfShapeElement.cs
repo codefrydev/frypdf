@@ -13,9 +13,16 @@ public class PdfShapeElement : PdfElementBase
     public string? LabelColorHex { get; set; } = "#201F1E";
     public double LabelFontSize { get; set; } = 12;
 
+    public string? CustomPathData { get; set; }
+    public string? SecondaryFillColorHex { get; set; }
+    public string? SecondaryStrokeColorHex { get; set; }
+
     public override PdfElementBase Clone()
     {
         var clone = (PdfShapeElement)base.Clone();
+        clone.CustomPathData = CustomPathData;
+        clone.SecondaryFillColorHex = SecondaryFillColorHex;
+        clone.SecondaryStrokeColorHex = SecondaryStrokeColorHex;
         return clone;
     }
 }

@@ -14,5 +14,7 @@ public interface ITemplateService
     PdfDocumentModel CreateResumeTemplate();
     PdfDocumentModel CreateAcademicPaperTemplate();
     PdfDocumentModel CreateCertificateTemplate();
+    PdfDocumentModel CreateCertificateNavyGoldTemplate();
+    PdfDocumentModel CreateDiplomaAcademicTemplate();
     PdfDocumentModel CreateBlankDocument(PageFormat format = PageFormat.A4, PageOrientation orientation = PageOrientation.Portrait);
 }

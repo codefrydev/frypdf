@@ -1342,6 +1342,30 @@ public partial class InspectorViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void SetQrCodeLightColor(string hex)
+    {
+        if (QrCodeElement != null)
+        {
+            var el = QrCodeElement;
+            string oldHex = el.LightColorHex;
+            el.LightColorHex = hex;
+            UndoRedo?.RecordAction("Change QR Background", () => el.LightColorHex = oldHex, () => el.LightColorHex = hex);
+        }
+    }
+
+    [RelayCommand]
+    public void SetQrCodeEccLevel(string eccStr)
+    {
+        if (QrCodeElement != null && Enum.TryParse<QrCodeEccLevel>(eccStr, true, out var ecc))
+        {
+            var el = QrCodeElement;
+            var oldEcc = el.EccLevel;
+            el.EccLevel = ecc;
+            UndoRedo?.RecordAction($"Change QR ECC: {ecc}", () => el.EccLevel = oldEcc, () => el.EccLevel = ecc);
+        }
+    }
+
+    [RelayCommand]
     public void SetBarcodeColor(string hex)
     {
         if (BarcodeElement != null)

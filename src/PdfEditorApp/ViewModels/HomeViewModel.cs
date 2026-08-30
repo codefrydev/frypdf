@@ -53,6 +53,8 @@ public partial class HomeViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsResumeTemplateVisible));
         OnPropertyChanged(nameof(IsAcademicPaperTemplateVisible));
         OnPropertyChanged(nameof(IsCertificateTemplateVisible));
+        OnPropertyChanged(nameof(IsCertificateNavyGoldTemplateVisible));
+        OnPropertyChanged(nameof(IsDiplomaAcademicTemplateVisible));
         OnPropertyChanged(nameof(HasNoMatchingTemplates));
     }
 
@@ -70,16 +72,19 @@ public partial class HomeViewModel : ViewModelBase
             || category.Contains(q, StringComparison.OrdinalIgnoreCase);
     }
 
-    public bool IsBlankTemplateVisible         => CheckTemplateMatch("General",     "Blank Canvas",             "Start fresh with a clean customizable canvas");
-    public bool IsAnnualReportTemplateVisible  => CheckTemplateMatch("Corporate",   "Annual Corporate Report",  "Executive summary, financial metrics, and charts");
-    public bool IsInvoiceTemplateVisible       => CheckTemplateMatch("Finance",     "Modern Service Invoice",   "Itemized billing table and payment terms");
-    public bool IsResumeTemplateVisible        => CheckTemplateMatch("Career",      "Executive Resume / CV",    "Complete CV with QR code, competencies, and metrics");
-    public bool IsAcademicPaperTemplateVisible => CheckTemplateMatch("Academic",    "Academic Research Paper",  "2-column formatted research paper layout");
-    public bool IsCertificateTemplateVisible   => CheckTemplateMatch("Certificates","Certificate of Achievement","Award of excellence and official recognition credential");
+    public bool IsBlankTemplateVisible               => CheckTemplateMatch("General",     "Blank Canvas",             "Start fresh with a clean customizable canvas");
+    public bool IsAnnualReportTemplateVisible        => CheckTemplateMatch("Corporate",   "Annual Corporate Report",  "Executive summary, financial metrics, and charts");
+    public bool IsInvoiceTemplateVisible             => CheckTemplateMatch("Finance",     "Modern Service Invoice",   "Itemized billing table and payment terms");
+    public bool IsResumeTemplateVisible              => CheckTemplateMatch("Career",      "Executive Resume / CV",    "Complete CV with QR code, competencies, and metrics");
+    public bool IsAcademicPaperTemplateVisible       => CheckTemplateMatch("Academic",    "Academic Research Paper",  "2-column formatted research paper layout");
+    public bool IsCertificateTemplateVisible         => CheckTemplateMatch("Certificates","Certificate of Achievement","Award of excellence and official recognition credential");
+    public bool IsCertificateNavyGoldTemplateVisible => CheckTemplateMatch("Certificates","Executive Certificate of Honor","Prestigious corporate recognition with navy and gold crest");
+    public bool IsDiplomaAcademicTemplateVisible     => CheckTemplateMatch("Certificates","Collegiate Academic Diploma","Formal university degree with ornamental borders and seal");
 
     public bool HasNoMatchingTemplates =>
         !IsBlankTemplateVisible && !IsAnnualReportTemplateVisible && !IsInvoiceTemplateVisible
-        && !IsResumeTemplateVisible && !IsAcademicPaperTemplateVisible && !IsCertificateTemplateVisible;
+        && !IsResumeTemplateVisible && !IsAcademicPaperTemplateVisible && !IsCertificateTemplateVisible
+        && !IsCertificateNavyGoldTemplateVisible && !IsDiplomaAcademicTemplateVisible;
 
     public bool HasRecentDocuments => RecentDocuments.Count > 0;
 

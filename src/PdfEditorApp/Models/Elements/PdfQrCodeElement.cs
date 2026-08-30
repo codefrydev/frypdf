@@ -8,6 +8,8 @@ public class PdfQrCodeElement : PdfElementBase
     public string DarkColorHex { get; set; } = "#0F172A";
     public string LightColorHex { get; set; } = "#FFFFFF";
     public string Label { get; set; } = "SCAN TO VERIFY CREDENTIAL";
+    public QrCodeEccLevel EccLevel { get; set; } = QrCodeEccLevel.M;
+    public bool DrawQuietZones { get; set; } = true;
 
     public override PdfElementBase Clone()
     {

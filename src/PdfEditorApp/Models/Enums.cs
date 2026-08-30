@@ -162,6 +162,20 @@ public enum ShapeType
     Octagon,
     Star5,
     Star4Badge,
+    Star8Badge,
+    Star12Seal,
+    RosetteSeal,
+    LaurelWreathSeal,
+    MedalRibbonBadge,
+    RibbonBanner,
+    CornerPolygonalAccentTopLeft,
+    CornerPolygonalAccentBottomRight,
+    CornerDiagonalWedge,
+    Chevron,
+    Trapezoid,
+    Parallelogram,
+    ShieldBadge,
+    AwardBadge,
     ArrowRight,
     ArrowLeft,
     Callout,
@@ -173,7 +187,8 @@ public enum ShapeType
     Card,
     StickyNote,
     RevisionCloud,
-    DimensionLine
+    DimensionLine,
+    CustomSvgPath
 }
 
 public enum ChartType
@@ -216,6 +231,14 @@ public enum BarcodeType
     Pdf417
 }
 
+public enum QrCodeEccLevel
+{
+    L, // Low (~7% recovery)
+    M, // Medium (~15% recovery)
+    Q, // Quartile (~25% recovery)
+    H  // High (~30% recovery)
+}
+
 public enum QrCodePresetKind
 {
     Url,
@@ -224,7 +247,10 @@ public enum QrCodePresetKind
     PlainText,
     Email,
     PhoneCall,
-    GeoLocation
+    Sms,
+    GeoLocation,
+    CryptoAddress,
+    EventCalendar
 }
 
 public enum StampType

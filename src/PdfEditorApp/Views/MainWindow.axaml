@@ -347,6 +347,7 @@
         <dialogs:BatesNumberingDialog IsVisible="{Binding IsBatesNumberingDialogOpen}" />
         <dialogs:SplitExtractDialog IsVisible="{Binding IsSplitExtractDialogOpen}" />
         <dialogs:CompareDocumentsDialog IsVisible="{Binding IsCompareDialogOpen}" />
+        <dialogs:MathEquationStudioDialog IsVisible="{Binding IsMathStudioOpen}" />
         <dialogs:AboutDialog IsVisible="{Binding IsAboutDialogOpen}" />
     </Grid>
 

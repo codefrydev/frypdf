@@ -18,7 +18,29 @@ public enum ElementKind
     Redaction,
     Ink,
     Measurement,
-    Svg
+    Svg,
+    Math
+}
+
+public enum MathDisplayStyle
+{
+    DisplayBlock,
+    Inline
+}
+
+public enum MathCategory
+{
+    Algebra,
+    Calculus,
+    Physics,
+    QuantumMechanics,
+    Finance,
+    Statistics,
+    DiscreteMath,
+    Geometry,
+    Logic,
+    Chemistry,
+    Custom
 }
 
 public enum FormFieldType

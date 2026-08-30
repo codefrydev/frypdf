@@ -706,6 +706,142 @@ public partial class MainViewModel
         AddSvgElement(ornamentName);
     }
 
+    // --- MATHEMATICAL EQUATIONS & FORMULA STUDIO ---
+
+    [RelayCommand]
+    public void AddMathElement(string? presetId = null)
+    {
+        if (CurrentPage == null) return;
+
+        var mathEl = new MathElementViewModel();
+
+        if (!string.IsNullOrEmpty(presetId))
+        {
+            var preset = Services.MathEngine.MathPresetsLibrary.FindById(presetId) ?? Services.MathEngine.MathPresetsLibrary.FindByName(presetId);
+            if (preset != null)
+            {
+                mathEl.Formula = preset.Formula;
+                mathEl.PresetName = preset.Name;
+                mathEl.Description = preset.Description;
+                mathEl.Category = preset.Category;
+                mathEl.EquationNumber = preset.DefaultEquationNumber;
+                mathEl.Width = preset.DefaultWidth;
+                mathEl.Height = preset.DefaultHeight;
+            }
+        }
+
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, mathEl.Width, mathEl.Height);
+        mathEl.X = posX;
+        mathEl.Y = posY;
+        mathEl.RenderSvg();
+
+        AddElementWithUndo(mathEl, $"Added Equation: {mathEl.DisplayName}");
+    }
+
+    [RelayCommand]
+    public void OpenMathStudio(MathElementViewModel? target = null)
+    {
+        EditingMathElement = target;
+        if (target != null)
+        {
+            MathStudioFormula = target.Formula;
+            MathStudioPresetName = target.PresetName ?? "Custom Formula";
+            MathStudioEquationNumber = target.EquationNumber;
+            MathStudioShowNumber = target.ShowEquationNumber;
+            MathStudioCategory = target.Category;
+        }
+        else
+        {
+            MathStudioFormula = @"\int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi}";
+            MathStudioPresetName = "Gaussian Integral";
+            MathStudioEquationNumber = "(1)";
+            MathStudioShowNumber = false;
+            MathStudioCategory = MathCategory.Calculus;
+        }
+
+        UpdateMathStudioPreview();
+        IsMathStudioOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseMathStudio()
+    {
+        IsMathStudioOpen = false;
+        EditingMathElement = null;
+    }
+
+    [RelayCommand]
+    public void ApplyMathStudioEquation()
+    {
+        if (EditingMathElement != null)
+        {
+            var el = EditingMathElement;
+            string oldFormula = el.Formula;
+            string newFormula = MathStudioFormula;
+            bool oldNum = el.ShowEquationNumber;
+            bool newNum = MathStudioShowNumber;
+            string oldNumVal = el.EquationNumber;
+            string newNumVal = MathStudioEquationNumber;
+
+            el.Formula = newFormula;
+            el.ShowEquationNumber = newNum;
+            el.EquationNumber = newNumVal;
+            el.PresetName = MathStudioPresetName;
+            el.Category = MathStudioCategory;
+            el.RenderSvg();
+
+            UndoRedo.RecordAction(
+                "Edit Equation",
+                () => { el.Formula = oldFormula; el.ShowEquationNumber = oldNum; el.EquationNumber = oldNumVal; el.RenderSvg(); },
+                () => { el.Formula = newFormula; el.ShowEquationNumber = newNum; el.EquationNumber = newNumVal; el.RenderSvg(); }
+            );
+
+            ShowToast("Equation Updated", "Sigma");
+        }
+        else if (CurrentPage != null)
+        {
+            var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 320, 60);
+            var newEl = new MathElementViewModel
+            {
+                X = posX,
+                Y = posY,
+                Width = 320,
+                Height = 60,
+                Formula = MathStudioFormula,
+                PresetName = MathStudioPresetName,
+                ShowEquationNumber = MathStudioShowNumber,
+                EquationNumber = MathStudioEquationNumber,
+                Category = MathStudioCategory
+            };
+            newEl.RenderSvg();
+            AddElementWithUndo(newEl, "Inserted Math Equation");
+        }
+
+        CloseMathStudio();
+    }
+
+    [RelayCommand]
+    public void InsertMathStudioSymbol(string snippet)
+    {
+        if (string.IsNullOrEmpty(snippet)) return;
+        string resolved = Services.MathEngine.MathPresetsLibrary.ResolveSnippet(snippet);
+        MathStudioFormula = string.IsNullOrWhiteSpace(MathStudioFormula) ? resolved : $"{MathStudioFormula} {resolved}";
+    }
+
+    [RelayCommand]
+    public void ApplyMathStudioPreset(string presetId)
+    {
+        if (string.IsNullOrEmpty(presetId)) return;
+        var preset = Services.MathEngine.MathPresetsLibrary.FindById(presetId) ?? Services.MathEngine.MathPresetsLibrary.FindByName(presetId);
+        if (preset != null)
+        {
+            MathStudioFormula = preset.Formula;
+            MathStudioPresetName = preset.Name;
+            MathStudioEquationNumber = preset.DefaultEquationNumber;
+            MathStudioCategory = preset.Category;
+        }
+    }
+
     // --- FILL & SIGN / DIGITAL SIGNATURE STUDIO ---
 
     [RelayCommand]

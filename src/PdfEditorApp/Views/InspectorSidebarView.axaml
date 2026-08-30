@@ -1608,7 +1608,171 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- 15. DIMENSIONS, POSITION & TRANSFORMS CARD (Visible for any selected element) -->
+                    <!-- 15. MATHEMATICAL EQUATION & FORMULA CARD (Visible when Math Element is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding MathElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <!-- Card Title & Open Studio Button -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="Sigma" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                    <TextBlock Text="Mathematical Equation" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Classes="secondary-btn" Height="24" Padding="6,1"
+                                        Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).OpenMathStudioCommand}"
+                                        CommandParameter="{Binding MathElement}"
+                                        ToolTip.Tip="Open Full Equation Studio">
+                                    <StackPanel Orientation="Horizontal" Spacing="3">
+                                        <materialIcons:MaterialIcon Kind="OpenInNew" Width="11" Height="11" Foreground="{StaticResource WinAccentBrush}" />
+                                        <TextBlock Text="Studio" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinAccentBrush}" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <!-- Quick Presets -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Standard Formula Presets" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2"
+                                            Command="{Binding MathElement.ApplyPresetCommand}" CommandParameter="gaussian_integral">
+                                        <TextBlock Text="∫ Gaussian" FontSize="10" />
+                                    </Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2"
+                                            Command="{Binding MathElement.ApplyPresetCommand}" CommandParameter="quadratic_formula">
+                                        <TextBlock Text="± Quadratic" FontSize="10" />
+                                    </Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2"
+                                            Command="{Binding MathElement.ApplyPresetCommand}" CommandParameter="schrodinger_time_dependent">
+                                        <TextBlock Text="Ψ Schrödinger" FontSize="10" />
+                                    </Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2"
+                                            Command="{Binding MathElement.ApplyPresetCommand}" CommandParameter="black_scholes_pde">
+                                        <TextBlock Text="∂ Black-Scholes" FontSize="10" />
+                                    </Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2"
+                                            Command="{Binding MathElement.ApplyPresetCommand}" CommandParameter="eulers_identity">
+                                        <TextBlock Text="e^(iπ) Euler" FontSize="10" />
+                                    </Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2"
+                                            Command="{Binding MathElement.ApplyPresetCommand}" CommandParameter="normal_distribution">
+                                        <TextBlock Text="𝒩 Normal PDF" FontSize="10" />
+                                    </Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2"
+                                            Command="{Binding MathElement.ApplyPresetCommand}" CommandParameter="bates_jump_diffusion">
+                                        <TextBlock Text="SDE Bates Jump" FontSize="10" />
+                                    </Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2"
+                                            Command="{Binding MathElement.ApplyPresetCommand}" CommandParameter="dicke_hamiltonian">
+                                        <TextBlock Text="Ĥ Cavity QED" FontSize="10" />
+                                    </Button>
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <!-- LaTeX Formula Editor -->
+                            <StackPanel Spacing="3">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="LaTeX Expression" Classes="inspector-label" />
+                                    <TextBlock Grid.Column="1" Text="{Binding MathElement.PresetName}" FontSize="9.5" Foreground="{StaticResource WinMutedBrush}" FontWeight="Medium" />
+                                </Grid>
+                                <TextBox Text="{Binding MathElement.Formula, Mode=TwoWay}"
+                                         AcceptsReturn="True" TextWrapping="Wrap"
+                                         Height="70" FontSize="11.5"
+                                         FontFamily="Cascadia Code, Consolas, Courier New, monospace" />
+                            </StackPanel>
+
+                            <!-- Quick Symbol Insert Bar -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Quick Insert Math Symbols" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="frac"><TextBlock Text="a/b" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="sqrt"><TextBlock Text="√x" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="sum"><TextBlock Text="∑" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="int"><TextBlock Text="∫" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\partial"><TextBlock Text="∂" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\nabla"><TextBlock Text="∇" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\hbar"><TextBlock Text="ℏ" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\infty"><TextBlock Text="∞" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\alpha"><TextBlock Text="α" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\beta"><TextBlock Text="β" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\pi"><TextBlock Text="π" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\sigma"><TextBlock Text="σ" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\psi"><TextBlock Text="ψ" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\omega"><TextBlock Text="ω" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\pm"><TextBlock Text="±" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\times"><TextBlock Text="×" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\le"><TextBlock Text="≤" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\ge"><TextBlock Text="≥" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\approx"><TextBlock Text="≈" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1.5" Command="{Binding MathElement.InsertSymbolCommand}" CommandParameter="\to"><TextBlock Text="→" FontSize="10" /></Button>
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <!-- Font Size & Equation Numbering -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <StackPanel Grid.Column="0" Spacing="3">
+                                    <TextBlock Text="Base Font Size (pt)" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding MathElement.FontSize, Mode=TwoWay}"
+                                                   Minimum="8" Maximum="72" Increment="1" FormatString="0 pt" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Spacing="3">
+                                    <TextBlock Text="Equation Number" Classes="inspector-label" />
+                                    <TextBox Text="{Binding MathElement.EquationNumber, Mode=TwoWay}"
+                                             Height="28" FontSize="11.5"
+                                             IsEnabled="{Binding MathElement.ShowEquationNumber}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Equation Number Toggle -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Show Equation Number Tag (e.g. (1))" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding MathElement.ShowEquationNumber, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
+                            </Grid>
+
+                            <!-- Text / Symbol Color -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Formula Glyph Color" Classes="inspector-label" />
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Formula Color Picker">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding MathElement.TextColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Border CornerRadius="12" Width="24" Height="24" Background="{Binding MathElement.TextColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" />
+                                    </Button>
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="20" Height="20" Margin="1.5" CornerRadius="3" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetTextColorCommand}" CommandParameter="{Binding Hex}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Background & Border Card Styling -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <StackPanel Grid.Column="0" Spacing="3">
+                                    <TextBlock Text="Corner Radius" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding MathElement.CornerRadius, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="30" Increment="1" FormatString="0 px" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="3">
+                                    <TextBlock Text="Border Thickness" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding MathElement.BorderThickness, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="10" Increment="0.5" FormatString="0.0 px" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 16. DIMENSIONS, POSITION & TRANSFORMS CARD (Visible for any selected element) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding HasSelectedElement}">
                         <StackPanel Spacing="10">

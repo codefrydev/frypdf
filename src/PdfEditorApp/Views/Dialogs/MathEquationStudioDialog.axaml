@@ -1,0 +1,313 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:views="using:PdfEditorApp.Views"
+             xmlns:math="using:PdfEditorApp.Services.MathEngine"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+             x:Class="PdfEditorApp.Views.Dialogs.MathEquationStudioDialog"
+             x:DataType="vm:MainViewModel">
+
+    <!-- Modal Backdrop Overlay -->
+    <Grid Background="#70000000">
+        <Border Background="White"
+                BorderBrush="{StaticResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Width="960"
+                Height="680"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                BoxShadow="0 24 64 #40000000, 0 4 16 #20000000">
+
+            <Grid RowDefinitions="Auto,*,Auto">
+
+                <!-- 1. Header Bar -->
+                <Border Grid.Row="0" Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" CornerRadius="12,12,0,0" Padding="20,16">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <!-- Icon & Title -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <Border Width="40" Height="40" CornerRadius="10" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1">
+                                <materialIcons:MaterialIcon Kind="Sigma" Width="24" Height="24" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Spacing="2">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="Mathematical Equation Studio" FontSize="16" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                                    <Border Background="#E0F2FE" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                        <TextBlock Text="LaTeX Vector Engine" FontSize="10" FontWeight="SemiBold" Foreground="#0369A1" />
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="Interactive LaTeX formula typesetter with live vector rendering and comprehensive symbol palettes"
+                                           FontSize="11.5" Foreground="#64748B" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Close Button -->
+                        <Button Grid.Column="2" Classes="mini-tool-btn" Width="32" Height="32" Command="{Binding CloseMathStudioCommand}" ToolTip.Tip="Close (Esc)">
+                            <materialIcons:MaterialIcon Kind="Close" Width="18" Height="18" Foreground="#64748B" />
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- 2. Main Studio Content (Split Left Palettes / Right Editor & Live Preview) -->
+                <Grid Grid.Row="1" ColumnDefinitions="420,*" Margin="16,14,16,14">
+
+                    <!-- LEFT: Palettes, Presets Library & Cheat Sheet -->
+                    <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,12,0">
+                        <TabControl>
+                            <!-- Tab 1: Math Symbol Palettes -->
+                            <TabItem Header="Symbols &amp; Operators" FontSize="11.5" FontWeight="SemiBold">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,8,0,0">
+                                    <StackPanel Spacing="12">
+
+                                        <!-- Calculus & Physics -->
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Calculus, Integrals &amp; Physics" FontSize="11" FontWeight="Bold" Foreground="#0F172A" />
+                                            <WrapPanel Orientation="Horizontal">
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="int"><TextBlock Text="∫ dx" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="iint"><TextBlock Text="∬" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="iiint"><TextBlock Text="∭" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="oint"><TextBlock Text="∮" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="sum"><TextBlock Text="∑" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="prod"><TextBlock Text="∏" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="lim"><TextBlock Text="lim" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="dydx"><TextBlock Text="∂y/∂x" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="nabla"><TextBlock Text="∇" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="hbar"><TextBlock Text="ℏ" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="infty"><TextBlock Text="∞" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="hat"><TextBlock Text="Ĥ" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="vec"><TextBlock Text="F⃗" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="dot"><TextBlock Text="ẋ" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="ddot"><TextBlock Text="ẍ" FontSize="10.5" /></Button>
+                                            </WrapPanel>
+                                        </StackPanel>
+
+                                        <!-- Fractions, Roots & Exponents -->
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Fractions, Roots &amp; Powers" FontSize="11" FontWeight="Bold" Foreground="#0F172A" />
+                                            <WrapPanel Orientation="Horizontal">
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="frac"><TextBlock Text="a / b" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="sqrt"><TextBlock Text="√x" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="rootn"><TextBlock Text="ⁿ√x" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="x2"><TextBlock Text="x²" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="xi"><TextBlock Text="xᵢ" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="xi2"><TextBlock Text="xᵢ²" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="binom"><TextBlock Text="(ⁿₖ)" FontSize="10.5" /></Button>
+                                            </WrapPanel>
+                                        </StackPanel>
+
+                                        <!-- Greek Alphabet -->
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Greek Letters" FontSize="11" FontWeight="Bold" Foreground="#0F172A" />
+                                            <WrapPanel Orientation="Horizontal">
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\alpha"><TextBlock Text="α" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\beta"><TextBlock Text="β" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\gamma"><TextBlock Text="γ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\delta"><TextBlock Text="δ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\epsilon"><TextBlock Text="ϵ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\theta"><TextBlock Text="θ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\lambda"><TextBlock Text="λ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\mu"><TextBlock Text="μ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\pi"><TextBlock Text="π" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\rho"><TextBlock Text="ρ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\sigma"><TextBlock Text="σ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\tau"><TextBlock Text="τ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\phi"><TextBlock Text="ϕ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\psi"><TextBlock Text="ψ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\omega"><TextBlock Text="ω" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\Delta"><TextBlock Text="Δ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\Gamma"><TextBlock Text="Γ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\Sigma"><TextBlock Text="Σ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\Omega"><TextBlock Text="Ω" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\Psi"><TextBlock Text="Ψ" FontSize="10" /></Button>
+                                            </WrapPanel>
+                                        </StackPanel>
+
+                                        <!-- Matrices & Delimiters -->
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Matrices, Brackets &amp; Sets" FontSize="11" FontWeight="Bold" Foreground="#0F172A" />
+                                            <WrapPanel Orientation="Horizontal">
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="pmatrix"><TextBlock Text="(2x2 Matrix)" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="bmatrix"><TextBlock Text="[2x2 Matrix]" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="cases"><TextBlock Text="Piecewise Cases" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="parens"><TextBlock Text="( )" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="brackets"><TextBlock Text="[ ]" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="set"><TextBlock Text="{}{ }" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="bra"><TextBlock Text="⟨ψ|" FontSize="10.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="ket"><TextBlock Text="|ψ⟩" FontSize="10.5" /></Button>
+                                            </WrapPanel>
+                                        </StackPanel>
+
+                                        <!-- Operators, Relations & Arrows -->
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Operators, Relations &amp; Arrows" FontSize="11" FontWeight="Bold" Foreground="#0F172A" />
+                                            <WrapPanel Orientation="Horizontal">
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\pm"><TextBlock Text="±" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\times"><TextBlock Text="×" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\cdot"><TextBlock Text="·" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\div"><TextBlock Text="÷" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\le"><TextBlock Text="≤" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\ge"><TextBlock Text="≥" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\neq"><TextBlock Text="≠" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\approx"><TextBlock Text="≈" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\equiv"><TextBlock Text="≡" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\in"><TextBlock Text="∈" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\notin"><TextBlock Text="∉" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\subset"><TextBlock Text="⊂" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\cup"><TextBlock Text="∪" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\cap"><TextBlock Text="∩" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\to"><TextBlock Text="→" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\Rightarrow"><TextBlock Text="⇒" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\iff"><TextBlock Text="⟺" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\forall"><TextBlock Text="∀" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\exists"><TextBlock Text="∃" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\mathbb{R}"><TextBlock Text="ℝ" FontSize="10" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\mathbb{C}"><TextBlock Text="ℂ" FontSize="10" /></Button>
+                                            </WrapPanel>
+                                        </StackPanel>
+
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </TabItem>
+
+                            <!-- Tab 2: Formula Presets Library -->
+                            <TabItem Header="Preset Library" FontSize="11.5" FontWeight="SemiBold">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,8,0,0">
+                                    <StackPanel Spacing="6">
+                                        <!-- Quick preset buttons -->
+                                        <TextBlock Text="Calculus &amp; Analysis" FontSize="11" FontWeight="Bold" Foreground="#0F172A" />
+                                        <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="gaussian_integral">
+                                            <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Gaussian Integral (∫ e^(-x²) dx = √π)" FontSize="11" /><TextBlock Grid.Column="1" Text="Calculus" FontSize="9.5" Foreground="#0284C7" /></Grid>
+                                        </Button>
+                                        <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="fundamental_calculus">
+                                            <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Fundamental Theorem of Calculus" FontSize="11" /><TextBlock Grid.Column="1" Text="Calculus" FontSize="9.5" Foreground="#0284C7" /></Grid>
+                                        </Button>
+                                        <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="fourier_transform">
+                                            <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Fourier Transform (f̂(ξ))" FontSize="11" /><TextBlock Grid.Column="1" Text="Calculus" FontSize="9.5" Foreground="#0284C7" /></Grid>
+                                        </Button>
+
+                                        <TextBlock Text="Physics &amp; Quantum" FontSize="11" FontWeight="Bold" Foreground="#0F172A" Margin="0,6,0,0" />
+                                        <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="schrodinger_time_dependent">
+                                            <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Schrödinger Equation (iℏ ∂Ψ/∂t = ĤΨ)" FontSize="11" /><TextBlock Grid.Column="1" Text="Physics" FontSize="9.5" Foreground="#0891B2" /></Grid>
+                                        </Button>
+                                        <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="dicke_hamiltonian">
+                                            <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Dicke Cavity QED Hamiltonian" FontSize="11" /><TextBlock Grid.Column="1" Text="Quantum" FontSize="9.5" Foreground="#0891B2" /></Grid>
+                                        </Button>
+                                        <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="maxwell_diff">
+                                            <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Maxwell's Equations (Differential)" FontSize="11" /><TextBlock Grid.Column="1" Text="Physics" FontSize="9.5" Foreground="#0891B2" /></Grid>
+                                        </Button>
+
+                                        <TextBlock Text="Quantitative Finance &amp; Statistics" FontSize="11" FontWeight="Bold" Foreground="#0F172A" Margin="0,6,0,0" />
+                                        <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="black_scholes_pde">
+                                            <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Black-Scholes-Merton PDE" FontSize="11" /><TextBlock Grid.Column="1" Text="Finance" FontSize="9.5" Foreground="#16A34A" /></Grid>
+                                        </Button>
+                                        <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="bates_jump_diffusion">
+                                            <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Bates Jump-Diffusion SDE" FontSize="11" /><TextBlock Grid.Column="1" Text="Finance" FontSize="9.5" Foreground="#16A34A" /></Grid>
+                                        </Button>
+                                        <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="normal_distribution">
+                                            <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Normal (Gaussian) Distribution" FontSize="11" /><TextBlock Grid.Column="1" Text="Stats" FontSize="9.5" Foreground="#7C3AED" /></Grid>
+                                        </Button>
+
+                                        <TextBlock Text="Algebra &amp; Fundamentals" FontSize="11" FontWeight="Bold" Foreground="#0F172A" Margin="0,6,0,0" />
+                                        <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="quadratic_formula">
+                                            <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Quadratic Formula (x = (-b ± √D)/2a)" FontSize="11" /><TextBlock Grid.Column="1" Text="Algebra" FontSize="9.5" Foreground="#D97706" /></Grid>
+                                        </Button>
+                                        <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="eulers_identity">
+                                            <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Euler's Identity (e^(iπ) + 1 = 0)" FontSize="11" /><TextBlock Grid.Column="1" Text="Algebra" FontSize="9.5" Foreground="#D97706" /></Grid>
+                                        </Button>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </TabItem>
+                        </TabControl>
+                    </Border>
+
+                    <!-- RIGHT: Live HD Preview Canvas + LaTeX Code Editor + Settings -->
+                    <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" Margin="4,0,0,0">
+
+                        <!-- Live HD Vector Preview Card -->
+                        <Border Grid.Row="0" Background="#F1F5F9" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12" Height="150">
+                            <Grid RowDefinitions="Auto,*">
+                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="EyeOutline" Width="14" Height="14" Foreground="#0284C7" />
+                                        <TextBlock Text="Live Vector Typesetting Preview" FontSize="11" FontWeight="Bold" Foreground="#334155" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1" Background="#E2E8F0" CornerRadius="4" Padding="5,1">
+                                        <TextBlock Text="{Binding MathStudioPresetName}" FontSize="9.5" FontWeight="SemiBold" Foreground="#475569" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- Vector Math Formula Control -->
+                                <Border Grid.Row="1" Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="10">
+                                    <views:MathFormulaControl Formula="{Binding MathStudioFormula}"
+                                                              FontSize="18"
+                                                              TextColor="{StaticResource WinTextBrush}"
+                                                              ShowEquationNumber="{Binding MathStudioShowNumber}"
+                                                              EquationNumber="{Binding MathStudioEquationNumber}"
+                                                              Alignment="Center"
+                                                              HorizontalAlignment="Stretch"
+                                                              VerticalAlignment="Center" />
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- LaTeX Syntax Input Area -->
+                        <StackPanel Grid.Row="1" Spacing="4">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="LaTeX Expression Code" FontSize="11.5" FontWeight="Bold" Foreground="#0F172A" />
+                                <TextBlock Grid.Column="1" Text="Standard LaTeX math markup" FontSize="10" Foreground="#64748B" />
+                            </Grid>
+                            <TextBox Text="{Binding MathStudioFormula, Mode=TwoWay}"
+                                     AcceptsReturn="True" TextWrapping="Wrap"
+                                     Height="160" FontSize="13"
+                                     FontFamily="Cascadia Code, Consolas, Menlo, monospace"
+                                     PlaceholderText="{}\int_{a}^{b} f(x) \, dx = F(b) - F(a)" />
+                        </StackPanel>
+
+                        <!-- Options & Numbering -->
+                        <Grid Grid.Row="2" ColumnDefinitions="*,*,Auto" Margin="0,10,0,0" ColumnSpacing="10" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="0" Spacing="3">
+                                <TextBlock Text="Preset / Formula Name" Classes="inspector-label" />
+                                <TextBox Text="{Binding MathStudioPresetName, Mode=TwoWay}" Height="28" FontSize="11.5" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Spacing="3">
+                                <TextBlock Text="Equation Tag / Number" Classes="inspector-label" />
+                                <TextBox Text="{Binding MathStudioEquationNumber, Mode=TwoWay}" Height="28" FontSize="11.5" IsEnabled="{Binding MathStudioShowNumber}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Spacing="3" VerticalAlignment="Bottom">
+                                <TextBlock Text="Show Number Tag" Classes="inspector-label" />
+                                <ToggleSwitch IsChecked="{Binding MathStudioShowNumber, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
+                            </StackPanel>
+                        </Grid>
+
+                    </Grid>
+                </Grid>
+
+                <!-- 3. Footer Action Bar -->
+                <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,1,0,0" CornerRadius="0,0,12,12" Padding="20,14">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Equations render as 100% scalable vector artwork in exported PDF files."
+                                   FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <Button Classes="secondary-btn" Height="32" Width="90" Command="{Binding CloseMathStudioCommand}">
+                                <TextBlock Text="Cancel" FontSize="12" HorizontalAlignment="Center" />
+                            </Button>
+                            <Button Classes="primary-btn" Height="32" Padding="16,0" Command="{Binding ApplyMathStudioEquationCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="Check" Width="16" Height="16" Foreground="White" />
+                                    <TextBlock Text="Insert / Update Equation" FontSize="12" FontWeight="SemiBold" Foreground="White" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

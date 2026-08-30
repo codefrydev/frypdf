@@ -195,30 +195,27 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                     Alignment = TextAlignmentMode.Justify
                 },
 
-                // Hamiltonian Equation Box
-                new PdfShapeElement
+                // Dicke Hamiltonian Vector Math Equation
+                new PdfMathElement
                 {
                     X = 55,
                     Y = 475,
                     Width = 330,
-                    Height = 42,
-                    CornerRadius = 3,
-                    FillColorHex = "#ECFEFF",
-                    StrokeColorHex = "#A5F3FC",
-                    StrokeThickness = 0.5
-                },
-                new PdfTextElement
-                {
-                    X = 65,
-                    Y = 482,
-                    Width = 310,
-                    Height = 28,
-                    Text = "Ĥ = ℏω_c â† â + ½ ℏω_q ∑ σ_z^(j) + ℏg/√N ∑ (â† σ_-^(j) + â σ_+^(j))   (1)",
-                    FontSize = 9,
-                    FontFamily = "Times New Roman",
-                    IsBold = true,
+                    Height = 44,
+                    Formula = @"\hat{H} = \hbar \omega_c a^\dagger a + \frac{1}{2} \hbar \omega_q \sum_{j=1}^N \sigma_z^{(j)} + \frac{\hbar g}{\sqrt{N}} \sum_{j=1}^N (a^\dagger \sigma_-^{(j)} + a \sigma_+^{(j)})",
+                    FontSize = 9.5,
                     TextColorHex = "#0E7490",
-                    Alignment = TextAlignmentMode.Center
+                    BackgroundColorHex = "#ECFEFF",
+                    BorderColorHex = "#A5F3FC",
+                    BorderThickness = 0.5,
+                    CornerRadius = 3,
+                    ShowBackground = true,
+                    ShowBorder = true,
+                    ShowEquationNumber = true,
+                    EquationNumber = "(1)",
+                    Alignment = TextAlignmentMode.Center,
+                    Category = MathCategory.QuantumMechanics,
+                    PresetName = "Dicke Cavity QED Hamiltonian"
                 },
 
                 new PdfTextElement

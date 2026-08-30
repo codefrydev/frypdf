@@ -1005,6 +1005,73 @@
                                     </Grid>
                                 </DataTemplate>
 
+                                <!-- 16. MATHEMATICAL EQUATION & FORMULA TEMPLATE -->
+                                <DataTemplate DataType="elvm:MathElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                        <!-- Visual Container Box -->
+                                        <Border Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="{Binding BorderThickness, Converter={StaticResource DoubleToThickness}}"
+                                                CornerRadius="{Binding CornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                                Padding="{Binding Padding, Converter={StaticResource DoubleToThickness}}"
+                                                PointerPressed="OnElementPointerPressed">
+
+                                            <Grid>
+                                                <!-- High-Precision Vector Math Rendering Canvas -->
+                                                <views:MathFormulaControl Formula="{Binding Formula}"
+                                                                          FontSize="{Binding FontSize}"
+                                                                          TextColor="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                          ShowEquationNumber="{Binding ShowEquationNumber}"
+                                                                          EquationNumber="{Binding EquationNumber}"
+                                                                          Alignment="{Binding Alignment}"
+                                                                          IsVisible="{Binding !IsInEditMode}"
+                                                                          DoubleTapped="OnMathElementDoubleTapped" />
+
+                                                <!-- In-Place Editable LaTeX Code Box -->
+                                                <TextBox Text="{Binding Formula, Mode=TwoWay}"
+                                                         FontFamily="Cascadia Code, Consolas, Courier New, monospace"
+                                                         FontSize="11.5"
+                                                         Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                         AcceptsReturn="True"
+                                                         TextWrapping="Wrap"
+                                                         Padding="4"
+                                                         IsVisible="{Binding IsInEditMode}"
+                                                         LostFocus="OnMathTextBoxLostFocus" />
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Selection Adorner & 8 Resize Handles -->
+                                        <Grid IsVisible="{Binding IsSelected}" IsHitTestVisible="True">
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+
+                                            <Border Tag="topleft" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-4,-4,0,0" Cursor="TopLeftCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <Border Tag="top" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-4,0,0" Cursor="SizeNorthSouth"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <Border Tag="topright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-4,-4,0" Cursor="TopRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <Border Tag="left" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-4,0,0,0" Cursor="SizeWestEast"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <Border Tag="right" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-4,0" Cursor="SizeWestEast"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <Border Tag="bottomleft" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-4,0,0,-4" Cursor="BottomLeftCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <Border Tag="bottom" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-4" Cursor="SizeNorthSouth"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
                             </ItemsControl.DataTemplates>
                         </ItemsControl>
 

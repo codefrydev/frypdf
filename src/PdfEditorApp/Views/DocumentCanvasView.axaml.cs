@@ -364,6 +364,35 @@ public partial class DocumentCanvasView : UserControl
         }
     }
 
+    private void OnMathElementDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (sender is Control control && control.DataContext is MathElementViewModel mathVm)
+        {
+            _initialTextEditContent = mathVm.Formula;
+            ViewModel?.OpenMathStudioCommand.Execute(mathVm);
+            e.Handled = true;
+        }
+    }
+
+    private void OnMathTextBoxLostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Control control && control.DataContext is MathElementViewModel mathVm)
+        {
+            if (mathVm.Formula != _initialTextEditContent)
+            {
+                string oldFormula = _initialTextEditContent;
+                string newFormula = mathVm.Formula;
+                ViewModel?.UndoRedo.RecordAction(
+                    "Edit Formula",
+                    () => { mathVm.Formula = oldFormula; mathVm.RenderSvg(); },
+                    () => { mathVm.Formula = newFormula; mathVm.RenderSvg(); }
+                );
+            }
+            mathVm.IsInEditMode = false;
+            mathVm.RenderSvg();
+        }
+    }
+
     private void OnGlobalPointerMoved(object? sender, PointerEventArgs e)
     {
         if (_isPanning && CanvasScrollViewer != null)

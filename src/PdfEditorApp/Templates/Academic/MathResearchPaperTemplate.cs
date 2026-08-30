@@ -195,30 +195,27 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                     Alignment = TextAlignmentMode.Justify
                 },
 
-                // Formal Equation Box
-                new PdfShapeElement
+                // Formal Hodge Laplacian Math Equation
+                new PdfMathElement
                 {
                     X = 55,
                     Y = 475,
                     Width = 330,
-                    Height = 36,
-                    CornerRadius = 3,
-                    FillColorHex = "#F5F3FF",
-                    StrokeColorHex = "#DDD6FE",
-                    StrokeThickness = 0.5
-                },
-                new PdfTextElement
-                {
-                    X = 65,
-                    Y = 481,
-                    Width = 310,
-                    Height = 24,
-                    Text = "Δ_k = δ_{k-1} ∂_k + ∂_{k+1} δ_k = Δ_k^{down} + Δ_k^{up}      (2.1)",
-                    FontSize = 9.5,
-                    FontFamily = "Times New Roman",
-                    IsBold = true,
+                    Height = 38,
+                    Formula = @"\Delta_k = \delta_{k-1} \partial_k + \partial_{k+1} \delta_k = \Delta_k^{\text{down}} + \Delta_k^{\text{up}}",
+                    FontSize = 10,
                     TextColorHex = "#1E1B4B",
-                    Alignment = TextAlignmentMode.Center
+                    BackgroundColorHex = "#F5F3FF",
+                    BorderColorHex = "#DDD6FE",
+                    BorderThickness = 0.5,
+                    CornerRadius = 3,
+                    ShowBackground = true,
+                    ShowBorder = true,
+                    ShowEquationNumber = true,
+                    EquationNumber = "(2.1)",
+                    Alignment = TextAlignmentMode.Center,
+                    Category = MathCategory.Geometry,
+                    PresetName = "Discrete Hodge Laplacian"
                 },
 
                 new PdfTextElement
@@ -446,30 +443,27 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                     Alignment = TextAlignmentMode.Justify
                 },
 
-                // Formal Equation Box
-                new PdfShapeElement
+                // Formal Spectral Zeta Function Math Equation
+                new PdfMathElement
                 {
                     X = 55,
                     Y = 160,
                     Width = 330,
-                    Height = 36,
-                    CornerRadius = 3,
-                    FillColorHex = "#F5F3FF",
-                    StrokeColorHex = "#DDD6FE",
-                    StrokeThickness = 0.5
-                },
-                new PdfTextElement
-                {
-                    X = 65,
-                    Y = 166,
-                    Width = 310,
-                    Height = 24,
-                    Text = "ζ_k(s) = Tr( (Δ_k|_{ker(Δ_k)^⊥})^{-s} ) = ∑_{j=1}^{N - β_k} λ_j^{-s}      (7.1)",
-                    FontSize = 9,
-                    FontFamily = "Times New Roman",
-                    IsBold = true,
+                    Height = 38,
+                    Formula = @"\zeta_k(s) = \mathrm{Tr}\left( (\Delta_k |_{\ker(\Delta_k)^\perp})^{-s} \right) = \sum_{j=1}^{N - \beta_k} \lambda_j^{-s}",
+                    FontSize = 9.5,
                     TextColorHex = "#1E1B4B",
-                    Alignment = TextAlignmentMode.Center
+                    BackgroundColorHex = "#F5F3FF",
+                    BorderColorHex = "#DDD6FE",
+                    BorderThickness = 0.5,
+                    CornerRadius = 3,
+                    ShowBackground = true,
+                    ShowBorder = true,
+                    ShowEquationNumber = true,
+                    EquationNumber = "(7.1)",
+                    Alignment = TextAlignmentMode.Center,
+                    Category = MathCategory.Calculus,
+                    PresetName = "Spectral Zeta Function"
                 },
 
                 new PdfTextElement

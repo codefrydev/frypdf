@@ -8,6 +8,7 @@ using QuestPDF.Infrastructure;
 using QRCoder;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Services.MathEngine;
 
 namespace PdfEditorApp.Services;
 
@@ -294,6 +295,10 @@ internal class QuestPdfDocumentWrapper : IDocument
             case PdfSvgElement svgEl:
                 ComposeSvg(container, svgEl);
                 break;
+
+            case PdfMathElement mathEl:
+                ComposeMath(container, mathEl);
+                break;
         }
     }
 
@@ -552,6 +557,54 @@ internal class QuestPdfDocumentWrapper : IDocument
         {
             container.Border(1).BorderColor(svgEl.BorderColorHex ?? "#CBD5E1").Background("#F8FAFC").AlignCenter().AlignMiddle()
                 .Text("SVG Vector Art").FontSize(9).FontColor(Colors.Grey.Medium);
+        }
+    }
+
+    private void ComposeMath(IContainer container, PdfMathElement mathEl)
+    {
+        try
+        {
+            var target = container;
+
+            if (mathEl.CornerRadius > 0)
+            {
+                target = target.CornerRadius((float)mathEl.CornerRadius);
+            }
+
+            if (mathEl.ShowBorder && mathEl.BorderThickness > 0 && !string.IsNullOrEmpty(mathEl.BorderColorHex) && !mathEl.BorderColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+            {
+                target = target.Border((float)mathEl.BorderThickness).BorderColor(mathEl.BorderColorHex);
+            }
+
+            if (mathEl.ShowBackground && !string.IsNullOrEmpty(mathEl.BackgroundColorHex) && !mathEl.BackgroundColorHex.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+            {
+                target = target.Background(mathEl.BackgroundColorHex);
+            }
+
+            if (mathEl.Padding > 0)
+            {
+                target = target.Padding((float)mathEl.Padding);
+            }
+
+            var options = new MathRenderOptions
+            {
+                FontSize = mathEl.FontSize > 0 ? mathEl.FontSize : 16.0,
+                TextColorHex = !string.IsNullOrEmpty(mathEl.TextColorHex) ? mathEl.TextColorHex : "#000000",
+                BackgroundColorHex = "#00000000",
+                DisplayStyle = mathEl.DisplayStyle,
+                Alignment = mathEl.Alignment,
+                ShowEquationNumber = mathEl.ShowEquationNumber,
+                EquationNumber = mathEl.EquationNumber,
+                Padding = 2.0
+            };
+
+            var renderResult = MathLayoutEngine.RenderToSvg(mathEl.Formula, options);
+            target.Svg(renderResult.SvgMarkup).FitArea();
+        }
+        catch
+        {
+            container.Border(1).BorderColor("#CBD5E1").Background("#F8FAFC").AlignCenter().AlignMiddle()
+                .Text(mathEl.Formula ?? "f(x)").FontSize((float)mathEl.FontSize).FontColor(mathEl.TextColorHex ?? "#000000");
         }
     }
 

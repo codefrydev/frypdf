@@ -78,6 +78,9 @@ public partial class InspectorViewModel : ViewModelBase
     private bool _isSvgElement;
 
     [ObservableProperty]
+    private bool _isMathElement;
+
+    [ObservableProperty]
     private string _selectedFontFamily = "Arial";
 
     partial void OnSelectedFontFamilyChanged(string value)
@@ -190,6 +193,7 @@ public partial class InspectorViewModel : ViewModelBase
     public StickyNoteElementViewModel? StickyNoteElement => SelectedElement as StickyNoteElementViewModel;
     public MeasurementElementViewModel? MeasurementElement => SelectedElement as MeasurementElementViewModel;
     public SvgElementViewModel? SvgElement => SelectedElement as SvgElementViewModel;
+    public MathElementViewModel? MathElement => SelectedElement as MathElementViewModel;
 
     public string ActiveCategoryName => SelectedElement != null ? SelectedElement.Kind.ToString() : "Document";
     public ObservableCollection<ColorSwatchItem> ColorSwatches => Swatches;
@@ -217,6 +221,7 @@ public partial class InspectorViewModel : ViewModelBase
         IsStickyNoteElement = element is StickyNoteElementViewModel;
         IsMeasurementElement = element is MeasurementElementViewModel;
         IsSvgElement = element is SvgElementViewModel;
+        IsMathElement = element is MathElementViewModel;
 
         if (element is TextElementViewModel textVm)
         {
@@ -244,6 +249,7 @@ public partial class InspectorViewModel : ViewModelBase
         OnPropertyChanged(nameof(StickyNoteElement));
         OnPropertyChanged(nameof(MeasurementElement));
         OnPropertyChanged(nameof(SvgElement));
+        OnPropertyChanged(nameof(MathElement));
         OnPropertyChanged(nameof(ActiveCategoryName));
     }
 

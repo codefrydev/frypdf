@@ -241,6 +241,49 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private DocumentComparisonReport? _activeComparisonReport;
 
+    // Math & Scientific Equation Studio
+    [ObservableProperty]
+    private bool _isMathStudioOpen;
+
+    [ObservableProperty]
+    private string _mathStudioFormula = @"\int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi}";
+
+    [ObservableProperty]
+    private string _mathStudioPresetName = "Gaussian Integral";
+
+    [ObservableProperty]
+    private string _mathStudioEquationNumber = "(1)";
+
+    [ObservableProperty]
+    private bool _mathStudioShowNumber = false;
+
+    [ObservableProperty]
+    private MathCategory _mathStudioCategory = MathCategory.Calculus;
+
+    [ObservableProperty]
+    private string _mathStudioSvgPreview = "";
+
+    [ObservableProperty]
+    private MathElementViewModel? _editingMathElement;
+
+    partial void OnMathStudioFormulaChanged(string value) => UpdateMathStudioPreview();
+    partial void OnMathStudioShowNumberChanged(bool value) => UpdateMathStudioPreview();
+    partial void OnMathStudioEquationNumberChanged(string value) => UpdateMathStudioPreview();
+
+    public void UpdateMathStudioPreview()
+    {
+        var options = new Services.MathEngine.MathRenderOptions(
+            FontSize: 18,
+            TextColorHex: "#0F172A",
+            ShowEquationNumber: MathStudioShowNumber,
+            EquationNumber: MathStudioEquationNumber,
+            TargetWidth: 460,
+            TargetHeight: 80
+        );
+        var result = Services.MathEngine.MathLayoutEngine.RenderToSvg(MathStudioFormula, options);
+        MathStudioSvgPreview = result.SvgXml;
+    }
+
     // In-Canvas Interactive Find & Replace
     [ObservableProperty]
     private bool _isFindReplaceOpen;

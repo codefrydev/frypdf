@@ -1,0 +1,207 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels.Tools"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Tools.RotatePdfToolView"
+             x:DataType="vm:RotatePdfToolViewModel">
+
+    <UserControl.Resources>
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+    </UserControl.Resources>
+
+    <Grid ColumnDefinitions="*,380" Margin="0,4,0,0">
+
+        <!-- LEFT: File workspace and live rotation visualizer -->
+        <ScrollViewer Grid.Column="0" Margin="0,0,20,0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16">
+
+                <!-- Error Alert Banner -->
+                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="10" Padding="16,12" IsVisible="{Binding HasError}">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="22" Height="22" Foreground="#DC2626" Margin="0,0,12,0" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Rotation Failed" FontSize="13" FontWeight="Bold" Foreground="#991B1B" />
+                            <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="#B91C1C" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Success Banner -->
+                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="12" Padding="20,18" BoxShadow="0 4 12 #1016A34A" IsVisible="{Binding IsComplete}">
+                    <StackPanel Spacing="14">
+                        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <Border Width="40" Height="40" Background="#DCFCE7" CornerRadius="10">
+                                <materialIcons:MaterialIcon Kind="CheckCircle" Width="24" Height="24" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Spacing="2" VerticalAlignment="Center">
+                                <TextBlock Text="PDF Pages Rotated Successfully!" FontSize="15" FontWeight="Bold" Foreground="#166534" />
+                                <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="12.5" Foreground="#15803D" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <WrapPanel Orientation="Horizontal" Margin="52,0,0,0">
+                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="15" Height="15" />
+                                    <TextBlock Text="Open Rotated PDF" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#DCFCE7" Foreground="#166534" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
+                                    <TextBlock Text="Show in Folder" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding OpenInEditorCommand}" Background="#EFF6FF" Foreground="#0F6CBD" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="SquareEditOutline" Width="15" Height="15" />
+                                    <TextBlock Text="Edit in FryPDF" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Processing Card -->
+                <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="20,16" IsVisible="{Binding IsRunning}">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="14" FontWeight="Bold" Foreground="#9333EA" VerticalAlignment="Center" />
+                        </Grid>
+                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#9333EA" Background="#F1F5F9" />
+                        <Button Command="{Binding CancelExecutionCommand}" HorizontalAlignment="Right" Background="#F1F5F9" Foreground="#64748B" CornerRadius="6" Padding="12,5" FontSize="11.5" Cursor="Hand">
+                            Cancel
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- LIVE ROTATION ORIENTATION PREVIEW -->
+                <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 2 8 #06000000">
+                    <StackPanel Spacing="14">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="RotateRight" Width="18" Height="18" Foreground="#9333EA" />
+                                <TextBlock Text="Live Page Orientation Preview" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <Border Background="#FAF5FF" CornerRadius="6" Padding="8,3">
+                                <TextBlock Text="{Binding RotationDegrees, StringFormat='{}{0}° Angle'}" FontSize="11" FontWeight="SemiBold" Foreground="#9333EA" />
+                            </Border>
+                        </Grid>
+
+                        <Border Width="260" Height="220" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" HorizontalAlignment="Center">
+                            <LayoutTransformControl HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <LayoutTransformControl.LayoutTransform>
+                                    <RotateTransform Angle="{Binding RotationDegrees}" />
+                                </LayoutTransformControl.LayoutTransform>
+                                <Border Width="110" Height="150" Background="White" BorderBrush="#9333EA" BorderThickness="2" CornerRadius="6" BoxShadow="0 4 12 #159333EA" Padding="10">
+                                    <Grid RowDefinitions="Auto,*,Auto">
+                                        <Border Grid.Row="0" Width="40" Height="6" Background="#E2E8F0" CornerRadius="2" HorizontalAlignment="Left" />
+                                        <materialIcons:MaterialIcon Grid.Row="1" Kind="ArrowUpBold" Width="28" Height="28" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Row="2" Text="TOP" FontSize="9" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </LayoutTransformControl>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Dropzone Box -->
+                <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                        <Border Width="64" Height="64" Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="RotateRight" Width="34" Height="34" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Spacing="4" HorizontalAlignment="Center">
+                            <TextBlock Text="Select PDF to Rotate" FontSize="16" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center" />
+                            <TextBlock Text="Permanently reorient pages 90°, 180°, or 270° clockwise" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" />
+                        </StackPanel>
+                        <Button Command="{Binding AddFilesCommand}" Background="#9333EA" Foreground="White" CornerRadius="8" Padding="24,10" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
+                                <TextBlock Text="Select PDF Documents" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Document List -->
+                <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="20" IsVisible="{Binding HasSelectedFiles}">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="Loaded Documents" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                            <Button Command="{Binding AddFilesCommand}" Background="#FAF5FF" Foreground="#9333EA" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="6" Padding="12,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand">
+                                Add More
+                            </Button>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding SelectedFiles}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="x:String">
+                                    <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,8">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <Border Grid.Column="0" Width="32" Height="32" Background="#FAF5FF" CornerRadius="6" Margin="0,0,12,0">
+                                                <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="{Binding}" FontSize="12.5" FontWeight="Medium" Foreground="#1E293B" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                            <Button Grid.Column="2" Command="{Binding $parent[UserControl].((vm:RotatePdfToolViewModel)DataContext).RemoveFileCommand}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Padding="6" Cursor="Hand">
+                                                <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="#94A3B8" />
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- RIGHT: Rotation Options -->
+        <Border Grid.Column="1" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Margin="0,0,0,16">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#9333EA" />
+                        <TextBlock Text="Rotation Options" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0" Spacing="10">
+                    <Button Command="{Binding ExecuteToolCommand}" Background="#9333EA" Foreground="White" CornerRadius="10" Padding="24,14" FontWeight="Bold" FontSize="14" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsEnabled="{Binding !IsRunning}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <materialIcons:MaterialIcon Kind="RotateRight" Width="18" Height="18" />
+                            <TextBlock Text="Rotate PDF" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Rotation Angle" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <RadioButton Content="90° CW" IsChecked="{Binding RotationDegrees, Converter={StaticResource EqualityConverter}, ConverterParameter=90}" />
+                            <RadioButton Content="180°" IsChecked="{Binding RotationDegrees, Converter={StaticResource EqualityConverter}, ConverterParameter=180}" />
+                            <RadioButton Content="270° CCW" IsChecked="{Binding RotationDegrees, Converter={StaticResource EqualityConverter}, ConverterParameter=270}" />
+                        </StackPanel>
+
+                        <TextBlock Text="Apply To Pages" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                        <StackPanel Spacing="6">
+                            <RadioButton Content="All Pages" IsChecked="{Binding TargetFilter, Converter={StaticResource EqualityConverter}, ConverterParameter=All}" />
+                            <RadioButton Content="Odd Pages Only" IsChecked="{Binding TargetFilter, Converter={StaticResource EqualityConverter}, ConverterParameter=OddPagesOnly}" />
+                            <RadioButton Content="Even Pages Only" IsChecked="{Binding TargetFilter, Converter={StaticResource EqualityConverter}, ConverterParameter=EvenPagesOnly}" />
+                            <RadioButton Content="Custom Page Range" IsChecked="{Binding TargetFilter, Converter={StaticResource EqualityConverter}, ConverterParameter=CustomRange}" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4" IsVisible="{Binding TargetFilter, Converter={StaticResource EqualityConverter}, ConverterParameter=CustomRange}">
+                            <TextBlock Text="Range Expression (e.g. 1-5, 8)" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                            <TextBox Text="{Binding CustomRange}" FontSize="12" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+    </Grid>
+</UserControl>

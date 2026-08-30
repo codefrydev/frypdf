@@ -11,6 +11,8 @@ using PdfEditorApp.Services;
 using PdfEditorApp.Services.Tools;
 using PdfEditorApp.Templates;
 
+using PdfEditorApp.ViewModels.Tools;
+
 namespace PdfEditorApp.ViewModels;
 
 /// <summary>
@@ -23,11 +25,13 @@ public partial class HomeViewModel : ViewModelBase
     private readonly ITemplateService _templateService;
     private readonly IProjectPersistenceService _persistenceService;
     private readonly IPdfToolRegistry _toolRegistry;
+    private readonly IPdfToolViewModelFactory? _toolViewModelFactory;
 
     // --- Events to tell the shell what to do ---
     public event Action<string?>? OpenTemplateRequested;   // templateName (null = blank)
     public event Action? OpenFileRequested;
     public event Action<string>? OpenRecentRequested;      // file path
+    public event Action<string>? OpenInEditorRequested;    // file path
     public event Action<PdfToolId>? OpenToolRequested;
     public event Action? OpenWorkflowBuilderRequested;
 
@@ -58,6 +62,9 @@ public partial class HomeViewModel : ViewModelBase
 
     [ObservableProperty]
     private PdfToolCardViewModel? _activeToolCard;
+
+    [ObservableProperty]
+    private PdfToolViewModelBase? _activeToolViewModel;
 
     [ObservableProperty]
     private PdfToolCardViewModel? _workflowBannerCard;
@@ -101,12 +108,14 @@ public partial class HomeViewModel : ViewModelBase
         ITemplateService templateService,
         IProjectPersistenceService persistenceService,
         IPdfToolRegistry toolRegistry,
-        PdfToolRunnerViewModel? toolRunner = null)
+        PdfToolRunnerViewModel? toolRunner = null,
+        IPdfToolViewModelFactory? toolViewModelFactory = null)
     {
         _recentService = recentService;
         _templateService = templateService;
         _persistenceService = persistenceService;
         _toolRegistry = toolRegistry;
+        _toolViewModelFactory = toolViewModelFactory;
         ToolRunner = toolRunner;
 
         if (ToolRunner != null)
@@ -472,6 +481,33 @@ public partial class HomeViewModel : ViewModelBase
         {
             ActiveToolCard = card;
             IsToolPageActive = true;
+
+            if (_toolViewModelFactory != null)
+            {
+                if (ActiveToolViewModel != null)
+                {
+                    ActiveToolViewModel.BackRequested -= BackToTools;
+                    ActiveToolViewModel.OpenInEditorRequested -= OnToolOpenInEditorRequested;
+                }
+
+                ActiveToolViewModel = _toolViewModelFactory.Create(toolId);
+                ActiveToolViewModel.StorageProvider = MainViewModel.StorageProvider;
+                ActiveToolViewModel.IsToolStarred = card.IsStarred;
+                ActiveToolViewModel.BackRequested += BackToTools;
+                ActiveToolViewModel.OpenInEditorRequested += OnToolOpenInEditorRequested;
+                ActiveToolViewModel.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(PdfToolViewModelBase.IsToolStarred) && ActiveToolCard != null && ActiveToolViewModel != null)
+                    {
+                        if (ActiveToolCard.IsStarred != ActiveToolViewModel.IsToolStarred)
+                        {
+                            ActiveToolCard.ToggleStar();
+                            RefreshStarredTools();
+                        }
+                    }
+                };
+            }
+
             ToolRunner?.SetupForTool(card.Definition);
             if (ToolRunner != null)
             {
@@ -481,11 +517,22 @@ public partial class HomeViewModel : ViewModelBase
         }
     }
 
+    private void OnToolOpenInEditorRequested(string filePath)
+    {
+        OpenInEditorRequested?.Invoke(filePath);
+    }
+
     [RelayCommand]
     public void BackToTools()
     {
         IsToolPageActive = false;
         ActiveToolCard = null;
+        if (ActiveToolViewModel != null)
+        {
+            ActiveToolViewModel.BackRequested -= BackToTools;
+            ActiveToolViewModel.OpenInEditorRequested -= OnToolOpenInEditorRequested;
+            ActiveToolViewModel = null;
+        }
     }
 
     [RelayCommand]
@@ -494,6 +541,10 @@ public partial class HomeViewModel : ViewModelBase
         if (ActiveToolCard != null)
         {
             ActiveToolCard.ToggleStar();
+            if (ActiveToolViewModel != null)
+            {
+                ActiveToolViewModel.IsToolStarred = ActiveToolCard.IsStarred;
+            }
             if (ToolRunner != null)
             {
                 ToolRunner.IsToolStarred = ActiveToolCard.IsStarred;

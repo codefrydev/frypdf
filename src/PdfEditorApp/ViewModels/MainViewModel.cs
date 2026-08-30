@@ -405,6 +405,8 @@ public partial class MainViewModel : ViewModelBase
         _pdfOperationsService = pdfOperationsService ?? new PdfDocumentOperationsService(
             _toolRegistry, pageService, optService, secService, convService, ocrService, formService, aiService, transService, workflowEngine);
 
+        var toolViewModelFactory = new PdfEditorApp.Services.Tools.PdfToolViewModelFactory(_pdfOperationsService, _toolRegistry);
+
         ToolRunner = new PdfToolRunnerViewModel(_pdfOperationsService);
         ToolRunner.OpenInEditorRequested += (path) => OpenEditorWithFile(path);
         WorkflowBuilder = new WorkflowBuilderViewModel(workflowEngine, _toolRegistry);
@@ -413,10 +415,11 @@ public partial class MainViewModel : ViewModelBase
         Inspector.UndoRedo = UndoRedo;
 
         // Set up Home page and wire its navigation events
-        Home = new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner);
+        Home = new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, toolViewModelFactory);
         Home.OpenTemplateRequested += OpenEditorWithTemplate;
         Home.OpenFileRequested += () => _ = OpenProjectAndEnterEditorAsync();
         Home.OpenRecentRequested += OpenEditorWithFile;
+        Home.OpenInEditorRequested += OpenEditorWithFile;
         Home.OpenToolRequested += OpenTool;
         Home.OpenWorkflowBuilderRequested += OpenWorkflowStudio;
 

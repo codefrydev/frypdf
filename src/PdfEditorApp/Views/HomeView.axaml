@@ -335,7 +335,7 @@
 
                 <!-- 1. Dedicated Full-Page Tool Workspace (Shown when a tool is opened) -->
                 <Panel IsVisible="{Binding IsToolPageActive}">
-                    <views:PdfToolPageView DataContext="{Binding ToolRunner}" />
+                    <views:PdfToolPageView DataContext="{Binding ActiveToolViewModel}" />
                 </Panel>
 
                 <!-- 2. Independent Page Files (Shown when IsToolPageActive is false) -->

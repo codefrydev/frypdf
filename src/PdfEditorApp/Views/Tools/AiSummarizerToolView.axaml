@@ -1,0 +1,166 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels.Tools"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Tools.AiSummarizerToolView"
+             x:DataType="vm:AiSummarizerToolViewModel">
+
+    <Grid ColumnDefinitions="*,380" Margin="0,4,0,0">
+
+        <!-- LEFT: File Workspace & AI Result Details -->
+        <ScrollViewer Grid.Column="0" Margin="0,0,20,0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16">
+
+                <!-- Error Alert Banner -->
+                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="10" Padding="16,12" IsVisible="{Binding HasError}">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="22" Height="22" Foreground="#DC2626" Margin="0,0,12,0" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Summary Failed" FontSize="13" FontWeight="Bold" Foreground="#991B1B" />
+                            <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="#B91C1C" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Success Banner -->
+                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="12" Padding="20,18" BoxShadow="0 4 12 #1016A34A" IsVisible="{Binding IsComplete}">
+                    <StackPanel Spacing="14">
+                        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <Border Width="40" Height="40" Background="#DCFCE7" CornerRadius="10">
+                                <materialIcons:MaterialIcon Kind="CheckCircle" Width="24" Height="24" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Spacing="2" VerticalAlignment="Center">
+                                <TextBlock Text="AI Summary Generated Successfully!" FontSize="15" FontWeight="Bold" Foreground="#166534" />
+                                <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="12.5" Foreground="#15803D" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <WrapPanel Orientation="Horizontal" Margin="52,0,0,0">
+                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="15" Height="15" />
+                                    <TextBlock Text="Open Summary Document" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#DCFCE7" Foreground="#166534" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
+                                    <TextBlock Text="Show in Folder" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Processing Card -->
+                <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="20,16" IsVisible="{Binding IsRunning}">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="14" FontWeight="Bold" Foreground="#6366F1" VerticalAlignment="Center" />
+                        </Grid>
+                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#6366F1" Background="#F1F5F9" />
+                    </StackPanel>
+                </Border>
+
+                <!-- AI Feature Showcase Card -->
+                <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 2 6 #05000000">
+                    <StackPanel Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="AutoFix" Width="20" Height="20" Foreground="#6366F1" />
+                            <TextBlock Text="Local Neural AI Summarization" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="Generates executive summaries, key bullet takeaways, and actionable checklists completely offline." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Dropzone Box -->
+                <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                        <Border Width="64" Height="64" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="FormatListBulletedSquare" Width="34" Height="34" Foreground="#6366F1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Spacing="4" HorizontalAlignment="Center">
+                            <TextBlock Text="Select PDF to Summarize" FontSize="16" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center" />
+                            <TextBlock Text="Extract key takeaways, executive summaries, and action checklists" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" />
+                        </StackPanel>
+                        <Button Command="{Binding AddFilesCommand}" Background="#6366F1" Foreground="White" CornerRadius="8" Padding="24,10" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
+                                <TextBlock Text="Select PDF Document" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Loaded Document Card -->
+                <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="20" IsVisible="{Binding HasSelectedFiles}">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="Document for AI Analysis" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                            <Button Command="{Binding AddFilesCommand}" Background="#EEF2FF" Foreground="#6366F1" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Padding="12,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand">
+                                Change File
+                            </Button>
+                        </Grid>
+                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14,12">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border Grid.Column="0" Width="36" Height="36" Background="#EEF2FF" CornerRadius="8" Margin="0,0,12,0">
+                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#6366F1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="13" FontWeight="Medium" Foreground="#1E293B" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                <Button Grid.Column="2" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Padding="6" Cursor="Hand">
+                                    <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="#94A3B8" />
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- RIGHT: AI Summary Options -->
+        <Border Grid.Column="1" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Margin="0,0,0,16">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#6366F1" />
+                        <TextBlock Text="AI Summary Options" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0" Spacing="10">
+                    <Button Command="{Binding ExecuteToolCommand}" Background="#6366F1" Foreground="White" CornerRadius="10" Padding="24,14" FontWeight="Bold" FontSize="14" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsEnabled="{Binding !IsRunning}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <materialIcons:MaterialIcon Kind="AutoFix" Width="18" Height="18" />
+                            <TextBlock Text="Generate AI Summary" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="14">
+                        <CheckBox Content="Include Executive Summary" IsChecked="{Binding IncludeExecutiveSummary}" FontSize="12" />
+                        <CheckBox Content="Include Action Items Checklist" IsChecked="{Binding IncludeActionItems}" FontSize="12" />
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Max Key Bullet Points" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                            <NumericUpDown Value="{Binding MaxBulletPoints}" Minimum="3" Maximum="25" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Target Summary Language" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                            <TextBox Text="{Binding TargetLanguage}" FontSize="12" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Custom Prompt Guidance (Optional)" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                            <TextBox Text="{Binding CustomPrompt}" FontSize="12" PlaceholderText="Focus on financial metrics and risks..." />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+    </Grid>
+</UserControl>

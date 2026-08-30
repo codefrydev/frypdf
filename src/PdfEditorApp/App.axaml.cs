@@ -62,6 +62,7 @@ public partial class App : Application
         services.AddSingleton<PdfEditorApp.Services.Tools.IDocumentTranslationService, PdfEditorApp.Services.Tools.DocumentTranslationService>();
         services.AddSingleton<PdfEditorApp.Services.Tools.IPdfWorkflowEngine, PdfEditorApp.Services.Tools.PdfWorkflowEngine>();
         services.AddSingleton<IPdfDocumentOperationsService, PdfDocumentOperationsService>();
+        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfToolViewModelFactory, PdfEditorApp.Services.Tools.PdfToolViewModelFactory>();
 
         // ViewModels
         services.AddTransient<InspectorViewModel>();

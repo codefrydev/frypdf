@@ -311,7 +311,11 @@ public partial class MainViewModel
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Next Page", Subtitle = "Go to next document page", Category = "Navigation", IconKind = "ChevronRight", Shortcut = "PgDn", Action = () => NextPageCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Previous Page", Subtitle = "Go to previous document page", Category = "Navigation", IconKind = "ChevronLeft", Shortcut = "PgUp", Action = () => PreviousPageCommand.Execute(null) });
 
-        // 11. View & Guides
+        // 11. View, Workspace Panels & Guides
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Toggle Ribbon Toolbar", Subtitle = "Collapse or expand top ribbon tools panel", Category = "View", IconKind = "ViewAgendaOutline", Shortcut = "⌘F1", Action = () => ToggleRibbonCollapseCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Toggle Pages Sidebar", Subtitle = "Collapse or expand left thumbnails & outline sidebar", Category = "View", IconKind = "DockLeft", Shortcut = "⌘B", Action = () => ToggleLeftSidebarCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Toggle Properties Inspector", Subtitle = "Collapse or expand right formatting & properties panel", Category = "View", IconKind = "DockRight", Shortcut = "⌘⇧P", Action = () => ToggleInspectorCollapseCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Expand All Panels", Subtitle = "Restore all ribbon and sidebar panels", Category = "View", IconKind = "ViewQuiltOutline", Action = () => ExpandAllPanelsCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Toggle Canvas Grid", Subtitle = "Show/hide alignment grid dots", Category = "View", IconKind = "Grid", Action = () => ToggleGridCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Toggle Snap to Grid", Subtitle = "Snap elements to precise 20pt intervals", Category = "View", IconKind = "Magnet", Action = () => ToggleSnapToGridCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Zoom In", Subtitle = "Increase canvas scale by 10%", Category = "View", IconKind = "MagnifyPlusOutline", Shortcut = "⌘+", Action = () => ZoomInCommand.Execute(null) });

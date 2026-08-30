@@ -15,31 +15,43 @@
         <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
         <converters:EqualityToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <converters:BooleanToStringConverter x:Key="BooleanToStringConverter" />
     </UserControl.Resources>
 
-    <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1,0,0,0" Width="310">
-        <Grid RowDefinitions="Auto,*">
+    <!-- Outer Container: dynamically switches between Expanded (310px) and Collapsed (38px) mode -->
+    <Panel>
+        <!-- A. EXPANDED MODE (Width 310) -->
+        <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1,0,0,0" Width="310"
+                IsVisible="{Binding !$parent[Window].((vm:MainViewModel)DataContext).IsInspectorCollapsed}">
+            <Grid RowDefinitions="Auto,*">
 
-            <!-- Sidebar Header -->
-            <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="14,10">
-                <Grid ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                        <materialIcons:MaterialIcon Kind="TuneVariant" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" />
-                        <TextBlock Text="Properties &amp; Format" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
-                    </StackPanel>
-                    <Border Grid.Column="1" Background="{StaticResource WinAccentLightBrush}" CornerRadius="4" Padding="6,2">
-                        <TextBlock Text="{Binding ActiveCategoryName}"
-                                   FontSize="11"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource WinAccentBrush}"
-                                   VerticalAlignment="Center" />
-                    </Border>
-                </Grid>
-            </Border>
+                <!-- Sidebar Header -->
+                <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="14,10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="TuneVariant" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" />
+                            <TextBlock Text="Properties &amp; Format" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <Border Background="{StaticResource WinAccentLightBrush}" CornerRadius="4" Padding="6,2">
+                                <TextBlock Text="{Binding ActiveCategoryName}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource WinAccentBrush}"
+                                           VerticalAlignment="Center" />
+                            </Border>
+                            <Button Classes="mini-tool-btn" Width="26" Height="26"
+                                    Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ToggleInspectorCollapseCommand}"
+                                    ToolTip.Tip="Collapse Properties Inspector (⌘⇧P / Ctrl+Shift+P)">
+                                <materialIcons:MaterialIcon Kind="ChevronRight" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
-            <!-- Inspector Scrollable Cards -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <StackPanel Margin="12" Spacing="12">
+                <!-- Inspector Scrollable Cards -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="12" Spacing="12">
 
                     <!-- EMPTY STATE: DOCUMENT & PAGE SETUP STUDIO (Visible when nothing is selected) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14"
@@ -803,49 +815,67 @@
                                 <TextBlock Text="Shape Geometry &amp; Badges" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>                            <!-- Shape Type Selector Grid -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Preset Geometry (Certificates &amp; Polygons)" Classes="inspector-label" />
-                                <WrapPanel Orientation="Horizontal">
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Rectangle"><TextBlock Text="Rect" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RoundedRectangle"><TextBlock Text="Rounded" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Circle"><TextBlock Text="Circle" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="BezierCurve"><TextBlock Text="∿ Bézier Curve" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CurvedArrow"><TextBlock Text="⤴ Curved Arrow" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="SCurveConnector"><TextBlock Text="⤹ S-Connector" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="WaveLine"><TextBlock Text="〰 Wave Line" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="ArcLine"><TextBlock Text="◠ Arc" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CurlyBrace"><TextBlock Text="{}{ Curly Brace" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CurvedCallout"><TextBlock Text="💬 Curved Bubble" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Teardrop"><TextBlock Text="💧 Teardrop" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="WaveRibbon"><TextBlock Text="🎗 Wave Ribbon" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="OrganicBlob"><TextBlock Text="🫧 Blob" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="MedalRibbonBadge"><TextBlock Text="🎖 Medal Ribbon" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="LaurelWreathSeal"><TextBlock Text="🌿 Laurel Seal" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RosetteSeal"><TextBlock Text="🏵 Rosette" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RibbonBanner"><TextBlock Text="🎗 Banner" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CornerPolygonalAccentTopLeft"><TextBlock Text="📐 Corner TL" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CornerPolygonalAccentBottomRight"><TextBlock Text="📐 Corner BR" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="ShieldBadge"><TextBlock Text="🛡 Shield" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Star5"><TextBlock Text="★ Star 5" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Star8Badge"><TextBlock Text="✦ Star 8" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Triangle"><TextBlock Text="Triangle" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RightTriangle"><TextBlock Text="Rt. Tri" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Diamond"><TextBlock Text="Diamond" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Chevron"><TextBlock Text="Chevron" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Trapezoid"><TextBlock Text="Trapezoid" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Parallelogram"><TextBlock Text="Parallelogram" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CustomSvgPath"><TextBlock Text="🖋 Custom SVG" FontSize="10" /></Button>
-                                </WrapPanel>
+                                <Button Classes="mini-tool-btn" HorizontalAlignment="Stretch" Padding="2,2"
+                                        Command="{Binding TogglePresetGeometryExpandedCommand}"
+                                        ToolTip.Tip="Collapse / Expand Preset Geometries">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="Preset Geometry (Certificates &amp; Polygons)" Classes="inspector-label" VerticalAlignment="Center" />
+                                        <materialIcons:MaterialIcon Grid.Column="1" Kind="{Binding IsPresetGeometryExpanded, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='ChevronUp|ChevronDown'}" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Button>
+                                <Panel IsVisible="{Binding IsPresetGeometryExpanded}">
+                                    <WrapPanel Orientation="Horizontal">
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Rectangle"><TextBlock Text="Rect" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RoundedRectangle"><TextBlock Text="Rounded" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Circle"><TextBlock Text="Circle" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="BezierCurve"><TextBlock Text="∿ Bézier Curve" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CurvedArrow"><TextBlock Text="⤴ Curved Arrow" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="SCurveConnector"><TextBlock Text="⤹ S-Connector" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="WaveLine"><TextBlock Text="〰 Wave Line" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="ArcLine"><TextBlock Text="◠ Arc" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CurlyBrace"><TextBlock Text="{}{ Curly Brace" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CurvedCallout"><TextBlock Text="💬 Curved Bubble" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Teardrop"><TextBlock Text="💧 Teardrop" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="WaveRibbon"><TextBlock Text="🎗 Wave Ribbon" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="OrganicBlob"><TextBlock Text="🫧 Blob" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="MedalRibbonBadge"><TextBlock Text="🎖 Medal Ribbon" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="LaurelWreathSeal"><TextBlock Text="🌿 Laurel Seal" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RosetteSeal"><TextBlock Text="🏵 Rosette" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RibbonBanner"><TextBlock Text="🎗 Banner" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CornerPolygonalAccentTopLeft"><TextBlock Text="📐 Corner TL" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CornerPolygonalAccentBottomRight"><TextBlock Text="📐 Corner BR" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="ShieldBadge"><TextBlock Text="🛡 Shield" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Star5"><TextBlock Text="★ Star 5" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Star8Badge"><TextBlock Text="✦ Star 8" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Triangle"><TextBlock Text="Triangle" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RightTriangle"><TextBlock Text="Rt. Tri" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Diamond"><TextBlock Text="Diamond" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Chevron"><TextBlock Text="Chevron" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Trapezoid"><TextBlock Text="Trapezoid" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Parallelogram"><TextBlock Text="Parallelogram" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CustomSvgPath"><TextBlock Text="🖋 Custom SVG" FontSize="10" /></Button>
+                                    </WrapPanel>
+                                </Panel>
                             </StackPanel>
 
                             <!-- Line Dash Pattern & Endcaps (for Lines & Curves) -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Line Stroke Pattern" Classes="inspector-label" />
-                                <WrapPanel Orientation="Horizontal">
-                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetShapeDashStyleCommand}" CommandParameter="Solid"><TextBlock Text="— Solid" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetShapeDashStyleCommand}" CommandParameter="Dashed"><TextBlock Text="-- Dashed" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetShapeDashStyleCommand}" CommandParameter="Dotted"><TextBlock Text="·· Dotted" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetShapeDashStyleCommand}" CommandParameter="DashDot"><TextBlock Text="-·- Dash-Dot" FontSize="10" /></Button>
-                                </WrapPanel>
+                                <Button Classes="mini-tool-btn" HorizontalAlignment="Stretch" Padding="2,2"
+                                        Command="{Binding ToggleLineStrokePatternExpandedCommand}"
+                                        ToolTip.Tip="Collapse / Expand Line Stroke Pattern">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="Line Stroke Pattern" Classes="inspector-label" VerticalAlignment="Center" />
+                                        <materialIcons:MaterialIcon Grid.Column="1" Kind="{Binding IsLineStrokePatternExpanded, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='ChevronUp|ChevronDown'}" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Button>
+                                <Panel IsVisible="{Binding IsLineStrokePatternExpanded}">
+                                    <WrapPanel Orientation="Horizontal">
+                                        <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetShapeDashStyleCommand}" CommandParameter="Solid"><TextBlock Text="— Solid" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetShapeDashStyleCommand}" CommandParameter="Dashed"><TextBlock Text="-- Dashed" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetShapeDashStyleCommand}" CommandParameter="Dotted"><TextBlock Text="·· Dotted" FontSize="10" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetShapeDashStyleCommand}" CommandParameter="DashDot"><TextBlock Text="-·- Dash-Dot" FontSize="10" /></Button>
+                                    </WrapPanel>
+                                </Panel>
                             </StackPanel>
 
                             <!-- Custom SVG Path Data (Visible when CustomSvgPath is selected) -->
@@ -856,134 +886,160 @@
                                          PlaceholderText="e.g. M 0,0 L 100,0 L 50,100 Z" />
                             </StackPanel>
 
-                            <!-- Fill Color Swatches & Custom ColorPicker -->
+                            <!-- Colors Section (Fill, Secondary, Border) -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Fill Color" Classes="inspector-label" />
-                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Shape Fill Studio">
-                                        <Button.Flyout>
-                                            <Flyout Placement="BottomEdgeAlignedLeft">
-                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
-                                                    <ColorView Color="{Binding ShapeElement.FillColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
-                                                </Border>
-                                            </Flyout>
-                                        </Button.Flyout>
-                                        <Grid Width="24" Height="24">
-                                            <Border CornerRadius="12" Width="24" Height="24">
-                                                <Border.Background>
-                                                    <ConicGradientBrush Center="0.5,0.5">
-                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
-                                                    </ConicGradientBrush>
-                                                </Border.Background>
-                                            </Border>
-                                            <Border Margin="3.5" CornerRadius="9" Background="White">
-                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                        </Grid>
-                                    </Button>
-                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate DataType="vm:ColorSwatchItem">
-                                                <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" BorderBrush="#CBD5E1" BorderThickness="1"
-                                                        Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
-                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}"
-                                                        CommandParameter="{Binding Hex}" ToolTip.Tip="{Binding Name}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                <Button Classes="mini-tool-btn" HorizontalAlignment="Stretch" Padding="2,2"
+                                        Command="{Binding ToggleColorsExpandedCommand}"
+                                        ToolTip.Tip="Collapse / Expand Colors">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="Fill &amp; Border Colors" Classes="inspector-label" VerticalAlignment="Center" />
+                                        <materialIcons:MaterialIcon Grid.Column="1" Kind="{Binding IsColorsExpanded, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='ChevronUp|ChevronDown'}" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Button>
+                                <StackPanel Spacing="8" IsVisible="{Binding IsColorsExpanded}">
+                                    <!-- Fill Color Swatches & Custom ColorPicker -->
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="Fill Color" Classes="inspector-label" />
+                                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                            <Button Classes="color-studio-btn" ToolTip.Tip="Custom Shape Fill Studio">
+                                                <Button.Flyout>
+                                                    <Flyout Placement="BottomEdgeAlignedLeft">
+                                                        <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                            <ColorView Color="{Binding ShapeElement.FillColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                                       IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                        </Border>
+                                                    </Flyout>
+                                                </Button.Flyout>
+                                                <Grid Width="24" Height="24">
+                                                    <Border CornerRadius="12" Width="24" Height="24">
+                                                        <Border.Background>
+                                                            <ConicGradientBrush Center="0.5,0.5">
+                                                                <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                            </ConicGradientBrush>
+                                                        </Border.Background>
+                                                    </Border>
+                                                    <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                        <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    </Border>
+                                                </Grid>
+                                            </Button>
+                                            <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate DataType="vm:ColorSwatchItem">
+                                                        <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" BorderBrush="#CBD5E1" BorderThickness="1"
+                                                                Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                                Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}"
+                                                                CommandParameter="{Binding Hex}" ToolTip.Tip="{Binding Name}" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Secondary Color (for Medal Ribbons / Dual-Tone Polygons) -->
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="Secondary / Ribbon Tail Color" Classes="inspector-label" />
+                                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                            <Button Classes="color-studio-btn" ToolTip.Tip="Secondary Accent Color">
+                                                <Button.Flyout>
+                                                    <Flyout Placement="BottomEdgeAlignedLeft">
+                                                        <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                            <ColorView Color="{Binding ShapeElement.SecondaryFillColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                                       IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                        </Border>
+                                                    </Flyout>
+                                                </Button.Flyout>
+                                                <Grid Width="24" Height="24">
+                                                    <Border CornerRadius="12" Width="24" Height="24" Background="{Binding ShapeElement.SecondaryFillColorHex, Converter={StaticResource HexToBrushConverter}}" />
+                                                    <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                        <materialIcons:MaterialIcon Kind="Ribbon" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    </Border>
+                                                </Grid>
+                                            </Button>
+                                            <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" Background="#990000" Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}" CommandParameter="#990000" ToolTip.Tip="Crimson Red" />
+                                            <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" Background="#0F172A" Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}" CommandParameter="#0F172A" ToolTip.Tip="Navy Slate" />
+                                            <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" Background="#D97706" Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}" CommandParameter="#D97706" ToolTip.Tip="Gold Amber" />
+                                            <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" Background="#16A34A" Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}" CommandParameter="#16A34A" ToolTip.Tip="Emerald" />
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Stroke / Border Color Swatches & Custom ColorPicker -->
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="Border / Stroke Color" Classes="inspector-label" />
+                                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                            <Button Classes="color-studio-btn" ToolTip.Tip="Custom Stroke Color Studio">
+                                                <Button.Flyout>
+                                                    <Flyout Placement="BottomEdgeAlignedLeft">
+                                                        <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                            <ColorView Color="{Binding ShapeElement.StrokeColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                                       IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                        </Border>
+                                                    </Flyout>
+                                                </Button.Flyout>
+                                                <Grid Width="24" Height="24">
+                                                    <Border CornerRadius="12" Width="24" Height="24">
+                                                        <Border.Background>
+                                                            <ConicGradientBrush Center="0.5,0.5">
+                                                                <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                            </ConicGradientBrush>
+                                                        </Border.Background>
+                                                    </Border>
+                                                    <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                        <materialIcons:MaterialIcon Kind="SquareOutline" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    </Border>
+                                                </Grid>
+                                            </Button>
+                                            <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate DataType="vm:ColorSwatchItem">
+                                                        <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" BorderBrush="#CBD5E1" BorderThickness="1"
+                                                                Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                                Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeStrokeColorCommand}"
+                                                                CommandParameter="{Binding Hex}" ToolTip.Tip="{Binding Name}" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </StackPanel>
                                 </StackPanel>
                             </StackPanel>
 
-                            <!-- Secondary Color (for Medal Ribbons / Dual-Tone Polygons) -->
+                            <!-- Radius, Border Width & Badge Text Section -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Secondary / Ribbon Tail Color" Classes="inspector-label" />
-                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <Button Classes="color-studio-btn" ToolTip.Tip="Secondary Accent Color">
-                                        <Button.Flyout>
-                                            <Flyout Placement="BottomEdgeAlignedLeft">
-                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
-                                                    <ColorView Color="{Binding ShapeElement.SecondaryFillColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
-                                                </Border>
-                                            </Flyout>
-                                        </Button.Flyout>
-                                        <Grid Width="24" Height="24">
-                                            <Border CornerRadius="12" Width="24" Height="24" Background="{Binding ShapeElement.SecondaryFillColorHex, Converter={StaticResource HexToBrushConverter}}" />
-                                            <Border Margin="3.5" CornerRadius="9" Background="White">
-                                                <materialIcons:MaterialIcon Kind="Ribbon" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                        </Grid>
-                                    </Button>
-                                    <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" Background="#990000" Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}" CommandParameter="#990000" ToolTip.Tip="Crimson Red" />
-                                    <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" Background="#0F172A" Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}" CommandParameter="#0F172A" ToolTip.Tip="Navy Slate" />
-                                    <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" Background="#D97706" Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}" CommandParameter="#D97706" ToolTip.Tip="Gold Amber" />
-                                    <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" Background="#16A34A" Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeFillColorCommand}" CommandParameter="#16A34A" ToolTip.Tip="Emerald" />
-                                </StackPanel>
-                            </StackPanel>
+                                <Button Classes="mini-tool-btn" HorizontalAlignment="Stretch" Padding="2,2"
+                                        Command="{Binding ToggleDimensionsExpandedCommand}"
+                                        ToolTip.Tip="Collapse / Expand Radius &amp; Dimensions">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="Radius, Border &amp; Badge Text" Classes="inspector-label" VerticalAlignment="Center" />
+                                        <materialIcons:MaterialIcon Grid.Column="1" Kind="{Binding IsDimensionsExpanded, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='ChevronUp|ChevronDown'}" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Button>
+                                <StackPanel Spacing="8" IsVisible="{Binding IsDimensionsExpanded}">
+                                    <!-- Corner Radius & Border Thickness -->
+                                    <Grid ColumnDefinitions="*,*">
+                                        <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
+                                            <TextBlock Text="Corner Radius" Classes="inspector-label" />
+                                            <NumericUpDown Value="{Binding ShapeElement.CornerRadius, Mode=TwoWay}"
+                                                           Minimum="0" Maximum="100" Increment="1" FormatString="0"
+                                                           HorizontalAlignment="Stretch" Height="28" FontSize="12" />
+                                        </StackPanel>
 
-                            <!-- Stroke / Border Color Swatches & Custom ColorPicker -->
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="Border / Stroke Color" Classes="inspector-label" />
-                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Stroke Color Studio">
-                                        <Button.Flyout>
-                                            <Flyout Placement="BottomEdgeAlignedLeft">
-                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
-                                                    <ColorView Color="{Binding ShapeElement.StrokeColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
-                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
-                                                </Border>
-                                            </Flyout>
-                                        </Button.Flyout>
-                                        <Grid Width="24" Height="24">
-                                            <Border CornerRadius="12" Width="24" Height="24">
-                                                <Border.Background>
-                                                    <ConicGradientBrush Center="0.5,0.5">
-                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
-                                                    </ConicGradientBrush>
-                                                </Border.Background>
-                                            </Border>
-                                            <Border Margin="3.5" CornerRadius="9" Background="White">
-                                                <materialIcons:MaterialIcon Kind="SquareOutline" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                        </Grid>
-                                    </Button>
-                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
-                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate DataType="vm:ColorSwatchItem">
-                                                <Button Width="22" Height="22" Margin="1.5" CornerRadius="4" BorderBrush="#CBD5E1" BorderThickness="1"
-                                                        Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
-                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetShapeStrokeColorCommand}"
-                                                        CommandParameter="{Binding Hex}" ToolTip.Tip="{Binding Name}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
+                                            <TextBlock Text="Border Width" Classes="inspector-label" />
+                                            <NumericUpDown Value="{Binding ShapeElement.StrokeThickness, Mode=TwoWay}"
+                                                           Minimum="0" Maximum="20" Increment="0.5" FormatString="0.0"
+                                                           HorizontalAlignment="Stretch" Height="28" FontSize="12" />
+                                        </StackPanel>
+                                    </Grid>
 
-                            <!-- Corner Radius & Border Thickness -->
-                            <Grid ColumnDefinitions="*,*">
-                                <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
-                                    <TextBlock Text="Corner Radius" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding ShapeElement.CornerRadius, Mode=TwoWay}"
-                                                   Minimum="0" Maximum="100" Increment="1" FormatString="0"
-                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
+                                    <!-- Shape Center Label (for Badges & Buttons) -->
+                                    <StackPanel Spacing="3">
+                                        <TextBlock Text="Center Label / Badge Text" Classes="inspector-label" />
+                                        <TextBox Text="{Binding ShapeElement.Label, Mode=TwoWay}" Height="28" FontSize="12" PlaceholderText="e.g. APPROVED, 1, ✦..." />
+                                    </StackPanel>
                                 </StackPanel>
-
-                                <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
-                                    <TextBlock Text="Border Width" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding ShapeElement.StrokeThickness, Mode=TwoWay}"
-                                                   Minimum="0" Maximum="20" Increment="0.5" FormatString="0.0"
-                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
-                                </StackPanel>
-                            </Grid>
-
-                            <!-- Shape Center Label (for Badges & Buttons) -->
-                            <StackPanel Spacing="3">
-                                <TextBlock Text="Center Label / Badge Text" Classes="inspector-label" />
-                                <TextBox Text="{Binding ShapeElement.Label, Mode=TwoWay}" Height="28" FontSize="12" PlaceholderText="e.g. APPROVED, 1, ✦..." />
                             </StackPanel>
 
                             <Grid ColumnDefinitions="*,*" IsVisible="{Binding ShapeElement.Label, Converter={StaticResource NullToBooleanConverter}}">
@@ -2378,4 +2434,48 @@
 
         </Grid>
     </Border>
+
+    <!-- B. COLLAPSED MINI DOCK RAIL (Width 38) -->
+    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1,0,0,0" Width="38"
+            IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).IsInspectorCollapsed}">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="0,4">
+            <!-- Top: Expand Chevron Button -->
+            <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="4">
+                <Button Classes="mini-tool-btn" Width="30" Height="30"
+                        Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ToggleInspectorCollapseCommand}"
+                        ToolTip.Tip="Expand Properties Inspector (⌘⇧P / Ctrl+Shift+P)">
+                    <materialIcons:MaterialIcon Kind="ChevronLeft" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                </Button>
+                <Rectangle Width="22" Height="1" Fill="{StaticResource WinBorderBrush}" Margin="0,2" />
+            </StackPanel>
+
+            <!-- Middle: Inspector Icon & Category Indicator -->
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" Spacing="8" Margin="0,6">
+                <Button Classes="mini-tool-btn" Width="30" Height="30"
+                        Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ToggleInspectorCollapseCommand}"
+                        ToolTip.Tip="Open Properties &amp; Format Inspector (⌘⇧P)">
+                    <materialIcons:MaterialIcon Kind="TuneVariant" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                </Button>
+                <Border Background="{StaticResource WinAccentLightBrush}" BorderBrush="{StaticResource WinAccentBorderBrush}" BorderThickness="1"
+                        CornerRadius="4" Padding="2,4" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding ActiveCategoryName}"
+                               FontSize="9"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource WinAccentBrush}"
+                               TextAlignment="Center" />
+                </Border>
+            </StackPanel>
+
+            <!-- Bottom: Duplicate Action -->
+            <StackPanel Grid.Row="2" HorizontalAlignment="Center" Spacing="4">
+                <Button Classes="mini-tool-btn" Width="30" Height="30"
+                        Command="{Binding DuplicateSelectedElementCommand}"
+                        IsEnabled="{Binding HasSelectedElement}"
+                        ToolTip.Tip="Duplicate Selected Element (⌘D)">
+                    <materialIcons:MaterialIcon Kind="ContentCopy" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Panel>
 </UserControl>

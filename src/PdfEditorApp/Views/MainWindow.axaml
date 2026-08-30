@@ -21,6 +21,7 @@
     <Window.Resources>
         <converters:ZoomPercentageConverter x:Key="ZoomPercentageConverter" />
         <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:BooleanToStringConverter x:Key="BooleanToStringConverter" />
     </Window.Resources>
 
     <!-- Global Cross-Platform KeyBindings (macOS Cmd & Win/Linux Ctrl) -->
@@ -28,21 +29,17 @@
         <!-- File Operations -->
         <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveProjectCommand}" />
         <KeyBinding Gesture="Cmd+S" Command="{Binding SaveProjectCommand}" />
+        <KeyBinding Gesture="Ctrl+E" Command="{Binding ExportPdfCommand}" />
+        <KeyBinding Gesture="Cmd+E" Command="{Binding ExportPdfCommand}" />
         <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenProjectCommand}" />
         <KeyBinding Gesture="Cmd+O" Command="{Binding OpenProjectCommand}" />
         <KeyBinding Gesture="Ctrl+N" Command="{Binding OpenNewDocumentDialogCommand}" />
         <KeyBinding Gesture="Cmd+N" Command="{Binding OpenNewDocumentDialogCommand}" />
-        <KeyBinding Gesture="Ctrl+E" Command="{Binding ExportPdfCommand}" />
-        <KeyBinding Gesture="Cmd+E" Command="{Binding ExportPdfCommand}" />
-        <KeyBinding Gesture="Ctrl+P" Command="{Binding ExportPdfCommand}" />
-        <KeyBinding Gesture="Cmd+P" Command="{Binding ExportPdfCommand}" />
 
-        <!-- Edit & History -->
+        <!-- Edit Operations -->
         <KeyBinding Gesture="Ctrl+Z" Command="{Binding UndoCommand}" />
         <KeyBinding Gesture="Cmd+Z" Command="{Binding UndoCommand}" />
         <KeyBinding Gesture="Ctrl+Y" Command="{Binding RedoCommand}" />
-        <KeyBinding Gesture="Cmd+Y" Command="{Binding RedoCommand}" />
-        <KeyBinding Gesture="Ctrl+Shift+Z" Command="{Binding RedoCommand}" />
         <KeyBinding Gesture="Cmd+Shift+Z" Command="{Binding RedoCommand}" />
         <KeyBinding Gesture="Ctrl+C" Command="{Binding CopyCommand}" />
         <KeyBinding Gesture="Cmd+C" Command="{Binding CopyCommand}" />
@@ -52,6 +49,14 @@
         <KeyBinding Gesture="Cmd+V" Command="{Binding PasteCommand}" />
         <KeyBinding Gesture="Ctrl+D" Command="{Binding DuplicateCommand}" />
         <KeyBinding Gesture="Cmd+D" Command="{Binding DuplicateCommand}" />
+
+        <!-- Workspace & Panel Collapsing -->
+        <KeyBinding Gesture="Ctrl+F1" Command="{Binding ToggleRibbonCollapseCommand}" />
+        <KeyBinding Gesture="Cmd+F1" Command="{Binding ToggleRibbonCollapseCommand}" />
+        <KeyBinding Gesture="Ctrl+B" Command="{Binding ToggleLeftSidebarCommand}" />
+        <KeyBinding Gesture="Cmd+B" Command="{Binding ToggleLeftSidebarCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+P" Command="{Binding ToggleInspectorCollapseCommand}" />
+        <KeyBinding Gesture="Cmd+Shift+P" Command="{Binding ToggleInspectorCollapseCommand}" />
 
         <!-- Command Palette & Help -->
         <KeyBinding Gesture="Ctrl+K" Command="{Binding OpenCommandPaletteCommand}" />
@@ -184,20 +189,30 @@
                         </Grid>
                     </Button>
 
-                    <!-- Right: Quick Save & Actions -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                        <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save Project (⌘S / Ctrl+S)">
-                            <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                    <!-- Right: Quick Save, Panel Toggles & Actions -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding ToggleLeftSidebarCommand}" ToolTip.Tip="Toggle Pages Sidebar (⌘B / Ctrl+B)">
+                            <materialIcons:MaterialIcon Kind="DockLeft" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
-                        <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding ExportPdfCommand}" ToolTip.Tip="Export to PDF (⌘E / Ctrl+E)">
-                            <materialIcons:MaterialIcon Kind="ExportVariant" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                        <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding ToggleRibbonCollapseCommand}" ToolTip.Tip="Toggle Ribbon Toolbar (⌘F1 / Ctrl+F1)">
+                            <materialIcons:MaterialIcon Kind="DockTop" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                        <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding ToggleInspectorCollapseCommand}" ToolTip.Tip="Toggle Properties Inspector (⌘⇧P / Ctrl+Shift+P)">
+                            <materialIcons:MaterialIcon Kind="DockRight" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
                         <Rectangle Width="1" Height="16" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
-                        <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding OpenShortcutsHelpCommand}" ToolTip.Tip="Keyboard Shortcuts Cheat Sheet (F1 / ?)">
-                            <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                        <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save Project (⌘S / Ctrl+S)">
+                            <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
-                        <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding OpenAboutDialogCommand}" ToolTip.Tip="About FryPDF &amp; Support (CodeFryDev)">
-                            <materialIcons:MaterialIcon Kind="InformationOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                        <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding ExportPdfCommand}" ToolTip.Tip="Export to PDF (⌘E / Ctrl+E)">
+                            <materialIcons:MaterialIcon Kind="ExportVariant" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                        <Rectangle Width="1" Height="16" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+                        <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding OpenShortcutsHelpCommand}" ToolTip.Tip="Keyboard Shortcuts Cheat Sheet (F1 / ?)">
+                            <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                        <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding OpenAboutDialogCommand}" ToolTip.Tip="About FryPDF &amp; Support (CodeFryDev)">
+                            <materialIcons:MaterialIcon Kind="InformationOutline" Width="15" Height="15" Foreground="{StaticResource WinAccentBrush}" />
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -241,7 +256,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Format Dimensions Chip -->
+                        <!-- Page Dimensions Chip -->
                         <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="7,2">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                 <materialIcons:MaterialIcon Kind="AspectRatio" Width="13" Height="13" Foreground="{StaticResource WinMutedBrush}" />
@@ -256,25 +271,19 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <!-- Right: View Modes & Zoom Controls -->
+                    <!-- Right: Zoom Controls & Workspace Panel Toggles -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                        <!-- Shortcuts Reference Button -->
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding OpenShortcutsHelpCommand}" ToolTip.Tip="Keyboard Shortcuts Reference (F1 / ?)">
-                            <materialIcons:MaterialIcon Kind="KeyboardOutline" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
-                        </Button>
-
-                        <!-- Fit to Page Button -->
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToPageCommand}" ToolTip.Tip="Fit to Page (⌘9 / Ctrl+9)">
-                            <materialIcons:MaterialIcon Kind="FitToPageOutline" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
-                        </Button>
-
-                        <!-- Fit to Width Button -->
+                        <!-- Fit to Width -->
                         <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToWidthCommand}" ToolTip.Tip="Fit to Width (⌘1 / Ctrl+1)">
                             <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
 
-                        <!-- Divider -->
-                        <Rectangle Width="1" Height="14" Fill="{StaticResource WinBorderBrush}" Margin="4,0" />
+                        <!-- Fit to Page -->
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToPageCommand}" ToolTip.Tip="Fit Entire Page (⌘9 / Ctrl+9)">
+                            <materialIcons:MaterialIcon Kind="FitToScreenOutline" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+
+                        <Rectangle Width="1" Height="14" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
 
                         <!-- Zoom Out -->
                         <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom Out (⌘- / Ctrl+-)">
@@ -311,6 +320,16 @@
                                        Width="36"
                                        TextAlignment="Center"
                                        VerticalAlignment="Center" />
+                        </Button>
+
+                        <Rectangle Width="1" Height="14" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+
+                        <!-- Quick Panel Dock Buttons -->
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ToggleLeftSidebarCommand}" ToolTip.Tip="Toggle Pages Sidebar (⌘B)">
+                            <materialIcons:MaterialIcon Kind="DockLeft" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ToggleInspectorCollapseCommand}" ToolTip.Tip="Toggle Properties Inspector (⌘⇧P)">
+                            <materialIcons:MaterialIcon Kind="DockRight" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
                         </Button>
                     </StackPanel>
                 </Grid>

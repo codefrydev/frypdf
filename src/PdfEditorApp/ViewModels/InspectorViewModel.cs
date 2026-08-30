@@ -81,6 +81,113 @@ public partial class InspectorViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isMathElement;
 
+    // Collapsible Inspector Sections / Accordions (Default true for instant discovery)
+    [ObservableProperty]
+    private bool _isPageSetupExpanded = true;
+
+    [ObservableProperty]
+    private bool _isPresetGeometryExpanded = true;
+
+    [ObservableProperty]
+    private bool _isLineStrokePatternExpanded = true;
+
+    [ObservableProperty]
+    private bool _isColorsExpanded = true;
+
+    [ObservableProperty]
+    private bool _isDimensionsExpanded = true;
+
+    [ObservableProperty]
+    private bool _isTypographyExpanded = true;
+
+    [ObservableProperty]
+    private bool _isParagraphExpanded = true;
+
+    [ObservableProperty]
+    private bool _isTransformExpanded = true;
+
+    [ObservableProperty]
+    private bool _isShadowExpanded = true;
+
+    [ObservableProperty]
+    private bool _isImageAdjustmentsExpanded = true;
+
+    [ObservableProperty]
+    private bool _isTablePropertiesExpanded = true;
+
+    [ObservableProperty]
+    private bool _isMathFormulaExpanded = true;
+
+    [RelayCommand]
+    public void TogglePresetGeometryExpanded() => IsPresetGeometryExpanded = !IsPresetGeometryExpanded;
+
+    [RelayCommand]
+    public void ToggleLineStrokePatternExpanded() => IsLineStrokePatternExpanded = !IsLineStrokePatternExpanded;
+
+    [RelayCommand]
+    public void ToggleColorsExpanded() => IsColorsExpanded = !IsColorsExpanded;
+
+    [RelayCommand]
+    public void ToggleDimensionsExpanded() => IsDimensionsExpanded = !IsDimensionsExpanded;
+
+    [RelayCommand]
+    public void ToggleTypographyExpanded() => IsTypographyExpanded = !IsTypographyExpanded;
+
+    [RelayCommand]
+    public void ToggleParagraphExpanded() => IsParagraphExpanded = !IsParagraphExpanded;
+
+    [RelayCommand]
+    public void ToggleTransformExpanded() => IsTransformExpanded = !IsTransformExpanded;
+
+    [RelayCommand]
+    public void ToggleShadowExpanded() => IsShadowExpanded = !IsShadowExpanded;
+
+    [RelayCommand]
+    public void TogglePageSetupExpanded() => IsPageSetupExpanded = !IsPageSetupExpanded;
+
+    [RelayCommand]
+    public void ToggleImageAdjustmentsExpanded() => IsImageAdjustmentsExpanded = !IsImageAdjustmentsExpanded;
+
+    [RelayCommand]
+    public void ToggleTablePropertiesExpanded() => IsTablePropertiesExpanded = !IsTablePropertiesExpanded;
+
+    [RelayCommand]
+    public void ToggleMathFormulaExpanded() => IsMathFormulaExpanded = !IsMathFormulaExpanded;
+
+    [RelayCommand]
+    public void ExpandAllSections()
+    {
+        IsPageSetupExpanded = true;
+        IsPresetGeometryExpanded = true;
+        IsLineStrokePatternExpanded = true;
+        IsColorsExpanded = true;
+        IsDimensionsExpanded = true;
+        IsTypographyExpanded = true;
+        IsParagraphExpanded = true;
+        IsTransformExpanded = true;
+        IsShadowExpanded = true;
+        IsImageAdjustmentsExpanded = true;
+        IsTablePropertiesExpanded = true;
+        IsMathFormulaExpanded = true;
+    }
+
+    [RelayCommand]
+    public void CollapseAllSections()
+    {
+        IsPageSetupExpanded = false;
+        IsPresetGeometryExpanded = false;
+        IsLineStrokePatternExpanded = false;
+        IsColorsExpanded = false;
+        IsDimensionsExpanded = false;
+        IsTypographyExpanded = false;
+        IsParagraphExpanded = false;
+        IsTransformExpanded = false;
+        IsShadowExpanded = false;
+        IsImageAdjustmentsExpanded = false;
+        IsTablePropertiesExpanded = false;
+        IsMathFormulaExpanded = false;
+    }
+
     [ObservableProperty]
     private string _selectedFontFamily = "Arial";
 

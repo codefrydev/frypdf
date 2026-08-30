@@ -60,6 +60,16 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private SidebarTabKind _activeSidebarTab = SidebarTabKind.Thumbnails;
 
+    // Workspace Panel Collapse & Expand States
+    [ObservableProperty]
+    private bool _isRibbonCollapsed;
+
+    [ObservableProperty]
+    private bool _isLeftSidebarCollapsed;
+
+    [ObservableProperty]
+    private bool _isInspectorCollapsed;
+
     [ObservableProperty]
     private ToolMode _activeToolMode = ToolMode.Select;
 
@@ -513,6 +523,40 @@ public partial class MainViewModel : ViewModelBase
     public void SelectRibbonTab(RibbonTabKind tab)
     {
         ActiveRibbonTab = tab;
+        if (IsRibbonCollapsed)
+        {
+            IsRibbonCollapsed = false;
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleRibbonCollapse()
+    {
+        IsRibbonCollapsed = !IsRibbonCollapsed;
+        ShowToast(IsRibbonCollapsed ? "Ribbon Minimized (⌘F1 to expand)" : "Ribbon Expanded", IsRibbonCollapsed ? "ChevronDown" : "ChevronUp");
+    }
+
+    [RelayCommand]
+    public void ToggleLeftSidebar()
+    {
+        IsLeftSidebarCollapsed = !IsLeftSidebarCollapsed;
+        ShowToast(IsLeftSidebarCollapsed ? "Pages Sidebar Minimized (⌘B to expand)" : "Pages Sidebar Expanded", IsLeftSidebarCollapsed ? "DockLeft" : "FileDocumentMultipleOutline");
+    }
+
+    [RelayCommand]
+    public void ToggleInspectorCollapse()
+    {
+        IsInspectorCollapsed = !IsInspectorCollapsed;
+        ShowToast(IsInspectorCollapsed ? "Inspector Minimized (⌘⇧P to expand)" : "Properties Inspector Expanded", IsInspectorCollapsed ? "DockRight" : "TuneVariant");
+    }
+
+    [RelayCommand]
+    public void ExpandAllPanels()
+    {
+        IsRibbonCollapsed = false;
+        IsLeftSidebarCollapsed = false;
+        IsInspectorCollapsed = false;
+        ShowToast("All Workspace Panels Expanded", "ViewQuiltOutline");
     }
 
     [RelayCommand]

@@ -17,102 +17,127 @@
 
             <!-- 1. Ribbon Menu Tabs Bar -->
             <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="12,4,12,4">
-                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                <Grid ColumnDefinitions="*,Auto">
+                    <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
 
-                    <!-- File Tab (Accent Pill) -->
-                    <Button Classes="ribbon-file-tab"
-                            Command="{Binding OpenNewDocumentDialogCommand}"
-                            ToolTip.Tip="New Document, Open, Templates">
-                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="FileOutline" Width="14" Height="14" Foreground="White" />
-                            <TextBlock Text="File" VerticalAlignment="Center" FontWeight="SemiBold" />
+                            <!-- File Tab (Accent Pill) -->
+                            <Button Classes="ribbon-file-tab"
+                                    Command="{Binding OpenNewDocumentDialogCommand}"
+                                    ToolTip.Tip="New Document, Open, Templates">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="FileOutline" Width="14" Height="14" Foreground="White" />
+                                    <TextBlock Text="File" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Home Tab -->
+                            <Button Classes="ribbon-tab"
+                                    Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Home}"
+                                    Command="{Binding SelectRibbonTabCommand}"
+                                    CommandParameter="{x:Static models:RibbonTabKind.Home}"
+                                    ToolTip.Tip="Home Tab (Double-click to toggle Ribbon)">
+                                <TextBlock Text="Home" />
+                            </Button>
+
+                            <!-- Edit Tab -->
+                            <Button Classes="ribbon-tab"
+                                    Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Edit}"
+                                    Command="{Binding SelectRibbonTabCommand}"
+                                    CommandParameter="{x:Static models:RibbonTabKind.Edit}"
+                                    ToolTip.Tip="Edit Tab (Double-click to toggle Ribbon)">
+                                <TextBlock Text="Edit" />
+                            </Button>
+
+                            <!-- Comment Tab -->
+                            <Button Classes="ribbon-tab"
+                                    Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Comment}"
+                                    Command="{Binding SelectRibbonTabCommand}"
+                                    CommandParameter="{x:Static models:RibbonTabKind.Comment}"
+                                    ToolTip.Tip="Comment Tab (Double-click to toggle Ribbon)">
+                                <TextBlock Text="Comment" />
+                            </Button>
+
+                            <!-- Insert Tab -->
+                            <Button Classes="ribbon-tab"
+                                    Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Insert}"
+                                    Command="{Binding SelectRibbonTabCommand}"
+                                    CommandParameter="{x:Static models:RibbonTabKind.Insert}"
+                                    ToolTip.Tip="Insert Tab (Double-click to toggle Ribbon)">
+                                <TextBlock Text="Insert" />
+                            </Button>
+
+                            <!-- Fill & Sign Tab -->
+                            <Button Classes="ribbon-tab"
+                                    Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Sign}"
+                                    Command="{Binding SelectRibbonTabCommand}"
+                                    CommandParameter="{x:Static models:RibbonTabKind.Sign}"
+                                    ToolTip.Tip="Fill &amp; Sign Tab (Double-click to toggle Ribbon)">
+                                <TextBlock Text="Fill &amp; Sign" />
+                            </Button>
+
+                            <!-- Forms Tab (AcroForms Suite) -->
+                            <Button Classes="ribbon-tab"
+                                    Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Forms}"
+                                    Command="{Binding SelectRibbonTabCommand}"
+                                    CommandParameter="{x:Static models:RibbonTabKind.Forms}"
+                                    ToolTip.Tip="Forms Tab (Double-click to toggle Ribbon)">
+                                <TextBlock Text="Forms" />
+                            </Button>
+
+                            <!-- Organize Tab -->
+                            <Button Classes="ribbon-tab"
+                                    Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Organize}"
+                                    Command="{Binding SelectRibbonTabCommand}"
+                                    CommandParameter="{x:Static models:RibbonTabKind.Organize}"
+                                    ToolTip.Tip="Organize Tab (Double-click to toggle Ribbon)">
+                                <TextBlock Text="Organize" />
+                            </Button>
+
+                            <!-- Protect & Redact Tab -->
+                            <Button Classes="ribbon-tab"
+                                    Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Protect}"
+                                    Command="{Binding SelectRibbonTabCommand}"
+                                    CommandParameter="{x:Static models:RibbonTabKind.Protect}"
+                                    ToolTip.Tip="Protect &amp; Redact Tab (Double-click to toggle Ribbon)">
+                                <TextBlock Text="Protect &amp; Redact" />
+                            </Button>
+
+                            <!-- Preflight Audit & Guides Tab -->
+                            <Button Classes="ribbon-tab"
+                                    Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Audit}"
+                                    Command="{Binding SelectRibbonTabCommand}"
+                                    CommandParameter="{x:Static models:RibbonTabKind.Audit}"
+                                    ToolTip.Tip="Preflight &amp; View Tab (Double-click to toggle Ribbon)">
+                                <TextBlock Text="Preflight &amp; View" />
+                            </Button>
+
+                            <!-- Export Tab -->
+                            <Button Classes="ribbon-tab"
+                                    Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Export}"
+                                    Command="{Binding SelectRibbonTabCommand}"
+                                    CommandParameter="{x:Static models:RibbonTabKind.Export}"
+                                    ToolTip.Tip="Export Tab (Double-click to toggle Ribbon)">
+                                <TextBlock Text="Export" />
+                            </Button>
                         </StackPanel>
-                    </Button>
+                    </ScrollViewer>
 
-                    <!-- Home Tab -->
-                    <Button Classes="ribbon-tab"
-                            Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Home}"
-                            Command="{Binding SelectRibbonTabCommand}"
-                            CommandParameter="{x:Static models:RibbonTabKind.Home}">
-                        <TextBlock Text="Home" />
-                    </Button>
-
-                    <!-- Edit Tab -->
-                    <Button Classes="ribbon-tab"
-                            Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Edit}"
-                            Command="{Binding SelectRibbonTabCommand}"
-                            CommandParameter="{x:Static models:RibbonTabKind.Edit}">
-                        <TextBlock Text="Edit" />
-                    </Button>
-
-                    <!-- Comment Tab -->
-                    <Button Classes="ribbon-tab"
-                            Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Comment}"
-                            Command="{Binding SelectRibbonTabCommand}"
-                            CommandParameter="{x:Static models:RibbonTabKind.Comment}">
-                        <TextBlock Text="Comment" />
-                    </Button>
-
-                    <!-- Insert Tab -->
-                    <Button Classes="ribbon-tab"
-                            Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Insert}"
-                            Command="{Binding SelectRibbonTabCommand}"
-                            CommandParameter="{x:Static models:RibbonTabKind.Insert}">
-                        <TextBlock Text="Insert" />
-                    </Button>
-
-                    <!-- Fill & Sign Tab -->
-                    <Button Classes="ribbon-tab"
-                            Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Sign}"
-                            Command="{Binding SelectRibbonTabCommand}"
-                            CommandParameter="{x:Static models:RibbonTabKind.Sign}">
-                        <TextBlock Text="Fill &amp; Sign" />
-                    </Button>
-
-                    <!-- Forms Tab (AcroForms Suite) -->
-                    <Button Classes="ribbon-tab"
-                            Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Forms}"
-                            Command="{Binding SelectRibbonTabCommand}"
-                            CommandParameter="{x:Static models:RibbonTabKind.Forms}">
-                        <TextBlock Text="Forms" />
-                    </Button>
-
-                    <!-- Organize Tab -->
-                    <Button Classes="ribbon-tab"
-                            Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Organize}"
-                            Command="{Binding SelectRibbonTabCommand}"
-                            CommandParameter="{x:Static models:RibbonTabKind.Organize}">
-                        <TextBlock Text="Organize" />
-                    </Button>
-
-                    <!-- Protect & Redact Tab -->
-                    <Button Classes="ribbon-tab"
-                            Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Protect}"
-                            Command="{Binding SelectRibbonTabCommand}"
-                            CommandParameter="{x:Static models:RibbonTabKind.Protect}">
-                        <TextBlock Text="Protect &amp; Redact" />
-                    </Button>
-
-                    <!-- Preflight Audit & Guides Tab -->
-                    <Button Classes="ribbon-tab"
-                            Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Audit}"
-                            Command="{Binding SelectRibbonTabCommand}"
-                            CommandParameter="{x:Static models:RibbonTabKind.Audit}">
-                        <TextBlock Text="Preflight &amp; View" />
-                    </Button>
-
-                    <!-- Export Tab -->
-                    <Button Classes="ribbon-tab"
-                            Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Export}"
-                            Command="{Binding SelectRibbonTabCommand}"
-                            CommandParameter="{x:Static models:RibbonTabKind.Export}">
-                        <TextBlock Text="Export" />
-                    </Button>
-                </StackPanel>
+                    <!-- Right Action: Minimize / Collapse Ribbon Toggle Button -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="6,0,0,0">
+                        <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                Command="{Binding ToggleRibbonCollapseCommand}"
+                                ToolTip.Tip="Collapse / Minimize Ribbon (⌘F1 / Ctrl+F1)">
+                            <materialIcons:MaterialIcon Kind="{Binding IsRibbonCollapsed, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='ChevronDown|ChevronUp'}"
+                                                        Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
             </Border>
 
             <!-- 2. Ribbon Dynamic Tools Panel -->
-            <Border Grid.Row="1" Background="White" Height="100" Padding="12,5,12,5">
+            <Border Grid.Row="1" Background="White" Height="100" Padding="12,5,12,5"
+                    IsVisible="{Binding !IsRibbonCollapsed}">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                     <Panel>
 
@@ -952,6 +977,39 @@
                                     </Button>
                                 </StackPanel>
                                 <TextBlock Grid.Row="1" Text="View Mode" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                            </Grid>
+
+                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+
+                            <!-- Workspace Panels & Collapse/Expand -->
+                            <Grid RowDefinitions="*,Auto">
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Classes="tool-btn" Command="{Binding ToggleLeftSidebarCommand}" ToolTip.Tip="Toggle Pages Sidebar (⌘B / Ctrl+B)">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="DockLeft" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Pages Bar" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding ToggleRibbonCollapseCommand}" ToolTip.Tip="Toggle Ribbon Toolbar (⌘F1 / Ctrl+F1)">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="ViewAgendaOutline" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Ribbon" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding ToggleInspectorCollapseCommand}" ToolTip.Tip="Toggle Properties Inspector (⌘⇧P / Ctrl+Shift+P)">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="DockRight" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Inspector" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding ExpandAllPanelsCommand}" ToolTip.Tip="Restore &amp; Expand All Workspace Panels">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="ViewQuiltOutline" Width="20" Height="20" Foreground="#16A34A" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Expand All" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock Grid.Row="1" Text="Workspace Panels" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
                             <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />

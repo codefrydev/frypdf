@@ -33,6 +33,10 @@ public partial class MainViewModel
     public void SelectSidebarTab(SidebarTabKind tab)
     {
         ActiveSidebarTab = tab;
+        if (IsLeftSidebarCollapsed)
+        {
+            IsLeftSidebarCollapsed = false;
+        }
         if (tab == SidebarTabKind.Outline) RefreshOutline();
         if (tab == SidebarTabKind.Comments) RefreshComments();
     }

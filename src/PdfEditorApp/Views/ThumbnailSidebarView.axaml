@@ -47,51 +47,62 @@
         </ContextMenu>
     </UserControl.Resources>
 
-    <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,1,0" Width="240">
-        <Grid RowDefinitions="Auto,*,Auto">
+    <!-- Outer Container: dynamically switches between Expanded (240px) and Collapsed (38px) mode -->
+    <Panel>
+        <!-- A. EXPANDED MODE (Width 240) -->
+        <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,1,0" Width="240"
+                IsVisible="{Binding !IsLeftSidebarCollapsed}">
+            <Grid RowDefinitions="Auto,*,Auto">
 
-            <!-- 1. Sidebar Tab Bar Header (Thumbnails, Outline, Comments) -->
-            <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" Height="42" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="8,0">
-                <Grid ColumnDefinitions="*,Auto">
-                    <!-- Tab Switcher -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                        <Button Classes="mini-tool-btn" Width="30" Height="30"
-                                Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}"
-                                Command="{Binding SelectSidebarTabCommand}"
-                                CommandParameter="{x:Static models:SidebarTabKind.Thumbnails}"
-                                ToolTip.Tip="Page Thumbnails">
-                            <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
-                        </Button>
+                <!-- 1. Sidebar Tab Bar Header (Thumbnails, Outline, Comments) -->
+                <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" Height="42" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="8,0">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <!-- Tab Switcher -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                            <Button Classes="mini-tool-btn" Width="30" Height="30"
+                                    Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}"
+                                    Command="{Binding SelectSidebarTabCommand}"
+                                    CommandParameter="{x:Static models:SidebarTabKind.Thumbnails}"
+                                    ToolTip.Tip="Page Thumbnails">
+                                <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                            </Button>
 
-                        <Button Classes="mini-tool-btn" Width="30" Height="30"
-                                Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Outline}"
-                                Command="{Binding SelectSidebarTabCommand}"
-                                CommandParameter="{x:Static models:SidebarTabKind.Outline}"
-                                ToolTip.Tip="Document Outline &amp; Bookmarks">
-                            <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
-                        </Button>
+                            <Button Classes="mini-tool-btn" Width="30" Height="30"
+                                    Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Outline}"
+                                    Command="{Binding SelectSidebarTabCommand}"
+                                    CommandParameter="{x:Static models:SidebarTabKind.Outline}"
+                                    ToolTip.Tip="Document Outline &amp; Bookmarks">
+                                <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                            </Button>
 
-                        <Button Classes="mini-tool-btn" Width="30" Height="30"
-                                Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Comments}"
-                                Command="{Binding SelectSidebarTabCommand}"
-                                CommandParameter="{x:Static models:SidebarTabKind.Comments}"
-                                ToolTip.Tip="Comments &amp; Review Annotations">
-                            <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
-                        </Button>
-                    </StackPanel>
+                            <Button Classes="mini-tool-btn" Width="30" Height="30"
+                                    Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Comments}"
+                                    Command="{Binding SelectSidebarTabCommand}"
+                                    CommandParameter="{x:Static models:SidebarTabKind.Comments}"
+                                    ToolTip.Tip="Comments &amp; Review Annotations">
+                                <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                            </Button>
+                        </StackPanel>
 
-                    <!-- Quick Page Actions -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center"
-                                IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}">
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding AddPageCommand}" ToolTip.Tip="Add New Page (⌘⇧N)">
-                            <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
-                        </Button>
-                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding RotateCurrentPageCommand}" ToolTip.Tip="Rotate 90° CW (⌘⇧R)">
-                            <materialIcons:MaterialIcon Kind="RotateRight" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Border>
+                        <!-- Quick Page Actions & Collapse Button -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                            <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding AddPageCommand}" ToolTip.Tip="Add New Page (⌘⇧N)"
+                                    IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}">
+                                <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+                            <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding RotateCurrentPageCommand}" ToolTip.Tip="Rotate 90° CW (⌘⇧R)"
+                                    IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}">
+                                <materialIcons:MaterialIcon Kind="RotateRight" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+                            <Rectangle Width="1" Height="14" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+                            <Button Classes="mini-tool-btn" Width="26" Height="26"
+                                    Command="{Binding ToggleLeftSidebarCommand}"
+                                    ToolTip.Tip="Collapse Pages Sidebar (⌘B / Ctrl+B)">
+                                <materialIcons:MaterialIcon Kind="ChevronLeft" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
             <!-- 2. Content Area (Dynamically changes based on ActiveSidebarTab) -->
             <Panel Grid.Row="1">
@@ -483,4 +494,58 @@
 
         </Grid>
     </Border>
+
+    <!-- B. COLLAPSED MINI DOCK RAIL (Width 38) -->
+    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,1,0" Width="38"
+            IsVisible="{Binding IsLeftSidebarCollapsed}">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="0,4">
+            <!-- Top: Expand Chevron Button -->
+            <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="4">
+                <Button Classes="mini-tool-btn" Width="30" Height="30"
+                        Command="{Binding ToggleLeftSidebarCommand}"
+                        ToolTip.Tip="Expand Pages Sidebar (⌘B / Ctrl+B)">
+                    <materialIcons:MaterialIcon Kind="ChevronRight" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                </Button>
+                <Rectangle Width="22" Height="1" Fill="{StaticResource WinBorderBrush}" Margin="0,2" />
+            </StackPanel>
+
+            <!-- Middle: Vertical Navigation Tabs -->
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" Spacing="6" Margin="0,4">
+                <Button Classes="mini-tool-btn" Width="30" Height="30"
+                        Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}"
+                        Command="{Binding SelectSidebarTabCommand}"
+                        CommandParameter="{x:Static models:SidebarTabKind.Thumbnails}"
+                        ToolTip.Tip="Open Page Thumbnails (⌘B)">
+                    <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                </Button>
+
+                <Button Classes="mini-tool-btn" Width="30" Height="30"
+                        Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Outline}"
+                        Command="{Binding SelectSidebarTabCommand}"
+                        CommandParameter="{x:Static models:SidebarTabKind.Outline}"
+                        ToolTip.Tip="Open Document Outline &amp; Bookmarks">
+                    <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                </Button>
+
+                <Button Classes="mini-tool-btn" Width="30" Height="30"
+                        Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Comments}"
+                        Command="{Binding SelectSidebarTabCommand}"
+                        CommandParameter="{x:Static models:SidebarTabKind.Comments}"
+                        ToolTip.Tip="Open Comments &amp; Review Annotations">
+                    <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                </Button>
+            </StackPanel>
+
+            <!-- Bottom: Page Indicator & Add Page -->
+            <StackPanel Grid.Row="2" HorizontalAlignment="Center" Spacing="4">
+                <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding AddPageCommand}" ToolTip.Tip="Add New Page (⌘⇧N)">
+                    <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                </Button>
+                <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="3,2" Margin="0,2">
+                    <TextBlock Text="{Binding CurrentPageNumber}" FontSize="10" FontWeight="Bold" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Panel>
 </UserControl>

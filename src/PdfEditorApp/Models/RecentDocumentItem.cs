@@ -1,4 +1,6 @@
 using System;
+using System.Text.Json.Serialization;
+using PdfEditorApp.ViewModels;
 
 namespace PdfEditorApp.Models;
 
@@ -10,8 +12,17 @@ public class RecentDocumentItem
     public string FilePath { get; set; } = "";
     public string Title { get; set; } = "Untitled";
     public DateTime LastOpened { get; set; } = DateTime.UtcNow;
+    public int PageCount { get; set; } = 1;
+    public string FormatDescription { get; set; } = "A4 Document";
+
+    [JsonIgnore]
+    public PageViewModel? PagePreview { get; set; }
+
+    [JsonIgnore]
+    public bool HasLivePreview => PagePreview != null;
 
     /// <summary>Friendly display string for how long ago the file was opened.</summary>
+    [JsonIgnore]
     public string RelativeTime
     {
         get
@@ -25,3 +36,4 @@ public class RecentDocumentItem
         }
     }
 }
+

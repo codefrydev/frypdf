@@ -17,6 +17,7 @@
             <converters:DoubleToThicknessConverter x:Key="DoubleToThickness" />
             <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
             <converters:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
+            <converters:BooleanToStringConverter x:Key="BooleanToStringConverter" />
             <converters:StringToFontFamilyConverter x:Key="StringToFontFamilyConverter" />
 
             <ResourceDictionary.ThemeDictionaries>

@@ -276,3 +276,27 @@ public class StringToFontFamilyConverter : IValueConverter
         return value?.ToString();
     }
 }
+
+public class BooleanToStringConverter : IValueConverter
+{
+    public static readonly BooleanToStringConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        bool isTrue = value is true;
+        if (parameter is string paramStr)
+        {
+            var parts = paramStr.Split('|');
+            string trueVal = parts.Length > 0 ? parts[0] : "True";
+            string falseVal = parts.Length > 1 ? parts[1] : "False";
+            return isTrue ? trueVal : falseVal;
+        }
+        return isTrue ? "True" : "False";
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+

@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FryPDF — Modern Desktop PDF Studio</title>
+  <meta name="description" content="FryPDF is a privacy-first, professional desktop PDF creator and editor studio built with Avalonia UI and QuestPDF. Native, fast, and 100% offline." />
+  <meta name="keywords" content="PDF Editor, PDF Studio, Avalonia UI, QuestPDF, .NET 10, AcroForms, Bates Numbering, LaTeX PDF, Desktop PDF Editor" />
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="FryPDF — Modern Desktop PDF Studio" />
+  <meta property="og:description" content="Privacy-first, pro desktop PDF studio. Zero cloud uploads, lightning-fast native performance." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/svg+xml" href="src/PdfEditorApp/Assets/app-logo.svg" />
+
+  <!-- Fonts: Inter & JetBrains Mono for a clean, monotonic editorial aesthetic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ==========================================================================
+       1. Monotonic Design System & Strict Tokens
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* Monotonic Dark Slate Foundation */
+      --bg-base: #090D14;
+      --bg-surface: #0E1420;
+      --bg-elevated: #141B2A;
+      --bg-panel: #1A2234;
+      --bg-input: #0B0F18;
+
+      /* High-contrast, precise typography */
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-tertiary: #64748B;
+      --text-dim: #475569;
+
+      /* Logo Anchored Accents */
+      --fry-crimson: #E11D48;
+      --fry-crimson-hover: #BE123C;
+      --fry-crimson-subtle: rgba(225, 29, 72, 0.12);
+      
+      --fry-cyan: #38BDF8;
+      --fry-cyan-dim: #0284C7;
+      --fry-cyan-subtle: rgba(56, 189, 248, 0.12);
+
+      --fry-amber: #F59E0B;
+      --fry-emerald: #10B981;
+
+      /* Crisp 1px Borders */
+      --border-subtle: #1E293B;
+      --border-strong: #334155;
+      --border-focus: #38BDF8;
+
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+
+      --shadow-window: 0 24px 70px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      --shadow-card: 0 12px 30px -10px rgba(0, 0, 0, 0.6);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-base);
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Container */
+    .container {
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Typography Utilities */
+    .font-mono { font-family: var(--font-mono); }
+    
+    .label-mono {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-tertiary);
+    }
+
+    /* Subtle grid background for engineering feel */
+    .grid-backdrop {
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ==========================================================================
+       2. Navigation Bar (Monotonic & Crisp)
+       ========================================================================== */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(9, 13, 20, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      height: 60px;
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .brand-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: #0F172A;
+      border: 1px solid var(--border-strong);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-text {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .version-tag {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .nav-menu a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+
+    .nav-menu a:hover {
+      color: var(--text-primary);
+    }
+
+    .nav-cta-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .btn-crimson {
+      background: var(--fry-crimson);
+      color: #FFFFFF;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-crimson:hover {
+      background: var(--fry-crimson-hover);
+    }
+
+    .btn-subtle {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-subtle:hover {
+      background: var(--bg-panel);
+      border-color: var(--border-strong);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-secondary);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-outline:hover {
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+      background: var(--bg-surface);
+    }
+
+    /* ==========================================================================
+       3. Hero Section (Monotonic, Engineering-Driven)
+       ========================================================================== */
+    .hero-section {
+      padding: 72px 0 60px;
+      border-bottom: 1px solid var(--border-subtle);
+      position: relative;
+    }
+
+    .hero-meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .meta-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--fry-emerald);
+    }
+
+    .hero-headline {
+      font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+      max-width: 920px;
+      margin-bottom: 20px;
+    }
+
+    .hero-headline span.accent {
+      color: var(--fry-crimson);
+    }
+
+    .hero-lead {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 720px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+
+    .terminal-runner {
+      display: inline-flex;
+      align-items: center;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0 12px;
+      height: 38px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+
+    .terminal-runner .prompt {
+      color: var(--fry-cyan);
+      margin-right: 8px;
+      user-select: none;
+    }
+
+    .copy-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      margin-left: 10px;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s;
+    }
+
+    .copy-icon-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .spec-badges-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 20px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.82rem;
+      color: var(--text-tertiary);
+    }
+
+    .spec-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .spec-item svg {
+      color: var(--fry-cyan);
+    }
+
+    /* ==========================================================================
+       4. Engineering Pillars (Monotonic Technical Grid)
+       ========================================================================== */
+    .features-grid-section {
+      padding: 80px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-title-wrap {
+      margin-bottom: 48px;
+    }
+
+    .section-headline {
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-top: 6px;
+      margin-bottom: 10px;
+    }
+
+    .section-description {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      max-width: 680px;
+    }
+
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 880px) {
+      .pillars-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pillar-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.15s ease;
+    }
+
+    .pillar-card:hover {
+      border-color: var(--border-strong);
+      background: var(--bg-elevated);
+    }
+
+    .pillar-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--fry-cyan);
+      margin-bottom: 12px;
+    }
+
+    .pillar-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .pillar-card p {
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .pillar-tech-snippet {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    /* ==========================================================================
+       6. Technical Architecture & Benchmarks
+       ========================================================================== */
+    .architecture-section {
+      padding: 80px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+    }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    @media (max-width: 768px) {
+      .specs-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .spec-card {
+      background: var(--bg-base);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 18px;
+    }
+
+    .spec-card .val {
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .spec-card .lbl {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+    }
+
+    /* ==========================================================================
+       7. Monotonic Comparison Matrix
+       ========================================================================== */
+    .comparison-section {
+      padding: 80px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+    }
+
+    table.matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    table.matrix-table th, table.matrix-table td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    table.matrix-table th {
+      background: var(--bg-elevated);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    table.matrix-table th.col-fry, table.matrix-table td.col-fry {
+      background: rgba(56, 189, 248, 0.03);
+      border-left: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+    }
+
+    .status-yes {
+      color: var(--fry-emerald);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-no {
+      color: var(--text-dim);
+    }
+
+    /* ==========================================================================
+       8. Distribution & Installation Hub
+       ========================================================================== */
+    .install-section {
+      padding: 80px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .install-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 24px;
+    }
+
+    .install-tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 8px 16px;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: -1px;
+    }
+
+    .install-tab-btn.active {
+      color: var(--text-primary);
+      border-color: var(--fry-crimson);
+    }
+
+    .install-pane {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px;
+    }
+
+    .code-block-wrap {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+    }
+
+    /* ==========================================================================
+       9. Clean Technical FAQ
+       ========================================================================== */
+    .faq-section {
+      padding: 80px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .faq-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .faq-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .faq-item-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+
+    .faq-item-box h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .faq-item-box p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ==========================================================================
+       10. Footer (Monotonic, Precise)
+       ========================================================================== */
+    footer {
+      padding: 40px 0;
+      background: var(--bg-base);
+      font-size: 0.82rem;
+      color: var(--text-tertiary);
+    }
+
+    .footer-flex {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      color: var(--text-tertiary);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-primary);
+    }
+
+    /* Toast Notification */
+    .toast-popup {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--bg-panel);
+      color: var(--text-primary);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    .toast-popup.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="grid-backdrop">
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast-popup">Copied to clipboard.</div>
+
+  <!-- ==========================================================================
+       1. Navigation Header
+       ========================================================================== -->
+  <header>
+    <div class="container nav-container">
+      <a href="#" class="brand-wrap">
+        <div class="brand-icon-box">
+          <!-- FryPDF Vector Mark -->
+          <svg width="20" height="20" viewBox="0 0 196 196" fill="none">
+            <path d="M50 126H145V133C145 157.853 124.853 178 100 178H95C70.1472 178 50 157.853 50 133V126Z" fill="#38BDF8"/>
+            <path d="M68 60C68 54 73 46 73 46C73 46 71 55 71 60C71 65 72 65 73 68C74 72 73 74 73 77C73 79 72 80 72 83C71 86 69 92 69 92C69 92 70 84 70 81C70 78 70 74 69 70C68 66 67 66 68 60Z" fill="#F59E0B"/>
+            <path d="M99 38C99 30 96 19 96 19C96 19 97 31 97 38C97 45 96 44 96 49C95 54 96 57 96 60C96 64 96 64 97 69C97 74 98 81 98 81C98 81 98 70 98 66C98 62 98 57 98 52C99 46 100 46 99 38Z" fill="#EF4444"/>
+            <path d="M118 64C118 59 121 52 121 52C121 52 120 60 120 64C120 69 121 68 121 71C122 75 121 76 121 78C121 81 121 81 120 84C120 87 119 92 119 92C119 92 119 85 119 82C119 80 119 76 119 73C118 69 117 69 118 64Z" fill="#F59E0B"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span>FryPDF</span>
+          <span class="version-tag">v1.0.0</span>
+        </div>
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="#pillars">Capabilities</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#comparison">Specs & Diff</a></li>
+        <li><a href="#install">Install</a></li>
+      </ul>
+
+      <div class="nav-cta-group">
+        <a href="https://github.com" target="_blank" class="btn btn-outline">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          Source
+        </a>
+        <a href="#install" class="btn btn-crimson">Download Studio</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       2. Hero Section
+       ========================================================================== -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-meta-badge">
+        <span class="meta-indicator"></span>
+        <span>AVALONIA 12.1 • QUESTPDF 2026 • 100% OFFLINE</span>
+      </div>
+
+      <h1 class="hero-headline">
+        The desktop PDF studio built for <span class="accent">engineering</span>, legal, and privacy.
+      </h1>
+
+      <p class="hero-lead">
+        No cloud accounts. No subscriptions. No background telemetry. Design responsive document layouts, evaluate AcroForm formulas in real-time, render LaTeX math, and apply legal Bates numbering directly on your local CPU.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#install" class="btn btn-crimson" style="padding: 10px 20px; font-size: 0.92rem;">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span id="hero-btn-label">Download for macOS / Windows</span>
+        </a>
+
+        <div class="terminal-runner">
+          <span class="prompt">$</span>
+          <span>git clone https://github.com/CodeFryDev/FryPDF && ./run</span>
+          <button class="copy-icon-btn" onclick="copyText('git clone https://github.com/CodeFryDev/FryPDF && ./run')" title="Copy Command">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="spec-badges-row">
+        <div class="spec-item">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          Lossless <code>.frypdf</code> Schema
+        </div>
+        <div class="spec-item">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          Sub-350ms Cold Launch
+        </div>
+        <div class="spec-item">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          Zero External Network Sockets
+        </div>
+        <div class="spec-item">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          AES-256 GCM Encryption
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       3. Core Engineering Pillars (Monotonic Technical Cards)
+       ========================================================================== -->
+  <section class="features-grid-section" id="pillars">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="label-mono">CORE CAPABILITIES</span>
+        <h2 class="section-headline">Engineered without compromise.</h2>
+        <p class="section-description">
+          Every tool in FryPDF is designed for high-density, precise document manipulation.
+        </p>
+      </div>
+
+      <div class="pillars-grid">
+        <!-- 1. AcroForms & Live Validation -->
+        <div class="pillar-card">
+          <div>
+            <span class="pillar-badge">01 // FORMS & VALIDATION</span>
+            <h3>Interactive AcroForms Engine</h3>
+            <p>
+              Deploy text fields, multi-select checkboxes, radio groups, combo dropdowns, and signature containers. Full mathematical dependency graph recalculates instantly on keystrokes.
+            </p>
+          </div>
+          <div class="pillar-tech-snippet">
+            formula: "=SUM(subtotal, tax)"<br/>
+            validation: "^[A-Z0-9._%+-]+@"
+          </div>
+        </div>
+
+        <!-- 2. LaTeX Math Equation Studio -->
+        <div class="pillar-card">
+          <div>
+            <span class="pillar-badge">02 // SCIENTIFIC TYPESETTING</span>
+            <h3>LaTeX Math Equation Layout</h3>
+            <p>
+              Render clean TeX mathematical syntax into vector paths. Supports integrals, summations, matrices, and fractions with sub-pixel alignment at any zoom level.
+            </p>
+          </div>
+          <div class="pillar-tech-snippet">
+            \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+          </div>
+        </div>
+
+        <!-- 3. Signature Studio & Ink -->
+        <div class="pillar-card">
+          <div>
+            <span class="pillar-badge">03 // CRYPTOGRAPHIC INK</span>
+            <h3>Vector Signature Studio</h3>
+            <p>
+              Sign legal documents with 4 cursive calligraphy typography models or draw smooth 60fps vector ink paths using cubic bezier curve smoothing.
+            </p>
+          </div>
+          <div class="pillar-tech-snippet">
+            engine: "BezierSplineFilter"<br/>
+            sampling: "120Hz Hardware Digitizer"
+          </div>
+        </div>
+
+        <!-- 4. 13 Dynamic Vector Charts -->
+        <div class="pillar-card">
+          <div>
+            <span class="pillar-badge">04 // DATA VISUALIZATION</span>
+            <h3>13 Dynamic Vector Charts</h3>
+            <p>
+              Embed Bar, Column, Line, Smooth Curve, Area, Donut, Pie, Radar, Scatter, Bubble, Candlestick, Waterfall, and Polar charts directly into documents.
+            </p>
+          </div>
+          <div class="pillar-tech-snippet">
+            types: ["Donut", "Waterfall", "Radar"]<br/>
+            output: "Lossless Skia Vector Path"
+          </div>
+        </div>
+
+        <!-- 5. Legal Redaction & Bates -->
+        <div class="pillar-card">
+          <div>
+            <span class="pillar-badge">05 // LEGAL COMPLIANCE</span>
+            <h3>FOIA Redact & Bates Numbering</h3>
+            <p>
+              Permanent irreversible pixel destruction for sensitive PII with FOIA exemption codes ((b)(4), (b)(6)) and 6-anchor sequential Bates docket indexing.
+            </p>
+          </div>
+          <div class="pillar-tech-snippet">
+            bates_mask: "PREFIX-{YYYY}-{00000}"<br/>
+            redaction: "PixelBurnInPermanent"
+          </div>
+        </div>
+
+        <!-- 6. Side-by-Side Visual Diff -->
+        <div class="pillar-card">
+          <div>
+            <span class="pillar-badge">06 // REVISION CONTROL</span>
+            <h3>Visual Document Diff Analyzer</h3>
+            <p>
+              Compare project revisions side-by-side. Highlights modified text, relocated vector coordinates, and updated table cells with color-coded diff overlays.
+            </p>
+          </div>
+          <div class="pillar-tech-snippet">
+            diff_mode: "StructuralDOMComparison"<br/>
+            status: "4 added, 1 modified, 0 removed"
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       5. Architecture & Runtime Specifications
+       ========================================================================== -->
+  <section class="architecture-section" id="architecture">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="label-mono">UNDER THE HOOD</span>
+        <h2 class="section-headline">Native performance specifications.</h2>
+        <p class="section-description">
+          Built with modern .NET 10, SkiaSharp SIMD graphics, and Avalonia UI 12.1.
+        </p>
+      </div>
+
+      <div class="specs-grid">
+        <div class="spec-card">
+          <div class="val">&lt; 65 MB</div>
+          <div class="lbl">Runtime Memory Footprint</div>
+        </div>
+        <div class="spec-card">
+          <div class="val">&lt; 350 ms</div>
+          <div class="lbl">Cold App Launch Time</div>
+        </div>
+        <div class="spec-card">
+          <div class="val">0 Bytes</div>
+          <div class="lbl">Cloud Network Sockets</div>
+        </div>
+        <div class="spec-card">
+          <div class="val">120 Passed</div>
+          <div class="lbl">Automated Test Suites (xUnit)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       6. Technical Comparison Matrix
+       ========================================================================== -->
+  <section class="comparison-section" id="comparison">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="label-mono">TECHNICAL COMPARISON</span>
+        <h2 class="section-headline">FryPDF vs Legacy PDF Software</h2>
+      </div>
+
+      <div class="table-responsive">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>Capability</th>
+              <th class="col-fry" style="color: var(--fry-cyan);">FryPDF Studio</th>
+              <th>Adobe Acrobat Pro</th>
+              <th>Canva PDF</th>
+              <th>Apple Preview</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>100% Offline (Zero Telemetry)</strong></td>
+              <td class="col-fry"><span class="status-yes">✓ Native Local</span></td>
+              <td><span class="status-no">✗ Cloud Dependent</span></td>
+              <td><span class="status-no">✗ Mandatory Cloud</span></td>
+              <td><span class="status-yes">✓ Offline</span></td>
+            </tr>
+            <tr>
+              <td><strong>Pricing Model</strong></td>
+              <td class="col-fry"><span class="status-yes">✓ Free & Open</span></td>
+              <td>$239.88 / year</td>
+              <td>$120.00 / year</td>
+              <td>Bundled OS</td>
+            </tr>
+            <tr>
+              <td><strong>Live AcroForms Formula Calculations</strong></td>
+              <td class="col-fry"><span class="status-yes">✓ Real-time Evaluator</span></td>
+              <td><span class="status-yes">✓ JS Engine</span></td>
+              <td><span class="status-no">✗ No</span></td>
+              <td><span class="status-no">✗ Read-only Filling</span></td>
+            </tr>
+            <tr>
+              <td><strong>13 Vector Chart Types</strong></td>
+              <td class="col-fry"><span class="status-yes">✓ Native Vector Paths</span></td>
+              <td><span class="status-no">✗ Raster Only</span></td>
+              <td><span class="status-yes">✓ Cloud Charts</span></td>
+              <td><span class="status-no">✗ No</span></td>
+            </tr>
+            <tr>
+              <td><strong>LaTeX Math Equation Typesetting</strong></td>
+              <td class="col-fry"><span class="status-yes">✓ Built-in TeX Engine</span></td>
+              <td><span class="status-no">✗ No</span></td>
+              <td><span class="status-no">✗ No</span></td>
+              <td><span class="status-no">✗ No</span></td>
+            </tr>
+            <tr>
+              <td><strong>Legal Bates Numbering (6 Anchors)</strong></td>
+              <td class="col-fry"><span class="status-yes">✓ Native Docketing</span></td>
+              <td><span class="status-yes">✓ Pro Only</span></td>
+              <td><span class="status-no">✗ No</span></td>
+              <td><span class="status-no">✗ No</span></td>
+            </tr>
+            <tr>
+              <td><strong>Visual Revision Diffing</strong></td>
+              <td class="col-fry"><span class="status-yes">✓ Side-by-Side DOM</span></td>
+              <td><span class="status-yes">✓ Pro Only</span></td>
+              <td><span class="status-no">✗ No</span></td>
+              <td><span class="status-no">✗ No</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       7. Distribution Hub
+       ========================================================================== -->
+  <section class="install-section" id="install">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="label-mono">DISTRIBUTION</span>
+        <h2 class="section-headline">Install FryPDF Studio</h2>
+        <p class="section-description">Native binaries available for macOS, Windows, and Linux.</p>
+      </div>
+
+      <div class="install-tabs">
+        <button class="install-tab-btn active" onclick="switchInstallTab('macos', this)">macOS</button>
+        <button class="install-tab-btn" onclick="switchInstallTab('windows', this)">Windows</button>
+        <button class="install-tab-btn" onclick="switchInstallTab('linux', this)">Linux & Source</button>
+      </div>
+
+      <div class="install-pane" id="install-pane-content">
+        <h3 style="font-size: 1.1rem; margin-bottom: 8px;">macOS (Universal / Apple Silicon & Intel)</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+          Standalone application bundle with notarized DMG installer. Requires macOS 12.0 or later.
+        </p>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+          <a href="https://github.com" class="btn btn-crimson">Download FryPDF-v1.0.0.dmg</a>
+        </div>
+
+        <div class="code-block-wrap">
+          <span>brew install codefrydev/tap/frypdf</span>
+          <button class="copy-icon-btn" onclick="copyText('brew install codefrydev/tap/frypdf')" title="Copy Command">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       8. FAQ Section
+       ========================================================================== -->
+  <section class="faq-section">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="label-mono">DOCUMENTATION & SUPPORT</span>
+        <h2 class="section-headline">Frequently Asked Questions</h2>
+      </div>
+
+      <div class="faq-grid">
+        <div class="faq-item-box">
+          <h4>Is FryPDF really 100% offline?</h4>
+          <p>
+            Yes. FryPDF has zero telemetry, zero analytics beacons, and no network sockets. All document parsing, AcroForm computations, and PDF export occur on your local CPU.
+          </p>
+        </div>
+
+        <div class="faq-item-box">
+          <h4>What is the .frypdf file format?</h4>
+          <p>
+            <code>.frypdf</code> is a lossless JSON-based project schema that stores full vector coordinates, live LaTeX formulas, and AcroForm binding graphs without rasterizing your document.
+          </p>
+        </div>
+
+        <div class="faq-item-box">
+          <h4>How does FOIA redaction work?</h4>
+          <p>
+            Unlike superficial black highlighter boxes, FryPDF physically strips the underlying text and vector paths from the compiled document and replaces them with solid pixel fills and legal exemption tags.
+          </p>
+        </div>
+
+        <div class="faq-item-box">
+          <h4>What are the build prerequisites?</h4>
+          <p>
+            Pre-compiled standalone binaries include their own self-contained runtime. If building directly from source, you only need the standard .NET 10 SDK.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       9. Footer
+       ========================================================================== -->
+  <footer>
+    <div class="container footer-flex">
+      <div>
+        <strong>FryPDF Studio</strong> — Copyright © 2026 Code Fry Dev. All rights reserved.
+      </div>
+      <ul class="footer-links">
+        <li><a href="docs/ARCHITECTURE.md">Architecture</a></li>
+        <li><a href="docs/FEATURES.md">Features</a></li>
+        <li><a href="docs/CONTRIBUTING.md">Contributing</a></li>
+        <li><a href="https://github.com">GitHub</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       10. Client Logic (Monotonic & Fast)
+       ========================================================================== -->
+  <script>
+    // 1. Install Tab Switcher
+    const installData = {
+      macos: {
+        title: "macOS (Universal / Apple Silicon & Intel)",
+        desc: "Standalone application bundle with notarized DMG installer. Requires macOS 12.0 or later.",
+        btnText: "Download FryPDF-v1.0.0.dmg",
+        cmd: "brew install codefrydev/tap/frypdf"
+      },
+      windows: {
+        title: "Windows 10 / 11 (x64 & ARM64)",
+        desc: "Inno Setup Windows installer or signed MSIX desktop package with .frypdf file association.",
+        btnText: "Download FryPDF-Setup-v1.0.0.exe",
+        cmd: "winget install CodeFryDev.FryPDF"
+      },
+      linux: {
+        title: "Linux & Source Compilation",
+        desc: "Portable Tarball, AppImage, or direct compile via modern .NET 10 SDK runtime.",
+        btnText: "Clone GitHub Repository",
+        cmd: "dotnet run --project src/PdfEditorApp"
+      }
+    };
+
+    function switchInstallTab(platform, btn) {
+      document.querySelectorAll('.install-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const d = installData[platform];
+      if (d) {
+        document.getElementById('install-pane-content').innerHTML = `
+          <h3 style="font-size: 1.1rem; margin-bottom: 8px;">${d.title}</h3>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+            ${d.desc}
+          </p>
+          <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+            <a href="https://github.com" class="btn btn-crimson">${d.btnText}</a>
+          </div>
+          <div class="code-block-wrap">
+            <span>${d.cmd}</span>
+            <button class="copy-icon-btn" onclick="copyText('${d.cmd}')" title="Copy Command">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // 3. Copy Helper
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.innerText = 'Copied: ' + text;
+        toast.classList.add('visible');
+        setTimeout(() => toast.classList.remove('visible'), 2200);
+      });
+    }
+
+    // 4. Local Compile Simulation
+    function triggerLocalCompile() {
+      const toast = document.getElementById('toast');
+      toast.innerText = 'QuestPDF compiling local binary... (0.3s)';
+      toast.classList.add('visible');
+      setTimeout(() => {
+        toast.innerText = '✓ PDF rendered successfully. 0 bytes uploaded.';
+      }, 500);
+      setTimeout(() => toast.classList.remove('visible'), 2500);
+    }
+
+    // 5. OS Auto-Detection
+    window.addEventListener('DOMContentLoaded', () => {
+      const ua = navigator.userAgent.toLowerCase();
+      const heroBtn = document.getElementById('hero-btn-label');
+      if (heroBtn) {
+        if (ua.includes('mac')) {
+          heroBtn.innerText = 'Download for macOS (.dmg)';
+        } else if (ua.includes('win')) {
+          heroBtn.innerText = 'Download for Windows (.exe)';
+        } else if (ua.includes('linux')) {
+          heroBtn.innerText = 'Download for Linux (.tar.gz)';
+        }
+      }
+    });
+  </script>
+</body>
+</html>

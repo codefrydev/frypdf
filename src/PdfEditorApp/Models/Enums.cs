@@ -424,7 +424,8 @@ public enum HomeNavSection
     EditAndForms,
     AiAndAutomation,
     Starred,
-    Trash
+    Trash,
+    Licensing
 }
 
 

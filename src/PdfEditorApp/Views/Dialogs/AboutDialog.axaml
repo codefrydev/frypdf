@@ -255,20 +255,30 @@
                             </Grid>
                         </StackPanel>
 
-                        <!-- SECTION C: OPEN SOURCE MISSION STATEMENT -->
+                        <!-- SECTION C: OPEN SOURCE MISSION & LICENSES LINK -->
                         <Border Background="#F0FDF4"
                                 BorderBrush="#BBF7D0"
                                 BorderThickness="1"
                                 CornerRadius="10"
                                 Padding="14,10">
-                            <Grid ColumnDefinitions="Auto,*">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
                                 <materialIcons:MaterialIcon Grid.Column="0" Kind="HeartOutline" Width="18" Height="18" Foreground="#16A34A" Margin="0,0,10,0" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1"
-                                           Text="FryPDF is 100% Free and Open-Source Software. We are dedicated to providing privacy-first, professional-grade desktop document authoring tools without subscriptions or telemetry."
+                                           Text="FryPDF is 100% Free and Open-Source Software under the MIT License with zero telemetry or tracking."
                                            FontSize="11"
                                            Foreground="#15803D"
                                            TextWrapping="Wrap"
                                            VerticalAlignment="Center" />
+                                <Button Grid.Column="2"
+                                        Classes="mini-tool-btn"
+                                        Padding="8,4"
+                                        Command="{Binding NavigateToLicensingCommand}"
+                                        ToolTip.Tip="View full list of 12 open-source libraries, packages, and full license texts">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <materialIcons:MaterialIcon Kind="CertificateOutline" Width="13" Height="13" Foreground="#047857" />
+                                        <TextBlock Text="View Licenses &amp; Tools →" FontSize="11" FontWeight="Bold" Foreground="#047857" />
+                                    </StackPanel>
+                                </Button>
                             </Grid>
                         </Border>
 
@@ -281,7 +291,7 @@
                         BorderBrush="#E2E8F0"
                         BorderThickness="0,1,0,0"
                         Padding="24,14">
-                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                    <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
 
                         <!-- System Diagnostics Copy Button -->
                         <Button Grid.Column="0"
@@ -296,8 +306,22 @@
                             </StackPanel>
                         </Button>
 
+                        <!-- Licenses & Tools Page Button -->
+                        <Button Grid.Column="1"
+                                Classes="secondary-btn"
+                                Height="34"
+                                Padding="12,0"
+                                Margin="10,0,0,0"
+                                Command="{Binding NavigateToLicensingCommand}"
+                                ToolTip.Tip="Open dedicated Licenses &amp; Third-Party Tools page">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="CertificateOutline" Width="15" Height="15" Foreground="#4F46E5" />
+                                <TextBlock Text="Licenses &amp; Tools" FontSize="12" FontWeight="Medium" />
+                            </StackPanel>
+                        </Button>
+
                         <!-- Shortcuts Button -->
-                        <Button Grid.Column="2"
+                        <Button Grid.Column="3"
                                 Classes="secondary-btn"
                                 Height="34"
                                 Padding="12,0"
@@ -311,7 +335,7 @@
                         </Button>
 
                         <!-- Primary Close Button -->
-                        <Button Grid.Column="3"
+                        <Button Grid.Column="4"
                                 Classes="primary-btn"
                                 Height="34"
                                 Width="90"

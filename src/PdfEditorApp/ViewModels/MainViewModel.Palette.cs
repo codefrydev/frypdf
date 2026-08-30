@@ -104,6 +104,16 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
+    public void NavigateToLicensing()
+    {
+        IsAboutDialogOpen = false;
+        IsHomePageVisible = true;
+        IsEditorVisible = false;
+        IsPdfViewerVisible = false;
+        Home.SelectNavSectionCommand.Execute("Licensing");
+    }
+
+    [RelayCommand]
     public async System.Threading.Tasks.Task CopySupportEmail()
     {
         const string email = "codefrydev@gmail.com";
@@ -323,8 +333,10 @@ public partial class MainViewModel
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Reset Zoom (100%)", Subtitle = "Reset canvas view to 1:1 scale", Category = "View", IconKind = "Magnify", Shortcut = "⌘0", Action = () => ResetZoomCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Fit to Width", Subtitle = "Scale page to fill viewport width", Category = "View", IconKind = "ArrowExpandHorizontal", Shortcut = "⌘1", Action = () => FitToWidthCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Fit to Page", Subtitle = "Scale page to view whole sheet", Category = "View", IconKind = "FitToPageOutline", Shortcut = "⌘9", Action = () => FitToPageCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "About FryPDF", Subtitle = "View app version, system info, open-source credits, and support", Category = "Help", IconKind = "InformationOutline", Action = () => OpenAboutDialogCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Keyboard Shortcuts Reference", Subtitle = "Open keyboard cheatsheet dialog", Category = "Help", IconKind = "KeyboardOutline", Shortcut = "F1", Action = () => OpenShortcutsHelpCommand.Execute(null) });
-        AllPaletteCommands.Add(new CommandPaletteItem { Title = "About FryPDF & CodeFryDev", Subtitle = "Company info, open source licensing & support", Category = "Help", IconKind = "InformationOutline", Action = () => OpenAboutDialogCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Open Source Licenses & Third-Party Tools", Subtitle = "View all 12 libraries, licenses, maintainers & attribution text", Category = "Help", IconKind = "CertificateOutline", Action = () => NavigateToLicensingCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Copy Open Source Attributions", Subtitle = "Copy full open source license notices & copyright text", Category = "Help", IconKind = "ContentCopy", Action = () => { _ = Home.CopyFullAttributionsCommand.ExecuteAsync(null); ShowToast("Copied open source license attributions", "CertificateOutline"); } });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Contact Support (codefrydev@gmail.com)", Subtitle = "Copy developer support email to clipboard", Category = "Help", IconKind = "EmailOutline", Action = () => CopySupportEmailCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Visit CodeFryDev Website", Subtitle = "Open official codefrydev.in developer portal", Category = "Help", IconKind = "Web", Action = () => OpenCompanyWebsiteCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Microsoft Store Page", Subtitle = "View FryPDF on Microsoft Store (9P5GW2Q81B33)", Category = "Help", IconKind = "Microsoft", Action = () => OpenMicrosoftStoreCommand.Execute(null) });

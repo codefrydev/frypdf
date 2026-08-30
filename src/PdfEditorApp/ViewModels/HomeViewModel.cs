@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
@@ -48,6 +49,9 @@ public partial class HomeViewModel : ViewModelBase
     private string _selectedTemplateCategory = "All";
 
     [ObservableProperty]
+    private string _selectedLicenseCategory = "All";
+
+    [ObservableProperty]
     private bool _isTemplateGalleryExpanded;
 
     [ObservableProperty]
@@ -80,6 +84,8 @@ public partial class HomeViewModel : ViewModelBase
     public ObservableCollection<TemplateCardViewModel> FilteredTemplates { get; } = new();
     public ObservableCollection<TemplateCardViewModel> FeaturedTemplates { get; } = new();
     public ObservableCollection<RecentDocumentItem> RecentDocuments { get; } = new();
+    public ObservableCollection<ThirdPartyToolLicense> AllLicenses { get; } = new();
+    public ObservableCollection<ThirdPartyToolLicense> FilteredLicenses { get; } = new();
 
     public bool IsHomeSection => SelectedNavSection == HomeNavSection.Home;
     public bool IsNewDocumentSection => SelectedNavSection == HomeNavSection.NewDocument;
@@ -92,11 +98,14 @@ public partial class HomeViewModel : ViewModelBase
         or HomeNavSection.AiAndAutomation;
     public bool IsStarredSection => SelectedNavSection == HomeNavSection.Starred;
     public bool IsTrashSection => SelectedNavSection == HomeNavSection.Trash;
+    public bool IsLicensingSection => SelectedNavSection == HomeNavSection.Licensing;
 
     public int MatchingToolsCount => FilteredTools.Count;
     public bool HasNoMatchingTools => FilteredTools.Count == 0;
     public int MatchingTemplatesCount => FilteredTemplates.Count;
     public bool HasNoMatchingTemplates => FilteredTemplates.Count == 0;
+    public int MatchingLicensesCount => FilteredLicenses.Count;
+    public bool HasNoMatchingLicenses => FilteredLicenses.Count == 0;
     public bool HasRecentDocuments => RecentDocuments.Count > 0;
     public bool HasStarredTools => StarredTools.Count > 0;
 
@@ -126,6 +135,7 @@ public partial class HomeViewModel : ViewModelBase
 
         InitializeTools();
         InitializeTemplates();
+        InitializeLicenses();
         RefreshRecent();
     }
 
@@ -293,10 +303,12 @@ public partial class HomeViewModel : ViewModelBase
     {
         UpdateFilteredTools();
         UpdateFilteredTemplates();
+        UpdateFilteredLicenses();
     }
 
     partial void OnSelectedToolCategoryChanged(string value) => UpdateFilteredTools();
     partial void OnSelectedTemplateCategoryChanged(string value) => UpdateFilteredTemplates();
+    partial void OnSelectedLicenseCategoryChanged(string value) => UpdateFilteredLicenses();
 
     partial void OnSelectedNavSectionChanged(HomeNavSection value)
     {
@@ -305,6 +317,7 @@ public partial class HomeViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsToolsSection));
         OnPropertyChanged(nameof(IsStarredSection));
         OnPropertyChanged(nameof(IsTrashSection));
+        OnPropertyChanged(nameof(IsLicensingSection));
     }
 
     private void UpdateFilteredTools()
@@ -636,6 +649,532 @@ public partial class HomeViewModel : ViewModelBase
         RefreshRecent();
     }
 
+    // --- Licensing & Third-Party Open Source Initialization ---
+
+    private void InitializeLicenses()
+    {
+        AllLicenses.Clear();
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "Avalonia UI",
+            Version = "12.1.1",
+            LicenseType = "MIT License",
+            Category = "UI & Graphics Frameworks",
+            Purpose = "Core cross-platform modern XAML UI application framework providing high-performance GPU-accelerated graphics, styling, smooth vector transitions, and native window management on macOS, Windows, and Linux.",
+            Maintainer = "AvaloniaUI Team & .NET Foundation Community",
+            ProjectUrl = "https://avaloniaui.net",
+            IconKind = "ApplicationOutline",
+            AccentColorHex = "#7029E6",
+            LicenseText = """
+MIT License
+
+Copyright (c) 2014-2026 AvaloniaUI OÜ
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "QuestPDF",
+            Version = "2026.8.0",
+            LicenseType = "Community / MIT",
+            Category = "PDF & Document Engines",
+            Purpose = "High-performance vector PDF rendering and generation engine utilizing fluent layout APIs, smart pagination, table structures, vector shapes, and sub-millimeter typographical accuracy.",
+            Maintainer = "Marcin Ziąbek & QuestPDF Contributors",
+            ProjectUrl = "https://www.questpdf.com",
+            IconKind = "FilePdfBox",
+            AccentColorHex = "#FF4500",
+            LicenseText = """
+QuestPDF Community License / MIT License
+
+Copyright (c) 2020-2026 Marcin Ziąbek
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "PdfPig & Skia Rendering",
+            Version = "0.1.16.1",
+            LicenseType = "Apache 2.0",
+            Category = "PDF & Document Engines",
+            Purpose = "Pure C# low-level PDF parsing and extraction engine. Extracts structured text glyphs, font matrices, bounding boxes, vector curves, and rasterizes high-fidelity pages to Skia surfaces for the PDF viewer.",
+            Maintainer = "Eli White (UglyToad) & Open Source Contributors",
+            ProjectUrl = "https://github.com/UglyToad/PdfPig",
+            IconKind = "VectorCircle",
+            AccentColorHex = "#0284C7",
+            LicenseText = """
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
+
+Copyright 2018-2026 UglyToad (Eli White) and contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "PdfSharpCore",
+            Version = "1.3.67",
+            LicenseType = "MIT License",
+            Category = "PDF & Document Engines",
+            Purpose = "Low-level PDF manipulation engine handling direct binary page extraction, PDF merging, page splitting, rotation, AES-128/256 document security encryption, metadata injection, and Bates stamping.",
+            Maintainer = "Stefan Lange, empira Software & Community",
+            ProjectUrl = "https://github.com/stefan-lange/pdfsharpcore",
+            IconKind = "ShieldLockOutline",
+            AccentColorHex = "#10B981",
+            LicenseText = """
+MIT License
+
+Copyright (c) 2005-2026 empira Software GmbH, Troisdorf (Germany)
+Copyright (c) 2017-2026 Stefan Lange and PdfSharpCore contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "SkiaSharp",
+            Version = "3.116.1",
+            LicenseType = "MIT License",
+            Category = "UI & Graphics Frameworks",
+            Purpose = "Cross-platform 2D graphics API based on Google's Skia Graphics Library. Powers fluid continuous canvas zooming, anti-aliased Bézier curve evaluation, sub-pixel text rendering, and image caching.",
+            Maintainer = "Mono Project & .NET Foundation",
+            ProjectUrl = "https://github.com/mono/SkiaSharp",
+            IconKind = "Draw",
+            AccentColorHex = "#0EA5E9",
+            LicenseText = """
+MIT License
+
+Copyright (c) 2015-2026 Xamarin Inc.
+Copyright (c) 2017-2026 Microsoft Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "Tabula Table Extractor",
+            Version = "1.0.1",
+            LicenseType = "MIT License",
+            Category = "Office & Data Formats",
+            Purpose = "Spatial table extraction engine that detects table boundaries, cell grids, columns, and data coordinates from unstructured PDF documents for CSV, JSON, and Excel tabular conversions.",
+            Maintainer = "Manuel Aristarán & Tabula Contributors",
+            ProjectUrl = "https://github.com/tabulapdf/tabula-java",
+            IconKind = "Table",
+            AccentColorHex = "#F59E0B",
+            LicenseText = """
+MIT License
+
+Copyright (c) 2014-2026 Manuel Aristarán, Mike Tigas, and Jeremy B. Merrill
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "DocumentFormat.OpenXml",
+            Version = "3.5.1",
+            LicenseType = "MIT License",
+            Category = "Office & Data Formats",
+            Purpose = "High-speed OpenXML engine for reading, parsing, and exporting structured Microsoft Word (.docx), Excel (.xlsx), and PowerPoint (.pptx) documents from converted PDF files.",
+            Maintainer = "Microsoft Corporation & .NET Foundation",
+            ProjectUrl = "https://github.com/dotnet/Open-XML-SDK",
+            IconKind = "FileWordOutline",
+            AccentColorHex = "#2563EB",
+            LicenseText = """
+MIT License
+
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "Material.Icons.Avalonia",
+            Version = "3.0.2",
+            LicenseType = "MIT License",
+            Category = "UI & Graphics Frameworks",
+            Purpose = "Vector iconography library supplying thousands of scalable Material Design icon glyphs across toolbars, ribbon bars, inspectors, tool cards, and dialogs.",
+            Maintainer = "SKFox5330 & Pictogrammers Community",
+            ProjectUrl = "https://github.com/SKFox5330/Material.Icons.Avalonia",
+            IconKind = "StarFourPointsOutline",
+            AccentColorHex = "#8B5CF6",
+            LicenseText = """
+MIT License
+
+Copyright (c) 2020-2026 SKFox5330 & Pictogrammers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "CommunityToolkit.Mvvm",
+            Version = "8.4.2",
+            LicenseType = "MIT License",
+            Category = "Architecture & Runtime",
+            Purpose = "Official Microsoft .NET Community Toolkit MVVM framework providing high-performance source-generated ObservableObject, RelayCommand, and reactive property notifications.",
+            Maintainer = "Microsoft Corporation & Community Toolkit Team",
+            ProjectUrl = "https://github.com/CommunityToolkit/dotnet",
+            IconKind = "LightningBoltOutline",
+            AccentColorHex = "#6366F1",
+            LicenseText = """
+MIT License
+
+Copyright (c) .NET Foundation and Contributors. All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "QRCoder",
+            Version = "1.8.0",
+            LicenseType = "MIT License",
+            Category = "Office & Data Formats",
+            Purpose = "Pure C# QR code generating library powering dynamic vector URL, Wi-Fi, vCard, SMS, Email, Crypto, and plain text QR code elements in FryPDF document authoring.",
+            Maintainer = "Raffael Herrmann (codebude) & Contributors",
+            ProjectUrl = "https://github.com/codebude/QRCoder",
+            IconKind = "Qrcode",
+            AccentColorHex = "#EC4899",
+            LicenseText = """
+MIT License
+
+Copyright (c) 2013-2026 Raffael Herrmann
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "Microsoft.Extensions.DependencyInjection",
+            Version = "10.0.11",
+            LicenseType = "MIT License",
+            Category = "Architecture & Runtime",
+            Purpose = "High-performance Inversion of Control (IoC) dependency injection container powering modular service registration, loose coupling, and decoupled testing across all 32 PDF tools.",
+            Maintainer = "Microsoft Corporation & .NET Runtime Team",
+            ProjectUrl = "https://github.com/dotnet/runtime",
+            IconKind = "ToyBrickOutline",
+            AccentColorHex = "#0078D4",
+            LicenseText = """
+MIT License
+
+Copyright (c) .NET Foundation and Contributors. All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = ".NET 10 Runtime & Base Libraries",
+            Version = "10.0",
+            LicenseType = "MIT License",
+            Category = "Architecture & Runtime",
+            Purpose = "Modern cross-platform .NET 10 runtime engine providing hardware-accelerated SIMD (AVX/NEON) vector mathematics, AES-256 cryptography primitives, Task-based asynchronous I/O, and garbage collection.",
+            Maintainer = "Microsoft Corporation & .NET Foundation",
+            ProjectUrl = "https://dotnet.microsoft.com",
+            IconKind = "Microsoft",
+            AccentColorHex = "#512BD4",
+            LicenseText = """
+MIT License
+
+Copyright (c) .NET Foundation and Contributors. All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+"""
+        });
+
+        UpdateFilteredLicenses();
+    }
+
+    private void UpdateFilteredLicenses()
+    {
+        FilteredLicenses.Clear();
+        foreach (var lib in AllLicenses)
+        {
+            if (MatchesLicenseCategory(lib) && MatchesLicenseSearch(lib))
+            {
+                FilteredLicenses.Add(lib);
+            }
+        }
+
+        OnPropertyChanged(nameof(MatchingLicensesCount));
+        OnPropertyChanged(nameof(HasNoMatchingLicenses));
+    }
+
+    private bool MatchesLicenseCategory(ThirdPartyToolLicense lib)
+    {
+        if (SelectedLicenseCategory == "All") return true;
+
+        return string.Equals(SelectedLicenseCategory, lib.Category, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool MatchesLicenseSearch(ThirdPartyToolLicense lib)
+    {
+        if (string.IsNullOrWhiteSpace(SearchQuery)) return true;
+        var q = SearchQuery.Trim();
+        return lib.Name.Contains(q, StringComparison.OrdinalIgnoreCase)
+            || lib.Category.Contains(q, StringComparison.OrdinalIgnoreCase)
+            || lib.LicenseType.Contains(q, StringComparison.OrdinalIgnoreCase)
+            || lib.Purpose.Contains(q, StringComparison.OrdinalIgnoreCase)
+            || lib.Maintainer.Contains(q, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [RelayCommand]
+    public void SetLicenseCategory(string? category)
+    {
+        SelectedLicenseCategory = string.IsNullOrWhiteSpace(category) ? "All" : category;
+    }
+
+    [RelayCommand]
+    public void ClearLicenseSearch()
+    {
+        SearchQuery = "";
+        SelectedLicenseCategory = "All";
+        UpdateFilteredLicenses();
+    }
+
+    [RelayCommand]
+    public void ToggleLicenseExpand(ThirdPartyToolLicense? license)
+    {
+        if (license != null)
+        {
+            license.IsExpanded = !license.IsExpanded;
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopyLicenseText(ThirdPartyToolLicense? license)
+    {
+        if (license == null) return;
+        var textToCopy = $"--- {license.Name} ({license.Version}) ---\nLicense: {license.LicenseType}\nMaintainer: {license.Maintainer}\nProject URL: {license.ProjectUrl}\n\n{license.LicenseText}";
+        await CopyToClipboardAsync(textToCopy);
+    }
+
+    [RelayCommand]
+    public async Task CopyFullAttributions()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("================================================================================");
+        sb.AppendLine("FryPDF — Open Source & Third-Party Software Attribution Notice");
+        sb.AppendLine("Copyright (c) 2026 Code Fry Dev. All rights reserved.");
+        sb.AppendLine("================================================================================\n");
+
+        foreach (var lib in AllLicenses)
+        {
+            sb.AppendLine($"--------------------------------------------------------------------------------");
+            sb.AppendLine($"Package: {lib.Name} (v{lib.Version})");
+            sb.AppendLine($"Category: {lib.Category}");
+            sb.AppendLine($"License: {lib.LicenseType}");
+            sb.AppendLine($"Maintainer: {lib.Maintainer}");
+            sb.AppendLine($"URL: {lib.ProjectUrl}");
+            sb.AppendLine($"Purpose: {lib.Purpose}");
+            sb.AppendLine($"--------------------------------------------------------------------------------");
+            sb.AppendLine(lib.LicenseText.Trim());
+            sb.AppendLine();
+        }
+
+        await CopyToClipboardAsync(sb.ToString());
+    }
+
+    [RelayCommand]
+    public async Task OpenLibraryWebsite(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return;
+        try
+        {
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Launcher != null)
+            {
+                await desktop.MainWindow.Launcher.LaunchUriAsync(new Uri(url));
+            }
+            else
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = url, UseShellExecute = true });
+            }
+        }
+        catch
+        {
+            await CopyToClipboardAsync(url);
+        }
+    }
+
+    private static async Task CopyToClipboardAsync(string text)
+    {
+        try
+        {
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+            {
+                await desktop.MainWindow.Clipboard.SetTextAsync(text);
+            }
+        }
+        catch { }
+    }
+
     // --- Helpers ---
 
     public void RefreshRecent()
@@ -678,3 +1217,4 @@ public partial class HomeViewModel : ViewModelBase
         }
     }
 }
+

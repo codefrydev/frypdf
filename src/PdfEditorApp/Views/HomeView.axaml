@@ -238,6 +238,23 @@
                             </Grid>
                         </Button>
 
+                        <!-- Legal & Open Source Header -->
+                        <TextBlock Text="ABOUT &amp; LEGAL" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" Margin="8,12,0,4" />
+
+                        <!-- 12. Licenses & Third-Party Tools -->
+                        <Button Classes="nav-tab-btn"
+                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Licensing}"
+                                Command="{Binding SelectNavSectionCommand}"
+                                CommandParameter="Licensing">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <materialIcons:MaterialIcon Grid.Column="0" Kind="CertificateOutline" Width="18" Height="18" Foreground="#4F46E5" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="Licenses &amp; Tools" VerticalAlignment="Center" />
+                                <Border Grid.Column="2" Background="#EEF2FF" CornerRadius="4" Padding="5,1">
+                                    <TextBlock Text="12" FontSize="9.5" FontWeight="Bold" Foreground="#4F46E5" />
+                                </Border>
+                            </Grid>
+                        </Button>
+
                     </StackPanel>
                 </ScrollViewer>
 
@@ -357,6 +374,9 @@
 
                         <!-- Page 5: Trash & Storage Cache Cleaner -->
                         <views:TrashCachePageView IsVisible="{Binding IsTrashSection}" />
+
+                        <!-- Page 6: Open Source Licenses & Third-Party Tools -->
+                        <views:LicensingPageView IsVisible="{Binding IsLicensingSection}" />
                     </Panel>
                 </ScrollViewer>
 

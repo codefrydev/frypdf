@@ -1023,6 +1023,12 @@
                                             <TextBlock Text="About &amp; Help" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
+                                    <Button Classes="tool-btn" Command="{Binding NavigateToLicensingCommand}" ToolTip.Tip="Open Source Licenses &amp; Third-Party Tools">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="CertificateOutline" Width="20" Height="20" Foreground="#4F46E5" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Licenses" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
                                     <Button Classes="tool-btn" Command="{Binding OpenShortcutsHelpCommand}" ToolTip.Tip="Keyboard Shortcuts Reference (F1)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="KeyboardOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />

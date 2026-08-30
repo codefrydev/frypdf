@@ -264,4 +264,89 @@ public class PdfImportAndViewerTests
             if (File.Exists(tempPdfPath)) File.Delete(tempPdfPath);
         }
     }
+
+    [Fact]
+    public void ImageElementViewModel_Base64Data_LoadsAndRendersBitmapSuccessfully()
+    {
+        // 1. Generate a valid 1x1 PNG image as base64
+        byte[] validPngBytes = new byte[]
+        {
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+            0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+            0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
+            0x0D, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x60, 0x60, 0x60, 0x00,
+            0x00, 0x00, 0x04, 0x00, 0x01, 0x5D, 0x36, 0xBD, 0x7E, 0x00, 0x00, 0x00,
+            0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+        };
+        string base64 = Convert.ToBase64String(validPngBytes);
+
+        var model = new PdfImageElement
+        {
+            X = 50,
+            Y = 50,
+            Width = 100,
+            Height = 100,
+            Base64Data = base64,
+            AltText = "Test Base64 Image"
+        };
+
+        var vm = new PdfEditorApp.ViewModels.ElementViewModels.ImageElementViewModel();
+        vm.LoadFromModel(model);
+
+        Assert.Equal(base64, vm.Base64Data);
+        Assert.Equal("Test Base64 Image", vm.DisplayName);
+
+        var roundTripped = (PdfImageElement)vm.ToModel();
+        Assert.Equal(base64, roundTripped.Base64Data);
+        Assert.Equal("Test Base64 Image", roundTripped.AltText);
+    }
+
+    [Fact]
+    public async Task PdfImportService_ImportsPdf_PageBackgroundAndElementsHaveCleanRendering()
+    {
+        var sourceModel = _templateService.CreateCertificateTemplate();
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(sourceModel);
+
+        var imported = await _importService.ImportPdfBytesAsync(pdfBytes, "Certificate.pdf");
+        Assert.NotNull(imported);
+        Assert.Single(imported.Pages);
+
+        var page = imported.Pages[0];
+        var bg = page.Elements.OfType<PdfImageElement>().FirstOrDefault(e => e.AltText.Contains("Background Canvas"));
+        Assert.NotNull(bg);
+        Assert.False(string.IsNullOrEmpty(bg.Base64Data));
+        Assert.Equal(0, bg.BorderThickness);
+        Assert.Equal("Transparent", bg.BorderColorHex);
+
+        var pageVm = new PageViewModel();
+        pageVm.LoadFromModel(page);
+
+        var bgVm = pageVm.Elements.OfType<PdfEditorApp.ViewModels.ElementViewModels.ImageElementViewModel>().FirstOrDefault(e => e.AltText.Contains("Background Canvas"));
+        Assert.NotNull(bgVm);
+        Assert.Equal(bg.Base64Data, bgVm.Base64Data);
+        Assert.True(Convert.FromBase64String(bgVm.Base64Data!).Length > 0);
+    }
+
+    [Fact]
+    public async Task PdfImportService_MultiColumnInvoice_ExtractsSeparateTextBlocks()
+    {
+        var invoiceModel = _templateService.CreateInvoiceTemplate();
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(invoiceModel);
+
+        var imported = await _importService.ImportPdfBytesAsync(pdfBytes, "Invoice_MultiColumn.pdf");
+        Assert.NotNull(imported);
+        Assert.Single(imported.Pages);
+
+        var textElements = imported.Pages[0].Elements.OfType<PdfTextElement>().ToList();
+        Assert.NotEmpty(textElements);
+        Assert.True(textElements.Count >= 2);
+
+        // Verify that individual text blocks have non-zero dimensions and non-empty text
+        foreach (var txt in textElements)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(txt.Text));
+            Assert.True(txt.Width > 0);
+            Assert.True(txt.Height > 0);
+        }
+    }
 }

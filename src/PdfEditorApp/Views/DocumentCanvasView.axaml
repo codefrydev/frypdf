@@ -703,7 +703,7 @@
                                 <!-- 6. IMAGE ELEMENT TEMPLATE -->
                                 <DataTemplate DataType="elvm:ImageElementViewModel">
                                     <Grid Width="{Binding Width}" Height="{Binding Height}">
-                                        <Border Background="{DynamicResource WinInputBgBrush}"
+                                        <Border Background="Transparent"
                                                 BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderThickness="{Binding BorderThickness, Converter={StaticResource DoubleToThickness}}"
                                                 CornerRadius="{Binding CornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
@@ -711,14 +711,17 @@
                                                 PointerPressed="OnElementPointerPressed">
                                             <Panel>
                                                 <Image Source="{Binding PreviewBitmap}"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality"
                                                        Stretch="{Binding KeepAspectRatio, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter=True, FallbackValue=Uniform}"
                                                        IsVisible="{Binding PreviewBitmap, Converter={StaticResource NullToBooleanConverter}}" />
 
-                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6"
-                                                            IsVisible="{Binding PreviewBitmap, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter={x:Null}, FallbackValue=True}">
-                                                    <materialIcons:MaterialIcon Kind="ImageOutline" Width="36" Height="36" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                                    <TextBlock Text="{Binding AltText}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                                </StackPanel>
+                                                <Border Background="{DynamicResource WinInputBgBrush}"
+                                                        IsVisible="{Binding PreviewBitmap, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter={x:Null}, FallbackValue=True}">
+                                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
+                                                        <materialIcons:MaterialIcon Kind="ImageOutline" Width="36" Height="36" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                                        <TextBlock Text="{Binding AltText}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Border>
                                             </Panel>
                                         </Border>
 

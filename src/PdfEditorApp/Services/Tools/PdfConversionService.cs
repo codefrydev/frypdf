@@ -786,7 +786,11 @@ public class PdfConversionService : IPdfConversionService
             if (string.IsNullOrWhiteSpace(outPath))
             {
                 string dir = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                outPath = Path.Combine(dir, "Webpage_Export.pdf");
+                if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
+                {
+                    dir = Path.GetTempPath();
+                }
+                outPath = Path.Combine(dir, $"Webpage_Export_{Guid.NewGuid():N}.pdf");
             }
 
             ct.ThrowIfCancellationRequested();

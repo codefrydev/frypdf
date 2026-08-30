@@ -128,6 +128,9 @@ public class PdfImportService : IPdfImportService
                                 Opacity = 1.0,
                                 ZIndex = 0,
                                 IsLocked = true,
+                                CornerRadius = 0,
+                                BorderThickness = 0,
+                                BorderColorHex = "Transparent",
                                 AltText = $"Page {pageNumber} Background Canvas"
                             };
                             pageModel.Elements.Add(bgElement);
@@ -143,7 +146,17 @@ public class PdfImportService : IPdfImportService
                     {
                         foreach (var img in page.GetImages())
                         {
-                            if (!img.RawBytes.IsEmpty && img.RawBytes.Length > 0)
+                            byte[]? imgBytes = null;
+                            if (img.TryGetPng(out var pngBytes) && pngBytes != null && pngBytes.Length > 0)
+                            {
+                                imgBytes = pngBytes;
+                            }
+                            else if (!img.RawBytes.IsEmpty && img.RawBytes.Length > 0)
+                            {
+                                imgBytes = img.RawBytes.ToArray();
+                            }
+
+                            if (imgBytes != null && imgBytes.Length > 0)
                             {
                                 double imgX = Math.Max(0, img.BoundingBox.Left);
                                 double imgY = Math.Max(0, pageHeight - img.BoundingBox.Top);
@@ -158,8 +171,11 @@ public class PdfImportService : IPdfImportService
                                         Y = Math.Round(imgY, 1),
                                         Width = Math.Round(imgW, 1),
                                         Height = Math.Round(imgH, 1),
-                                        Base64Data = Convert.ToBase64String(img.RawBytes.ToArray()),
+                                        Base64Data = Convert.ToBase64String(imgBytes),
                                         ZIndex = zIndexCounter++,
+                                        CornerRadius = 0,
+                                        BorderThickness = 0,
+                                        BorderColorHex = "Transparent",
                                         AltText = $"Embedded Image ({Math.Round(imgW):F0}x{Math.Round(imgH):F0})"
                                     };
                                     pageModel.Elements.Add(imgElement);
@@ -318,7 +334,7 @@ public class PdfImportService : IPdfImportService
             .ThenBy(w => w.BoundingBox.Left)
             .ToList();
 
-        // Group into logical lines / blocks
+        // Group into logical lines / blocks with horizontal proximity check
         List<Word> currentLine = new List<Word>();
         double currentLineTop = sortedWords[0].BoundingBox.Top;
         double currentLineBottom = sortedWords[0].BoundingBox.Bottom;
@@ -329,8 +345,20 @@ public class PdfImportService : IPdfImportService
             double lineMidY = (currentLineTop + currentLineBottom) / 2.0;
             double wordHeight = word.BoundingBox.Height;
 
-            // Check if word is on roughly the same vertical line (within 65% of word height)
-            if (currentLine.Count == 0 || Math.Abs(wordMidY - lineMidY) <= Math.Max(4.0, wordHeight * 0.65))
+            bool sameLineY = currentLine.Count == 0 || Math.Abs(wordMidY - lineMidY) <= Math.Max(3.5, wordHeight * 0.65);
+            bool nearHorizontally = true;
+            if (currentLine.Count > 0)
+            {
+                double lastRight = currentLine.Max(w => w.BoundingBox.Right);
+                double gap = word.BoundingBox.Left - lastRight;
+                // If the word is across a multi-column gap or positioned before the line starts, break to separate block
+                if (gap > Math.Max(24.0, wordHeight * 2.5) || (word.BoundingBox.Right < currentLine.Min(w => w.BoundingBox.Left) - 10))
+                {
+                    nearHorizontally = false;
+                }
+            }
+
+            if (sameLineY && nearHorizontally)
             {
                 currentLine.Add(word);
                 currentLineTop = Math.Max(currentLineTop, word.BoundingBox.Top);
@@ -338,7 +366,6 @@ public class PdfImportService : IPdfImportService
             }
             else
             {
-                // Finalize previous line
                 var block = CreateBlockFromWords(currentLine, pageHeight);
                 if (block != null) blocks.Add(block);
 
@@ -374,6 +401,9 @@ public class PdfImportService : IPdfImportService
             sb.Append(ordered[i].Text);
         }
 
+        string text = sb.ToString().Trim();
+        if (string.IsNullOrWhiteSpace(text)) return null;
+
         var firstWord = ordered[0];
         var firstLetter = firstWord.Letters.FirstOrDefault();
 
@@ -398,6 +428,7 @@ public class PdfImportService : IPdfImportService
                 else if (fn.Contains("segoe")) fontFamily = "Segoe UI";
                 else if (fn.Contains("roboto")) fontFamily = "Roboto";
                 else if (fn.Contains("inter")) fontFamily = "Inter";
+                else if (fn.Contains("nirmala") || fn.Contains("mangal") || fn.Contains("devanagari")) fontFamily = "Nirmala UI";
             }
 
             if (firstLetter.Color != null)
@@ -418,7 +449,7 @@ public class PdfImportService : IPdfImportService
             Y = canvasY,
             Width = width,
             Height = height,
-            Text = sb.ToString(),
+            Text = text,
             FontSize = fontSize,
             FontFamily = fontFamily,
             IsBold = isBold,

@@ -303,8 +303,14 @@
                                                             <!-- Image Element Mini Template -->
                                                             <DataTemplate DataType="elvm:ImageElementViewModel">
                                                                 <Border Width="{Binding Width}" Height="{Binding Height}"
-                                                                        Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4">
-                                                                    <materialIcons:MaterialIcon Kind="ImageOutline" Width="28" Height="28" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                        Background="Transparent" BorderThickness="0" CornerRadius="0" ClipToBounds="True">
+                                                                    <Panel>
+                                                                        <Image Source="{Binding PreviewBitmap}" Stretch="UniformToFill"
+                                                                               IsVisible="{Binding PreviewBitmap, Converter={StaticResource NullToBooleanConverter}}" />
+                                                                        <materialIcons:MaterialIcon Kind="ImageOutline" Width="28" Height="28" Foreground="{DynamicResource WinSubtleBrush}"
+                                                                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                                                    IsVisible="{Binding PreviewBitmap, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter={x:Null}, FallbackValue=True}" />
+                                                                    </Panel>
                                                                 </Border>
                                                             </DataTemplate>
 

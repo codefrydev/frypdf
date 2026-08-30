@@ -1,8 +1,9 @@
+using System;
+using System.IO;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
-using System.IO;
 
 namespace PdfEditorApp.ViewModels.ElementViewModels;
 
@@ -10,6 +11,9 @@ public partial class ImageElementViewModel : ElementViewModelBase
 {
     [ObservableProperty]
     private string? _imagePath;
+
+    [ObservableProperty]
+    private string? _base64Data;
 
     [ObservableProperty]
     private Bitmap? _previewBitmap;
@@ -30,25 +34,51 @@ public partial class ImageElementViewModel : ElementViewModelBase
     private string _altText = "Image Placeholder";
 
     public override ElementKind Kind => ElementKind.Image;
-    public override string DisplayName => string.IsNullOrEmpty(ImagePath) ? "Image" : Path.GetFileName(ImagePath);
+    public override string DisplayName => !string.IsNullOrEmpty(ImagePath)
+        ? Path.GetFileName(ImagePath)
+        : (!string.IsNullOrEmpty(AltText) ? AltText : "Image");
 
     partial void OnImagePathChanged(string? value)
     {
-        if (!string.IsNullOrEmpty(value) && File.Exists(value))
+        UpdateBitmap();
+    }
+
+    partial void OnBase64DataChanged(string? value)
+    {
+        UpdateBitmap();
+    }
+
+    public void UpdateBitmap()
+    {
+        if (!string.IsNullOrEmpty(ImagePath) && File.Exists(ImagePath))
         {
             try
             {
-                PreviewBitmap = new Bitmap(value);
+                PreviewBitmap = new Bitmap(ImagePath);
+                return;
             }
             catch
             {
                 PreviewBitmap = null;
             }
         }
-        else
+
+        if (!string.IsNullOrEmpty(Base64Data))
         {
-            PreviewBitmap = null;
+            try
+            {
+                byte[] bytes = Convert.FromBase64String(Base64Data);
+                using var ms = new MemoryStream(bytes);
+                PreviewBitmap = new Bitmap(ms);
+                return;
+            }
+            catch
+            {
+                PreviewBitmap = null;
+            }
         }
+
+        PreviewBitmap = null;
     }
 
     public override PdfElementBase ToModel()
@@ -65,6 +95,7 @@ public partial class ImageElementViewModel : ElementViewModelBase
             Opacity = Opacity,
             IsLocked = IsLocked,
             ImagePath = ImagePath,
+            Base64Data = Base64Data,
             KeepAspectRatio = KeepAspectRatio,
             CornerRadius = CornerRadius,
             BorderColorHex = BorderColorHex,
@@ -88,11 +119,14 @@ public partial class ImageElementViewModel : ElementViewModelBase
             IsLocked = img.IsLocked;
 
             ImagePath = img.ImagePath;
+            Base64Data = img.Base64Data;
             KeepAspectRatio = img.KeepAspectRatio;
             CornerRadius = img.CornerRadius;
             BorderColorHex = img.BorderColorHex;
             BorderThickness = img.BorderThickness;
             AltText = img.AltText;
+
+            UpdateBitmap();
         }
     }
 }

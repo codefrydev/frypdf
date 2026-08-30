@@ -13,16 +13,36 @@ public class TemplateService : ITemplateService
 
     public TemplateService()
     {
+        // Corporate
         RegisterTemplate(new AnnualReportTemplate());
+
+        // Finance
         RegisterTemplate(new InvoiceTemplate());
+        RegisterTemplate(new FinanceResearchPaperTemplate());
+
+        // Career / Resumes
         RegisterTemplate(new ResumeTemplate());
+        RegisterTemplate(new ResumeModernCleanTemplate());
+        RegisterTemplate(new ResumeCreativeMinimalistTemplate());
+        RegisterTemplate(new ResumeAcademicCvTemplate());
+
+        // Academic Research
         RegisterTemplate(new AcademicPaperTemplate());
+        RegisterTemplate(new MathResearchPaperTemplate());
+        RegisterTemplate(new PhysicsResearchPaperTemplate());
+        RegisterTemplate(new HistoryResearchPaperTemplate());
+
+        // Certificates & Diplomas
         RegisterTemplate(new CertificateTemplate());
         RegisterTemplate(new CertificateNavyGoldTemplate());
         RegisterTemplate(new DiplomaAcademicTemplate());
+
+        // Events & Invitations
         RegisterTemplate(new WeddingInvitationTraditionalTemplate());
         RegisterTemplate(new WeddingInvitationRoyalFloralTemplate());
         RegisterTemplate(new GalaInvitationTemplate());
+
+        // General
         RegisterTemplate(_blankTemplate);
     }
 
@@ -52,7 +72,21 @@ public class TemplateService : ITemplateService
 
     public PdfDocumentModel CreateResumeTemplate() => CreateTemplate("resume");
 
+    public PdfDocumentModel CreateResumeModernCleanTemplate() => CreateTemplate("resumemodern");
+
+    public PdfDocumentModel CreateResumeCreativeMinimalistTemplate() => CreateTemplate("resumecreative");
+
+    public PdfDocumentModel CreateResumeAcademicCvTemplate() => CreateTemplate("resumeacademic");
+
     public PdfDocumentModel CreateAcademicPaperTemplate() => CreateTemplate("academic");
+
+    public PdfDocumentModel CreateMathResearchPaperTemplate() => CreateTemplate("mathresearch");
+
+    public PdfDocumentModel CreatePhysicsResearchPaperTemplate() => CreateTemplate("physicsresearch");
+
+    public PdfDocumentModel CreateHistoryResearchPaperTemplate() => CreateTemplate("historyresearch");
+
+    public PdfDocumentModel CreateFinanceResearchPaperTemplate() => CreateTemplate("financeresearch");
 
     public PdfDocumentModel CreateCertificateTemplate() => CreateTemplate("certificate");
 

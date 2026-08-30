@@ -12,7 +12,14 @@ public interface ITemplateService
     PdfDocumentModel CreateAnnualReportTemplate();
     PdfDocumentModel CreateInvoiceTemplate();
     PdfDocumentModel CreateResumeTemplate();
+    PdfDocumentModel CreateResumeModernCleanTemplate();
+    PdfDocumentModel CreateResumeCreativeMinimalistTemplate();
+    PdfDocumentModel CreateResumeAcademicCvTemplate();
     PdfDocumentModel CreateAcademicPaperTemplate();
+    PdfDocumentModel CreateMathResearchPaperTemplate();
+    PdfDocumentModel CreatePhysicsResearchPaperTemplate();
+    PdfDocumentModel CreateHistoryResearchPaperTemplate();
+    PdfDocumentModel CreateFinanceResearchPaperTemplate();
     PdfDocumentModel CreateCertificateTemplate();
     PdfDocumentModel CreateCertificateNavyGoldTemplate();
     PdfDocumentModel CreateDiplomaAcademicTemplate();

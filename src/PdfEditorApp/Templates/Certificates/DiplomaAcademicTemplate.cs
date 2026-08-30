@@ -123,9 +123,9 @@ public class DiplomaAcademicTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 100,
-                    Y = 330,
+                    Y = 325,
                     Width = 931,
-                    Height = 25,
+                    Height = 22,
                     Text = "THE DEGREE OF",
                     FontSize = 11,
                     FontFamily = "Cinzel",
@@ -137,9 +137,9 @@ public class DiplomaAcademicTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 100,
-                    Y = 360,
+                    Y = 350,
                     Width = 931,
-                    Height = 45,
+                    Height = 40,
                     Text = "MASTER OF SCIENCE IN ARTIFICIAL INTELLIGENCE",
                     FontSize = 24,
                     FontFamily = "Cinzel",
@@ -151,14 +151,31 @@ public class DiplomaAcademicTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 150,
-                    Y = 415,
+                    Y = 395,
                     Width = 831,
-                    Height = 50,
-                    Text = "WITH ALL THE RIGHTS, PRIVILEGES, AND HONORS THEREUNTO APPERTAINING",
-                    FontSize = 11,
+                    Height = 45,
+                    Text = "SUMMA CUM LAUDE • WITH HIGHEST DISTINCTION IN NEURAL DYNAMICS & GRAPH ALGORITHMS\nWITH ALL THE RIGHTS, HONORS, AND PRIVILEGES PERTAINING THERETO",
+                    FontSize = 10,
                     FontFamily = "Playfair Display",
                     IsItalic = true,
+                    LineHeight = 1.35,
                     TextColorHex = "#475569",
+                    Alignment = TextAlignmentMode.Center,
+                    ZIndex = 5
+                },
+
+                // Latin Inscription
+                new PdfTextElement
+                {
+                    X = 150,
+                    Y = 445,
+                    Width = 831,
+                    Height = 25,
+                    Text = "\"Quod bonum, faustum, felix fortunatumque sit. Ex auctoritate Senatus Academici.\"",
+                    FontSize = 10,
+                    FontFamily = "Cinzel",
+                    IsItalic = true,
+                    TextColorHex = "#78350F",
                     Alignment = TextAlignmentMode.Center,
                     ZIndex = 5
                 },
@@ -167,7 +184,7 @@ public class DiplomaAcademicTemplate : ITemplateDefinition
                 new PdfShapeElement
                 {
                     X = 515,
-                    Y = 480,
+                    Y = 475,
                     Width = 100,
                     Height = 100,
                     ShapeType = ShapeType.LaurelWreathSeal,
@@ -180,55 +197,31 @@ public class DiplomaAcademicTemplate : ITemplateDefinition
                     ZIndex = 8
                 },
 
-                // Date
+                // Latin Motto Below Seal
                 new PdfTextElement
                 {
-                    X = 150,
-                    Y = 610,
-                    Width = 250,
-                    Height = 25,
-                    Text = "June 15, 2026",
-                    FontSize = 14,
-                    FontFamily = "Playfair Display",
-                    IsBold = true,
-                    TextColorHex = "#1E293B",
-                    Alignment = TextAlignmentMode.Center,
-                    ZIndex = 5
-                },
-                new PdfDividerElement
-                {
-                    X = 150,
-                    Y = 640,
-                    Width = 250,
-                    Height = 1,
-                    Thickness = 1.5,
-                    ColorHex = "#78350F",
-                    ZIndex = 5
-                },
-                new PdfTextElement
-                {
-                    X = 150,
-                    Y = 648,
-                    Width = 250,
-                    Height = 22,
-                    Text = "President of the University",
-                    FontSize = 12,
+                    X = 415,
+                    Y = 582,
+                    Width = 300,
+                    Height = 18,
+                    Text = "— DISCERE • COGNOSCERE • CREARE —",
+                    FontSize = 9.5,
                     FontFamily = "Cinzel",
                     IsBold = true,
                     TextColorHex = "#78350F",
                     Alignment = TextAlignmentMode.Center,
-                    ZIndex = 5
+                    ZIndex = 8
                 },
 
-                // Dean Signature
+                // President Signature Left
                 new PdfTextElement
                 {
-                    X = 731,
+                    X = 80,
                     Y = 590,
-                    Width = 250,
+                    Width = 260,
                     Height = 50,
-                    Text = "Eleanor Thorne",
-                    FontSize = 30,
+                    Text = "Harrison Vance",
+                    FontSize = 28,
                     FontFamily = "Great Vibes",
                     IsItalic = true,
                     TextColorHex = "#1E293B",
@@ -237,9 +230,9 @@ public class DiplomaAcademicTemplate : ITemplateDefinition
                 },
                 new PdfDividerElement
                 {
-                    X = 731,
+                    X = 80,
                     Y = 640,
-                    Width = 250,
+                    Width = 260,
                     Height = 1,
                     Thickness = 1.5,
                     ColorHex = "#78350F",
@@ -247,15 +240,110 @@ public class DiplomaAcademicTemplate : ITemplateDefinition
                 },
                 new PdfTextElement
                 {
-                    X = 731,
+                    X = 80,
                     Y = 648,
-                    Width = 250,
+                    Width = 260,
                     Height = 22,
-                    Text = "Dean of Graduate Studies",
-                    FontSize = 12,
+                    Text = "President of the University",
+                    FontSize = 11,
                     FontFamily = "Cinzel",
                     IsBold = true,
                     TextColorHex = "#78350F",
+                    Alignment = TextAlignmentMode.Center,
+                    ZIndex = 5
+                },
+
+                // Dean Signature Center
+                new PdfTextElement
+                {
+                    X = 435,
+                    Y = 605,
+                    Width = 260,
+                    Height = 35,
+                    Text = "Eleanor Thorne",
+                    FontSize = 24,
+                    FontFamily = "Great Vibes",
+                    IsItalic = true,
+                    TextColorHex = "#1E293B",
+                    Alignment = TextAlignmentMode.Center,
+                    ZIndex = 6
+                },
+                new PdfDividerElement
+                {
+                    X = 435,
+                    Y = 640,
+                    Width = 260,
+                    Height = 1,
+                    Thickness = 1.5,
+                    ColorHex = "#78350F",
+                    ZIndex = 5
+                },
+                new PdfTextElement
+                {
+                    X = 435,
+                    Y = 648,
+                    Width = 260,
+                    Height = 22,
+                    Text = "Dean of Graduate Studies",
+                    FontSize = 11,
+                    FontFamily = "Cinzel",
+                    IsBold = true,
+                    TextColorHex = "#78350F",
+                    Alignment = TextAlignmentMode.Center,
+                    ZIndex = 5
+                },
+
+                // Registrar Signature Right
+                new PdfTextElement
+                {
+                    X = 790,
+                    Y = 590,
+                    Width = 260,
+                    Height = 50,
+                    Text = "Arthur Kingsbury",
+                    FontSize = 28,
+                    FontFamily = "Great Vibes",
+                    IsItalic = true,
+                    TextColorHex = "#1E293B",
+                    Alignment = TextAlignmentMode.Center,
+                    ZIndex = 6
+                },
+                new PdfDividerElement
+                {
+                    X = 790,
+                    Y = 640,
+                    Width = 260,
+                    Height = 1,
+                    Thickness = 1.5,
+                    ColorHex = "#78350F",
+                    ZIndex = 5
+                },
+                new PdfTextElement
+                {
+                    X = 790,
+                    Y = 648,
+                    Width = 260,
+                    Height = 22,
+                    Text = "Registrar & Academic Secretary",
+                    FontSize = 11,
+                    FontFamily = "Cinzel",
+                    IsBold = true,
+                    TextColorHex = "#78350F",
+                    Alignment = TextAlignmentMode.Center,
+                    ZIndex = 5
+                },
+
+                // Degree Serial Tracking Footer
+                new PdfTextElement
+                {
+                    X = 100,
+                    Y = 690,
+                    Width = 931,
+                    Height = 20,
+                    Text = "Degree Serial No: UAS-MS-2026-948102 • Conferred June 15, 2026 • Verified by National Academic Depository (NAD)",
+                    FontSize = 8.5,
+                    FontFamily = "Montserrat",
+                    TextColorHex = "#64748B",
                     Alignment = TextAlignmentMode.Center,
                     ZIndex = 5
                 }

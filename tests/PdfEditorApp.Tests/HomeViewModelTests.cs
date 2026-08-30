@@ -30,7 +30,7 @@ public class HomeViewModelTests
 
         // Assert
         Assert.NotEmpty(vm.AllTemplates);
-        Assert.True(vm.AllTemplates.Count >= 10, "Should have at least 10 templates initialized");
+        Assert.True(vm.AllTemplates.Count >= 18, "Should have at least 18 templates initialized including new resumes and research papers");
 
         // Verify each non-blank template has a live PagePreview with real elements
         foreach (var template in vm.AllTemplates)
@@ -83,17 +83,37 @@ public class HomeViewModelTests
 
         // Act 2: Filter Finance
         vm.SetTemplateCategoryCommand.Execute("Finance");
+        Assert.Equal("Finance", vm.SelectedTemplateCategory);
         Assert.All(vm.FilteredTemplates, t => Assert.Equal("Finance", t.Category, ignoreCase: true));
         Assert.Contains(vm.FilteredTemplates, t => t.Id == "invoice");
+        Assert.Contains(vm.FilteredTemplates, t => t.Id == "financeresearch");
 
-        // Act 3: Filter Certificates
+        // Act 3: Filter Career (All 4 Resume Types)
+        vm.SetTemplateCategoryCommand.Execute("Career");
+        Assert.Equal("Career", vm.SelectedTemplateCategory);
+        Assert.All(vm.FilteredTemplates, t => Assert.Equal("Career", t.Category, ignoreCase: true));
+        Assert.Contains(vm.FilteredTemplates, t => t.Id == "resume");
+        Assert.Contains(vm.FilteredTemplates, t => t.Id == "resumemodern");
+        Assert.Contains(vm.FilteredTemplates, t => t.Id == "resumecreative");
+        Assert.Contains(vm.FilteredTemplates, t => t.Id == "resumeacademic");
+
+        // Act 4: Filter Academic (All 4 Research Papers)
+        vm.SetTemplateCategoryCommand.Execute("Academic");
+        Assert.Equal("Academic", vm.SelectedTemplateCategory);
+        Assert.All(vm.FilteredTemplates, t => Assert.Equal("Academic", t.Category, ignoreCase: true));
+        Assert.Contains(vm.FilteredTemplates, t => t.Id == "academic");
+        Assert.Contains(vm.FilteredTemplates, t => t.Id == "mathresearch");
+        Assert.Contains(vm.FilteredTemplates, t => t.Id == "physicsresearch");
+        Assert.Contains(vm.FilteredTemplates, t => t.Id == "historyresearch");
+
+        // Act 5: Filter Certificates
         vm.SetTemplateCategoryCommand.Execute("Certificates");
         Assert.All(vm.FilteredTemplates, t => Assert.Equal("Certificates", t.Category, ignoreCase: true));
         Assert.Contains(vm.FilteredTemplates, t => t.Id == "certificate");
         Assert.Contains(vm.FilteredTemplates, t => t.Id == "certificatenavygold");
         Assert.Contains(vm.FilteredTemplates, t => t.Id == "diploma");
 
-        // Act 4: Reset to All
+        // Act 6: Reset to All
         vm.SetTemplateCategoryCommand.Execute("All");
         Assert.Equal(vm.AllTemplates.Count, vm.FilteredTemplates.Count);
     }
@@ -104,12 +124,20 @@ public class HomeViewModelTests
         // Arrange
         var vm = new HomeViewModel();
 
-        // Act: Search for "invoice"
-        vm.TemplateSearchQuery = "invoice";
+        // Act: Search for "quantum"
+        vm.TemplateSearchQuery = "quantum";
 
         // Assert
-        Assert.Contains(vm.FilteredTemplates, t => t.Id == "invoice");
+        Assert.Contains(vm.FilteredTemplates, t => t.Id == "physicsresearch");
         Assert.DoesNotContain(vm.FilteredTemplates, t => t.Id == "annualreport");
+
+        // Act 2: Search for "hodge"
+        vm.TemplateSearchQuery = "hodge";
+        Assert.Contains(vm.FilteredTemplates, t => t.Id == "mathresearch");
+
+        // Act 3: Search for "mediterranean"
+        vm.TemplateSearchQuery = "mediterranean";
+        Assert.Contains(vm.FilteredTemplates, t => t.Id == "historyresearch");
 
         // Clear search
         vm.ClearTemplateSearchCommand.Execute(null);
@@ -140,10 +168,10 @@ public class HomeViewModelTests
         vm.OpenTemplateRequested += t => requestedTemplate = t;
 
         // Act
-        vm.SelectTemplateCommand.Execute("invoice");
+        vm.SelectTemplateCommand.Execute("resumemodern");
 
         // Assert
-        Assert.Equal("invoice", requestedTemplate);
+        Assert.Equal("resumemodern", requestedTemplate);
     }
 
     [Fact]

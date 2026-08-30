@@ -292,7 +292,7 @@
                                        FontSize="16"
                                        FontWeight="Bold"
                                        Foreground="#0F172A" />
-                            <TextBlock Text="11 professionally crafted templates"
+                            <TextBlock Text="{Binding MatchingTemplatesCount, StringFormat='{}{0} professionally crafted templates'}"
                                        FontSize="11.5"
                                        Foreground="#64748B" />
                         </StackPanel>

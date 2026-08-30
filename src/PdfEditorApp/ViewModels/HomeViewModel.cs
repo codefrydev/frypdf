@@ -102,13 +102,20 @@ public partial class HomeViewModel : ViewModelBase
                 var pageVm = new PageViewModel();
                 pageVm.LoadFromModel(page);
 
-                bool isFeatured = def.Id is "annualreport" or "invoice" or "resume" or "academic" or "certificate";
+                bool isFeatured = def.Id is "annualreport" or "invoice" or "resume" or "resumemodern" or "academic" or "mathresearch" or "physicsresearch" or "certificate";
                 string subtitle = def.Id switch
                 {
                     "annualreport" => "Executive Summary & Charts",
                     "invoice" => "Itemized Billing & Terms",
                     "resume" => "Executive CV with Live QR",
-                    "academic" => "2-Column Research Layout",
+                    "resumemodern" => "Two-Column Tech & Product",
+                    "resumecreative" => "Creative Director & Portfolio",
+                    "resumeacademic" => "Faculty Dossier & Grants",
+                    "academic" => "2-Column Systems Research",
+                    "mathresearch" => "Discrete Hodge Theory",
+                    "physicsresearch" => "Cavity QED & Quantum Spin",
+                    "historyresearch" => "Mediterranean Trade Ledgers",
+                    "financeresearch" => "Jump-Diffusion Econometrics",
                     "certificate" => "Crimson & Gold Award",
                     "certificatenavygold" => "Navy & Gold Crest",
                     "diploma" => "Collegiate Degree",
@@ -122,8 +129,15 @@ public partial class HomeViewModel : ViewModelBase
                 {
                     "annualreport" => "Popular",
                     "invoice" => "Finance",
-                    "resume" => "Career",
-                    "academic" => "Academic",
+                    "resume" => "Executive",
+                    "resumemodern" => "Tech",
+                    "resumecreative" => "Design",
+                    "resumeacademic" => "Academic",
+                    "academic" => "Systems",
+                    "mathresearch" => "Pure Math",
+                    "physicsresearch" => "Quantum",
+                    "historyresearch" => "History",
+                    "financeresearch" => "Quant",
                     "certificate" => "Award",
                     "certificatenavygold" => "Executive",
                     "diploma" => "Degree",
@@ -215,7 +229,14 @@ public partial class HomeViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsAnnualReportTemplateVisible));
         OnPropertyChanged(nameof(IsInvoiceTemplateVisible));
         OnPropertyChanged(nameof(IsResumeTemplateVisible));
+        OnPropertyChanged(nameof(IsResumeModernTemplateVisible));
+        OnPropertyChanged(nameof(IsResumeCreativeTemplateVisible));
+        OnPropertyChanged(nameof(IsResumeAcademicCvTemplateVisible));
         OnPropertyChanged(nameof(IsAcademicPaperTemplateVisible));
+        OnPropertyChanged(nameof(IsMathResearchTemplateVisible));
+        OnPropertyChanged(nameof(IsPhysicsResearchTemplateVisible));
+        OnPropertyChanged(nameof(IsHistoryResearchTemplateVisible));
+        OnPropertyChanged(nameof(IsFinanceResearchTemplateVisible));
         OnPropertyChanged(nameof(IsCertificateTemplateVisible));
         OnPropertyChanged(nameof(IsCertificateNavyGoldTemplateVisible));
         OnPropertyChanged(nameof(IsDiplomaAcademicTemplateVisible));
@@ -228,7 +249,14 @@ public partial class HomeViewModel : ViewModelBase
     public bool IsAnnualReportTemplateVisible        => FilteredTemplates.Any(t => t.Id == "annualreport");
     public bool IsInvoiceTemplateVisible             => FilteredTemplates.Any(t => t.Id == "invoice");
     public bool IsResumeTemplateVisible              => FilteredTemplates.Any(t => t.Id == "resume");
+    public bool IsResumeModernTemplateVisible        => FilteredTemplates.Any(t => t.Id == "resumemodern");
+    public bool IsResumeCreativeTemplateVisible      => FilteredTemplates.Any(t => t.Id == "resumecreative");
+    public bool IsResumeAcademicCvTemplateVisible    => FilteredTemplates.Any(t => t.Id == "resumeacademic");
     public bool IsAcademicPaperTemplateVisible       => FilteredTemplates.Any(t => t.Id == "academic");
+    public bool IsMathResearchTemplateVisible        => FilteredTemplates.Any(t => t.Id == "mathresearch");
+    public bool IsPhysicsResearchTemplateVisible     => FilteredTemplates.Any(t => t.Id == "physicsresearch");
+    public bool IsHistoryResearchTemplateVisible     => FilteredTemplates.Any(t => t.Id == "historyresearch");
+    public bool IsFinanceResearchTemplateVisible     => FilteredTemplates.Any(t => t.Id == "financeresearch");
     public bool IsCertificateTemplateVisible         => FilteredTemplates.Any(t => t.Id == "certificate");
     public bool IsCertificateNavyGoldTemplateVisible => FilteredTemplates.Any(t => t.Id == "certificatenavygold");
     public bool IsDiplomaAcademicTemplateVisible     => FilteredTemplates.Any(t => t.Id == "diploma");

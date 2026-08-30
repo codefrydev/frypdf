@@ -191,12 +191,28 @@ public class CertificateNavyGoldTemplate : ITemplateDefinition
                     X = 180,
                     Y = 395,
                     Width = 771,
-                    Height = 80,
+                    Height = 65,
                     Text = "Having demonstrated supreme governance, transformational strategy execution, and unrelenting commitment to corporate stewardship throughout the Global Enterprise Leadership Fellowship.",
                     FontSize = 15.5,
                     FontFamily = "Lora",
-                    LineHeight = 1.6,
+                    LineHeight = 1.5,
                     TextColorHex = "#334155",
+                    Alignment = TextAlignmentMode.Center,
+                    ZIndex = 5
+                },
+
+                // Conferred Date & Motto
+                new PdfTextElement
+                {
+                    X = 180,
+                    Y = 465,
+                    Width = 771,
+                    Height = 22,
+                    Text = "Conferred this 28th day of October, 2026 at the Annual Convocation • London, United Kingdom",
+                    FontSize = 11.5,
+                    FontFamily = "Montserrat",
+                    IsBold = true,
+                    TextColorHex = "#B45309",
                     Alignment = TextAlignmentMode.Center,
                     ZIndex = 5
                 },
@@ -215,6 +231,22 @@ public class CertificateNavyGoldTemplate : ITemplateDefinition
                     Label = "HONOR",
                     LabelColorHex = "#92400E",
                     LabelFontSize = 11,
+                    ZIndex = 8
+                },
+
+                // Motto Text Below Seal
+                new PdfTextElement
+                {
+                    X = 450,
+                    Y = 582,
+                    Width = 231,
+                    Height = 18,
+                    Text = "— VIRTUS ET EXCELLENTIA —",
+                    FontSize = 10,
+                    FontFamily = "Cinzel",
+                    IsBold = true,
+                    TextColorHex = "#0F172A",
+                    Alignment = TextAlignmentMode.Center,
                     ZIndex = 8
                 },
 

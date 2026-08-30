@@ -95,6 +95,91 @@ public class PdfEngineTests
     }
 
     [Fact]
+    public void AllRegisteredTemplates_GenerateValidPdfDocumentsAndByteStreams()
+    {
+        var templates = _templateService.GetAllTemplates();
+        Assert.True(templates.Count >= 18, $"Expected at least 18 templates, found {templates.Count}");
+
+        foreach (var def in templates)
+        {
+            var doc = def.Create();
+            Assert.NotNull(doc);
+            Assert.NotEmpty(doc.Title);
+            Assert.NotEmpty(doc.Pages);
+
+            var page = doc.Pages[0];
+            if (def.Id != "" && def.Id != "blank") // Non-blank template
+            {
+                Assert.True(page.Elements.Count >= 3, $"Template '{def.Name}' ({def.Id}) should have at least 3 elements, found {page.Elements.Count}");
+            }
+
+            byte[] bytes = _exportService.GeneratePdfBytes(doc);
+            Assert.NotNull(bytes);
+            Assert.True(bytes.Length > 500, $"Generated PDF for '{def.Name}' should have non-trivial size");
+            Assert.Equal("%PDF-", Encoding.ASCII.GetString(bytes, 0, 5));
+        }
+    }
+
+    [Fact]
+    public void ResumeTemplates_AllFourTypes_GenerateRichContent()
+    {
+        var executive = _templateService.CreateResumeTemplate();
+        var modern = _templateService.CreateResumeModernCleanTemplate();
+        var creative = _templateService.CreateResumeCreativeMinimalistTemplate();
+        var academicCv = _templateService.CreateResumeAcademicCvTemplate();
+
+        Assert.NotNull(executive);
+        Assert.NotNull(modern);
+        Assert.NotNull(creative);
+        Assert.NotNull(academicCv);
+
+        // Modern Clean tech resume checks
+        Assert.Contains(modern.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("SARAH CHEN"));
+        Assert.Contains(modern.Pages[0].Elements, e => e is PdfQrCodeElement qr && qr.Content.Contains("github.com"));
+
+        // Creative UI/UX resume checks
+        Assert.Contains(creative.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("MAYA LIN"));
+        Assert.Contains(creative.Pages[0].Elements, e => e is PdfQrCodeElement qr && qr.Content.Contains("mayalin.design"));
+
+        // Academic CV checks
+        Assert.Contains(academicCv.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("MARCUS A. AURELIUS"));
+        Assert.Contains(academicCv.Pages[0].Elements, e => e is PdfTableElement tbl && tbl.Headers.Contains("Total Amount"));
+        Assert.Contains(academicCv.Pages[0].Elements, e => e is PdfQrCodeElement qr && qr.Content.Contains("orcid.org"));
+    }
+
+    [Fact]
+    public void ResearchPaperTemplates_AllFourTypes_GenerateRichContent()
+    {
+        var cs = _templateService.CreateAcademicPaperTemplate();
+        var math = _templateService.CreateMathResearchPaperTemplate();
+        var physics = _templateService.CreatePhysicsResearchPaperTemplate();
+        var history = _templateService.CreateHistoryResearchPaperTemplate();
+        var finance = _templateService.CreateFinanceResearchPaperTemplate();
+
+        Assert.NotNull(cs);
+        Assert.NotNull(math);
+        Assert.NotNull(physics);
+        Assert.NotNull(history);
+        Assert.NotNull(finance);
+
+        // Mathematics paper checks
+        Assert.Contains(math.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("Discrete Hodge"));
+        Assert.Contains(math.Pages[0].Elements, e => e is PdfTableElement tbl && tbl.Headers.Contains("β₁(M)"));
+
+        // Physics paper checks
+        Assert.Contains(physics.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("Cavity Quantum Electrodynamics"));
+        Assert.Contains(physics.Pages[0].Elements, e => e is PdfTableElement tbl && tbl.Headers.Contains("T₁ (μs)"));
+
+        // History paper checks
+        Assert.Contains(history.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("Maritime Trade Networks"));
+        Assert.Contains(history.Pages[0].Elements, e => e is PdfTableElement tbl && tbl.Headers.Contains("Gold Flow (Ducats)"));
+
+        // Finance paper checks
+        Assert.Contains(finance.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("Multi-Factor Jump-Diffusion"));
+        Assert.Contains(finance.Pages[0].Elements, e => e is PdfTableElement tbl && tbl.Headers.Contains("Max DD"));
+    }
+
+    [Fact]
     public async Task ProjectPersistence_RoundTripMatches()
     {
         var original = _templateService.CreateAnnualReportTemplate();
@@ -1458,14 +1543,14 @@ public class PdfEngineTests
         // Verify typography elements
         var texts = page.Elements.OfType<PdfTextElement>().ToList();
         Assert.Contains(texts, t => t.Text == "CERTIFICATE" && t.TextColorHex == "#990000");
-        Assert.Contains(texts, t => t.Text == "OF ACHIEVEMENT");
+        Assert.Contains(texts, t => t.Text.Contains("OUTSTANDING ACHIEVEMENT"));
         Assert.Contains(texts, t => t.Text.Contains("THIS CERTIFICATE IS PROUDLY PRESENTED TO"));
-        Assert.Contains(texts, t => t.Text == "Name Surname" && t.FontFamily == "Great Vibes");
-        Assert.Contains(texts, t => t.Text.Contains("National Science and Math's Quiz"));
-        Assert.Contains(texts, t => t.Text == "Dictate" && t.FontFamily == "Great Vibes");
-        Assert.Contains(texts, t => t.Text == "Mr. John Smith");
-        Assert.Contains(texts, t => t.Text == "President");
-        Assert.Contains(texts, t => t.Text == "Date");
+        Assert.Contains(texts, t => t.Text == "Alexander Maxwell Vance" && t.FontFamily == "Great Vibes");
+        Assert.Contains(texts, t => t.Text.Contains("Mathematics & Computational Science Olympiad"));
+        Assert.Contains(texts, t => t.Text == "Jonathan Thorne" && t.FontFamily == "Great Vibes");
+        Assert.Contains(texts, t => t.Text.Contains("Dr. Jonathan R. Thorne, Ph.D."));
+        Assert.Contains(texts, t => t.Text.Contains("President"));
+        Assert.Contains(texts, t => t.Text.Contains("Date"));
 
         // Verify PDF byte export
         byte[] pdfBytes = _exportService.GeneratePdfBytes(model);

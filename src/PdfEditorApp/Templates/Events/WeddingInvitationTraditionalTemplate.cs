@@ -8,7 +8,7 @@ namespace PdfEditorApp.Templates;
 /// <summary>
 /// Authentic Traditional Indian Wedding Invitation Card template featuring Marigold Torans,
 /// Lord Ganesha sacred crest, calligraphic couple names, dual Muhurtham &amp; Reception schedule columns,
-/// brass deepams, and ceremonial plantain tree accents matching user specifications.
+/// brass deepams, and ceremonial plantain tree accents.
 /// </summary>
 public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
 {
@@ -28,9 +28,9 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
     {
         var doc = new PdfDocumentModel
         {
-            Title = "Wedding_Invitation_Traditional.pdf",
-            Author = "Auspicious Celebrations",
-            Subject = "Traditional Wedding Invitation Card"
+            Title = "Wedding_Invitation_Aarav_and_Ananya.pdf",
+            Author = "Sharma & Iyer Families",
+            Subject = "Traditional Indian Wedding Invitation Card"
         };
 
         // Standard Portrait Invitation (600 x 900 pt)
@@ -114,9 +114,9 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
         // 6. Invitation Announcement Header
         page.Elements.Add(new PdfTextElement
         {
-            Text = "Please join us for the wedding\nof",
+            Text = "Together with their families, cordially invite you to celebrate the wedding of",
             FontFamily = "Cinzel",
-            FontSize = 14,
+            FontSize = 12.5,
             IsBold = false,
             TextColorHex = "#451A03", // Deep rich walnut
             Alignment = TextAlignmentMode.Center,
@@ -131,32 +131,32 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
         // Groom Name
         page.Elements.Add(new PdfTextElement
         {
-            Text = "Groom",
+            Text = "Aarav",
             FontFamily = "Great Vibes",
-            FontSize = 38,
+            FontSize = 42,
             IsBold = true,
             TextColorHex = "#78350F", // Royal Amber Bronze
             Alignment = TextAlignmentMode.Center,
-            X = 60,
-            Y = 275,
-            Width = 200,
-            Height = 48,
+            X = 50,
+            Y = 270,
+            Width = 220,
+            Height = 52,
             ZIndex = 8
         });
 
         // Groom Parentage
         page.Elements.Add(new PdfTextElement
         {
-            Text = "S/o\nMrs. Mother's Name &\nMr. Father's Name",
+            Text = "Son of\nMrs. Sunita & Mr. Rajesh Sharma\nGrandson of Late Smt. Kamala Sharma",
             FontFamily = "Montserrat",
-            FontSize = 10.5,
+            FontSize = 9.5,
             IsBold = true,
             TextColorHex = "#451A03",
             Alignment = TextAlignmentMode.Center,
-            X = 40,
-            Y = 328,
-            Width = 240,
-            Height = 52,
+            X = 35,
+            Y = 325,
+            Width = 250,
+            Height = 55,
             ZIndex = 8
         });
 
@@ -165,12 +165,12 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
         {
             Text = "&",
             FontFamily = "Great Vibes",
-            FontSize = 34,
+            FontSize = 36,
             IsBold = true,
             TextColorHex = "#D97706", // Gold
             Alignment = TextAlignmentMode.Center,
             X = 280,
-            Y = 300,
+            Y = 295,
             Width = 40,
             Height = 40,
             ZIndex = 8
@@ -179,32 +179,32 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
         // Bride Name
         page.Elements.Add(new PdfTextElement
         {
-            Text = "Bride",
+            Text = "Ananya",
             FontFamily = "Great Vibes",
-            FontSize = 38,
+            FontSize = 42,
             IsBold = true,
             TextColorHex = "#78350F",
             Alignment = TextAlignmentMode.Center,
-            X = 340,
-            Y = 275,
-            Width = 200,
-            Height = 48,
+            X = 330,
+            Y = 270,
+            Width = 220,
+            Height = 52,
             ZIndex = 8
         });
 
         // Bride Parentage
         page.Elements.Add(new PdfTextElement
         {
-            Text = "D/o\nMrs. Mother's Name &\nMr. Father's Name",
+            Text = "Daughter of\nMrs. Meenakshi & Mr. Suresh Iyer\nGranddaughter of Late Shri K. Iyer",
             FontFamily = "Montserrat",
-            FontSize = 10.5,
+            FontSize = 9.5,
             IsBold = true,
             TextColorHex = "#451A03",
             Alignment = TextAlignmentMode.Center,
-            X = 320,
-            Y = 328,
-            Width = 240,
-            Height = 52,
+            X = 315,
+            Y = 325,
+            Width = 250,
+            Height = 55,
             ZIndex = 8
         });
 
@@ -214,7 +214,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             PresetName = "DottedFloralDivider",
             SvgSource = SvgOrnamentLibrary.GetDottedFloralDividerSvg("#D97706", "#8B0000"),
             X = 80,
-            Y = 392,
+            Y = 390,
             Width = 440,
             Height = 24,
             ZIndex = 8
@@ -231,7 +231,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             TextColorHex = "#8B0000",
             Alignment = TextAlignmentMode.Center,
             X = 40,
-            Y = 425,
+            Y = 420,
             Width = 240,
             Height = 22,
             ZIndex = 8
@@ -239,14 +239,14 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
 
         page.Elements.Add(new PdfTextElement
         {
-            Text = "Wednesday, 11th May 20XX\n9.30 am onwards",
+            Text = "Wednesday, 11th November 2026\n9:30 AM – 11:30 AM (Dhanu Lagna)",
             FontFamily = "Montserrat",
-            FontSize = 11,
+            FontSize = 10,
             IsBold = true,
             TextColorHex = "#451A03",
             Alignment = TextAlignmentMode.Center,
             X = 40,
-            Y = 450,
+            Y = 445,
             Width = 240,
             Height = 36,
             ZIndex = 8
@@ -254,14 +254,14 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
 
         page.Elements.Add(new PdfTextElement
         {
-            Text = "- Venue -\nHotel Grand Palace, Royal Hall,\nMG Road, Bengaluru",
+            Text = "- Venue -\nThe Leela Palace, Grand Ballroom\nMG Road, Bengaluru, Karnataka",
             FontFamily = "Montserrat",
-            FontSize = 10,
+            FontSize = 9.5,
             IsBold = false,
             TextColorHex = "#522504",
             Alignment = TextAlignmentMode.Center,
             X = 40,
-            Y = 490,
+            Y = 485,
             Width = 240,
             Height = 48,
             ZIndex = 8
@@ -274,9 +274,9 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             Thickness = 1.5,
             ColorHex = "#D97706",
             X = 299,
-            Y = 425,
+            Y = 420,
             Width = 2,
-            Height = 110,
+            Height = 115,
             ZIndex = 8
         });
 
@@ -290,7 +290,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             TextColorHex = "#8B0000",
             Alignment = TextAlignmentMode.Center,
             X = 320,
-            Y = 425,
+            Y = 420,
             Width = 240,
             Height = 22,
             ZIndex = 8
@@ -298,14 +298,14 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
 
         page.Elements.Add(new PdfTextElement
         {
-            Text = "Thursday, 12th May 20XX\n7.30 pm onwards",
+            Text = "Thursday, 12th November 2026\n7:00 PM Onwards",
             FontFamily = "Montserrat",
-            FontSize = 11,
+            FontSize = 10,
             IsBold = true,
             TextColorHex = "#451A03",
             Alignment = TextAlignmentMode.Center,
             X = 320,
-            Y = 450,
+            Y = 445,
             Width = 240,
             Height = 36,
             ZIndex = 8
@@ -313,14 +313,14 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
 
         page.Elements.Add(new PdfTextElement
         {
-            Text = "- Venue -\nHotel Grand Palace, Royal Hall,\nMG Road, Bengaluru",
+            Text = "- Venue -\nThe Leela Palace, Royal Convention Lawn\nMG Road, Bengaluru, Karnataka",
             FontFamily = "Montserrat",
-            FontSize = 10,
+            FontSize = 9.5,
             IsBold = false,
             TextColorHex = "#522504",
             Alignment = TextAlignmentMode.Center,
             X = 320,
-            Y = 490,
+            Y = 485,
             Width = 240,
             Height = 48,
             ZIndex = 8
@@ -332,25 +332,25 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             PresetName = "DottedFloralDivider",
             SvgSource = SvgOrnamentLibrary.GetDottedFloralDividerSvg("#D97706", "#8B0000"),
             X = 120,
-            Y = 550,
+            Y = 545,
             Width = 360,
             Height = 20,
             ZIndex = 8
         });
 
-        // 11. RSVP / Awaiting Invitee Family
+        // 11. RSVP / Best Compliments
         page.Elements.Add(new PdfTextElement
         {
-            Text = "Awaiting - Family Name & Relatives",
-            FontFamily = "Cinzel",
-            FontSize = 12.5,
+            Text = "With Best Compliments From: Sharma & Iyer Families  •  RSVP: +91 98450 12345",
+            FontFamily = "Montserrat",
+            FontSize = 10.5,
             IsBold = true,
             TextColorHex = "#78350F",
             Alignment = TextAlignmentMode.Center,
             X = 50,
-            Y = 580,
+            Y = 572,
             Width = 500,
-            Height = 24,
+            Height = 22,
             ZIndex = 8
         });
 

@@ -399,6 +399,17 @@ public partial class DocumentCanvasView : UserControl
                 _draggedElement = elementVm;
                 _draggedElements = ViewModel.CurrentPage.SelectedElements.Where(el => !el.IsLocked).ToList();
                 if (!_draggedElements.Contains(elementVm)) _draggedElements.Add(elementVm);
+
+                // If element belongs to a group, drag all group members synchronously
+                if (!string.IsNullOrEmpty(elementVm.GroupId))
+                {
+                    var groupMembers = ViewModel.CurrentPage.Elements.Where(el => el.GroupId == elementVm.GroupId && !el.IsLocked);
+                    foreach (var gm in groupMembers)
+                    {
+                        if (!_draggedElements.Contains(gm)) _draggedElements.Add(gm);
+                    }
+                }
+
                 _dragStartPositions = _draggedElements.Select(el => (Element: el, el.X, el.Y)).ToList();
 
                 _dragStartElementX = elementVm.X;

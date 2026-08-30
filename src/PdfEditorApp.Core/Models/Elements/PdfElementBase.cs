@@ -33,6 +33,7 @@ public abstract class PdfElementBase
     public double Rotation { get; set; } = 0;
     public double Opacity { get; set; } = 1.0;
     public bool IsLocked { get; set; } = false;
+    public string? GroupId { get; set; }
 
     public virtual PdfElementBase Clone()
     {

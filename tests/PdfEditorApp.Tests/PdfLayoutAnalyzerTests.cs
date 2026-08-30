@@ -10,6 +10,7 @@ using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
 using PdfEditorApp.Templates;
 using PdfEditorApp.ViewModels;
+using PdfEditorApp.ViewModels.ElementViewModels;
 using Xunit;
 
 namespace PdfEditorApp.Tests;
@@ -134,5 +135,83 @@ public class PdfLayoutAnalyzerTests
 
         string sanitizedText = System.Text.Encoding.ASCII.GetString(sanitized);
         Assert.Contains("%%EOF", sanitizedText);
+    }
+
+    [Fact]
+    public void UnicodeScriptDetector_DetectsRtlAndDevanagari()
+    {
+        string arabic = "مرحبا بكم في عالم الابتكار";
+        string hebrew = "שלום עולם";
+        string hindi = "नमस्ते भारत";
+        string english = "Welcome to FryPDF Studio";
+
+        Assert.True(UnicodeScriptDetector.IsRtlText(arabic));
+        Assert.True(UnicodeScriptDetector.IsRtlText(hebrew));
+        Assert.False(UnicodeScriptDetector.IsRtlText(hindi));
+        Assert.False(UnicodeScriptDetector.IsRtlText(english));
+
+        Assert.True(UnicodeScriptDetector.ContainsDevanagari(hindi));
+        Assert.False(UnicodeScriptDetector.ContainsDevanagari(english));
+    }
+
+    [Fact]
+    public void PageViewModel_GroupAndUngroup_ManagesGroupIds()
+    {
+        var page = new PageViewModel();
+        var t1 = new TextElementViewModel { Text = "Header", X = 10, Y = 10, Width = 100, Height = 30 };
+        var t2 = new TextElementViewModel { Text = "Body", X = 10, Y = 50, Width = 100, Height = 50 };
+        var s1 = new ShapeElementViewModel { X = 5, Y = 5, Width = 120, Height = 100 };
+
+        page.AddElement(t1);
+        page.AddElement(t2);
+        page.AddElement(s1);
+
+        page.SelectElements(new ElementViewModelBase[] { t1, t2, s1 });
+        Assert.Equal(3, page.SelectedElements.Count);
+
+        page.GroupSelected();
+        Assert.NotNull(t1.GroupId);
+        Assert.Equal(t1.GroupId, t2.GroupId);
+        Assert.Equal(t1.GroupId, s1.GroupId);
+
+        page.UngroupSelected();
+        Assert.Null(t1.GroupId);
+        Assert.Null(t2.GroupId);
+        Assert.Null(s1.GroupId);
+    }
+
+    [Fact]
+    public void PageViewModel_SmartAlignmentTools_AlignsElementsAccurately()
+    {
+        var page = new PageViewModel();
+        var e1 = new TextElementViewModel { X = 10, Y = 20, Width = 100, Height = 30 };
+        var e2 = new TextElementViewModel { X = 50, Y = 80, Width = 80, Height = 40 };
+        var e3 = new TextElementViewModel { X = 150, Y = 150, Width = 120, Height = 50 };
+
+        page.AddElement(e1);
+        page.AddElement(e2);
+        page.AddElement(e3);
+        page.SelectElements(new[] { e1, e2, e3 });
+
+        // Align Left: All X should be minX = 10
+        page.AlignSelectedLeft();
+        Assert.Equal(10, e1.X);
+        Assert.Equal(10, e2.X);
+        Assert.Equal(10, e3.X);
+
+        // Align Top: All Y should be minY = 20
+        page.AlignSelectedTop();
+        Assert.Equal(20, e1.Y);
+        Assert.Equal(20, e2.Y);
+        Assert.Equal(20, e3.Y);
+
+        // Set distinct X positions and test Distribute Horizontally
+        e1.X = 10;
+        e2.X = 80;
+        e3.X = 250;
+        page.DistributeSelectedHorizontally();
+        Assert.Equal(10, e1.X);
+        Assert.True(e2.X > e1.X + e1.Width);
+        Assert.True(e3.X > e2.X + e2.Width);
     }
 }

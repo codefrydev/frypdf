@@ -255,6 +255,138 @@ public partial class PageViewModel : ViewModelBase
         }
     }
 
+    public void GroupSelected()
+    {
+        if (SelectedElements.Count < 2) return;
+        string newGroupId = Guid.NewGuid().ToString("N");
+        foreach (var el in SelectedElements)
+        {
+            el.GroupId = newGroupId;
+        }
+    }
+
+    public void UngroupSelected()
+    {
+        foreach (var el in SelectedElements)
+        {
+            el.GroupId = null;
+        }
+    }
+
+    public void AlignSelectedLeft()
+    {
+        if (SelectedElements.Count < 2) return;
+        double minX = SelectedElements.Min(e => e.X);
+        foreach (var el in SelectedElements.Where(e => !e.IsLocked))
+        {
+            el.X = minX;
+        }
+        UpdateSelectionBoundingBox();
+    }
+
+    public void AlignSelectedRight()
+    {
+        if (SelectedElements.Count < 2) return;
+        double maxRight = SelectedElements.Max(e => e.X + e.Width);
+        foreach (var el in SelectedElements.Where(e => !e.IsLocked))
+        {
+            el.X = Math.Round(maxRight - el.Width, 1);
+        }
+        UpdateSelectionBoundingBox();
+    }
+
+    public void AlignSelectedCenter()
+    {
+        if (SelectedElements.Count < 2) return;
+        double minX = SelectedElements.Min(e => e.X);
+        double maxRight = SelectedElements.Max(e => e.X + e.Width);
+        double midX = (minX + maxRight) / 2.0;
+
+        foreach (var el in SelectedElements.Where(e => !e.IsLocked))
+        {
+            el.X = Math.Round(midX - (el.Width / 2.0), 1);
+        }
+        UpdateSelectionBoundingBox();
+    }
+
+    public void AlignSelectedTop()
+    {
+        if (SelectedElements.Count < 2) return;
+        double minY = SelectedElements.Min(e => e.Y);
+        foreach (var el in SelectedElements.Where(e => !e.IsLocked))
+        {
+            el.Y = minY;
+        }
+        UpdateSelectionBoundingBox();
+    }
+
+    public void AlignSelectedBottom()
+    {
+        if (SelectedElements.Count < 2) return;
+        double maxBottom = SelectedElements.Max(e => e.Y + e.Height);
+        foreach (var el in SelectedElements.Where(e => !e.IsLocked))
+        {
+            el.Y = Math.Round(maxBottom - el.Height, 1);
+        }
+        UpdateSelectionBoundingBox();
+    }
+
+    public void AlignSelectedMiddle()
+    {
+        if (SelectedElements.Count < 2) return;
+        double minY = SelectedElements.Min(e => e.Y);
+        double maxBottom = SelectedElements.Max(e => e.Y + e.Height);
+        double midY = (minY + maxBottom) / 2.0;
+
+        foreach (var el in SelectedElements.Where(e => !e.IsLocked))
+        {
+            el.Y = Math.Round(midY - (el.Height / 2.0), 1);
+        }
+        UpdateSelectionBoundingBox();
+    }
+
+    public void DistributeSelectedHorizontally()
+    {
+        if (SelectedElements.Count < 3) return;
+        var ordered = SelectedElements.Where(e => !e.IsLocked).OrderBy(e => e.X).ToList();
+        if (ordered.Count < 3) return;
+
+        double startX = ordered.First().X;
+        double endX = ordered.Last().X + ordered.Last().Width;
+        double totalItemW = ordered.Sum(e => e.Width);
+        double availableGap = endX - startX - totalItemW;
+        double gapPerItem = Math.Max(0, availableGap / (ordered.Count - 1));
+
+        double currentX = startX;
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            ordered[i].X = Math.Round(currentX, 1);
+            currentX += ordered[i].Width + gapPerItem;
+        }
+        UpdateSelectionBoundingBox();
+    }
+
+    public void DistributeSelectedVertically()
+    {
+        if (SelectedElements.Count < 3) return;
+        var ordered = SelectedElements.Where(e => !e.IsLocked).OrderBy(e => e.Y).ToList();
+        if (ordered.Count < 3) return;
+
+        double startY = ordered.First().Y;
+        double endY = ordered.Last().Y + ordered.Last().Height;
+        double totalItemH = ordered.Sum(e => e.Height);
+        double availableGap = endY - startY - totalItemH;
+        double gapPerItem = Math.Max(0, availableGap / (ordered.Count - 1));
+
+        double currentY = startY;
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            ordered[i].Y = Math.Round(currentY, 1);
+            currentY += ordered[i].Height + gapPerItem;
+        }
+        UpdateSelectionBoundingBox();
+    }
+
     [RelayCommand]
     public void RotateClockwise()
     {

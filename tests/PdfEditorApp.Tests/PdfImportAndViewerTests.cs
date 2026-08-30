@@ -7,6 +7,7 @@ using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
 using PdfEditorApp.Templates;
 using PdfEditorApp.ViewModels;
+using UglyToad.PdfPig.Rendering.Skia;
 using Xunit;
 
 namespace PdfEditorApp.Tests;
@@ -355,16 +356,15 @@ public class PdfImportAndViewerTests
         string baseDir = AppContext.BaseDirectory;
         string rootDir = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", ".."));
         string sample1Path = Path.Combine(rootDir, "sample1.pdf");
-        string sample2Path = Path.Combine(rootDir, "sample2.pdf");
+        string sample2Path = Path.Combine(rootDir, "Class_6_Math_Chapter_1_Pattern_In_Mathematics.pdf");
+        if (!File.Exists(sample2Path)) sample2Path = Path.Combine(rootDir, "sample2.pdf");
 
-        if (!File.Exists(sample1Path) || !File.Exists(sample2Path))
+        if (!File.Exists(sample1Path))
         {
-            // Sample reference files are optional external fixtures
             return;
         }
 
         var doc1 = await _importService.ImportPdfAsync(sample1Path);
-        var doc2 = await _importService.ImportPdfAsync(sample2Path);
 
         Console.WriteLine($"=== SAMPLE 1 ===");
         Console.WriteLine($"Pages: {doc1.Pages.Count}");
@@ -372,21 +372,47 @@ public class PdfImportAndViewerTests
         {
             var p = doc1.Pages[i];
             Console.WriteLine($"Page {i + 1}: {p.Width}x{p.Height}, Elements: {p.Elements.Count}");
-            foreach (var el in p.Elements)
+            for (int elIdx = 0; elIdx < Math.Min(20, p.Elements.Count); elIdx++)
             {
+                var el = p.Elements[elIdx];
                 if (el is PdfTextElement txt)
                 {
-                    Console.WriteLine($"  [TEXT] X={txt.X:F1}, Y={txt.Y:F1}, W={txt.Width:F1}, H={txt.Height:F1}, Font={txt.FontFamily} {txt.FontSize:F1}pt, Color={txt.TextColorHex}, Lines={txt.Text.Split('\n').Length}, Preview={txt.Text.Substring(0, Math.Min(40, txt.Text.Length)).Replace("\n", " ")}");
+                    Console.WriteLine($"  #{elIdx} [TEXT] X={txt.X:F1}, Y={txt.Y:F1}, W={txt.Width:F1}, H={txt.Height:F1}, Font={txt.FontFamily} {txt.FontSize:F1}pt, Color={txt.TextColorHex}, Z={txt.ZIndex}, Lines={txt.Text.Split('\n').Length}, Preview={txt.Text.Substring(0, Math.Min(40, txt.Text.Length)).Replace("\n", " ")}");
                 }
                 else if (el is PdfImageElement img)
                 {
-                    Console.WriteLine($"  [IMAGE] X={img.X:F1}, Y={img.Y:F1}, W={img.Width:F1}, H={img.Height:F1}, Alt={img.AltText}, Base64Len={img.Base64Data?.Length ?? 0}");
+                    bool isValidImage = false;
+                    int imgW = 0, imgH = 0;
+                    if (!string.IsNullOrEmpty(img.Base64Data))
+                    {
+                        byte[] bytes = Convert.FromBase64String(img.Base64Data);
+                        using var skData = SkiaSharp.SKData.CreateCopy(bytes);
+                        using var skImg = SkiaSharp.SKImage.FromEncodedData(skData);
+                        if (skImg != null)
+                        {
+                            isValidImage = true;
+                            imgW = skImg.Width;
+                            imgH = skImg.Height;
+                        }
+                    }
+
+                    Console.WriteLine($"  #{elIdx} [IMAGE] X={img.X:F1}, Y={img.Y:F1}, W={img.Width:F1}, H={img.Height:F1}, Decoded={isValidImage} ({imgW}x{imgH}), Z={img.ZIndex}, Locked={img.IsLocked}, Opacity={img.Opacity}, Alt={img.AltText}, Base64Len={img.Base64Data?.Length ?? 0}");
+                }
+                else if (el is PdfShapeElement shp)
+                {
+                    Console.WriteLine($"  #{elIdx} [SHAPE] X={shp.X:F1}, Y={shp.Y:F1}, W={shp.Width:F1}, H={shp.Height:F1}, Fill={shp.FillColorHex}, Stroke={shp.StrokeColorHex}, StrokeThick={shp.StrokeThickness}, Z={shp.ZIndex}");
+                }
+                else if (el is PdfDividerElement div)
+                {
+                    Console.WriteLine($"  #{elIdx} [DIVIDER] X={div.X:F1}, Y={div.Y:F1}, W={div.Width:F1}, H={div.Height:F1}, Color={div.ColorHex}, Z={div.ZIndex}");
                 }
                 else
                 {
-                    Console.WriteLine($"  [{el.GetType().Name}] X={el.X:F1}, Y={el.Y:F1}, W={el.Width:F1}, H={el.Height:F1}");
+                    Console.WriteLine($"  #{elIdx} [{el.GetType().Name}] X={el.X:F1}, Y={el.Y:F1}, W={el.Width:F1}, H={el.Height:F1}, Z={el.ZIndex}");
                 }
             }
+
+            // Finished inspecting elements
         }
 
         // Assertions for Sample 1:
@@ -408,33 +434,56 @@ public class PdfImportAndViewerTests
         Assert.Contains(horizontalTexts, h => h.Text.Contains("4046/20511", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(horizontalTexts, h => h.Text.Contains("Ayush", StringComparison.OrdinalIgnoreCase));
 
-        // Assertions for Sample 2:
-        Assert.True(doc2.Pages.Count >= 1);
-        var s2Page1 = doc2.Pages[0];
+        if (File.Exists(sample2Path))
+        {
+            var doc2 = await _importService.ImportPdfAsync(sample2Path);
+            Assert.True(doc2.Pages.Count >= 1);
+            var s2Page1 = doc2.Pages[0];
 
-        // Verify vector shapes and dividers extracted
-        var shapes = s2Page1.Elements.OfType<PdfShapeElement>().ToList();
-        var dividers = s2Page1.Elements.OfType<PdfDividerElement>().ToList();
-        Assert.True(shapes.Count > 0 || dividers.Count > 0);
+            Console.WriteLine($"=== SAMPLE 2 ===");
+            for (int elIdx = 0; elIdx < s2Page1.Elements.Count; elIdx++)
+            {
+                var el = s2Page1.Elements[elIdx];
+                if (el is PdfTextElement txt)
+                {
+                    Console.WriteLine($"  #{elIdx} [TEXT] X={txt.X:F1}, Y={txt.Y:F1}, W={txt.Width:F1}, H={txt.Height:F1}, Font={txt.FontFamily} {txt.FontSize:F1}pt, Color={txt.TextColorHex}, Z={txt.ZIndex}, Preview={txt.Text.Replace("\n", " ")}");
+                }
+                else if (el is PdfShapeElement shp)
+                {
+                    Console.WriteLine($"  #{elIdx} [SHAPE] X={shp.X:F1}, Y={shp.Y:F1}, W={shp.Width:F1}, H={shp.Height:F1}, Fill={shp.FillColorHex}, Stroke={shp.StrokeColorHex}, Z={shp.ZIndex}");
+                }
+            }
 
-        // Verify watermark image is locked with low ZIndex
-        var watermarks = s2Page1.Elements.OfType<PdfImageElement>().Where(img => img.IsLocked).ToList();
-        Assert.NotEmpty(watermarks);
-        Assert.True(watermarks[0].Opacity <= 0.35);
-        Assert.Equal(0, watermarks[0].ZIndex);
+            // Verify vector shapes and dividers extracted
+            var shapes = s2Page1.Elements.OfType<PdfShapeElement>().ToList();
+            var dividers = s2Page1.Elements.OfType<PdfDividerElement>().ToList();
+            Assert.True(shapes.Count > 0 || dividers.Count > 0);
 
-        // Verify header text extracted with Poppins / display font and high contrast
-        var titleText = s2Page1.Elements.OfType<PdfTextElement>().FirstOrDefault(t => t.Text.Contains("MATHEMATICS", StringComparison.OrdinalIgnoreCase));
-        Assert.NotNull(titleText);
-        Assert.Equal("Poppins", titleText.FontFamily);
+            // Verify watermark image is locked with low ZIndex
+            var watermarks = s2Page1.Elements.OfType<PdfImageElement>().Where(img => img.IsLocked).ToList();
+            Assert.NotEmpty(watermarks);
+            Assert.True(watermarks[0].Opacity <= 0.35);
+            Assert.Equal(0, watermarks[0].ZIndex);
 
-        // Verify section heading extracted
-        var sectionHeading = s2Page1.Elements.OfType<PdfTextElement>().FirstOrDefault(t => t.Text.Contains("1.1 What is Mathematics", StringComparison.OrdinalIgnoreCase));
-        Assert.NotNull(sectionHeading);
+            // Verify header text extracted with Poppins / display font and high contrast
+            var titleText = s2Page1.Elements.OfType<PdfTextElement>().FirstOrDefault(t => t.Text.Contains("MATHEMATICS", StringComparison.OrdinalIgnoreCase));
+            Assert.NotNull(titleText);
+            Assert.Equal("Poppins", titleText.FontFamily);
 
-        // Verify no invisible white text on white canvas
-        var whiteTexts = s2Page1.Elements.OfType<PdfTextElement>().Where(t => string.Equals(t.TextColorHex, "#FFFFFF", StringComparison.OrdinalIgnoreCase)).ToList();
-        Assert.Empty(whiteTexts);
+            // Verify section heading extracted
+            var sectionHeading = s2Page1.Elements.OfType<PdfTextElement>().FirstOrDefault(t => t.Text.Contains("1.1 What is Mathematics", StringComparison.OrdinalIgnoreCase));
+            Assert.NotNull(sectionHeading);
+
+            // Verify white text is only present when overlaying a colored shape (e.g. the chapter 1 blue badge)
+            var whiteTexts = s2Page1.Elements.OfType<PdfTextElement>().Where(t => string.Equals(t.TextColorHex, "#FFFFFF", StringComparison.OrdinalIgnoreCase)).ToList();
+            foreach (var wt in whiteTexts)
+            {
+                bool hasUnderlyingShape = shapes.Any(s => s.FillColorHex != "Transparent" && s.FillColorHex != "#FFFFFF" &&
+                    wt.X >= s.X - 5 && wt.X <= s.X + s.Width + 5 &&
+                    wt.Y >= s.Y - 5 && wt.Y <= s.Y + s.Height + 5);
+                Assert.True(hasUnderlyingShape, $"White text \"{wt.Text}\" should overlay a colored background shape.");
+            }
+        }
     }
 
     [Fact]
@@ -557,6 +606,262 @@ public class PdfImportAndViewerTests
         Assert.NotNull(impTable);
         Assert.Equal(origTable.Headers.Count, impTable.Headers.Count);
         Assert.Equal(origTable.Rows.Count, impTable.Rows.Count);
+    }
+
+    [Fact]
+    public async Task GenerateVisualComparison_SideBySide_SavesArtifacts()
+    {
+        string artifactDir = "/Users/codefrydev/.gemini/antigravity-ide/brain/15e672ca-a88b-4ef8-985f-5f4d074f80b9";
+        Directory.CreateDirectory(artifactDir);
+
+        string baseDir = AppContext.BaseDirectory;
+        string rootDir = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", ".."));
+        string sample1Path = Path.Combine(rootDir, "sample1.pdf");
+        string sample2Path = Path.Combine(rootDir, "Class_6_Math_Chapter_1_Pattern_In_Mathematics.pdf");
+        if (!File.Exists(sample2Path)) sample2Path = Path.Combine(rootDir, "sample2.pdf");
+
+        if (File.Exists(sample1Path))
+        {
+            await GenerateComparisonForPdf(sample1Path, Path.Combine(artifactDir, "sample1_side_by_side.png"), "Sample 1 (e-Aadhaar Card)");
+        }
+
+        if (File.Exists(sample2Path))
+        {
+            await GenerateComparisonForPdf(sample2Path, Path.Combine(artifactDir, "sample2_side_by_side.png"), "Sample 2 (Annual Report / Textbook)");
+        }
+    }
+
+    private async Task GenerateComparisonForPdf(string pdfPath, string outputPath, string title)
+    {
+        byte[] pdfBytes = await File.ReadAllBytesAsync(pdfPath);
+        var docModel = await _importService.ImportPdfBytesAsync(pdfBytes, Path.GetFileName(pdfPath));
+        if (docModel.Pages.Count == 0) return;
+
+        float scale = 1.5f;
+
+        // 1. Render Original PDF via PdfPig + Skia
+        using var rawDoc = UglyToad.PdfPig.PdfDocument.Open(pdfBytes);
+        PdfPigExtensions.AddSkiaPageFactory(rawDoc);
+        using var origStream = PdfPigExtensions.GetPageAsPng(rawDoc, 1, scale, 100);
+        using var origSkData = SkiaSharp.SKData.CreateCopy(origStream.ToArray());
+        using var origBitmap = SkiaSharp.SKBitmap.Decode(origSkData);
+
+        // 2. Render Deconstructed FryPDF PageModel via Skia
+        var deconstructedPage = docModel.Pages[0];
+        using var reconBitmap = RenderPageModelToSkiaBitmap(deconstructedPage, scale);
+
+        // 3. Compose Side-by-Side Image
+        int bannerH = 70;
+        int pw = origBitmap.Width;
+        int ph = origBitmap.Height;
+        int rw = reconBitmap.Width;
+        int rh = reconBitmap.Height;
+        int contentW = pw + rw + 20; // 20px gutter
+        int contentH = Math.Max(ph, rh);
+
+        int totalW = contentW + 40; // 20px padding left/right
+        int totalH = bannerH + contentH + 40; // 20px padding bottom
+
+        using var comparisonBitmap = new SkiaSharp.SKBitmap(totalW, totalH);
+        using var canvas = new SkiaSharp.SKCanvas(comparisonBitmap);
+
+        // Dark Background
+        canvas.Clear(new SkiaSharp.SKColor(15, 23, 42)); // #0F172A
+
+        // Banner Header
+        using var titlePaint = new SkiaSharp.SKPaint
+        {
+            Color = SkiaSharp.SKColors.White,
+            IsAntialias = true
+        };
+        using var titleTypeface = SkiaSharp.SKTypeface.FromFamilyName("Segoe UI", SkiaSharp.SKFontStyleWeight.Bold, SkiaSharp.SKFontStyleWidth.Normal, SkiaSharp.SKFontStyleSlant.Upright);
+        using var titleFont = new SkiaSharp.SKFont(titleTypeface, 20);
+        canvas.DrawText($"Side-by-Side Visual Verification: {title}", 24, 34, titleFont, titlePaint);
+
+        using var subFont = new SkiaSharp.SKFont(titleTypeface, 12);
+        using var subPaint = new SkiaSharp.SKPaint { Color = new SkiaSharp.SKColor(148, 163, 184), IsAntialias = true };
+        canvas.DrawText($"Elements: {deconstructedPage.Elements.Count} ({deconstructedPage.Elements.OfType<PdfImageElement>().Count()} images, {deconstructedPage.Elements.OfType<PdfTextElement>().Count()} text blocks, {deconstructedPage.Elements.OfType<PdfShapeElement>().Count()} shapes) | Canvas Size: {deconstructedPage.Width:F0}x{deconstructedPage.Height:F0} pt", 24, 54, subFont, subPaint);
+
+        // Labels
+        float leftX = 20;
+        float rightX = 20 + pw + 20;
+        float topY = bannerH;
+
+        using var colLabelFont = new SkiaSharp.SKFont(titleTypeface, 13);
+        using var leftLabelPaint = new SkiaSharp.SKPaint { Color = new SkiaSharp.SKColor(56, 189, 248), IsAntialias = true };
+        using var rightLabelPaint = new SkiaSharp.SKPaint { Color = new SkiaSharp.SKColor(74, 222, 128), IsAntialias = true };
+
+        // Draw Images
+        canvas.DrawBitmap(origBitmap, leftX, topY);
+        canvas.DrawBitmap(reconBitmap, rightX, topY);
+
+        // Borders
+        using var borderPaint = new SkiaSharp.SKPaint
+        {
+            Color = new SkiaSharp.SKColor(51, 65, 85),
+            Style = SkiaSharp.SKPaintStyle.Stroke,
+            StrokeWidth = 2
+        };
+        canvas.DrawRect(leftX, topY, pw, ph, borderPaint);
+        canvas.DrawRect(rightX, topY, rw, rh, borderPaint);
+
+        // Save comparison image
+        using var outImage = SkiaSharp.SKImage.FromBitmap(comparisonBitmap);
+        using var outData = outImage.Encode(SkiaSharp.SKEncodedImageFormat.Png, 95);
+        using var outStream = File.OpenWrite(outputPath);
+        outData.SaveTo(outStream);
+
+        Console.WriteLine($"[Visual Verification] Saved side-by-side comparison to {outputPath} ({totalW}x{totalH} px)");
+    }
+
+    private static SkiaSharp.SKBitmap RenderPageModelToSkiaBitmap(PdfPageModel page, float scale)
+    {
+        int w = (int)Math.Max(100, page.Width * scale);
+        int h = (int)Math.Max(100, page.Height * scale);
+        var bitmap = new SkiaSharp.SKBitmap(w, h);
+        using var canvas = new SkiaSharp.SKCanvas(bitmap);
+
+        var bgPaint = new SkiaSharp.SKPaint
+        {
+            Color = SkiaSharp.SKColor.TryParse(page.BackgroundColorHex, out var bgC) ? bgC : SkiaSharp.SKColors.White,
+            Style = SkiaSharp.SKPaintStyle.Fill
+        };
+        canvas.DrawRect(0, 0, w, h, bgPaint);
+
+        var sorted = page.Elements.OrderBy(e => e.ZIndex).ThenBy(e => e.Y).ThenBy(e => e.X).ToList();
+        foreach (var el in sorted)
+        {
+            canvas.Save();
+
+            float ex = (float)el.X * scale;
+            float ey = (float)el.Y * scale;
+            float ew = (float)el.Width * scale;
+            float eh = (float)el.Height * scale;
+
+            if (el.Rotation != 0)
+            {
+                canvas.RotateDegrees((float)el.Rotation, ex + (ew / 2f), ey + (eh / 2f));
+            }
+
+            byte alpha = (byte)Math.Clamp((int)(el.Opacity * 255), 0, 255);
+
+            if (el is PdfImageElement img && !string.IsNullOrEmpty(img.Base64Data))
+            {
+                try
+                {
+                    byte[] imgBytes = Convert.FromBase64String(img.Base64Data);
+                    using var skData = SkiaSharp.SKData.CreateCopy(imgBytes);
+                    using var skImg = SkiaSharp.SKImage.FromEncodedData(skData);
+                    if (skImg != null)
+                    {
+                        using var imgPaint = new SkiaSharp.SKPaint { Color = new SkiaSharp.SKColor(255, 255, 255, alpha) };
+                        var destRect = SkiaSharp.SKRect.Create(ex, ey, ew, eh);
+                        canvas.DrawImage(skImg, destRect, imgPaint);
+                    }
+                }
+                catch { }
+            }
+            else if (el is PdfShapeElement shp)
+            {
+                if (shp.FillColorHex != "Transparent" && SkiaSharp.SKColor.TryParse(shp.FillColorHex, out var fillC))
+                {
+                    using var fPaint = new SkiaSharp.SKPaint
+                    {
+                        Color = fillC.WithAlpha(alpha),
+                        Style = SkiaSharp.SKPaintStyle.Fill,
+                        IsAntialias = true
+                    };
+                    if (shp.CornerRadius > 0)
+                        canvas.DrawRoundRect(ex, ey, ew, eh, (float)shp.CornerRadius * scale, (float)shp.CornerRadius * scale, fPaint);
+                    else
+                        canvas.DrawRect(ex, ey, ew, eh, fPaint);
+                }
+
+                if (shp.StrokeColorHex != "Transparent" && shp.StrokeThickness > 0 && SkiaSharp.SKColor.TryParse(shp.StrokeColorHex, out var strokeC))
+                {
+                    using var sPaint = new SkiaSharp.SKPaint
+                    {
+                        Color = strokeC.WithAlpha(alpha),
+                        Style = SkiaSharp.SKPaintStyle.Stroke,
+                        StrokeWidth = (float)shp.StrokeThickness * scale,
+                        IsAntialias = true
+                    };
+                    if (shp.CornerRadius > 0)
+                        canvas.DrawRoundRect(ex, ey, ew, eh, (float)shp.CornerRadius * scale, (float)shp.CornerRadius * scale, sPaint);
+                    else
+                        canvas.DrawRect(ex, ey, ew, eh, sPaint);
+                }
+            }
+            else if (el is PdfDividerElement div)
+            {
+                if (SkiaSharp.SKColor.TryParse(div.ColorHex, out var divC))
+                {
+                    using var dPaint = new SkiaSharp.SKPaint
+                    {
+                        Color = divC.WithAlpha(alpha),
+                        Style = SkiaSharp.SKPaintStyle.Fill,
+                        IsAntialias = true
+                    };
+                    canvas.DrawRect(ex, ey, ew, Math.Max(1f, (float)div.Thickness * scale), dPaint);
+                }
+            }
+            else if (el is PdfTextElement txt && !string.IsNullOrEmpty(txt.Text))
+            {
+                var txtColor = SkiaSharp.SKColor.TryParse(txt.TextColorHex, out var tc) ? tc : SkiaSharp.SKColors.Black;
+                using var tPaint = new SkiaSharp.SKPaint
+                {
+                    Color = txtColor.WithAlpha(alpha),
+                    IsAntialias = true
+                };
+
+                var weight = txt.IsBold ? SkiaSharp.SKFontStyleWeight.Bold : SkiaSharp.SKFontStyleWeight.Normal;
+                var slant = txt.IsItalic ? SkiaSharp.SKFontStyleSlant.Italic : SkiaSharp.SKFontStyleSlant.Upright;
+                using var typeface = MatchSkiaTypeface(txt.FontFamily, txt.Text, weight, slant);
+                using var font = new SkiaSharp.SKFont(typeface, (float)txt.FontSize * scale);
+
+                double multiplier = txt.LineHeight > 0.1 ? txt.LineHeight : 1.35;
+                float linePitch = (float)(txt.FontSize * multiplier) * scale;
+                var lines = txt.Text.Split('\n');
+                float curY = ey + ((float)txt.FontSize * scale * 0.90f); // baseline approximation
+
+                for (int li = 0; li < lines.Length; li++)
+                {
+                    canvas.DrawText(lines[li], ex, curY, font, tPaint);
+                    curY += linePitch;
+                }
+            }
+
+            canvas.Restore();
+        }
+
+        return bitmap;
+    }
+
+    private static SkiaSharp.SKTypeface MatchSkiaTypeface(string fontFamily, string text, SkiaSharp.SKFontStyleWeight weight, SkiaSharp.SKFontStyleSlant slant)
+    {
+        if (PdfEditorApp.Core.Analysis.UnicodeScriptDetector.ContainsDevanagari(text))
+        {
+            string[] devanagariFamilies = { "Noto Sans Devanagari", "Kohinoor Devanagari", "Devanagari Sangam MN", "Nirmala UI", "Mangal", "Arial Unicode MS" };
+            foreach (var fam in devanagariFamilies)
+            {
+                var dtf = SkiaSharp.SKTypeface.FromFamilyName(fam, weight, SkiaSharp.SKFontStyleWidth.Normal, slant);
+                if (dtf != null && !dtf.FamilyName.Equals("Arial", StringComparison.OrdinalIgnoreCase) && !dtf.FamilyName.Equals("Helvetica", StringComparison.OrdinalIgnoreCase))
+                    return dtf;
+            }
+        }
+        else if (PdfEditorApp.Core.Analysis.UnicodeScriptDetector.ContainsCjk(text))
+        {
+            string[] cjkFamilies = { "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "SimSun" };
+            foreach (var fam in cjkFamilies)
+            {
+                var ctf = SkiaSharp.SKTypeface.FromFamilyName(fam, weight, SkiaSharp.SKFontStyleWidth.Normal, slant);
+                if (ctf != null && !ctf.FamilyName.Equals("Arial", StringComparison.OrdinalIgnoreCase))
+                    return ctf;
+            }
+        }
+
+        return SkiaSharp.SKTypeface.FromFamilyName(fontFamily, weight, SkiaSharp.SKFontStyleWidth.Normal, slant)
+            ?? SkiaSharp.SKTypeface.Default;
     }
 }
 

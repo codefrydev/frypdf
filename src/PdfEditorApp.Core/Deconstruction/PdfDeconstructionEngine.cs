@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
+using SkiaSharp;
 using PdfEditorApp.Core.Analysis;
 using PdfEditorApp.Core.Utils;
 using PdfEditorApp.Models;
@@ -115,7 +116,12 @@ public static class PdfDeconstructionEngine
             ShowHeaderFooter = false
         };
 
-        int zIndexCounter = 1;
+        int bgZIndex = 0;
+        int imgZIndex = 100;
+        int tableZIndex = 500;
+        int shapeZIndex = 600;
+        int textZIndex = 1000;
+        int formZIndex = 2000;
 
         var words = page.GetWords()
             .Where(w => !string.IsNullOrWhiteSpace(w.Text))
@@ -154,7 +160,7 @@ public static class PdfDeconstructionEngine
                         Width = Math.Round(imgW, 1),
                         Height = Math.Round(imgH, 1),
                         Base64Data = Convert.ToBase64String(imgBytes),
-                        ZIndex = zIndexCounter++,
+                        ZIndex = bgZIndex++,
                         IsLocked = false,
                         CornerRadius = 0,
                         BorderThickness = 0,
@@ -180,21 +186,15 @@ public static class PdfDeconstructionEngine
                     double imgW = Math.Max(10, img.BoundingBox.Width);
                     double imgH = Math.Max(10, img.BoundingBox.Height);
 
-                    bool isFullPageBackground = imgW >= pageWidth * 0.95 && imgH >= pageHeight * 0.95 && hasSufficientText;
-                    if (isFullPageBackground)
-                    {
-                        // Skip — this is a ghost underlay baked into the source PDF (e.g., raster full-page background)
-                        continue;
-                    }
-
                     byte[]? imgBytes = ExtractImageBytes(img);
                     if (imgBytes != null && imgBytes.Length > 0)
                     {
                         double imgX = Math.Max(0, img.BoundingBox.Left);
                         double imgY = Math.Max(0, pageHeight - img.BoundingBox.Top);
 
-                        // Check if this image is a watermark or large decorative background
-                        bool isWatermarkOrLargeBg = (imgW >= pageWidth * 0.35 && imgH >= pageHeight * 0.35) && hasSufficientText;
+                        // Check if this image is a full-page background or centered document watermark
+                        bool isFullPageBg = imgW >= pageWidth * 0.88 && imgH >= pageHeight * 0.88 && hasSufficientText;
+                        bool isWatermark = (imgW >= pageWidth * 0.65 && imgH >= pageHeight * 0.55) && hasSufficientText;
 
                         var imgElement = new PdfImageElement
                         {
@@ -203,13 +203,13 @@ public static class PdfDeconstructionEngine
                             Width = Math.Round(imgW, 1),
                             Height = Math.Round(imgH, 1),
                             Base64Data = Convert.ToBase64String(imgBytes),
-                            ZIndex = isWatermarkOrLargeBg ? 0 : zIndexCounter++,
-                            IsLocked = isWatermarkOrLargeBg,
-                            Opacity = isWatermarkOrLargeBg ? 0.30 : 1.0,
+                            ZIndex = (isFullPageBg || isWatermark) ? bgZIndex++ : imgZIndex++,
+                            IsLocked = isFullPageBg || isWatermark,
+                            Opacity = isWatermark ? 0.35 : 1.0,
                             CornerRadius = 0,
                             BorderThickness = 0,
                             BorderColorHex = "Transparent",
-                            AltText = isWatermarkOrLargeBg ? $"Watermark Background ({Math.Round(imgW):F0}x{Math.Round(imgH):F0})" : $"Embedded Image ({Math.Round(imgW):F0}x{Math.Round(imgH):F0})"
+                            AltText = (isFullPageBg || isWatermark) ? $"Watermark Background ({Math.Round(imgW):F0}x{Math.Round(imgH):F0})" : $"Embedded Image ({Math.Round(imgW):F0}x{Math.Round(imgH):F0})"
                         };
                         pageModel.Elements.Add(imgElement);
                     }
@@ -220,14 +220,54 @@ public static class PdfDeconstructionEngine
                 // Best-effort image extraction
             }
 
-            // B. Extract Vector Paths & Geometric Shapes (Dividers, Rectangles, Borders, Diagrams)
+            // B. Extract and Cluster Text Paragraphs first
+            var paragraphs = new List<ExtractedPdfParagraph>();
+            try
+            {
+                bool isLandscape = pageWidth > pageHeight;
+                double columnGapMultiplier = isLandscape ? 1.5 : 1.0;
+                paragraphs = PdfLayoutAnalyzer.AnalyzeAndGroupPageText(page, pageHeight, columnGapMultiplier);
+            }
+            catch
+            {
+                // Fallback handled below
+            }
+
+            // C. Detect Structured Tables from intersecting vector lines and cell alignments
+            var consumedPathIndices = new HashSet<int>();
+            var consumedParagraphs = new HashSet<ExtractedPdfParagraph>();
+
+            try
+            {
+                var detectedTables = TableGridDetector.DetectTables(page.Paths, paragraphs, pageWidth, pageHeight);
+                foreach (var tableResult in detectedTables)
+                {
+                    tableResult.TableElement.ZIndex = tableZIndex++;
+                    pageModel.Elements.Add(tableResult.TableElement);
+
+                    foreach (var idx in tableResult.ConsumedPathIndices)
+                        consumedPathIndices.Add(idx);
+
+                    foreach (var para in tableResult.ConsumedParagraphs)
+                        consumedParagraphs.Add(para);
+                }
+            }
+            catch
+            {
+                // Best-effort table detection
+            }
+
+            // D. Extract Vector Paths & Geometric Shapes (Dividers, Rectangles, Borders, Diagrams)
             try
             {
                 if (page.Paths != null && page.Paths.Count > 0)
                 {
                     int extractedShapeCount = 0;
-                    foreach (var path in page.Paths)
+                    for (int pathIdx = 0; pathIdx < page.Paths.Count; pathIdx++)
                     {
+                        if (consumedPathIndices.Contains(pathIdx)) continue; // Swallowed by table
+
+                        var path = page.Paths[pathIdx];
                         var bbox = path.GetBoundingRectangle();
                         if (!bbox.HasValue) continue;
 
@@ -242,18 +282,18 @@ public static class PdfDeconstructionEngine
                         double canvasW = Math.Max(1.0, b.Width);
                         double canvasH = Math.Max(1.0, b.Height);
 
-                        string fillHex = "#0F6CBD";
-                        if (path.FillColor != null)
-                        {
-                            var (r, g, bVal) = path.FillColor.ToRGBValues();
-                            fillHex = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(bVal * 255):X2}";
-                        }
-
                         string strokeHex = "#0F172A";
                         if (path.StrokeColor != null)
                         {
                             var (r, g, bVal) = path.StrokeColor.ToRGBValues();
                             strokeHex = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(bVal * 255):X2}";
+                        }
+
+                        string fillHex = path.IsStroked && path.StrokeColor != null ? strokeHex : "#000000";
+                        if (path.FillColor != null)
+                        {
+                            var (r, g, bVal) = path.FillColor.ToRGBValues();
+                            fillHex = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(bVal * 255):X2}";
                         }
 
                         // Check if it's a thin horizontal divider line
@@ -267,14 +307,17 @@ public static class PdfDeconstructionEngine
                                 Height = Math.Round(Math.Max(1.0, canvasH), 1),
                                 Thickness = Math.Round(Math.Max(1.0, canvasH), 1),
                                 ColorHex = path.IsStroked ? strokeHex : (path.IsFilled ? fillHex : "#CBD5E1"),
-                                ZIndex = zIndexCounter++
+                                ZIndex = shapeZIndex++
                             };
                             pageModel.Elements.Add(divider);
                             extractedShapeCount++;
                         }
                         else if (canvasW >= 2.0 && canvasH >= 2.0 && (path.IsFilled || path.IsStroked))
                         {
-                            // Vector Shape (Rectangle, Polygon, Diagram element)
+                            // Distinguish large background container cards vs foreground shapes
+                            bool isLargeContainer = (canvasW >= 120.0 && canvasH >= 80.0) && (path.IsFilled || (path.IsStroked && !path.IsFilled));
+                            int targetZIndex = isLargeContainer ? bgZIndex++ : shapeZIndex++;
+
                             var shape = new PdfShapeElement
                             {
                                 X = Math.Round(canvasX, 1),
@@ -286,7 +329,7 @@ public static class PdfDeconstructionEngine
                                 StrokeThickness = path.IsStroked ? Math.Max(1.0, path.LineWidth) : 0,
                                 CornerRadius = 0,
                                 ShapeType = ShapeType.Rectangle,
-                                ZIndex = zIndexCounter++
+                                ZIndex = targetZIndex
                             };
                             pageModel.Elements.Add(shape);
                             extractedShapeCount++;
@@ -302,16 +345,12 @@ public static class PdfDeconstructionEngine
                 // Best-effort vector path extraction
             }
 
-            // C. Extract and Cluster Text Paragraphs with column-aware & orientation-aware layout analysis
+            // E. Add Unconsumed Text Elements
             try
             {
-                bool isLandscape = pageWidth > pageHeight;
-                double columnGapMultiplier = isLandscape ? 1.5 : 1.0;
-
-                var paragraphs = PdfLayoutAnalyzer.AnalyzeAndGroupPageText(page, pageHeight, columnGapMultiplier);
-
                 foreach (var para in paragraphs)
                 {
+                    if (consumedParagraphs.Contains(para)) continue; // Swallowed by table
                     if (string.IsNullOrWhiteSpace(para.Text)) continue;
 
                     string finalColor = para.ColorHex;
@@ -349,9 +388,34 @@ public static class PdfDeconstructionEngine
                         TextColorHex = finalColor,
                         LineHeight = para.LineHeight,
                         Rotation = para.Rotation,
-                        ZIndex = zIndexCounter++
+                        Alignment = para.Alignment,
+                        ZIndex = textZIndex++
                     };
                     pageModel.Elements.Add(textElement);
+                }
+
+                // F. Recognize Card & Container Boxes: Group background shapes with their contained text
+                var backgroundShapes = pageModel.Elements.OfType<PdfShapeElement>()
+                    .Where(s => s.Width >= 60.0 && s.Height >= 30.0 && !string.Equals(s.FillColorHex, "Transparent", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                foreach (var shape in backgroundShapes)
+                {
+                    var innerTexts = pageModel.Elements.OfType<PdfTextElement>()
+                        .Where(t => t.X >= shape.X - 5 && t.Y >= shape.Y - 5 &&
+                                    t.X + t.Width <= shape.X + shape.Width + 5 &&
+                                    t.Y + t.Height <= shape.Y + shape.Height + 5)
+                        .ToList();
+
+                    if (innerTexts.Count > 0)
+                    {
+                        string containerGroupId = Guid.NewGuid().ToString("N");
+                        shape.GroupId = containerGroupId;
+                        foreach (var t in innerTexts)
+                        {
+                            t.GroupId = containerGroupId;
+                        }
+                    }
                 }
             }
             catch
@@ -369,7 +433,7 @@ public static class PdfDeconstructionEngine
                         FontSize = 11,
                         FontFamily = "Arial",
                         TextColorHex = "#0F172A",
-                        ZIndex = zIndexCounter++
+                        ZIndex = textZIndex++
                     };
                     pageModel.Elements.Add(fallbackText);
                 }
@@ -408,7 +472,7 @@ public static class PdfDeconstructionEngine
                             DefaultValue = fieldValue,
                             FieldType = MapAcroFieldType(field),
                             IsReadOnly = false,
-                            ZIndex = zIndexCounter++
+                            ZIndex = formZIndex++
                         };
                         pageModel.Elements.Add(formElement);
                     }
@@ -425,15 +489,170 @@ public static class PdfDeconstructionEngine
 
     private static byte[]? ExtractImageBytes(IPdfImage img)
     {
+        // 1. Try native PNG extraction from PdfPig
         try
         {
-            if (img.TryGetPng(out var pngBytes) && pngBytes != null && pngBytes.Length > 0)
+            if (img.TryGetPng(out var pngBytes) && pngBytes != null && pngBytes.Length >= 8)
             {
-                return pngBytes;
+                // Verify standard PNG magic header (0x89, 'P', 'N', 'G')
+                if (pngBytes[0] == 0x89 && pngBytes[1] == 0x50 && pngBytes[2] == 0x4E && pngBytes[3] == 0x47)
+                {
+                    return pngBytes;
+                }
             }
         }
         catch { }
 
+        // 2. Try decoding raw image bytes (JPEG / JPEG2000 / WEBP / BMP) via SkiaSharp and encode as clean PNG
+        try
+        {
+            if (!img.RawBytes.IsEmpty && img.RawBytes.Length > 0)
+            {
+                var rawArray = img.RawBytes.ToArray();
+                using var skData = SKData.CreateCopy(rawArray);
+                using var skImg = SKImage.FromEncodedData(skData);
+                if (skImg != null)
+                {
+                    using var encoded = skImg.Encode(SKEncodedImageFormat.Png, 100);
+                    if (encoded != null && encoded.Size > 0)
+                    {
+                        return encoded.ToArray();
+                    }
+                }
+
+                // Check for JPEG direct header
+                if (rawArray.Length > 3 && rawArray[0] == 0xFF && rawArray[1] == 0xD8)
+                {
+                    using var skBmp = SKBitmap.Decode(rawArray);
+                    if (skBmp != null)
+                    {
+                        using var imgFromBmp = SKImage.FromBitmap(skBmp);
+                        using var encoded = imgFromBmp.Encode(SKEncodedImageFormat.Png, 100);
+                        if (encoded != null && encoded.Size > 0)
+                        {
+                            return encoded.ToArray();
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+
+        // 3. Try raw pixel samples conversion via SkiaSharp
+        try
+        {
+            int w = img.WidthInSamples;
+            int h = img.HeightInSamples;
+
+            if (w > 0 && h > 0 && img.TryGetBytesAsMemory(out var pixelMem) && pixelMem.Length > 0)
+            {
+                var rawPixels = pixelMem.ToArray();
+
+                // Case A: 24-bit RGB (3 bytes per pixel)
+                if (rawPixels.Length == w * h * 3)
+                {
+                    using var bitmap = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque);
+                    var pixelSpan = bitmap.GetPixelSpan();
+                    for (int i = 0, p = 0; i + 2 < rawPixels.Length && p + 3 < pixelSpan.Length; i += 3, p += 4)
+                    {
+                        pixelSpan[p] = rawPixels[i];         // R
+                        pixelSpan[p + 1] = rawPixels[i + 1]; // G
+                        pixelSpan[p + 2] = rawPixels[i + 2]; // B
+                        pixelSpan[p + 3] = 255;             // A
+                    }
+
+                    using var image = SKImage.FromBitmap(bitmap);
+                    using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
+                    if (encoded != null && encoded.Size > 0)
+                    {
+                        return encoded.ToArray();
+                    }
+                }
+                // Case B: 8-bit Grayscale (1 byte per pixel)
+                else if (rawPixels.Length == w * h)
+                {
+                    using var bitmap = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque);
+                    var pixelSpan = bitmap.GetPixelSpan();
+                    for (int i = 0, p = 0; i < rawPixels.Length && p + 3 < pixelSpan.Length; i++, p += 4)
+                    {
+                        byte g = rawPixels[i];
+                        pixelSpan[p] = g;
+                        pixelSpan[p + 1] = g;
+                        pixelSpan[p + 2] = g;
+                        pixelSpan[p + 3] = 255;
+                    }
+
+                    using var image = SKImage.FromBitmap(bitmap);
+                    using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
+                    if (encoded != null && encoded.Size > 0)
+                    {
+                        return encoded.ToArray();
+                    }
+                }
+                // Case C: 32-bit CMYK (4 bytes per pixel)
+                else if (rawPixels.Length == w * h * 4)
+                {
+                    using var bitmap = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque);
+                    var pixelSpan = bitmap.GetPixelSpan();
+                    for (int i = 0, p = 0; i + 3 < rawPixels.Length && p + 3 < pixelSpan.Length; i += 4, p += 4)
+                    {
+                        float c = rawPixels[i] / 255f;
+                        float m = rawPixels[i + 1] / 255f;
+                        float y = rawPixels[i + 2] / 255f;
+                        float k = rawPixels[i + 3] / 255f;
+                        pixelSpan[p] = (byte)(255 * (1 - c) * (1 - k));
+                        pixelSpan[p + 1] = (byte)(255 * (1 - m) * (1 - k));
+                        pixelSpan[p + 2] = (byte)(255 * (1 - y) * (1 - k));
+                        pixelSpan[p + 3] = 255;
+                    }
+
+                    using var image = SKImage.FromBitmap(bitmap);
+                    using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
+                    if (encoded != null && encoded.Size > 0)
+                    {
+                        return encoded.ToArray();
+                    }
+                }
+                // Case D: 1-bit Monochrome (e.g. stamps, fax/signatures)
+                else if (img.BitsPerComponent == 1)
+                {
+                    using var bitmap = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque);
+                    var pixelSpan = bitmap.GetPixelSpan();
+                    int rowStride = (w + 7) / 8;
+                    for (int y = 0; y < h; y++)
+                    {
+                        for (int x = 0; x < w; x++)
+                        {
+                            int byteIdx = (y * rowStride) + (x / 8);
+                            if (byteIdx < rawPixels.Length)
+                            {
+                                int bitIdx = 7 - (x % 8);
+                                bool isWhite = ((rawPixels[byteIdx] >> bitIdx) & 1) == 1;
+                                byte val = isWhite ? (byte)255 : (byte)0;
+                                int p = (y * w + x) * 4;
+                                if (p + 3 < pixelSpan.Length)
+                                {
+                                    pixelSpan[p] = val;
+                                    pixelSpan[p + 1] = val;
+                                    pixelSpan[p + 2] = val;
+                                    pixelSpan[p + 3] = 255;
+                                }
+                            }
+                        }
+                    }
+
+                    using var image = SKImage.FromBitmap(bitmap);
+                    using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
+                    if (encoded != null && encoded.Size > 0)
+                    {
+                        return encoded.ToArray();
+                    }
+                }
+            }
+        }
+        catch { }
+
+        // 4. Raw bytes fallback
         try
         {
             if (!img.RawBytes.IsEmpty && img.RawBytes.Length > 0)

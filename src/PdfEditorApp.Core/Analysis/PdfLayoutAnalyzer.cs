@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UglyToad.PdfPig.Content;
+using PdfEditorApp.Models;
 
 namespace PdfEditorApp.Core.Analysis;
 
@@ -51,6 +52,7 @@ public class ExtractedPdfParagraph
     public bool IsHeading { get; set; }
     public bool IsBulletOrList { get; set; }
     public double Rotation { get; set; } = 0.0;
+    public TextAlignmentMode Alignment { get; set; } = TextAlignmentMode.Left;
 
     public double CanvasX { get; set; }
     public double CanvasY { get; set; }
@@ -209,6 +211,10 @@ public static class PdfLayoutAnalyzer
             var orderedWords = col.OrderBy(w => w.BoundingBox.Bottom).ToList();
             if (orderedWords.Count == 0) continue;
 
+            var firstLetter = orderedWords[0].Letters.FirstOrDefault();
+            double fontSize = firstLetter != null ? Math.Max(6.0, firstLetter.PointSize) : 10.0;
+            double spaceThreshold = Math.Max(2.5, fontSize * 0.35);
+
             var sb = new StringBuilder();
             for (int i = 0; i < orderedWords.Count; i++)
             {
@@ -221,10 +227,12 @@ public static class PdfLayoutAnalyzer
                     var prev = orderedWords[i - 1];
                     // Upward gap between top of prev word and bottom of cur word
                     double verticalGap = cur.BoundingBox.Bottom - prev.BoundingBox.Top;
-                    double charSpan = Math.Max(3.0, cur.BoundingBox.Height);
 
-                    // Separate words only when there's a real space gap (e.g. > 1.8pt)
-                    if (verticalGap > 1.8 || (txt.Length > 1 && prev.Text.Length > 1))
+                    bool prevIsMulti = prev.Text.Trim().Length > 1;
+                    bool curIsMulti = txt.Length > 1;
+
+                    // Add space only between real words, not between individual glyphs/letters of the same word
+                    if ((prevIsMulti && curIsMulti && verticalGap > 1.2) || verticalGap >= spaceThreshold)
                     {
                         sb.Append(' ');
                     }
@@ -234,9 +242,6 @@ public static class PdfLayoutAnalyzer
 
             string fullText = sb.ToString().Trim();
             if (string.IsNullOrWhiteSpace(fullText)) continue;
-
-            var firstLetter = orderedWords[0].Letters.FirstOrDefault();
-            double fontSize = firstLetter != null ? Math.Max(6.0, firstLetter.PointSize) : 10.0;
             string fontFamily = firstLetter != null ? NormalizeFontFamily(firstLetter.FontName) : "Open Sans";
             string colorHex = "#0F172A";
 
@@ -385,8 +390,8 @@ public static class PdfLayoutAnalyzer
                 double gap = word.BoundingBox.Left - prevRight;
                 double wordHeight = Math.Max(6.0, word.BoundingBox.Height);
 
-                // Column gap threshold: adjusted by columnGapMultiplier for landscape/ID cards.
-                double baseGap = Math.Max(20.0, wordHeight * 2.2);
+                // Column / element gap threshold: in typography, gaps > 25pt or > 1.1x font size represent separate columns/badges.
+                double baseGap = Math.Max(16.0, Math.Min(30.0, wordHeight * 1.1));
                 double maxColGap = baseGap * Math.Max(0.5, columnGapMultiplier);
 
                 if (gap > maxColGap)
@@ -431,7 +436,32 @@ public static class PdfLayoutAnalyzer
 
         for (int i = 0; i < ordered.Count; i++)
         {
-            if (i > 0) sb.Append(' ');
+            if (i > 0)
+            {
+                var prev = ordered[i - 1];
+                var cur = ordered[i];
+                double gap = cur.BoundingBox.Left - prev.BoundingBox.Right;
+                double ptSize = cur.Letters.FirstOrDefault()?.PointSize ?? 10.0;
+                double spaceThreshold = Math.Max(1.6, ptSize * 0.18);
+
+                bool isComplexScript = UnicodeScriptDetector.ContainsDevanagari(cur.Text) ||
+                                      UnicodeScriptDetector.ContainsDevanagari(prev.Text) ||
+                                      UnicodeScriptDetector.ContainsCjk(cur.Text) ||
+                                      UnicodeScriptDetector.IsRtlText(cur.Text);
+
+                if (isComplexScript)
+                {
+                    // For complex scripts with split glyphs/matras, only space if gap is genuine word spacing
+                    if (gap >= spaceThreshold)
+                    {
+                        sb.Append(' ');
+                    }
+                }
+                else
+                {
+                    sb.Append(' ');
+                }
+            }
             sb.Append(ordered[i].Text);
         }
 
@@ -504,11 +534,8 @@ public static class PdfLayoutAnalyzer
         var paragraphs = new List<ExtractedPdfParagraph>();
         if (lines == null || lines.Count == 0) return paragraphs;
 
-        // Sort lines top-to-bottom, left-to-right
-        var sortedLines = lines
-            .OrderByDescending(l => l.Top)
-            .ThenBy(l => l.Left)
-            .ToList();
+        // Sort lines in natural multi-column reading order (top-to-bottom of Column 1, then Column 2)
+        var sortedLines = SortLinesInNaturalReadingOrder(lines);
 
         var currentCluster = new List<ExtractedPdfLine>();
 
@@ -547,6 +574,55 @@ public static class PdfLayoutAnalyzer
         return paragraphs;
     }
 
+    private static List<ExtractedPdfLine> SortLinesInNaturalReadingOrder(List<ExtractedPdfLine> lines)
+    {
+        if (lines.Count <= 3) return lines.OrderByDescending(l => l.Top).ThenBy(l => l.Left).ToList();
+
+        double minX = lines.Min(l => l.Left);
+        double maxX = lines.Max(l => l.Right);
+        double spanW = maxX - minX;
+
+        // Detect 2-column or 3-column layouts on wide pages/articles
+        if (spanW > 260.0)
+        {
+            double midX = minX + (spanW / 2.0);
+            double gutterMin = midX - 25.0;
+            double gutterMax = midX + 25.0;
+
+            var col1Lines = lines.Where(l => l.Right <= gutterMax).ToList();
+            var col2Lines = lines.Where(l => l.Left >= gutterMin).ToList();
+            var crossingLines = lines.Where(l => l.Left < gutterMin && l.Right > gutterMax).ToList();
+
+            // If >= 75% of lines fall strictly into left or right column
+            if (col1Lines.Count >= 3 && col2Lines.Count >= 3 && crossingLines.Count <= lines.Count * 0.30)
+            {
+                var ordered = new List<ExtractedPdfLine>();
+
+                double col1Top = col1Lines.Max(l => l.Top);
+                double col2Top = col2Lines.Max(l => l.Top);
+                double topColumnThreshold = Math.Max(col1Top, col2Top) - 10.0;
+
+                // Full-width title/banner lines at top
+                var topHeaders = crossingLines.Where(l => l.Bottom >= topColumnThreshold).OrderByDescending(l => l.Top).ToList();
+                ordered.AddRange(topHeaders);
+
+                // Column 1 top-to-bottom
+                ordered.AddRange(col1Lines.OrderByDescending(l => l.Top).ThenBy(l => l.Left));
+
+                // Column 2 top-to-bottom
+                ordered.AddRange(col2Lines.OrderByDescending(l => l.Top).ThenBy(l => l.Left));
+
+                // Remaining footer lines at bottom
+                var bottomFooters = crossingLines.Where(l => l.Bottom < topColumnThreshold).OrderByDescending(l => l.Top).ToList();
+                ordered.AddRange(bottomFooters);
+
+                return ordered;
+            }
+        }
+
+        return lines.OrderByDescending(l => l.Top).ThenBy(l => l.Left).ToList();
+    }
+
     private static bool ShouldClusterLines(ExtractedPdfLine prev, ExtractedPdfLine next)
     {
         // 1. Font Size compatibility (within 1.5pt difference)
@@ -564,19 +640,21 @@ public static class PdfLayoutAnalyzer
 
         // 5. Vertical line pitch calculation (distance from prev bottom to next top)
         double verticalPitch = prev.Bottom - next.Top; // in PDF points, descending Y
-        double expectedLineGap = prev.FontSize * 1.6;
+        double expectedLineGap = Math.Max(7.0, prev.FontSize * 0.95);
 
         // If line gap is negative (overlapping) or greater than standard paragraph spacing, break
-        if (verticalPitch < -4.0 || verticalPitch > expectedLineGap) return false;
+        if (verticalPitch < -2.0 || verticalPitch > expectedLineGap) return false;
 
-        // 6. Horizontal column & margin check
-        // If lines are completely separated horizontally (e.g. side-by-side columns)
+        // 6. Paragraph Indentation: if next line starts indented to the right (>= 8pt), it marks a new paragraph
+        if (next.Left > prev.Left + 8.0) return false;
+
+        // 7. Horizontal column & margin check
         bool horizontalOverlap = (next.Left < prev.Right + 10) && (next.Right > prev.Left - 10);
         if (!horizontalOverlap) return false;
 
-        // Check left margin alignment (within 24pt for indented paragraphs)
+        // Check left margin alignment (within 14pt for justified text variations)
         double leftIndentDiff = Math.Abs(prev.Left - next.Left);
-        if (leftIndentDiff > 24.0) return false;
+        if (leftIndentDiff > 14.0) return false;
 
         // 7. Bullet / List Item start detection
         string nextText = next.Text.Trim();
@@ -630,6 +708,8 @@ public static class PdfLayoutAnalyzer
 
         bool isHeading = (dominantFontSize >= 14.0 || (isBold && dominantFontSize >= 12.5) || (lines.Count == 1 && isBold));
         bool isBullet = fullText.StartsWith("•") || fullText.StartsWith("-") || fullText.StartsWith("—");
+        bool isRtl = UnicodeScriptDetector.IsRtlText(fullText);
+        var alignment = isRtl ? TextAlignmentMode.Right : TextAlignmentMode.Left;
 
         // Convert PDF coordinates (origin bottom-left, Y goes up) to Canvas coordinates (origin top-left, Y goes down)
         double canvasX = Math.Max(0, minLeft);
@@ -653,6 +733,7 @@ public static class PdfLayoutAnalyzer
             LineHeight = Math.Round(lineHeight, 2),
             IsHeading = isHeading,
             IsBulletOrList = isBullet,
+            Alignment = alignment,
             CanvasX = Math.Round(canvasX, 1),
             CanvasY = Math.Round(canvasY, 1),
             CanvasWidth = Math.Round(canvasWidth, 1),

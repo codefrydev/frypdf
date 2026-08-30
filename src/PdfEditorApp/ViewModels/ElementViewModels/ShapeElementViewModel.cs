@@ -128,6 +128,7 @@ public partial class ShapeElementViewModel : ElementViewModelBase
             Rotation = Rotation,
             Opacity = Opacity,
             IsLocked = IsLocked,
+            GroupId = GroupId,
             ShapeType = ShapeType,
             FillColorHex = FillColorHex,
             StrokeColorHex = StrokeColorHex,
@@ -168,6 +169,7 @@ public partial class ShapeElementViewModel : ElementViewModelBase
             Rotation = shape.Rotation;
             Opacity = shape.Opacity;
             IsLocked = shape.IsLocked;
+            GroupId = shape.GroupId;
 
             ShapeType = shape.ShapeType;
             FillColorHex = shape.FillColorHex;

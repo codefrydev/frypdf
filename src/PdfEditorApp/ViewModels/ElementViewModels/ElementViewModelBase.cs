@@ -41,11 +41,42 @@ public abstract partial class ElementViewModelBase : ViewModelBase
     [ObservableProperty]
     private bool _isLocked;
 
+    [ObservableProperty]
+    private string? _groupId;
+
     public abstract ElementKind Kind { get; }
     public abstract string DisplayName { get; }
 
     public abstract PdfElementBase ToModel();
     public abstract void LoadFromModel(PdfElementBase model);
+
+    protected void CopyBasePropertiesTo(PdfElementBase model)
+    {
+        model.Id = Id;
+        model.X = X;
+        model.Y = Y;
+        model.Width = Width;
+        model.Height = Height;
+        model.ZIndex = ZIndex;
+        model.Rotation = Rotation;
+        model.Opacity = Opacity;
+        model.IsLocked = IsLocked;
+        model.GroupId = GroupId;
+    }
+
+    protected void PopulateBaseProperties(PdfElementBase model)
+    {
+        Id = model.Id;
+        X = model.X;
+        Y = model.Y;
+        Width = model.Width;
+        Height = model.Height;
+        ZIndex = model.ZIndex;
+        Rotation = model.Rotation;
+        Opacity = model.Opacity;
+        IsLocked = model.IsLocked;
+        GroupId = model.GroupId;
+    }
 
     public virtual void MoveBy(double deltaX, double deltaY, double canvasWidth, double canvasHeight)
     {

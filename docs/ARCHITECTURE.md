@@ -50,6 +50,7 @@ PDFCreator/
 
 ### Services Layer
 - **`PdfExportService` (`IPdfExportService`)**: Compiles the document hierarchy and elements into high-fidelity PDF binaries using QuestPDF.
+- **`PdfImportService` (`IPdfImportService`)**: Imports existing PDFs, delegating to `PdfDeconstructionEngine` for born-digital parsing and embedded JSON detection.
 - **`TemplateService` (`ITemplateService`)**: Provides starter templates (Executive Resume, Annual Report, Invoice, Certificate, Academic Paper) and allows community template extensions.
 - **`ProjectPersistenceService` (`IProjectPersistenceService`)**: Handles lossless JSON-based project saving (`.frypdf`) and loading.
 - **`SmartPlacementService` (`ISmartPlacementService`)**: Computes viewport-aware positions, cursor drop-points, and cascading offsets for newly inserted elements.
@@ -57,3 +58,14 @@ PDFCreator/
 - **`DocumentAuditService` (`IDocumentAuditService`)**: Preflight diagnostics engine checking for accessibility, contrast, empty fields, low-res images, and security flaws.
 - **`SignatureService` (`ISignatureService`)**: Procedural vector and cursive signature generation.
 - **`RecentDocumentsService` (`IRecentDocumentsService`)**: Manages LRU recent files history.
+
+---
+
+## 3. PDF Deconstruction & Layout Analysis Subsystem
+
+Located in `src/PdfEditorApp.Core/`:
+- **`PdfDeconstructionEngine`**: Deconstructs 3rd-party PDFs into live editable elements with deterministic layered Z-indexing (`Z=0..99` background cards, `Z=100..499` images, `Z=500..599` tables, `Z=600..999` shapes, `Z=1000..1999` text, `Z=2000+` form fields) and Skia multi-format image decoding.
+- **`PdfLayoutAnalyzer`**: Intelligent layout clustering, script-aware gap thresholding, and paragraph indent recognition.
+- **`UnicodeScriptDetector`**: Codepoint classifier covering 30+ world scripts with font fallback resolution.
+
+For detailed algorithms, testing procedures, and the continuous improvement workflow, see the [PDF Deconstruction & Editing Guide](file:///Users/codefrydev/Desktop/SourceCode/PDFCreator/docs/PDF_DECONSTRUCTION_AND_EDITING.md).

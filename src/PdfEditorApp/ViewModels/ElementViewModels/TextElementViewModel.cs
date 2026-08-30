@@ -527,6 +527,7 @@ public partial class TextElementViewModel : ElementViewModelBase
             Rotation = Rotation,
             Opacity = Opacity,
             IsLocked = IsLocked,
+            GroupId = GroupId,
             Text = Text,
             FontFamily = FontFamily,
             FontSize = FontSize,
@@ -596,6 +597,7 @@ public partial class TextElementViewModel : ElementViewModelBase
             Rotation = textModel.Rotation;
             Opacity = textModel.Opacity;
             IsLocked = textModel.IsLocked;
+            GroupId = textModel.GroupId;
 
             Text = textModel.Text;
             FontFamily = textModel.FontFamily;

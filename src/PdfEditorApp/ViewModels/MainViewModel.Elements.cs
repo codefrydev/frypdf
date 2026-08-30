@@ -1726,17 +1726,4 @@ public partial class MainViewModel
         IsPresentationMode = !IsPresentationMode;
         ShowToast(IsPresentationMode ? "Entered Full-Screen Presentation Mode (Esc to Exit)" : "Exited Presentation Mode", "Presentation");
     }
-
-    [RelayCommand]
-    public void ToggleTheme()
-    {
-        IsDarkMode = !IsDarkMode;
-        if (Avalonia.Application.Current != null)
-        {
-            Avalonia.Application.Current.RequestedThemeVariant = IsDarkMode
-                ? Avalonia.Styling.ThemeVariant.Dark
-                : Avalonia.Styling.ThemeVariant.Light;
-        }
-        ShowToast(IsDarkMode ? "Switched to Fluent Dark Studio" : "Switched to Fluent Light Studio", "ThemeLightDark");
-    }
 }

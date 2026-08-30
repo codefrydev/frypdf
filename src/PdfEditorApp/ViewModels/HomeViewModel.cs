@@ -27,6 +27,7 @@ public partial class HomeViewModel : ViewModelBase
     private readonly IProjectPersistenceService _persistenceService;
     private readonly IPdfToolRegistry _toolRegistry;
     private readonly IPdfToolViewModelFactory? _toolViewModelFactory;
+    private readonly IThemeService? _themeService;
 
     // --- Events to tell the shell what to do ---
     public event Action<string?>? OpenTemplateRequested;   // templateName (null = blank)
@@ -34,10 +35,12 @@ public partial class HomeViewModel : ViewModelBase
     public event Action<string>? OpenRecentRequested;      // file path
     public event Action<string>? OpenInEditorRequested;    // file path
     public event Action<string>? OpenInViewerRequested;    // file path
-    public event Action<PdfToolId>? OpenToolRequested;
     public event Action? OpenWorkflowBuilderRequested;
 
     // --- Observable State ---
+
+    [ObservableProperty]
+    private bool _isDarkMode;
 
     [ObservableProperty]
     private string _searchQuery = "";
@@ -52,14 +55,6 @@ public partial class HomeViewModel : ViewModelBase
     private string _selectedLicenseCategory = "All";
 
     [ObservableProperty]
-    private bool _isTemplateGalleryExpanded;
-
-    [ObservableProperty]
-    private bool _isToolsDashboardVisible = true;
-
-    // --- Navigation and Tab State ---
-
-    [ObservableProperty]
     private HomeNavSection _selectedNavSection = HomeNavSection.Home;
 
     [ObservableProperty]
@@ -72,13 +67,11 @@ public partial class HomeViewModel : ViewModelBase
     private PdfToolViewModelBase? _activeToolViewModel;
 
     [ObservableProperty]
-    private PdfToolCardViewModel? _workflowBannerCard;
-
-    public PdfToolRunnerViewModel? ToolRunner { get; }
+    private bool _isTemplateGalleryExpanded;
 
     public ObservableCollection<PdfToolCardViewModel> AllTools { get; } = new();
-    public ObservableCollection<PdfToolCardViewModel> FilteredTools { get; } = new();
     public ObservableCollection<PdfToolCardViewModel> QuickTools { get; } = new();
+    public ObservableCollection<PdfToolCardViewModel> FilteredTools { get; } = new();
     public ObservableCollection<PdfToolCardViewModel> StarredTools { get; } = new();
     public ObservableCollection<TemplateCardViewModel> AllTemplates { get; } = new();
     public ObservableCollection<TemplateCardViewModel> FilteredTemplates { get; } = new();
@@ -87,15 +80,13 @@ public partial class HomeViewModel : ViewModelBase
     public ObservableCollection<ThirdPartyToolLicense> AllLicenses { get; } = new();
     public ObservableCollection<ThirdPartyToolLicense> FilteredLicenses { get; } = new();
 
+    public PdfToolCardViewModel? WorkflowBannerCard { get; private set; }
+
+    public PdfToolRunnerViewModel? ToolRunner { get; }
+
     public bool IsHomeSection => SelectedNavSection == HomeNavSection.Home;
     public bool IsNewDocumentSection => SelectedNavSection == HomeNavSection.NewDocument;
-    public bool IsToolsSection => SelectedNavSection is HomeNavSection.AllTools
-        or HomeNavSection.OrganizeAndPage
-        or HomeNavSection.OptimizeAndSecurity
-        or HomeNavSection.ConvertFromPdf
-        or HomeNavSection.ConvertToPdf
-        or HomeNavSection.EditAndForms
-        or HomeNavSection.AiAndAutomation;
+    public bool IsToolsSection => SelectedNavSection is >= HomeNavSection.AllTools and <= HomeNavSection.AiAndAutomation;
     public bool IsStarredSection => SelectedNavSection == HomeNavSection.Starred;
     public bool IsTrashSection => SelectedNavSection == HomeNavSection.Trash;
     public bool IsLicensingSection => SelectedNavSection == HomeNavSection.Licensing;
@@ -119,14 +110,25 @@ public partial class HomeViewModel : ViewModelBase
         IProjectPersistenceService persistenceService,
         IPdfToolRegistry toolRegistry,
         PdfToolRunnerViewModel? toolRunner = null,
-        IPdfToolViewModelFactory? toolViewModelFactory = null)
+        IPdfToolViewModelFactory? toolViewModelFactory = null,
+        IThemeService? themeService = null)
     {
         _recentService = recentService;
         _templateService = templateService;
         _persistenceService = persistenceService;
         _toolRegistry = toolRegistry;
         _toolViewModelFactory = toolViewModelFactory;
+        _themeService = themeService;
         ToolRunner = toolRunner;
+
+        if (_themeService != null)
+        {
+            IsDarkMode = _themeService.IsDarkMode;
+            _themeService.ThemeChanged += (mode) =>
+            {
+                IsDarkMode = _themeService.IsDarkMode;
+            };
+        }
 
         if (ToolRunner != null)
         {
@@ -137,6 +139,20 @@ public partial class HomeViewModel : ViewModelBase
         InitializeTemplates();
         InitializeLicenses();
         RefreshRecent();
+    }
+
+    [RelayCommand]
+    public void ToggleTheme()
+    {
+        if (_themeService != null)
+        {
+            _themeService.ToggleTheme();
+            IsDarkMode = _themeService.IsDarkMode;
+        }
+        else
+        {
+            IsDarkMode = !IsDarkMode;
+        }
     }
 
     // --- Tools Initialization ---
@@ -490,6 +506,11 @@ public partial class HomeViewModel : ViewModelBase
     [RelayCommand]
     public void OpenToolPage(PdfToolId toolId)
     {
+        OpenToolPage(toolId, null);
+    }
+
+    public void OpenToolPage(PdfToolId toolId, string? initialFilePath = null)
+    {
         var card = AllTools.FirstOrDefault(t => t.Id == toolId);
         if (card != null)
         {
@@ -503,14 +524,20 @@ public partial class HomeViewModel : ViewModelBase
                     ActiveToolViewModel.BackRequested -= BackToTools;
                     ActiveToolViewModel.OpenInEditorRequested -= OnToolOpenInEditorRequested;
                     ActiveToolViewModel.OpenInViewerRequested -= OnToolOpenInViewerRequested;
+                    ActiveToolViewModel.NavigateToToolRequested -= OnToolNavigateToToolRequested;
                 }
 
                 ActiveToolViewModel = _toolViewModelFactory.Create(toolId);
                 ActiveToolViewModel.StorageProvider = MainViewModel.StorageProvider;
                 ActiveToolViewModel.IsToolStarred = card.IsStarred;
+                if (!string.IsNullOrEmpty(initialFilePath))
+                {
+                    ActiveToolViewModel.SetupInitialFiles(new[] { initialFilePath });
+                }
                 ActiveToolViewModel.BackRequested += BackToTools;
                 ActiveToolViewModel.OpenInEditorRequested += OnToolOpenInEditorRequested;
                 ActiveToolViewModel.OpenInViewerRequested += OnToolOpenInViewerRequested;
+                ActiveToolViewModel.NavigateToToolRequested += OnToolNavigateToToolRequested;
                 ActiveToolViewModel.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(PdfToolViewModelBase.IsToolStarred) && ActiveToolCard != null && ActiveToolViewModel != null)
@@ -523,14 +550,12 @@ public partial class HomeViewModel : ViewModelBase
                     }
                 };
             }
-
-            ToolRunner?.SetupForTool(card.Definition);
-            if (ToolRunner != null)
-            {
-                ToolRunner.IsToolStarred = card.IsStarred;
-            }
-            OpenToolRequested?.Invoke(toolId);
         }
+    }
+
+    private void OnToolNavigateToToolRequested(PdfToolId nextToolId, string targetFile)
+    {
+        OpenToolPage(nextToolId, targetFile);
     }
 
     private void OnToolOpenInEditorRequested(string filePath)
@@ -553,6 +578,7 @@ public partial class HomeViewModel : ViewModelBase
             ActiveToolViewModel.BackRequested -= BackToTools;
             ActiveToolViewModel.OpenInEditorRequested -= OnToolOpenInEditorRequested;
             ActiveToolViewModel.OpenInViewerRequested -= OnToolOpenInViewerRequested;
+            ActiveToolViewModel.NavigateToToolRequested -= OnToolNavigateToToolRequested;
             ActiveToolViewModel = null;
         }
     }

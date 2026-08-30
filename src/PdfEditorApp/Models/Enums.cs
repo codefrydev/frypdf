@@ -428,4 +428,11 @@ public enum HomeNavSection
     Licensing
 }
 
+public enum AppThemeMode
+{
+    System,
+    Light,
+    Dark
+}
+
 

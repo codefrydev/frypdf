@@ -19,9 +19,9 @@
     <UserControl.Styles>
         <!-- Category Filter Pill Styles -->
         <Style Selector="Button.home-filter-pill">
-            <Setter Property="Background" Value="#F1F5F9" />
-            <Setter Property="Foreground" Value="#64748B" />
-            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Background" Value="{DynamicResource WinInputBgBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="20" />
             <Setter Property="Padding" Value="14,6" />
@@ -30,21 +30,21 @@
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.2" />
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2" />
-                    <BrushTransition Property="Foreground" Duration="0:0:0.2" />
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.15" />
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.home-filter-pill:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#E2E8F0" />
-            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
         </Style>
         <Style Selector="Button.home-filter-pill.active /template/ ContentPresenter">
-            <Setter Property="Background" Value="#EFF6FF" />
-            <Setter Property="BorderBrush" Value="#BFDBFE" />
-            <Setter Property="Foreground" Value="#0F6CBD" />
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
         </Style>
         <Style Selector="Button.home-filter-pill.active">
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -52,24 +52,27 @@
 
         <!-- Template Card Lift Animation Style -->
         <Style Selector="Border.template-card-box">
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="CubicEaseOut" />
                     <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.25" Easing="CubicEaseOut" />
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.2" />
+                    <BrushTransition Property="Background" Duration="0:0:0.2" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.template-card-btn:pointerover Border.template-card-box">
             <Setter Property="RenderTransform" Value="translateY(-4px)" />
             <Setter Property="BoxShadow" Value="0 10 24 #280F6CBD" />
-            <Setter Property="BorderBrush" Value="#0F6CBD" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
         </Style>
 
         <!-- Toggle Gallery Button Animation -->
         <Style Selector="Button.gallery-toggle-btn">
-            <Setter Property="Background" Value="#EFF6FF" />
-            <Setter Property="BorderBrush" Value="#BFDBFE" />
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="20" />
             <Setter Property="Padding" Value="14,7" />
@@ -83,8 +86,8 @@
             </Setter>
         </Style>
         <Style Selector="Button.gallery-toggle-btn:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#DBEAFE" />
-            <Setter Property="BorderBrush" Value="#0F6CBD" />
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
         </Style>
         <Style Selector="Button.gallery-toggle-btn:pointerover">
             <Setter Property="RenderTransform" Value="scale(1.03)" />
@@ -101,10 +104,10 @@
                 <TextBlock Text="Start a new document"
                            FontSize="18"
                            FontWeight="Bold"
-                           Foreground="#0F172A" />
+                           Foreground="{DynamicResource WinTextBrush}" />
                 <TextBlock Text="{Binding MatchingTemplatesCount, StringFormat='{}{0} professionally crafted templates'}"
                            FontSize="12"
-                           Foreground="#64748B" />
+                           Foreground="{DynamicResource WinMutedBrush}" />
             </StackPanel>
 
             <!-- Center: Category Filter Pills -->

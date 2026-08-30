@@ -373,6 +373,8 @@ public partial class MainViewModel : ViewModelBase
     {
     }
 
+    private readonly IThemeService? _themeService;
+
     public MainViewModel(
         IPdfExportService exportService,
         ITemplateService templateService,
@@ -383,7 +385,8 @@ public partial class MainViewModel : ViewModelBase
         IRecentDocumentsService? recentService = null,
         IPageOrganizerService? pageOrganizerService = null,
         IPdfDocumentOperationsService? pdfOperationsService = null,
-        PdfEditorApp.Services.Tools.IPdfToolRegistry? toolRegistry = null)
+        PdfEditorApp.Services.Tools.IPdfToolRegistry? toolRegistry = null,
+        IThemeService? themeService = null)
     {
         _exportService = exportService;
         _templateService = templateService;
@@ -393,8 +396,18 @@ public partial class MainViewModel : ViewModelBase
         _placementService = placementService ?? new SmartPlacementService();
         _recentService = recentService ?? new RecentDocumentsService();
         _pageOrganizerService = pageOrganizerService ?? new PageOrganizerService();
+        _themeService = themeService;
 
         _toolRegistry = toolRegistry ?? new PdfEditorApp.Services.Tools.PdfToolRegistry();
+
+        if (_themeService != null)
+        {
+            IsDarkMode = _themeService.IsDarkMode;
+            _themeService.ThemeChanged += (mode) =>
+            {
+                IsDarkMode = _themeService.IsDarkMode;
+            };
+        }
 
         var pageService = new PdfEditorApp.Services.Tools.PdfPageService();
         var optService = new PdfEditorApp.Services.Tools.PdfOptimizationService();
@@ -426,13 +439,12 @@ public partial class MainViewModel : ViewModelBase
         PdfViewer.ShowToastRequested += (msg) => ShowToast(msg);
 
         // Set up Home page and wire its navigation events
-        Home = new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, toolViewModelFactory);
+        Home = new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, toolViewModelFactory, _themeService);
         Home.OpenTemplateRequested += OpenEditorWithTemplate;
         Home.OpenFileRequested += () => _ = OpenProjectAndEnterEditorAsync();
         Home.OpenRecentRequested += OpenEditorWithFile;
         Home.OpenInEditorRequested += OpenEditorWithFile;
         Home.OpenInViewerRequested += (path) => OpenInViewer(path);
-        Home.OpenToolRequested += OpenTool;
         Home.OpenWorkflowBuilderRequested += OpenWorkflowStudio;
 
         // Synchronize inspector when selection changes
@@ -455,22 +467,18 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void OpenTool(PdfToolId toolId)
     {
-        var toolDef = _toolRegistry.GetTool(toolId);
-        if (toolDef != null)
-        {
-            ToolRunner.StorageProvider = StorageProvider;
-            ToolRunner.SetupForTool(toolDef);
-        }
+        IsHomePageVisible = true;
+        IsEditorVisible = false;
+        IsPdfViewerVisible = false;
+        Home.OpenToolPage(toolId);
     }
 
     public void OpenToolWithInitialFile(PdfToolId toolId, string initialFilePath)
     {
-        var toolDef = _toolRegistry.GetTool(toolId);
-        if (toolDef != null)
-        {
-            ToolRunner.StorageProvider = StorageProvider;
-            ToolRunner.SetupForTool(toolDef, initialFilePath);
-        }
+        IsHomePageVisible = true;
+        IsEditorVisible = false;
+        IsPdfViewerVisible = false;
+        Home.OpenToolPage(toolId, initialFilePath);
     }
 
     [RelayCommand]
@@ -478,6 +486,50 @@ public partial class MainViewModel : ViewModelBase
     {
         WorkflowBuilder.StorageProvider = StorageProvider;
         WorkflowBuilder.Open();
+    }
+
+    [RelayCommand]
+    public void ToggleTheme()
+    {
+        if (_themeService != null)
+        {
+            _themeService.ToggleTheme();
+            IsDarkMode = _themeService.IsDarkMode;
+            Home.IsDarkMode = IsDarkMode;
+            ShowToast(IsDarkMode ? "Switched to Dark Studio Theme" : "Switched to Light Studio Theme", IsDarkMode ? "WeatherNight" : "WeatherSunny");
+        }
+        else
+        {
+            IsDarkMode = !IsDarkMode;
+            Home.IsDarkMode = IsDarkMode;
+        }
+    }
+
+    [RelayCommand]
+    public void SetLightTheme()
+    {
+        _themeService?.SetTheme(AppThemeMode.Light);
+        IsDarkMode = false;
+        Home.IsDarkMode = false;
+        ShowToast("Switched to Light Studio Theme", "WeatherSunny");
+    }
+
+    [RelayCommand]
+    public void SetDarkTheme()
+    {
+        _themeService?.SetTheme(AppThemeMode.Dark);
+        IsDarkMode = true;
+        Home.IsDarkMode = true;
+        ShowToast("Switched to Dark Studio Theme", "WeatherNight");
+    }
+
+    [RelayCommand]
+    public void SetSystemTheme()
+    {
+        _themeService?.SetTheme(AppThemeMode.System);
+        IsDarkMode = _themeService?.IsDarkMode ?? false;
+        Home.IsDarkMode = IsDarkMode;
+        ShowToast("Using System Theme Preference", "Laptop");
     }
 
     // --- HOME / EDITOR / VIEWER NAVIGATION ---

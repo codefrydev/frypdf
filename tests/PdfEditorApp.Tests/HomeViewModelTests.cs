@@ -196,4 +196,32 @@ public class HomeViewModelTests
         Assert.False(vm.HasRecentDocuments);
         Assert.Empty(vm.RecentDocuments);
     }
+
+    [Fact]
+    public void HomeViewModel_OpenToolPage_OpensFullPageWithoutDialog()
+    {
+        // Arrange
+        var toolRegistry = new PdfToolRegistry();
+        var operationsService = new PdfDocumentOperationsService();
+        var factory = new PdfToolViewModelFactory(operationsService, toolRegistry);
+        var vm = new HomeViewModel(new MockRecentService(), new TemplateService(), new ProjectPersistenceService(), toolRegistry, null, factory);
+
+        Assert.False(vm.IsToolPageActive);
+        Assert.Null(vm.ActiveToolViewModel);
+
+        // Act: Open OCR PDF tool
+        vm.OpenToolPage(PdfToolId.OcrPdf);
+
+        // Assert: Full page is active with initialized Tool ViewModel
+        Assert.True(vm.IsToolPageActive);
+        Assert.NotNull(vm.ActiveToolViewModel);
+        Assert.Equal(PdfToolId.OcrPdf, vm.ActiveToolViewModel.Tool.Id);
+
+        // Act: Go back to tools
+        vm.BackToToolsCommand.Execute(null);
+
+        // Assert: Full page closed, back to home tools grid
+        Assert.False(vm.IsToolPageActive);
+        Assert.Null(vm.ActiveToolViewModel);
+    }
 }

@@ -12,22 +12,22 @@
             <StackPanel Grid.Column="0" Spacing="2">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="20" Height="20" Foreground="#EF4444" VerticalAlignment="Center" />
-                    <TextBlock Text="Trash &amp; Storage Cache" FontSize="18" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                    <TextBlock Text="Trash &amp; Storage Cache" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                 </StackPanel>
-                <TextBlock Text="Manage temporary PDF renders, scratch files, and recent project history" FontSize="12" Foreground="#64748B" />
+                <TextBlock Text="Manage temporary PDF renders, scratch files, and recent project history" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
             </StackPanel>
         </Grid>
 
         <!-- Cache Cleanup Card -->
-        <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="28" HorizontalAlignment="Stretch">
+        <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="28" HorizontalAlignment="Stretch">
             <StackPanel Spacing="18">
                 <StackPanel Orientation="Horizontal" Spacing="14">
                     <Border Width="48" Height="48" Background="#FEF2F2" CornerRadius="12">
                         <materialIcons:MaterialIcon Kind="Broom" Width="26" Height="26" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel VerticalAlignment="Center" Spacing="2">
-                        <TextBlock Text="Clear Temporary Cache &amp; Recent Lists" FontSize="15" FontWeight="Bold" Foreground="#0F172A" />
-                        <TextBlock Text="Removes temporary scratch files generated during OCR, split/merge, and image exports to reclaim disk space." FontSize="12" Foreground="#64748B" />
+                        <TextBlock Text="Clear Temporary Cache &amp; Recent Lists" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Removes temporary scratch files generated during OCR, split/merge, and image exports to reclaim disk space." FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
                     </StackPanel>
                 </StackPanel>
 

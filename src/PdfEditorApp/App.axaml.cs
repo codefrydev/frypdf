@@ -24,6 +24,9 @@ public partial class App : Application
         ConfigureServices(serviceCollection);
         Services = serviceCollection.BuildServiceProvider();
 
+        var themeService = Services.GetRequiredService<IThemeService>();
+        themeService.Initialize();
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var mainVm = Services.GetRequiredService<MainViewModel>();
@@ -39,6 +42,7 @@ public partial class App : Application
     private static void ConfigureServices(IServiceCollection services)
     {
         // Core Services
+        services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IPdfExportService, PdfExportService>();
         services.AddSingleton<IPdfImportService, PdfImportService>();
         services.AddSingleton<IProjectPersistenceService, ProjectPersistenceService>();

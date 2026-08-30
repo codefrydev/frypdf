@@ -12,11 +12,11 @@
         <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
     </UserControl.Resources>
 
-    <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1">
+    <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1">
         <Grid RowDefinitions="Auto,Auto">
 
             <!-- 1. Ribbon Menu Tabs Bar -->
-            <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="12,4,12,4">
+            <Border Grid.Row="0" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="12,4,12,4">
                 <Grid ColumnDefinitions="*,Auto">
                     <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                         <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
@@ -123,20 +123,27 @@
                         </StackPanel>
                     </ScrollViewer>
 
-                    <!-- Right Action: Minimize / Collapse Ribbon Toggle Button -->
+                    <!-- Right Actions: Theme Toggle & Minimize Ribbon -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="6,0,0,0">
+                        <Button Classes="mini-tool-btn" Width="28" Height="28"
+                                Command="{Binding ToggleThemeCommand}"
+                                ToolTip.Tip="Toggle Dark / Light Studio Theme (⌘⇧T / Ctrl+Shift+T)">
+                            <materialIcons:MaterialIcon Kind="{Binding IsDarkMode, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='WeatherSunny|WeatherNight'}"
+                                                        Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                        </Button>
+
                         <Button Classes="mini-tool-btn" Width="28" Height="28"
                                 Command="{Binding ToggleRibbonCollapseCommand}"
                                 ToolTip.Tip="Collapse / Minimize Ribbon (⌘F1 / Ctrl+F1)">
                             <materialIcons:MaterialIcon Kind="{Binding IsRibbonCollapsed, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='ChevronDown|ChevronUp'}"
-                                                        Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                                                        Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- 2. Ribbon Dynamic Tools Panel -->
-            <Border Grid.Row="1" Background="White" Height="100" Padding="12,5,12,5"
+            <Border Grid.Row="1" Background="{DynamicResource WinPanelBrush}" Height="100" Padding="12,5,12,5"
                     IsVisible="{Binding !IsRibbonCollapsed}">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                     <Panel>

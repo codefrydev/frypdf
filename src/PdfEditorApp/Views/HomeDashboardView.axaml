@@ -20,8 +20,8 @@
     <UserControl.Styles>
         <!-- PDF Tool Card Lift & Glow Animation -->
         <Style Selector="Border.pdf-tool-box">
-            <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="BoxShadow" Value="0 2 6 #08000000" />
@@ -30,29 +30,33 @@
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
                     <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.pdf-tool-btn:pointerover Border.pdf-tool-box">
             <Setter Property="RenderTransform" Value="translateY(-3px)" />
             <Setter Property="BoxShadow" Value="0 8 20 #150F6CBD" />
-            <Setter Property="BorderBrush" Value="#0F6CBD" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
         </Style>
 
         <!-- Template / Recent Card Lift Animation -->
         <Style Selector="Border.template-card-box">
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="CubicEaseOut" />
                     <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.25" Easing="CubicEaseOut" />
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.2" />
+                    <BrushTransition Property="Background" Duration="0:0:0.2" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.template-card-btn:pointerover Border.template-card-box">
             <Setter Property="RenderTransform" Value="translateY(-4px)" />
             <Setter Property="BoxShadow" Value="0 10 24 #280F6CBD" />
-            <Setter Property="BorderBrush" Value="#0F6CBD" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
         </Style>
     </UserControl.Styles>
 
@@ -61,24 +65,25 @@
         <!-- ========================================== -->
         <!-- 1. WELCOME & QUICK ACTION HERO CARD        -->
         <!-- ========================================== -->
-        <Border Background="#FFFFFF"
-                BorderBrush="#E2E8F0"
+        <Border Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="16"
                 Padding="28,24"
-                Margin="0,0,0,24">
+                Margin="0,0,0,24"
+                BoxShadow="0 2 10 #08000000">
             <Grid RowDefinitions="Auto,Auto">
                 <!-- Top Welcome Row -->
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,20">
                     <StackPanel Grid.Column="0" Spacing="4">
-                        <TextBlock Text="Welcome to FryPDF Studio" FontSize="20" FontWeight="Bold" Foreground="#0F172A" />
-                        <TextBlock Text="Everything you need to create, edit, convert, and protect professional documents." FontSize="13" Foreground="#64748B" />
+                        <TextBlock Text="Welcome to FryPDF Studio" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Everything you need to create, edit, convert, and protect professional documents." FontSize="13" Foreground="{DynamicResource WinMutedBrush}" />
                     </StackPanel>
                     <Button Grid.Column="1"
                             Command="{Binding SelectNavSectionCommand}"
                             CommandParameter="AllTools"
-                            Background="#EFF6FF"
-                            Foreground="#0F6CBD"
+                            Background="{DynamicResource WinAccentLightBrush}"
+                            Foreground="{DynamicResource WinAccentBrush}"
                             BorderThickness="0"
                             CornerRadius="8"
                             Padding="14,8"
@@ -213,13 +218,13 @@
         <!-- 2. POPULAR QUICK TOOLS ROW (6 TOP TOOLS)   -->
         <!-- ========================================== -->
         <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12" VerticalAlignment="Center">
-            <TextBlock Grid.Column="0" Text="Popular PDF Tools" FontSize="15" FontWeight="Bold" Foreground="#0F172A" />
+            <TextBlock Grid.Column="0" Text="Popular PDF Tools" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
             <Button Grid.Column="1"
                     Command="{Binding SelectNavSectionCommand}"
                     CommandParameter="AllTools"
                     Background="Transparent"
                     BorderThickness="0"
-                    Foreground="#0F6CBD"
+                    Foreground="{DynamicResource WinAccentBrush}"
                     FontSize="12"
                     FontWeight="SemiBold"
                     Cursor="Hand">
@@ -259,8 +264,8 @@
                                                                 VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="Bold" Foreground="#0F172A" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#64748B" MaxLines="1" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" MaxLines="1" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -274,15 +279,15 @@
         <!-- ========================================== -->
         <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,14" VerticalAlignment="Center">
             <StackPanel Grid.Column="0" Spacing="2">
-                <TextBlock Text="Recent Documents" FontSize="16" FontWeight="Bold" Foreground="#0F172A" />
-                <TextBlock Text="Quickly resume working on your recent projects and PDFs" FontSize="12" Foreground="#64748B" />
+                <TextBlock Text="Recent Documents" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                <TextBlock Text="Quickly resume working on your recent projects and PDFs" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
             </StackPanel>
             <Button Grid.Column="1"
                     IsVisible="{Binding HasRecentDocuments}"
                     Command="{Binding ClearRecentCommand}"
                     Background="Transparent"
                     BorderThickness="0"
-                    Foreground="#64748B"
+                    Foreground="{DynamicResource WinMutedBrush}"
                     FontSize="12"
                     Cursor="Hand"
                     Padding="8,4"
@@ -293,15 +298,15 @@
 
         <!-- Empty State for Recent Documents -->
         <Border IsVisible="{Binding !HasRecentDocuments}"
-                Background="#FFFFFF"
-                BorderBrush="#E2E8F0"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="12"
                 Padding="40,36">
             <StackPanel HorizontalAlignment="Center" Spacing="10">
-                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="44" Height="44" Foreground="#CBD5E1" HorizontalAlignment="Center" />
-                <TextBlock Text="No recent documents" FontSize="14" FontWeight="Medium" Foreground="#94A3B8" HorizontalAlignment="Center" />
-                <TextBlock Text="Documents you open or create will appear here for instant access." FontSize="12" Foreground="#CBD5E1" HorizontalAlignment="Center" />
+                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="44" Height="44" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
+                <TextBlock Text="No recent documents" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                <TextBlock Text="Documents you open or create will appear here for instant access." FontSize="12" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
             </StackPanel>
         </Border>
 
@@ -325,8 +330,8 @@
                             Cursor="Hand">
                         <Border Classes="template-card-box"
                                 Width="200"
-                                Background="#FFFFFF"
-                                BorderBrush="#E2E8F0"
+                                Background="{DynamicResource WinPanelBrush}"
+                                BorderBrush="{DynamicResource WinBorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="10"
                                 Padding="0"
@@ -336,8 +341,8 @@
 
                                 <!-- Live Thumbnail Preview Area -->
                                 <Border Height="124"
-                                        Background="#F8FAFC"
-                                        BorderBrush="#E2E8F0"
+                                        Background="{DynamicResource WinInputBgBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
                                         BorderThickness="0,0,0,1"
                                         ClipToBounds="True">
                                     <Panel>
@@ -395,9 +400,9 @@
                                         </Viewbox>
 
                                         <!-- Realistic Document Sheet (when no live PagePreview yet) -->
-                                        <Grid IsVisible="{Binding !HasLivePreview}" Background="#F8FAFC" Margin="8">
-                                            <Border Background="White"
-                                                    BorderBrush="#CBD5E1"
+                                        <Grid IsVisible="{Binding !HasLivePreview}" Background="{DynamicResource WinInputBgBrush}" Margin="8">
+                                            <Border Background="{DynamicResource WinPanelBrush}"
+                                                    BorderBrush="{DynamicResource WinBorderBrush}"
                                                     BorderThickness="1"
                                                     CornerRadius="4"
                                                     BoxShadow="0 2 6 #08000000"
@@ -407,8 +412,8 @@
                                                     <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,8">
                                                         <materialIcons:MaterialIcon Grid.Column="0" Kind="FileDocumentOutline" Width="18" Height="18" Foreground="#0F6CBD" VerticalAlignment="Center" />
                                                         <TextBlock Grid.Column="1" Text="PDF" FontSize="9" FontWeight="Bold" Foreground="#0F6CBD" Margin="4,0,0,0" VerticalAlignment="Center" />
-                                                        <Border Grid.Column="2" Background="#EFF6FF" CornerRadius="3" Padding="4,1">
-                                                            <TextBlock Text="Project" FontSize="8.5" FontWeight="SemiBold" Foreground="#0F6CBD" />
+                                                        <Border Grid.Column="2" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="3" Padding="4,1">
+                                                            <TextBlock Text="Project" FontSize="8.5" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
                                                         </Border>
                                                     </Grid>
                                                     <!-- Realistic Document Content Representation -->
@@ -416,18 +421,18 @@
                                                         <TextBlock Text="{Binding Title}"
                                                                     FontSize="11"
                                                                     FontWeight="Bold"
-                                                                    Foreground="#1E293B"
+                                                                    Foreground="{DynamicResource WinTextBrush}"
                                                                     TextTrimming="CharacterEllipsis"
                                                                     MaxLines="2" />
                                                         <TextBlock Text="{Binding FormatDescription}"
                                                                     FontSize="9.5"
-                                                                    Foreground="#64748B" />
+                                                                    Foreground="{DynamicResource WinMutedBrush}" />
                                                     </StackPanel>
                                                     <!-- Bottom Date Stamp -->
                                                     <TextBlock Grid.Row="2"
                                                                 Text="{Binding RelativeTime, StringFormat='Opened {0}'}"
                                                                 FontSize="8.5"
-                                                                Foreground="#94A3B8"
+                                                                Foreground="{DynamicResource WinSubtleBrush}"
                                                                 Margin="0,4,0,0" />
                                                 </Grid>
                                             </Border>
@@ -440,17 +445,17 @@
                                     <TextBlock Text="{Binding Title}"
                                                 FontSize="12.5"
                                                 FontWeight="SemiBold"
-                                                Foreground="#0F172A"
+                                                Foreground="{DynamicResource WinTextBrush}"
                                                 TextTrimming="CharacterEllipsis" />
                                     <Grid ColumnDefinitions="*,Auto">
                                         <TextBlock Grid.Column="0"
                                                    Text="{Binding RelativeTime}"
                                                    FontSize="11"
-                                                   Foreground="#94A3B8" />
+                                                   Foreground="{DynamicResource WinSubtleBrush}" />
                                         <TextBlock Grid.Column="1"
                                                    Text="{Binding FormatDescription}"
                                                    FontSize="10"
-                                                   Foreground="#CBD5E1" />
+                                                   Foreground="{DynamicResource WinSubtleBrush}" />
                                     </Grid>
                                 </StackPanel>
 

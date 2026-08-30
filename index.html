@@ -3,24 +3,142 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FryPDF — Modern Desktop PDF Studio</title>
-  <meta name="description" content="FryPDF is a privacy-first, professional desktop PDF creator and editor studio built with Avalonia UI and QuestPDF. Native, fast, and 100% offline." />
-  <meta name="keywords" content="PDF Editor, PDF Studio, Avalonia UI, QuestPDF, .NET 10, AcroForms, Bates Numbering, LaTeX PDF, Desktop PDF Editor" />
-  
-  <!-- Open Graph -->
-  <meta property="og:title" content="FryPDF — Modern Desktop PDF Studio" />
-  <meta property="og:description" content="Privacy-first, pro desktop PDF studio. Zero cloud uploads, lightning-fast native performance." />
+  <title>FryPDF — Privacy-First Desktop PDF Studio &amp; 32 Document Tools</title>
+  <meta name="description" content="FryPDF is a 100% free, offline, privacy-first desktop PDF editor and 32-tool studio built with Avalonia UI, QuestPDF, and .NET 10. Design documents, fill AcroForms, typeset LaTeX, convert formats, and automate workflows locally." />
+  <meta name="keywords" content="PDF Editor, PDF Studio, PDF Tools, Avalonia UI, QuestPDF, .NET 10, AcroForms, Bates Numbering, LaTeX PDF, OCR PDF, Offline PDF Editor, Open Source PDF, Batch PDF Converter, PDF to Word, PDF to Excel, FOIA Redaction, Free PDF Editor" />
+  <meta name="author" content="Code Fry Dev" />
+  <meta name="theme-color" content="#090D14" />
+  <link rel="canonical" href="https://codefrydev.in/frypdf" />
+
+  <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://codefrydev.in/frypdf" />
+  <meta property="og:title" content="FryPDF — Modern Desktop PDF Studio &amp; 32 Document Tools" />
+  <meta property="og:description" content="100% free, offline, privacy-first desktop PDF editor. Full vector canvas, 32 PDF tools, LaTeX math, AcroForms formulas, Bates numbering, and batch pipelines without cloud uploads or subscriptions." />
+  <meta property="og:image" content="https://codefrydev.in/frypdf/og-image.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://codefrydev.in/frypdf" />
+  <meta property="twitter:title" content="FryPDF — Modern Desktop PDF Studio" />
+  <meta property="twitter:description" content="Privacy-first desktop PDF editor and 32-tool studio. 100% offline, zero telemetry, fast native performance." />
+  <meta property="twitter:image" content="https://codefrydev.in/frypdf/og-image.png" />
+
   <link rel="icon" type="image/svg+xml" href="src/PdfEditorApp/Assets/app-logo.svg" />
 
-  <!-- Fonts: Inter & JetBrains Mono for a clean, monotonic editorial aesthetic -->
+  <!-- Fonts: Inter & JetBrains Mono for crisp typographic hierarchy -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
+  <!-- ========================================================================
+       JSON-LD Structured Data (Schema.org)
+       ======================================================================== -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://codefrydev.in/#organization",
+        "name": "Code Fry Dev",
+        "url": "https://codefrydev.in",
+        "logo": "https://codefrydev.in/frypdf/logo.png",
+        "sameAs": [
+          "https://github.com/CodeFryDev/FryPDF"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://codefrydev.in/frypdf/#website",
+        "url": "https://codefrydev.in/frypdf",
+        "name": "FryPDF Desktop Studio",
+        "publisher": {
+          "@id": "https://codefrydev.in/#organization"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://codefrydev.in/frypdf/#software",
+        "name": "FryPDF",
+        "alternateName": "FryPDF Desktop Studio",
+        "applicationCategory": "ProductivityApplication",
+        "applicationSubCategory": "PDF Editor & Document Studio",
+        "operatingSystem": "macOS 12.0+, Windows 10+, Linux (Ubuntu, Fedora, Arch)",
+        "softwareVersion": "1.0.0",
+        "releaseNotes": "Initial release featuring 32 PDF tools, full-page dedicated tool workspaces, vector canvas editor, LaTeX typesetting, AcroForms evaluator, 18+ templates, and dark theme support.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0.00",
+          "priceCurrency": "USD",
+          "category": "Free and Open Source Software (FOSS)"
+        },
+        "license": "https://opensource.org/licenses/MIT",
+        "downloadUrl": "https://github.com/CodeFryDev/FryPDF/releases",
+        "description": "Privacy-first, 100% offline desktop PDF creator, editor, and 32-tool automation suite built with Avalonia UI and QuestPDF.",
+        "featureList": [
+          "Interactive Vector Canvas Editor with multi-element selection, rotation, and snap-to-grid",
+          "32 Dedicated Full-Page PDF Tools with zero popup dialogs",
+          "Lossless format conversions (PDF to Word DOCX, Excel XLSX, PPTX, Markdown, Images, Text)",
+          "Interactive AcroForms with live formula dependency recalculation and input validation",
+          "LaTeX Math Equation Studio with sub-pixel vector typesetting",
+          "13 Dynamic Vector Chart types (Bar, Donut, Waterfall, Radar, Candlestick, etc.)",
+          "Legal FOIA Redaction with irreversible pixel destruction and Bates docket numbering",
+          "OCR PDF engine for generating searchable text layers locally",
+          "Vector Signature Studio with 4 calligraphy typography models and 120Hz smooth ink",
+          "Chainable Multi-Step Batch Pipeline Automation Workflow Builder",
+          "18+ Executive Templates (Invoices, Annual Reports, Resumes, Academic Papers)",
+          "100% Local CPU processing with Zero Telemetry and Zero Network Sockets"
+        ],
+        "author": {
+          "@id": "https://codefrydev.in/#organization"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://codefrydev.in/frypdf/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is FryPDF completely free and 100% offline?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. FryPDF is 100% free, open-source software under the MIT license. It contains zero telemetry, zero tracking beacons, and zero cloud network sockets. All document parsing, formula evaluation, OCR, and PDF compilation execute locally on your machine."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What are the 32 PDF tools included in FryPDF Studio?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "FryPDF includes 32 native tools organized across 6 suites: Organize & Page (Merge, Split, Rotate, Crop, Extract, Organize), Optimize & Security (Compress, Protect, Unlock, Repair, Convert to PDF/A, Watermark, Redact, Bates Numbering), Convert from PDF (to Word DOCX, Excel XLSX, PPTX, Markdown, Images, Text), Convert to PDF (from Word, Images, Scans, HTML, Markdown, Text), Edit & Forms (OCR PDF, Fill/Extract Forms, Flatten PDF, Sign PDF, Document Diff, Header/Footer Studio), and AI & Automation (AI Summarize, AI Translate, Batch Pipeline Builder)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does FryPDF compare to Adobe Acrobat Pro and Canva PDF?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Unlike Adobe Acrobat Pro ($239/year) and Canva PDF ($120/year), FryPDF is completely free, does not require cloud accounts, and runs 100% offline. It includes unique engineering features like built-in LaTeX typesetting, 13 native vector chart types, visual revision diffing, and automated batch pipelines."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What technologies power FryPDF?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "FryPDF is built on .NET 10 and Avalonia UI 12.1 for cross-platform desktop performance, SkiaSharp for GPU-accelerated 2D rendering, QuestPDF for layout compilation, and PdfPig for PDF extraction and structural inspection."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
   <style>
     /* ==========================================================================
-       1. Monotonic Design System & Strict Tokens
+       1. Monotonic Dark Slate Design Tokens
        ========================================================================== */
     *, *::before, *::after {
       box-sizing: border-box;
@@ -29,47 +147,50 @@
     }
 
     :root {
-      /* Monotonic Dark Slate Foundation */
       --bg-base: #090D14;
       --bg-surface: #0E1420;
       --bg-elevated: #141B2A;
       --bg-panel: #1A2234;
+      --bg-card: #111827;
       --bg-input: #0B0F18;
 
-      /* High-contrast, precise typography */
       --text-primary: #F8FAFC;
       --text-secondary: #94A3B8;
       --text-tertiary: #64748B;
       --text-dim: #475569;
 
-      /* Logo Anchored Accents */
+      /* Signature Brand Accents */
       --fry-crimson: #E11D48;
       --fry-crimson-hover: #BE123C;
-      --fry-crimson-subtle: rgba(225, 29, 72, 0.12);
+      --fry-crimson-subtle: rgba(225, 29, 72, 0.14);
       
       --fry-cyan: #38BDF8;
       --fry-cyan-dim: #0284C7;
       --fry-cyan-subtle: rgba(56, 189, 248, 0.12);
 
+      --fry-blue: #0F6CBD;
+      --fry-blue-hover: #115EA3;
+
       --fry-amber: #F59E0B;
       --fry-emerald: #10B981;
+      --fry-purple: #8B5CF6;
+      --fry-indigo: #6366F1;
 
-      /* Crisp 1px Borders */
       --border-subtle: #1E293B;
       --border-strong: #334155;
       --border-focus: #38BDF8;
 
-      /* Typography */
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 
-      --radius-sm: 4px;
-      --radius-md: 8px;
-      --radius-lg: 12px;
-      --radius-xl: 16px;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 20px;
 
       --shadow-window: 0 24px 70px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
       --shadow-card: 0 12px 30px -10px rgba(0, 0, 0, 0.6);
+      --shadow-glow: 0 0 30px rgba(56, 189, 248, 0.15);
     }
 
     html {
@@ -86,15 +207,13 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Container */
     .container {
       width: 100%;
-      max-width: 1180px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 0 24px;
     }
 
-    /* Typography Utilities */
     .font-mono { font-family: var(--font-mono); }
     
     .label-mono {
@@ -103,10 +222,13 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--text-tertiary);
+      color: var(--fry-cyan);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
     }
 
-    /* Subtle grid background for engineering feel */
     .grid-backdrop {
       background-image: 
         linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
@@ -115,17 +237,17 @@
     }
 
     /* ==========================================================================
-       2. Navigation Bar (Monotonic & Crisp)
+       2. Navigation Bar
        ========================================================================== */
     header {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(9, 13, 20, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: rgba(9, 13, 20, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border-subtle);
-      height: 60px;
+      height: 64px;
     }
 
     .nav-container {
@@ -144,8 +266,8 @@
     }
 
     .brand-icon-box {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       border-radius: var(--radius-sm);
       background: #0F172A;
       border: 1px solid var(--border-strong);
@@ -167,18 +289,22 @@
       font-family: var(--font-mono);
       font-size: 0.68rem;
       font-weight: 600;
-      padding: 1px 6px;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-subtle);
+      padding: 2px 7px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
       border-radius: var(--radius-sm);
-      color: var(--text-secondary);
+      color: var(--fry-cyan);
     }
 
     .nav-menu {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 22px;
       list-style: none;
+    }
+
+    @media (max-width: 860px) {
+      .nav-menu { display: none; }
     }
 
     .nav-menu a {
@@ -208,7 +334,7 @@
       font-family: var(--font-sans);
       font-size: 0.85rem;
       font-weight: 600;
-      padding: 7px 14px;
+      padding: 8px 16px;
       border-radius: var(--radius-sm);
       cursor: pointer;
       text-decoration: none;
@@ -220,22 +346,24 @@
     .btn-crimson {
       background: var(--fry-crimson);
       color: #FFFFFF;
-      border-color: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
     }
 
     .btn-crimson:hover {
       background: var(--fry-crimson-hover);
+      transform: translateY(-1px);
     }
 
-    .btn-subtle {
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-      border-color: var(--border-subtle);
+    .btn-blue {
+      background: var(--fry-blue);
+      color: #FFFFFF;
+      border-color: rgba(56, 189, 248, 0.25);
     }
 
-    .btn-subtle:hover {
-      background: var(--bg-panel);
-      border-color: var(--border-strong);
+    .btn-blue:hover {
+      background: var(--fry-blue-hover);
+      transform: translateY(-1px);
     }
 
     .btn-outline {
@@ -251,10 +379,10 @@
     }
 
     /* ==========================================================================
-       3. Hero Section (Monotonic, Engineering-Driven)
+       3. Hero Section
        ========================================================================== */
     .hero-section {
-      padding: 72px 0 60px;
+      padding: 80px 0 64px;
       border-bottom: 1px solid var(--border-subtle);
       position: relative;
     }
@@ -263,7 +391,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 4px 10px;
+      padding: 5px 12px;
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-sm);
@@ -274,31 +402,35 @@
     }
 
     .meta-indicator {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: var(--fry-emerald);
+      box-shadow: 0 0 8px var(--fry-emerald);
     }
 
     .hero-headline {
-      font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+      font-size: clamp(2.3rem, 4.8vw, 3.8rem);
       font-weight: 800;
       letter-spacing: -0.035em;
-      line-height: 1.1;
-      max-width: 920px;
+      line-height: 1.12;
+      max-width: 960px;
       margin-bottom: 20px;
     }
 
     .hero-headline span.accent {
       color: var(--fry-crimson);
+      background: linear-gradient(135deg, #FF4D6D, #E11D48);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .hero-lead {
       font-size: 1.15rem;
       color: var(--text-secondary);
-      max-width: 720px;
-      line-height: 1.6;
-      margin-bottom: 32px;
+      max-width: 760px;
+      line-height: 1.65;
+      margin-bottom: 34px;
     }
 
     .hero-actions {
@@ -306,7 +438,7 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 12px;
-      margin-bottom: 36px;
+      margin-bottom: 38px;
     }
 
     .terminal-runner {
@@ -316,7 +448,7 @@
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-sm);
       padding: 0 12px;
-      height: 38px;
+      height: 42px;
       font-family: var(--font-mono);
       font-size: 0.82rem;
       color: var(--text-secondary);
@@ -347,7 +479,7 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 20px;
+      gap: 24px;
       padding-top: 24px;
       border-top: 1px solid var(--border-subtle);
       font-size: 0.82rem;
@@ -365,29 +497,153 @@
     }
 
     /* ==========================================================================
-       4. Engineering Pillars (Monotonic Technical Grid)
+       4. 32 PDF Tools Studio Suite (Interactive Showcase)
+       ========================================================================== */
+    .tools-showcase-section {
+      padding: 88px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      background: linear-gradient(180deg, var(--bg-base) 0%, #0B111D 100%);
+    }
+
+    .tool-filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+
+    .tool-filter-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 6px 14px;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tool-filter-btn:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+    }
+
+    .tool-filter-btn.active {
+      background: var(--fry-blue);
+      color: #FFFFFF;
+      border-color: var(--fry-cyan);
+      font-weight: 600;
+      box-shadow: 0 2px 10px rgba(15, 108, 189, 0.4);
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    @media (max-width: 1024px) {
+      .tools-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .tools-grid { grid-template-columns: 1fr; }
+    }
+
+    .tool-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .tool-card:hover {
+      background: var(--bg-elevated);
+      border-color: var(--fry-cyan);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .tool-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .tool-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tool-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+
+    .tool-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tool-badge-new {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--fry-cyan);
+    }
+
+    .tool-desc {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ==========================================================================
+       5. Engineering Pillars (Monotonic Technical Grid)
        ========================================================================== */
     .features-grid-section {
-      padding: 80px 0;
+      padding: 88px 0;
       border-bottom: 1px solid var(--border-subtle);
     }
 
     .section-title-wrap {
-      margin-bottom: 48px;
+      margin-bottom: 44px;
     }
 
     .section-headline {
-      font-size: 1.85rem;
+      font-size: 2rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.025em;
       margin-top: 6px;
       margin-bottom: 10px;
     }
 
     .section-description {
       color: var(--text-secondary);
-      font-size: 1rem;
-      max-width: 680px;
+      font-size: 1.02rem;
+      max-width: 720px;
+      line-height: 1.6;
     }
 
     .pillars-grid {
@@ -396,10 +652,8 @@
       gap: 20px;
     }
 
-    @media (max-width: 880px) {
-      .pillars-grid {
-        grid-template-columns: 1fr;
-      }
+    @media (max-width: 900px) {
+      .pillars-grid { grid-template-columns: 1fr; }
     }
 
     .pillar-card {
@@ -410,12 +664,13 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: border-color 0.15s ease;
+      transition: all 0.2s ease;
     }
 
     .pillar-card:hover {
       border-color: var(--border-strong);
       background: var(--bg-elevated);
+      transform: translateY(-2px);
     }
 
     .pillar-badge {
@@ -437,7 +692,7 @@
       color: var(--text-secondary);
       font-size: 0.88rem;
       line-height: 1.6;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .pillar-tech-snippet {
@@ -448,55 +703,125 @@
       font-family: var(--font-mono);
       font-size: 0.78rem;
       color: var(--text-secondary);
+      line-height: 1.5;
     }
 
     /* ==========================================================================
-       6. Technical Architecture & Benchmarks
+       6. Open Source Transparency & License Hub
+       ========================================================================== */
+    .licensing-section {
+      padding: 88px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      background: #080D18;
+    }
+
+    .licenses-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    @media (max-width: 900px) {
+      .licenses-grid { grid-template-columns: 1fr; }
+    }
+
+    .license-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .license-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .license-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .license-badge {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .license-badge-mit { background: rgba(34, 197, 94, 0.15); color: #4ADE80; }
+    .license-badge-apache { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
+    .license-badge-community { background: rgba(168, 85, 247, 0.15); color: #C084FC; }
+
+    .license-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .license-meta {
+      font-size: 0.74rem;
+      color: var(--text-tertiary);
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 10px;
+    }
+
+    /* ==========================================================================
+       7. Architecture & Runtime Specs
        ========================================================================== */
     .architecture-section {
-      padding: 80px 0;
+      padding: 88px 0;
       border-bottom: 1px solid var(--border-subtle);
-      background: var(--bg-surface);
     }
 
     .specs-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 16px;
-      margin-top: 32px;
     }
 
-    @media (max-width: 768px) {
-      .specs-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    @media (max-width: 860px) {
+      .specs-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
     .spec-card {
-      background: var(--bg-base);
+      background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      padding: 18px;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      text-align: center;
     }
 
     .spec-card .val {
       font-family: var(--font-mono);
-      font-size: 1.6rem;
+      font-size: 1.8rem;
       font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 4px;
+      color: var(--fry-cyan);
+      margin-bottom: 6px;
     }
 
     .spec-card .lbl {
-      font-size: 0.78rem;
-      color: var(--text-tertiary);
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      font-weight: 500;
     }
 
     /* ==========================================================================
-       7. Monotonic Comparison Matrix
+       8. Comparison Matrix
        ========================================================================== */
     .comparison-section {
-      padding: 80px 0;
+      padding: 88px 0;
       border-bottom: 1px solid var(--border-subtle);
     }
 
@@ -548,10 +873,10 @@
     }
 
     /* ==========================================================================
-       8. Distribution & Installation Hub
+       9. Distribution Hub
        ========================================================================== */
     .install-section {
-      padding: 80px 0;
+      padding: 88px 0;
       border-bottom: 1px solid var(--border-subtle);
     }
 
@@ -573,6 +898,7 @@
       font-weight: 600;
       cursor: pointer;
       margin-bottom: -1px;
+      transition: all 0.15s ease;
     }
 
     .install-tab-btn.active {
@@ -598,55 +924,54 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 12px;
+      margin-top: 14px;
     }
 
     /* ==========================================================================
-       9. Clean Technical FAQ
+       10. Technical FAQ
        ========================================================================== */
     .faq-section {
-      padding: 80px 0;
+      padding: 88px 0;
       border-bottom: 1px solid var(--border-subtle);
     }
 
     .faq-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      gap: 20px;
     }
 
     @media (max-width: 768px) {
-      .faq-grid {
-        grid-template-columns: 1fr;
-      }
+      .faq-grid { grid-template-columns: 1fr; }
     }
 
     .faq-item-box {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
-      padding: 20px;
+      padding: 22px;
     }
 
     .faq-item-box h4 {
-      font-size: 0.95rem;
+      font-size: 0.98rem;
       font-weight: 600;
       margin-bottom: 8px;
+      color: var(--text-primary);
     }
 
     .faq-item-box p {
-      font-size: 0.85rem;
+      font-size: 0.86rem;
       color: var(--text-secondary);
       line-height: 1.6;
     }
 
     /* ==========================================================================
-       10. Footer (Monotonic, Precise)
+       11. Footer
        ========================================================================== */
     footer {
-      padding: 40px 0;
+      padding: 48px 0;
       background: var(--bg-base);
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       color: var(--text-tertiary);
     }
 
@@ -655,13 +980,13 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 20px;
     }
 
     .footer-links {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 24px;
       list-style: none;
     }
 
@@ -675,19 +1000,19 @@
       color: var(--text-primary);
     }
 
-    /* Toast Notification */
+    /* Toast Popup */
     .toast-popup {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
+      bottom: 24px;
+      right: 24px;
       background: var(--bg-panel);
       color: var(--text-primary);
       border: 1px solid var(--border-strong);
       border-radius: var(--radius-sm);
-      padding: 8px 14px;
+      padding: 10px 18px;
       font-family: var(--font-mono);
-      font-size: 0.78rem;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+      font-size: 0.8rem;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8);
       opacity: 0;
       transform: translateY(10px);
       transition: all 0.2s ease;
@@ -713,8 +1038,7 @@
     <div class="container nav-container">
       <a href="#" class="brand-wrap">
         <div class="brand-icon-box">
-          <!-- FryPDF Vector Mark -->
-          <svg width="20" height="20" viewBox="0 0 196 196" fill="none">
+          <svg width="22" height="22" viewBox="0 0 196 196" fill="none">
             <path d="M50 126H145V133C145 157.853 124.853 178 100 178H95C70.1472 178 50 157.853 50 133V126Z" fill="#38BDF8"/>
             <path d="M68 60C68 54 73 46 73 46C73 46 71 55 71 60C71 65 72 65 73 68C74 72 73 74 73 77C73 79 72 80 72 83C71 86 69 92 69 92C69 92 70 84 70 81C70 78 70 74 69 70C68 66 67 66 68 60Z" fill="#F59E0B"/>
             <path d="M99 38C99 30 96 19 96 19C96 19 97 31 97 38C97 45 96 44 96 49C95 54 96 57 96 60C96 64 96 64 97 69C97 74 98 81 98 81C98 81 98 70 98 66C98 62 98 57 98 52C99 46 100 46 99 38Z" fill="#EF4444"/>
@@ -728,16 +1052,17 @@
       </a>
 
       <ul class="nav-menu">
+        <li><a href="#tools">32 Studio Tools</a></li>
         <li><a href="#pillars">Capabilities</a></li>
-        <li><a href="#architecture">Architecture</a></li>
-        <li><a href="#comparison">Specs & Diff</a></li>
+        <li><a href="#licensing">Open Source &amp; Legal</a></li>
+        <li><a href="#comparison">Comparison</a></li>
         <li><a href="#install">Install</a></li>
       </ul>
 
       <div class="nav-cta-group">
-        <a href="https://github.com" target="_blank" class="btn btn-outline">
+        <a href="https://github.com/CodeFryDev/FryPDF" target="_blank" class="btn btn-outline" rel="noopener noreferrer">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          Source
+          GitHub
         </a>
         <a href="#install" class="btn btn-crimson">Download Studio</a>
       </div>
@@ -751,26 +1076,26 @@
     <div class="container">
       <div class="hero-meta-badge">
         <span class="meta-indicator"></span>
-        <span>AVALONIA 12.1 • QUESTPDF 2026 • 100% OFFLINE</span>
+        <span>AVALONIA 12.1 • QUESTPDF • .NET 10 • 32 TOOLS • 313 TESTS PASSED • 100% OFFLINE</span>
       </div>
 
       <h1 class="hero-headline">
-        The desktop PDF studio built for <span class="accent">engineering</span>, legal, and privacy.
+        The privacy-first desktop PDF studio with <span class="accent">32 professional tools</span>.
       </h1>
 
       <p class="hero-lead">
-        No cloud accounts. No subscriptions. No background telemetry. Design responsive document layouts, evaluate AcroForm formulas in real-time, render LaTeX math, and apply legal Bates numbering directly on your local CPU.
+        No cloud accounts. No subscriptions. No background telemetry. Design interactive documents on a high-precision vector canvas, evaluate live AcroForm formulas, typeset LaTeX math, and run 32 dedicated document tools in full-page workspaces locally on your CPU.
       </p>
 
       <div class="hero-actions">
-        <a href="#install" class="btn btn-crimson" style="padding: 10px 20px; font-size: 0.92rem;">
+        <a href="#install" class="btn btn-crimson" style="padding: 10px 22px; font-size: 0.94rem;">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
           <span id="hero-btn-label">Download for macOS / Windows</span>
         </a>
 
         <div class="terminal-runner">
           <span class="prompt">$</span>
-          <span>git clone https://github.com/CodeFryDev/FryPDF && ./run</span>
+          <span>git clone https://github.com/CodeFryDev/FryPDF &amp;&amp; ./run</span>
           <button class="copy-icon-btn" onclick="copyText('git clone https://github.com/CodeFryDev/FryPDF && ./run')" title="Copy Command">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           </button>
@@ -792,6 +1117,10 @@
         </div>
         <div class="spec-item">
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          313 Passing Unit Tests
+        </div>
+        <div class="spec-item">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
           AES-256 GCM Encryption
         </div>
       </div>
@@ -799,105 +1128,466 @@
   </section>
 
   <!-- ==========================================================================
-       3. Core Engineering Pillars (Monotonic Technical Cards)
+       3. Complete 32 PDF Tools Studio Suite
+       ========================================================================== -->
+  <section class="tools-showcase-section" id="tools">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="label-mono">COMPLETE TOOLKIT // 32 DEDICATED TOOLS</span>
+        <h2 class="section-headline">All 32 PDF Studio Tools. Zero Popups.</h2>
+        <p class="section-description">
+          Every tool runs inside its own full-page dedicated workspace with batch drop zones, granular setting panels, live output previews, and chainable workflow transitions.
+        </p>
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="tool-filter-tabs">
+        <button class="tool-filter-btn active" onclick="filterTools('all', this)">All (32)</button>
+        <button class="tool-filter-btn" onclick="filterTools('organize', this)">Organize &amp; Page (6)</button>
+        <button class="tool-filter-btn" onclick="filterTools('optimize', this)">Optimize &amp; Security (7)</button>
+        <button class="tool-filter-btn" onclick="filterTools('from-pdf', this)">Convert from PDF (6)</button>
+        <button class="tool-filter-btn" onclick="filterTools('to-pdf', this)">Convert to PDF (6)</button>
+        <button class="tool-filter-btn" onclick="filterTools('edit-forms', this)">Edit &amp; Forms (5)</button>
+        <button class="tool-filter-btn" onclick="filterTools('ai-auto', this)">AI &amp; Automation (2)</button>
+      </div>
+
+      <!-- 32 Tools Responsive Grid -->
+      <div class="tools-grid" id="tools-grid">
+
+        <!-- 1. Organize & Page -->
+        <div class="tool-card" data-cat="organize">
+          <div class="tool-icon-box" style="background: rgba(15, 108, 189, 0.15); color: #38BDF8;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Merge PDF</span></div>
+            <p class="tool-desc">Combine multiple PDF documents into a single unified high-res file with drag-and-drop reordering.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="organize">
+          <div class="tool-icon-box" style="background: rgba(225, 29, 72, 0.15); color: #FB7185;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Split PDF</span></div>
+            <p class="tool-desc">Split into single-page documents, burst all sheets, or extract custom page intervals (e.g. 1-3, 5, 8-10).</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="organize">
+          <div class="tool-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #FBBF24;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Rotate Pages</span></div>
+            <p class="tool-desc">Batch rotate pages 90°, 180°, or 270° clockwise or counterclockwise with orientation auto-detect.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="organize">
+          <div class="tool-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #34D399;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 002 2h14M18 22V8a2 2 0 00-2-2H2"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Crop PDF</span></div>
+            <p class="tool-desc">Trim margins, remove white space bleed, or crop pages to standard A4, Letter, Legal, or custom bounds.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="organize">
+          <div class="tool-icon-box" style="background: rgba(99, 102, 241, 0.15); color: #818CF8;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Extract Pages</span></div>
+            <p class="tool-desc">Selectively isolate and export specific key pages into a fresh standalone PDF package.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="organize">
+          <div class="tool-icon-box" style="background: rgba(236, 72, 153, 0.15); color: #F472B6;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Organize Pages</span></div>
+            <p class="tool-desc">Visual drag-and-drop page tile organizer. Delete, reorder, duplicate, and sort document structure.</p>
+          </div>
+        </div>
+
+        <!-- 2. Optimize & Security -->
+        <div class="tool-card" data-cat="optimize">
+          <div class="tool-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #34D399;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Compress PDF</span></div>
+            <p class="tool-desc">Shrink heavy PDF file size by up to 80% with lossless font subsetting and smart image downsampling.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="optimize">
+          <div class="tool-icon-box" style="background: rgba(225, 29, 72, 0.15); color: #FB7185;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Protect PDF</span></div>
+            <p class="tool-desc">Apply AES-256 bit encryption, owner &amp; user passwords, print restrictions, and copy prevention.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="optimize">
+          <div class="tool-icon-box" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Unlock PDF</span></div>
+            <p class="tool-desc">Permanently remove known passwords and permission locks from secured documents.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="optimize">
+          <div class="tool-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #FBBF24;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Repair PDF</span></div>
+            <p class="tool-desc">Recover corrupted XRef cross-reference tables, rebuild damaged page trees, and salvage unreadable files.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="optimize">
+          <div class="tool-icon-box" style="background: rgba(99, 102, 241, 0.15); color: #818CF8;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Convert to PDF/A</span></div>
+            <p class="tool-desc">Enforce ISO 19005 archival standards (PDF/A-1b, PDF/A-2b) with embedded color profiles and full font embedding.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="optimize">
+          <div class="tool-icon-box" style="background: rgba(14, 165, 233, 0.15); color: #38BDF8;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Watermark Studio</span></div>
+            <p class="tool-desc">Stamp diagonal text, corporate logos, confidential markers, dynamic opacity, and page repeat rules.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="optimize">
+          <div class="tool-icon-box" style="background: rgba(225, 29, 72, 0.15); color: #FB7185;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">FOIA Redaction</span></div>
+            <p class="tool-desc">Permanent irreversible pixel destruction with FOIA exemption codes ((b)(4), (b)(6)) and pattern scrub.</p>
+          </div>
+        </div>
+
+        <!-- 3. Convert from PDF -->
+        <div class="tool-card" data-cat="from-pdf">
+          <div class="tool-icon-box" style="background: rgba(37, 99, 235, 0.15); color: #60A5FA;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">PDF to Word (.docx)</span></div>
+            <p class="tool-desc">Extract paragraphs, headers, and bullet formatting into clean Microsoft Word OpenXML (.docx) files.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="from-pdf">
+          <div class="tool-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #34D399;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">PDF to Excel (.xlsx)</span></div>
+            <p class="tool-desc">Detect table grids, multi-column financial statements, and export numbers into editable Excel spreadsheets.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="from-pdf">
+          <div class="tool-icon-box" style="background: rgba(234, 88, 12, 0.15); color: #FB923C;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">PDF to PowerPoint</span></div>
+            <p class="tool-desc">Convert document pages into Microsoft PowerPoint presentation slides (.pptx) ready for presentation.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="from-pdf">
+          <div class="tool-icon-box" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">PDF to Markdown</span></div>
+            <p class="tool-desc">Parse structured headings (#, ##), tables, code snippets, and lists into clean GitHub-flavored Markdown.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="from-pdf">
+          <div class="tool-icon-box" style="background: rgba(236, 72, 153, 0.15); color: #F472B6;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">PDF to Images</span></div>
+            <p class="tool-desc">Rasterize all document pages to high-res PNG, JPEG, WebP, or TIFF at 150 DPI or 300 DPI print quality.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="from-pdf">
+          <div class="tool-icon-box" style="background: rgba(100, 116, 139, 0.15); color: #94A3B8;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">PDF to Text (.txt)</span></div>
+            <p class="tool-desc">Fast raw text extraction stripping away formatting for NLP processing, indexing, and corpus pipelines.</p>
+          </div>
+        </div>
+
+        <!-- 4. Convert to PDF -->
+        <div class="tool-card" data-cat="to-pdf">
+          <div class="tool-icon-box" style="background: rgba(37, 99, 235, 0.15); color: #60A5FA;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Word to PDF</span></div>
+            <p class="tool-desc">Convert .docx documents into high-fidelity PDF with exact font matching and table preserve.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="to-pdf">
+          <div class="tool-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #34D399;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Images to PDF</span></div>
+            <p class="tool-desc">Batch bundle multiple PNG, JPEG, GIF, and WebP photos into a multi-page book or portfolio.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="to-pdf">
+          <div class="tool-icon-box" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Scan to PDF</span></div>
+            <p class="tool-desc">Intake paper receipts, invoices, and physical camera snaps with deskew and shadow cleanup.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="to-pdf">
+          <div class="tool-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #FBBF24;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">HTML to PDF</span></div>
+            <p class="tool-desc">Compile HTML5 and CSS stylesheets into standard vector PDF pages with page-break awareness.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="to-pdf">
+          <div class="tool-icon-box" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Markdown to PDF</span></div>
+            <p class="tool-desc">Turn README files, release notes, and documentation into executive published PDF papers.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="to-pdf">
+          <div class="tool-icon-box" style="background: rgba(100, 116, 139, 0.15); color: #94A3B8;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Text to PDF</span></div>
+            <p class="tool-desc">Convert plain text files into paginated, styled PDF sheets with custom fonts and margins.</p>
+          </div>
+        </div>
+
+        <!-- 5. Edit & Forms -->
+        <div class="tool-card" data-cat="edit-forms">
+          <div class="tool-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #34D399;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/><path d="M12 11v6m-3-3h6"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">OCR PDF</span><span class="tool-badge-new">NEW</span></div>
+            <p class="tool-desc">Optical character recognition. Turn scanned images into selectable, searchable text layers.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="edit-forms">
+          <div class="tool-icon-box" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">AcroForms Engine</span></div>
+            <p class="tool-desc">Fill out interactive PDF forms, validate field inputs, and extract submitted values to JSON.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="edit-forms">
+          <div class="tool-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #FBBF24;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Flatten PDF</span></div>
+            <p class="tool-desc">Merge all form fields, vector stamps, and annotations permanently into the native page content stream.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="edit-forms">
+          <div class="tool-icon-box" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Sign PDF</span></div>
+            <p class="tool-desc">Vector signature studio with 4 cursive calligraphy models, image uploads, and 120Hz smooth ink.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="edit-forms">
+          <div class="tool-icon-box" style="background: rgba(225, 29, 72, 0.15); color: #FB7185;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Document Diff</span></div>
+            <p class="tool-desc">Side-by-side visual DOM diff comparing two revisions with color-coded additions, deletions, and layout changes.</p>
+          </div>
+        </div>
+
+        <!-- 6. AI & Automation -->
+        <div class="tool-card" data-cat="ai-auto">
+          <div class="tool-icon-box" style="background: rgba(234, 88, 12, 0.15); color: #FB923C;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">Batch Pipeline Builder</span><span class="tool-badge-new">POWER</span></div>
+            <p class="tool-desc">Chain multiple operations (e.g. OCR → Crop → Compress → Watermark → Encrypt) into a 1-click batch pipeline.</p>
+          </div>
+        </div>
+
+        <div class="tool-card" data-cat="ai-auto">
+          <div class="tool-icon-box" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">AI Local Intelligence</span></div>
+            <p class="tool-desc">Offline document summarizer, keyword extractor, and translator executing entirely on your local CPU.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       4. Core Engineering Pillars
        ========================================================================== -->
   <section class="features-grid-section" id="pillars">
     <div class="container">
       <div class="section-title-wrap">
-        <span class="label-mono">CORE CAPABILITIES</span>
+        <span class="label-mono">CORE ARCHITECTURE // BUILT FOR HIGH DENSITY</span>
         <h2 class="section-headline">Engineered without compromise.</h2>
         <p class="section-description">
-          Every tool in FryPDF is designed for high-density, precise document manipulation.
+          Designed for demanding engineering, financial, legal, and research environments where cloud upload is strictly forbidden.
         </p>
       </div>
 
       <div class="pillars-grid">
-        <!-- 1. AcroForms & Live Validation -->
+        <!-- 1. Canvas & Design Engine -->
         <div class="pillar-card">
           <div>
-            <span class="pillar-badge">01 // FORMS & VALIDATION</span>
+            <span class="pillar-badge">01 // VECTOR CANVAS ENGINE</span>
+            <h3>Interactive Document Canvas</h3>
+            <p>
+              Full multi-element selection, freeform rotation, precision resizing, snap-to-grid (20pt intervals), rulers, alignment guides, and 25%-500% hardware-accelerated zoom scaling.
+            </p>
+          </div>
+          <div class="pillar-tech-snippet">
+            canvas: "Avalonia Direct2D/Skia"<br/>
+            zoom_range: "25% - 500% smooth"<br/>
+            selection: "MultiElement Marquee"
+          </div>
+        </div>
+
+        <!-- 2. AcroForms & Live Validation -->
+        <div class="pillar-card">
+          <div>
+            <span class="pillar-badge">02 // FORMS &amp; VALIDATION</span>
             <h3>Interactive AcroForms Engine</h3>
             <p>
-              Deploy text fields, multi-select checkboxes, radio groups, combo dropdowns, and signature containers. Full mathematical dependency graph recalculates instantly on keystrokes.
+              Deploy text inputs, checkboxes, radio groups, combo dropdowns, and signature containers. Full mathematical dependency graph recalculates instantly on keystrokes.
             </p>
           </div>
           <div class="pillar-tech-snippet">
             formula: "=SUM(subtotal, tax)"<br/>
-            validation: "^[A-Z0-9._%+-]+@"
+            validation: "^[A-Z0-9._%+-]+@"<br/>
+            state: "Zero-Latency Reactive Graph"
           </div>
         </div>
 
-        <!-- 2. LaTeX Math Equation Studio -->
+        <!-- 3. LaTeX Math Equation Studio -->
         <div class="pillar-card">
           <div>
-            <span class="pillar-badge">02 // SCIENTIFIC TYPESETTING</span>
+            <span class="pillar-badge">03 // SCIENTIFIC TYPESETTING</span>
             <h3>LaTeX Math Equation Layout</h3>
             <p>
-              Render clean TeX mathematical syntax into vector paths. Supports integrals, summations, matrices, and fractions with sub-pixel alignment at any zoom level.
+              Render clean TeX mathematical syntax directly into vector paths. Supports integrals, summations, matrices, and fractions with sub-pixel alignment at any zoom level.
             </p>
           </div>
           <div class="pillar-tech-snippet">
-            \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+            \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}<br/>
+            render: "SubPixel Vector Geometry"
           </div>
         </div>
 
-        <!-- 3. Signature Studio & Ink -->
+        <!-- 4. Signature Studio & Ink -->
         <div class="pillar-card">
           <div>
-            <span class="pillar-badge">03 // CRYPTOGRAPHIC INK</span>
+            <span class="pillar-badge">04 // CRYPTOGRAPHIC INK</span>
             <h3>Vector Signature Studio</h3>
             <p>
-              Sign legal documents with 4 cursive calligraphy typography models or draw smooth 60fps vector ink paths using cubic bezier curve smoothing.
+              Sign legal documents with 4 cursive calligraphy typography models or draw smooth 60fps vector ink paths using cubic bezier curve smoothing and pressure simulation.
             </p>
           </div>
           <div class="pillar-tech-snippet">
             engine: "BezierSplineFilter"<br/>
-            sampling: "120Hz Hardware Digitizer"
+            sampling: "120Hz Hardware Digitizer"<br/>
+            calligraphy: "4 Vector Font Models"
           </div>
         </div>
 
-        <!-- 4. 13 Dynamic Vector Charts -->
+        <!-- 5. 13 Dynamic Vector Charts -->
         <div class="pillar-card">
           <div>
-            <span class="pillar-badge">04 // DATA VISUALIZATION</span>
+            <span class="pillar-badge">05 // DATA VISUALIZATION</span>
             <h3>13 Dynamic Vector Charts</h3>
             <p>
-              Embed Bar, Column, Line, Smooth Curve, Area, Donut, Pie, Radar, Scatter, Bubble, Candlestick, Waterfall, and Polar charts directly into documents.
+              Embed Bar, Column, Line, Smooth Curve, Area, Donut, Pie, Radar, Scatter, Bubble, Candlestick, Waterfall, and Polar charts directly into documents with live color customization.
             </p>
           </div>
           <div class="pillar-tech-snippet">
-            types: ["Donut", "Waterfall", "Radar"]<br/>
+            types: ["Waterfall", "Radar", "Candle"]<br/>
             output: "Lossless Skia Vector Path"
           </div>
         </div>
 
-        <!-- 5. Legal Redaction & Bates -->
+        <!-- 6. Legal Redaction & Bates -->
         <div class="pillar-card">
           <div>
-            <span class="pillar-badge">05 // LEGAL COMPLIANCE</span>
-            <h3>FOIA Redact & Bates Numbering</h3>
+            <span class="pillar-badge">06 // LEGAL COMPLIANCE</span>
+            <h3>FOIA Redact &amp; Bates Numbering</h3>
             <p>
-              Permanent irreversible pixel destruction for sensitive PII with FOIA exemption codes ((b)(4), (b)(6)) and 6-anchor sequential Bates docket indexing.
+              Permanent irreversible pixel destruction for sensitive PII with FOIA exemption codes ((b)(4), (b)(6)) and 6-anchor sequential Bates docket indexing across entire discovery bundles.
             </p>
           </div>
           <div class="pillar-tech-snippet">
-            bates_mask: "PREFIX-{YYYY}-{00000}"<br/>
+            bates_mask: "CONF-BATES-{YYYY}-{00000}"<br/>
             redaction: "PixelBurnInPermanent"
-          </div>
-        </div>
-
-        <!-- 6. Side-by-Side Visual Diff -->
-        <div class="pillar-card">
-          <div>
-            <span class="pillar-badge">06 // REVISION CONTROL</span>
-            <h3>Visual Document Diff Analyzer</h3>
-            <p>
-              Compare project revisions side-by-side. Highlights modified text, relocated vector coordinates, and updated table cells with color-coded diff overlays.
-            </p>
-          </div>
-          <div class="pillar-tech-snippet">
-            diff_mode: "StructuralDOMComparison"<br/>
-            status: "4 added, 1 modified, 0 removed"
           </div>
         </div>
       </div>
@@ -905,12 +1595,119 @@
   </section>
 
   <!-- ==========================================================================
-       5. Architecture & Runtime Specifications
+       5. Open Source Transparency & License Hub
+       ========================================================================== -->
+  <section class="licensing-section" id="licensing">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="label-mono">OPEN SOURCE TRANSPARENCY // MIT LICENSED</span>
+        <h2 class="section-headline">100% Free &amp; Open Source Software.</h2>
+        <p class="section-description">
+          Transparency by design: all 12 underlying open-source libraries, document engines, graphics frameworks, and runtimes used in FryPDF are fully attributed with verbatim licenses in-app.
+        </p>
+      </div>
+
+      <div class="licenses-grid">
+        <!-- 1. Avalonia UI -->
+        <div class="license-card">
+          <div>
+            <div class="license-card-header">
+              <span class="license-name">Avalonia UI (v12.1.1)</span>
+              <span class="license-badge license-badge-mit">MIT</span>
+            </div>
+            <p class="license-desc">Cross-platform XAML GUI framework powering the native desktop windowing, responsive layout, hardware graphics, and MVVM bindings.</p>
+          </div>
+          <div class="license-meta">
+            <span>AvaloniaUI Foundation</span>
+            <span>avaloniaui.net</span>
+          </div>
+        </div>
+
+        <!-- 2. QuestPDF -->
+        <div class="license-card">
+          <div>
+            <div class="license-card-header">
+              <span class="license-name">QuestPDF</span>
+              <span class="license-badge license-badge-community">MIT/Community</span>
+            </div>
+            <p class="license-desc">High-performance fluent document layout engine powering the export and compilation of responsive vector PDF files.</p>
+          </div>
+          <div class="license-meta">
+            <span>Marcin Ziąbek</span>
+            <span>questpdf.com</span>
+          </div>
+        </div>
+
+        <!-- 3. PdfPig & Skia -->
+        <div class="license-card">
+          <div>
+            <div class="license-card-header">
+              <span class="license-name">PdfPig &amp; SkiaSharp</span>
+              <span class="license-badge license-badge-apache">Apache 2.0 / MIT</span>
+            </div>
+            <p class="license-desc">Deep PDF structural parser, text stream extractor, glyph bounding inspector, and Google Skia 2D graphics rasterizer.</p>
+          </div>
+          <div class="license-meta">
+            <span>PdfPig &amp; Mono Project</span>
+            <span>github.com/UglyToad/PdfPig</span>
+          </div>
+        </div>
+
+        <!-- 4. OpenXML & Tabula -->
+        <div class="license-card">
+          <div>
+            <div class="license-card-header">
+              <span class="license-name">DocumentFormat.OpenXml &amp; Tabula</span>
+              <span class="license-badge license-badge-mit">MIT</span>
+            </div>
+            <p class="license-desc">Enables conversion of PDF pages into Microsoft Office Word (.docx), Excel (.xlsx) spreadsheets, and PowerPoint (.pptx).</p>
+          </div>
+          <div class="license-meta">
+            <span>.NET Foundation</span>
+            <span>github.com/dotnet/Open-XML-SDK</span>
+          </div>
+        </div>
+
+        <!-- 5. QRCoder & Material Icons -->
+        <div class="license-card">
+          <div>
+            <div class="license-card-header">
+              <span class="license-name">QRCoder &amp; Material Icons</span>
+              <span class="license-badge license-badge-mit">MIT</span>
+            </div>
+            <p class="license-desc">Pure .NET optical QR code generator supporting ECC error correction alongside 5,000+ vector Material Design icons.</p>
+          </div>
+          <div class="license-meta">
+            <span>Raffael Herrmann</span>
+            <span>github.com/codebude/QRCoder</span>
+          </div>
+        </div>
+
+        <!-- 6. CommunityToolkit MVVM & .NET 10 -->
+        <div class="license-card">
+          <div>
+            <div class="license-card-header">
+              <span class="license-name">.NET 10 &amp; MVVM Toolkit</span>
+              <span class="license-badge license-badge-mit">MIT</span>
+            </div>
+            <p class="license-desc">Modern C# source generators, asynchronous RelayCommands, and Microsoft DependencyInjection container architecture.</p>
+          </div>
+          <div class="license-meta">
+            <span>Microsoft Corporation</span>
+            <span>github.com/CommunityToolkit/dotnet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       6. Architecture & Runtime Specifications
        ========================================================================== -->
   <section class="architecture-section" id="architecture">
     <div class="container">
       <div class="section-title-wrap">
-        <span class="label-mono">UNDER THE HOOD</span>
+        <span class="label-mono">UNDER THE HOOD // NATIVE RUNTIME</span>
         <h2 class="section-headline">Native performance specifications.</h2>
         <p class="section-description">
           Built with modern .NET 10, SkiaSharp SIMD graphics, and Avalonia UI 12.1.
@@ -931,7 +1728,7 @@
           <div class="lbl">Cloud Network Sockets</div>
         </div>
         <div class="spec-card">
-          <div class="val">120 Passed</div>
+          <div class="val">313 Passed</div>
           <div class="lbl">Automated Test Suites (xUnit)</div>
         </div>
       </div>
@@ -939,7 +1736,7 @@
   </section>
 
   <!-- ==========================================================================
-       6. Technical Comparison Matrix
+       7. Technical Comparison Matrix
        ========================================================================== -->
   <section class="comparison-section" id="comparison">
     <div class="container">
@@ -962,17 +1759,24 @@
           <tbody>
             <tr>
               <td><strong>100% Offline (Zero Telemetry)</strong></td>
-              <td class="col-fry"><span class="status-yes">✓ Native Local</span></td>
+              <td class="col-fry"><span class="status-yes">✓ Native Local CPU</span></td>
               <td><span class="status-no">✗ Cloud Dependent</span></td>
               <td><span class="status-no">✗ Mandatory Cloud</span></td>
               <td><span class="status-yes">✓ Offline</span></td>
             </tr>
             <tr>
               <td><strong>Pricing Model</strong></td>
-              <td class="col-fry"><span class="status-yes">✓ Free & Open</span></td>
+              <td class="col-fry"><span class="status-yes">✓ Free &amp; Open Source</span></td>
               <td>$239.88 / year</td>
               <td>$120.00 / year</td>
               <td>Bundled OS</td>
+            </tr>
+            <tr>
+              <td><strong>Dedicated 32-Tool Studio</strong></td>
+              <td class="col-fry"><span class="status-yes">✓ Full 32 Tools Suite</span></td>
+              <td><span class="status-yes">✓ Partial Suite</span></td>
+              <td><span class="status-no">✗ Basic Editor</span></td>
+              <td><span class="status-no">✗ Viewer Only</span></td>
             </tr>
             <tr>
               <td><strong>Live AcroForms Formula Calculations</strong></td>
@@ -1003,6 +1807,13 @@
               <td><span class="status-no">✗ No</span></td>
             </tr>
             <tr>
+              <td><strong>Batch Pipeline Workflow Builder</strong></td>
+              <td class="col-fry"><span class="status-yes">✓ Chainable Automation</span></td>
+              <td><span class="status-yes">✓ Action Wizard</span></td>
+              <td><span class="status-no">✗ No</span></td>
+              <td><span class="status-no">✗ No</span></td>
+            </tr>
+            <tr>
               <td><strong>Visual Revision Diffing</strong></td>
               <td class="col-fry"><span class="status-yes">✓ Side-by-Side DOM</span></td>
               <td><span class="status-yes">✓ Pro Only</span></td>
@@ -1016,30 +1827,30 @@
   </section>
 
   <!-- ==========================================================================
-       7. Distribution Hub
+       8. Distribution Hub
        ========================================================================== -->
   <section class="install-section" id="install">
     <div class="container">
       <div class="section-title-wrap">
-        <span class="label-mono">DISTRIBUTION</span>
+        <span class="label-mono">DISTRIBUTION // NATIVE BINARIES</span>
         <h2 class="section-headline">Install FryPDF Studio</h2>
-        <p class="section-description">Native binaries available for macOS, Windows, and Linux.</p>
+        <p class="section-description">Native standalone binaries available for macOS, Windows, and Linux.</p>
       </div>
 
       <div class="install-tabs">
         <button class="install-tab-btn active" onclick="switchInstallTab('macos', this)">macOS</button>
         <button class="install-tab-btn" onclick="switchInstallTab('windows', this)">Windows</button>
-        <button class="install-tab-btn" onclick="switchInstallTab('linux', this)">Linux & Source</button>
+        <button class="install-tab-btn" onclick="switchInstallTab('linux', this)">Linux &amp; Source</button>
       </div>
 
       <div class="install-pane" id="install-pane-content">
-        <h3 style="font-size: 1.1rem; margin-bottom: 8px;">macOS (Universal / Apple Silicon & Intel)</h3>
+        <h3 style="font-size: 1.1rem; margin-bottom: 8px;">macOS (Universal / Apple Silicon &amp; Intel)</h3>
         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
-          Standalone application bundle with notarized DMG installer. Requires macOS 12.0 or later.
+          Standalone application bundle with notarized DMG installer. Requires macOS 12.0 (Monterey) or later.
         </p>
 
         <div style="display: flex; gap: 10px; margin-bottom: 16px;">
-          <a href="https://github.com" class="btn btn-crimson">Download FryPDF-v1.0.0.dmg</a>
+          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson">Download FryPDF-v1.0.0.dmg</a>
         </div>
 
         <div class="code-block-wrap">
@@ -1053,41 +1864,55 @@
   </section>
 
   <!-- ==========================================================================
-       8. FAQ Section
+       9. Technical FAQ Section
        ========================================================================== -->
   <section class="faq-section">
     <div class="container">
       <div class="section-title-wrap">
-        <span class="label-mono">DOCUMENTATION & SUPPORT</span>
+        <span class="label-mono">DOCUMENTATION &amp; SUPPORT</span>
         <h2 class="section-headline">Frequently Asked Questions</h2>
       </div>
 
       <div class="faq-grid">
         <div class="faq-item-box">
-          <h4>Is FryPDF really 100% offline?</h4>
+          <h4>Is FryPDF really 100% offline and privacy-first?</h4>
           <p>
-            Yes. FryPDF has zero telemetry, zero analytics beacons, and no network sockets. All document parsing, AcroForm computations, and PDF export occur on your local CPU.
+            Yes. FryPDF has zero telemetry, zero analytics beacons, and opens zero network sockets. All document parsing, AcroForm computations, OCR processing, format conversions, and PDF compilation occur directly on your local CPU.
+          </p>
+        </div>
+
+        <div class="faq-item-box">
+          <h4>How do the 32 PDF tools work without modal popups?</h4>
+          <p>
+            Every tool in FryPDF opens in a dedicated full-page workspace within the Home dashboard. You get rich input file queues, live configuration sidebars, output previews, and 1-click chained navigation directly to subsequent tools without annoying dialogs.
           </p>
         </div>
 
         <div class="faq-item-box">
           <h4>What is the .frypdf file format?</h4>
           <p>
-            <code>.frypdf</code> is a lossless JSON-based project schema that stores full vector coordinates, live LaTeX formulas, and AcroForm binding graphs without rasterizing your document.
+            <code>.frypdf</code> is a lossless JSON project schema that stores full vector coordinate systems, live LaTeX formulas, AcroForm bindings, and document metadata without rasterizing your artwork.
           </p>
         </div>
 
         <div class="faq-item-box">
           <h4>How does FOIA redaction work?</h4>
           <p>
-            Unlike superficial black highlighter boxes, FryPDF physically strips the underlying text and vector paths from the compiled document and replaces them with solid pixel fills and legal exemption tags.
+            Unlike superficial black highlighter overlays, FryPDF physically strips the underlying text strings and vector paths from the compiled document content stream, replacing them with solid pixel fills and legal exemption tags.
           </p>
         </div>
 
         <div class="faq-item-box">
-          <h4>What are the build prerequisites?</h4>
+          <h4>Can I build batch automated workflows?</h4>
           <p>
-            Pre-compiled standalone binaries include their own self-contained runtime. If building directly from source, you only need the standard .NET 10 SDK.
+            Yes. The built-in Batch Pipeline Workflow Builder allows chaining multiple operations (e.g. OCR scanned pages &rarr; Compress &rarr; Add Watermark &rarr; Encrypt) to process folders of documents in a single automated pass.
+          </p>
+        </div>
+
+        <div class="faq-item-box">
+          <h4>What are the build prerequisites from source?</h4>
+          <p>
+            Pre-compiled standalone binaries include their own self-contained runtime. If building directly from source, you only need the standard .NET 10 SDK and can launch immediately using <code>./run</code>.
           </p>
         </div>
       </div>
@@ -1095,24 +1920,25 @@
   </section>
 
   <!-- ==========================================================================
-       9. Footer
+       10. Footer
        ========================================================================== -->
   <footer>
     <div class="container footer-flex">
       <div>
-        <strong>FryPDF Studio</strong> — Copyright © 2026 Code Fry Dev. All rights reserved.
+        <strong>FryPDF Studio</strong> — Copyright © 2026 Code Fry Dev. All rights reserved. Free &amp; Open Source under MIT License.
       </div>
       <ul class="footer-links">
+        <li><a href="https://codefrydev.in">Developer Portal</a></li>
         <li><a href="docs/ARCHITECTURE.md">Architecture</a></li>
         <li><a href="docs/FEATURES.md">Features</a></li>
         <li><a href="docs/CONTRIBUTING.md">Contributing</a></li>
-        <li><a href="https://github.com">GitHub</a></li>
+        <li><a href="https://github.com/CodeFryDev/FryPDF">GitHub</a></li>
       </ul>
     </div>
   </footer>
 
   <!-- ==========================================================================
-       10. Client Logic (Monotonic & Fast)
+       11. Client Logic
        ========================================================================== -->
   <script>
     // 1. Install Tab Switcher
@@ -1149,7 +1975,7 @@
             ${d.desc}
           </p>
           <div style="display: flex; gap: 10px; margin-bottom: 16px;">
-            <a href="https://github.com" class="btn btn-crimson">${d.btnText}</a>
+            <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson">${d.btnText}</a>
           </div>
           <div class="code-block-wrap">
             <span>${d.cmd}</span>
@@ -1159,6 +1985,21 @@
           </div>
         `;
       }
+    }
+
+    // 2. 32 Tools Category Filter
+    function filterTools(category, btn) {
+      document.querySelectorAll('.tool-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const cards = document.querySelectorAll('#tools-grid .tool-card');
+      cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-cat') === category) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
     }
 
     // 3. Copy Helper
@@ -1171,18 +2012,7 @@
       });
     }
 
-    // 4. Local Compile Simulation
-    function triggerLocalCompile() {
-      const toast = document.getElementById('toast');
-      toast.innerText = 'QuestPDF compiling local binary... (0.3s)';
-      toast.classList.add('visible');
-      setTimeout(() => {
-        toast.innerText = '✓ PDF rendered successfully. 0 bytes uploaded.';
-      }, 500);
-      setTimeout(() => toast.classList.remove('visible'), 2500);
-    }
-
-    // 5. OS Auto-Detection
+    // 4. OS Auto-Detection
     window.addEventListener('DOMContentLoaded', () => {
       const ua = navigator.userAgent.toLowerCase();
       const heroBtn = document.getElementById('hero-btn-label');

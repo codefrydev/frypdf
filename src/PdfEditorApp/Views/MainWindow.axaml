@@ -16,7 +16,7 @@
         Height="840"
         MinWidth="960"
         MinHeight="640"
-        Background="{StaticResource WinBgBrush}">
+        Background="{DynamicResource WinBgBrush}">
 
     <Window.Resources>
         <converters:ZoomPercentageConverter x:Key="ZoomPercentageConverter" />
@@ -26,6 +26,10 @@
 
     <!-- Global Cross-Platform KeyBindings (macOS Cmd & Win/Linux Ctrl) -->
     <Window.KeyBindings>
+        <!-- Theme Switching -->
+        <KeyBinding Gesture="Ctrl+Shift+T" Command="{Binding ToggleThemeCommand}" />
+        <KeyBinding Gesture="Cmd+Shift+T" Command="{Binding ToggleThemeCommand}" />
+
         <!-- File Operations -->
         <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveProjectCommand}" />
         <KeyBinding Gesture="Cmd+S" Command="{Binding SaveProjectCommand}" />
@@ -372,7 +376,6 @@
         <dialogs:CompareDocumentsDialog IsVisible="{Binding IsCompareDialogOpen}" />
         <dialogs:MathEquationStudioDialog IsVisible="{Binding IsMathStudioOpen}" />
         <dialogs:AboutDialog IsVisible="{Binding IsAboutDialogOpen}" />
-        <dialogs:PdfToolRunnerDialog DataContext="{Binding ToolRunner}" IsVisible="{Binding IsOpen}" />
         <dialogs:WorkflowBuilderDialog DataContext="{Binding WorkflowBuilder}" IsVisible="{Binding IsOpen}" />
     </Grid>
 

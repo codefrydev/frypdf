@@ -13,11 +13,11 @@
     </UserControl.Resources>
 
     <UserControl.Styles>
-        <!-- Category Filter Pill -->
+        <!-- Category Filter Pill Style -->
         <Style Selector="Button.category-filter-btn">
-            <Setter Property="Background" Value="#1E293B" />
-            <Setter Property="Foreground" Value="#94A3B8" />
-            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="Background" Value="{DynamicResource WinInputBgBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="20" />
             <Setter Property="Padding" Value="14,6" />
@@ -32,44 +32,47 @@
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="Button.category-filter-btn:pointerover">
-            <Setter Property="Background" Value="#263348" />
-            <Setter Property="Foreground" Value="#E2E8F0" />
-            <Setter Property="BorderBrush" Value="#475569" />
+        <Style Selector="Button.category-filter-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+        </Style>
+        <Style Selector="Button.category-filter-btn.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
         </Style>
         <Style Selector="Button.category-filter-btn.active">
-            <Setter Property="Background" Value="#0F6CBD" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="BorderBrush" Value="#38BDF8" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
 
-        <!-- Library Card -->
+        <!-- Library Card Hover Style -->
         <Style Selector="Border.library-card">
-            <Setter Property="Background" Value="#131C2B" />
-            <Setter Property="BorderBrush" Value="#1E293B" />
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="BoxShadow" Value="0 2 12 #28000000" />
+            <Setter Property="BoxShadow" Value="0 2 8 #08000000" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
                     <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Border.library-card:pointerover">
-            <Setter Property="BorderBrush" Value="#38BDF8" />
-            <Setter Property="BoxShadow" Value="0 6 24 #200F6CBD" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="BoxShadow" Value="0 6 20 #120F6CBD" />
             <Setter Property="RenderTransform" Value="translateY(-2px)" />
         </Style>
 
-        <!-- Card Action Button -->
+        <!-- Action Button Style -->
         <Style Selector="Button.card-action-btn">
-            <Setter Property="Background" Value="#1E293B" />
-            <Setter Property="Foreground" Value="#94A3B8" />
-            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="Background" Value="{DynamicResource WinInputBgBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Padding" Value="10,5" />
@@ -84,465 +87,464 @@
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="Button.card-action-btn:pointerover">
-            <Setter Property="Background" Value="#0F2744" />
-            <Setter Property="Foreground" Value="#38BDF8" />
-            <Setter Property="BorderBrush" Value="#38BDF8" />
+        <Style Selector="Button.card-action-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
         </Style>
     </UserControl.Styles>
 
-    <!-- Dark page background -->
-    <Border Background="#0B1222">
-        <StackPanel Margin="32,24,32,48" Spacing="22">
+    <StackPanel Margin="32,24,32,48" Spacing="20">
 
-            <!-- ================================================================= -->
-            <!-- 1. TOP HEADER & TITLE ROW                                         -->
-            <!-- ================================================================= -->
-            <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
-                <!-- Left: Icon & Title -->
-                <StackPanel Grid.Column="0" Spacing="4">
+        <!-- ================================================================= -->
+        <!-- 1. TOP HEADER & TITLE ROW                                         -->
+        <!-- ================================================================= -->
+        <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+            <!-- Left: Icon & Title -->
+            <StackPanel Grid.Column="0" Spacing="3">
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Border Width="36" Height="36" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="8">
+                        <materialIcons:MaterialIcon Kind="CertificateOutline" Width="20" Height="20" Foreground="#4F46E5" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="Licenses &amp; Third-Party Tools" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                    <Border Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Padding="8,2" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <Ellipse Width="6" Height="6" Fill="#10B981" />
+                            <TextBlock Text="100% OPEN SOURCE" FontSize="10" FontWeight="Bold" Foreground="#047857" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+                <TextBlock Text="Transparency by design: all open-source libraries, document engines, graphics frameworks, and tools used in FryPDF."
+                           FontSize="12.5" Foreground="{DynamicResource WinMutedBrush}" Margin="46,0,0,0" />
+            </StackPanel>
+
+            <!-- Right: Global Actions -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Command="{Binding CopyFullAttributionsCommand}"
+                        Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
+                        BorderThickness="1"
+                        Foreground="{DynamicResource WinTextBrush}"
+                        CornerRadius="8"
+                        Padding="14,8"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Cursor="Hand"
+                        ToolTip.Tip="Copy all third-party license notices to clipboard as a formatted text document">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="ContentCopy" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
+                        <TextBlock Text="Copy Full Notice" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button Command="{Binding OpenLibraryWebsiteCommand}"
+                        CommandParameter="https://codefrydev.in"
+                        Background="{DynamicResource WinAccentBrush}"
+                        Foreground="White"
+                        CornerRadius="8"
+                        Padding="14,8"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Cursor="Hand"
+                        ToolTip.Tip="Visit CodeFryDev Developer Portal">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="Web" Width="15" Height="15" />
+                        <TextBlock Text="codefrydev.in" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- ================================================================= -->
+        <!-- 2. FRYPDF MAIN PROJECT LICENSE HERO CARD                          -->
+        <!-- ================================================================= -->
+        <Border Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="14"
+                Padding="22,20"
+                BoxShadow="0 2 10 #08000000">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Logo Mark -->
+                <Border Grid.Column="0" Width="54" Height="54" Background="#0F172A" BorderBrush="#38BDF8" BorderThickness="1.5" CornerRadius="12" Margin="0,0,18,0" VerticalAlignment="Center">
+                    <Viewbox Width="34" Height="34" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Canvas Width="196" Height="196">
+                            <Path Fill="#38BDF8" Data="M50 126H145V133C145 157.853 124.853 178 100 178H95C70.1472 178 50 157.853 50 133V126Z" />
+                            <Path Fill="#F8FAFC" Data="M39.1328 112.539L51.3008 116.797V122.441L34.2305 115.352V111.27L39.1328 112.539ZM51.3008 109.082L39.1328 113.418L34.2305 114.648V110.547L51.3008 103.457V109.082ZM72.3359 115.469H78.6641C78.5599 117.422 78.026 119.147 77.0625 120.645C76.112 122.129 74.7904 123.294 73.0977 124.141C71.4049 124.974 69.3932 125.391 67.0625 125.391C65.2005 125.391 63.5339 125.072 62.0625 124.434C60.5911 123.796 59.3411 122.884 58.3125 121.699C57.2969 120.501 56.5156 119.062 55.9688 117.383C55.4349 115.69 55.168 113.783 55.168 111.66V109.922C55.168 107.799 55.4479 105.892 56.0078 104.199C56.5677 102.507 57.3685 101.061 58.4102 99.8633C59.4518 98.6654 60.7018 97.7474 62.1602 97.1094C63.6185 96.4714 65.2461 96.1523 67.043 96.1523C69.4648 96.1523 71.5091 96.5885 73.1758 97.4609C74.8424 98.3333 76.1315 99.5312 77.043 101.055C77.9674 102.578 78.5208 104.316 78.7031 106.27H72.3555C72.3034 105.163 72.0951 104.232 71.7305 103.477C71.3659 102.708 70.806 102.129 70.0508 101.738C69.2956 101.348 68.293 101.152 67.043 101.152C66.1315 101.152 65.3307 101.322 64.6406 101.66C63.9635 101.999 63.3971 102.526 62.9414 103.242C62.4987 103.958 62.1667 104.87 61.9453 105.977C61.724 107.07 61.6133 108.372 61.6133 109.883V111.66C61.6133 113.158 61.7109 114.453 61.9062 115.547C62.1016 116.641 62.4141 117.546 62.8438 118.262C63.2865 118.978 63.8529 119.512 64.543 119.863C65.2331 120.215 66.0729 120.391 67.0625 120.391C68.1953 120.391 69.1393 120.215 69.8945 119.863C70.6497 119.499 71.2292 118.952 71.6328 118.223C72.0365 117.493 72.2708 116.576 72.3359 115.469ZM88.5664 96.5625V125H82.1992V96.5625H88.5664ZM99.7578 108.555V113.477H86.7891V108.555H99.7578ZM101.008 96.5625V101.504H86.7891V96.5625H101.008ZM113.117 125H106.867L106.906 120.078H113.117C114.536 120.078 115.734 119.753 116.711 119.102C117.688 118.438 118.43 117.461 118.938 116.172C119.445 114.87 119.699 113.288 119.699 111.426V110.117C119.699 108.711 119.556 107.474 119.27 106.406C118.983 105.326 118.56 104.421 118 103.691C117.44 102.962 116.743 102.415 115.91 102.051C115.09 101.686 114.146 101.504 113.078 101.504H106.75V96.5625H113.078C115.005 96.5625 116.763 96.888 118.352 97.5391C119.953 98.1901 121.333 99.1211 122.492 100.332C123.664 101.543 124.569 102.975 125.207 104.629C125.845 106.283 126.164 108.125 126.164 110.156V111.426C126.164 113.444 125.845 115.286 125.207 116.953C124.569 118.607 123.664 120.039 122.492 121.25C121.333 122.448 119.96 123.372 118.371 124.023C116.783 124.674 115.031 125 113.117 125ZM110.48 96.5625V125H104.113V96.5625H110.48ZM141.789 96.5625L131.73 127.441H127.297L137.355 96.5625H141.789ZM156.594 113.32L144.406 109.082V103.457L161.516 110.547V114.668L156.594 113.32ZM144.406 116.855L156.613 112.5L161.516 111.27V115.371L144.406 122.461V116.855Z" />
+                            <Path Fill="#F59E0B" Data="M68.0627 60.6519C68.3821 54.8593 73.1743 46 73.1743 46C73.1743 46 71.2574 55.5407 71.5769 60.6519C71.8964 65.763 72.5354 65.0815 73.4938 68.8296C74.4522 72.5778 73.8133 74.2815 73.4938 77.0074C73.1743 79.7333 72.8549 80.0741 72.2159 83.4815C71.5769 86.8889 69.9795 92 69.9795 92C69.9795 92 70.299 84.3333 70.299 81.437C70.299 78.5407 70.6185 74.6222 69.6601 70.5333C68.7017 66.4444 67.7432 66.4444 68.0627 60.6519Z" />
+                            <Path Fill="#EF4444" Data="M99.9582 38.7481C99.7452 30.9407 96.5504 19 96.5504 19C96.5504 19 97.8284 31.8593 97.6154 38.7481C97.4024 45.637 96.9764 44.7185 96.3375 49.7704C95.6985 54.8222 96.1245 57.1185 96.3375 60.7926C96.5505 64.4667 96.7634 64.9259 97.1894 69.5185C97.6154 74.1111 98.6803 81 98.6803 81C98.6803 81 98.4673 70.6667 98.4673 66.763C98.4673 62.8593 98.2544 57.5778 98.8933 52.0667C99.5322 46.5556 100.171 46.5556 99.9582 38.7481Z" />
+                            <Path Fill="#F59E0B" Data="M118.042 64.7407C118.255 59.7037 121.45 52 121.45 52C121.45 52 120.172 60.2963 120.385 64.7407C120.598 69.1852 121.024 68.5926 121.663 71.8519C122.301 75.1111 121.876 76.5926 121.663 78.963C121.45 81.3333 121.237 81.6296 120.811 84.5926C120.385 87.5556 119.32 92 119.32 92C119.32 92 119.533 85.3333 119.533 82.8148C119.533 80.2963 119.746 76.8889 119.107 73.3333C118.468 69.7778 117.829 69.7778 118.042 64.7407Z" />
+                        </Canvas>
+                    </Viewbox>
+                </Border>
+
+                <!-- Information -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
                     <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                        <Border Width="36" Height="36" Background="#1E2D50" BorderBrush="#4F46E5" BorderThickness="1" CornerRadius="9">
-                            <materialIcons:MaterialIcon Kind="CertificateOutline" Width="20" Height="20" Foreground="#818CF8" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock Text="FryPDF Desktop Studio" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <Border Background="{DynamicResource WinAccentLightBrush}" BorderBrush="{DynamicResource WinAccentBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="6,1.5">
+                            <TextBlock Text="v1.0.0" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
                         </Border>
-                        <TextBlock Text="Licenses &amp; Third-Party Tools" FontSize="22" FontWeight="Bold" Foreground="#F1F5F9" VerticalAlignment="Center" />
-                        <Border Background="#052E16" BorderBrush="#166534" BorderThickness="1" CornerRadius="6" Padding="8,2" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <Ellipse Width="6" Height="6" Fill="#22C55E" />
-                                <TextBlock Text="100% OPEN SOURCE" FontSize="10" FontWeight="Bold" Foreground="#4ADE80" />
-                            </StackPanel>
+                        <Border Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="5" Padding="6,1.5">
+                            <TextBlock Text="MIT License" FontSize="10.5" FontWeight="SemiBold" Foreground="#047857" />
                         </Border>
                     </StackPanel>
-                    <TextBlock Text="Transparency by design: all open-source libraries, document engines, graphics frameworks, and tools used in FryPDF."
-                               FontSize="12.5" Foreground="#64748B" Margin="46,0,0,0" />
+                    <TextBlock Text="Copyright © 2026 Code Fry Dev. All rights reserved." FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
+                    <TextBlock Text="Privacy Guarantee: 100% offline and local document processing. No cloud uploads, telemetry, or user tracking."
+                               FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
                 </StackPanel>
 
-                <!-- Right: Global Actions -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <Button Command="{Binding CopyFullAttributionsCommand}"
-                            Background="#1E293B"
-                            BorderBrush="#334155"
-                            BorderThickness="1"
-                            Foreground="#CBD5E1"
-                            CornerRadius="8"
-                            Padding="14,8"
-                            FontSize="12"
-                            FontWeight="SemiBold"
-                            Cursor="Hand"
-                            ToolTip.Tip="Copy all third-party license notices to clipboard">
-                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="ContentCopy" Width="15" Height="15" Foreground="#38BDF8" />
-                            <TextBlock Text="Copy Full Notice" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-
-                    <Button Command="{Binding OpenLibraryWebsiteCommand}"
-                            CommandParameter="https://codefrydev.in"
-                            Background="#0F6CBD"
-                            Foreground="White"
-                            CornerRadius="8"
-                            Padding="14,8"
-                            FontSize="12"
-                            FontWeight="SemiBold"
-                            Cursor="Hand"
-                            ToolTip.Tip="Visit CodeFryDev Developer Portal">
-                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="Web" Width="15" Height="15" />
-                            <TextBlock Text="codefrydev.in" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
+                <!-- Right Pill & Badges -->
+                <Border Grid.Column="2" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14,10" VerticalAlignment="Center">
+                    <StackPanel Spacing="3" HorizontalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="ShieldCheckOutline" Width="20" Height="20" Foreground="#16A34A" HorizontalAlignment="Center" />
+                        <TextBlock Text="Zero Telemetry" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
+                        <TextBlock Text="100% Local Processing" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
             </Grid>
+        </Border>
 
-            <!-- ================================================================= -->
-            <!-- 2. FRYPDF MAIN PROJECT LICENSE HERO CARD                          -->
-            <!-- ================================================================= -->
-            <Border Background="linear-gradient(135deg, #0F172A, #1E2A45)"
-                    BorderBrush="#334155"
-                    BorderThickness="1"
-                    CornerRadius="14"
-                    Padding="24"
-                    BoxShadow="0 10 40 #500F172A">
-                <Grid ColumnDefinitions="Auto,*,Auto">
-                    <!-- Logo -->
-                    <Border Grid.Column="0" Width="56" Height="56" Background="#1E293B" BorderBrush="#38BDF8" BorderThickness="1.5" CornerRadius="12" Margin="0,0,20,0" VerticalAlignment="Center">
-                        <Viewbox Width="36" Height="36" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Canvas Width="196" Height="196">
-                                <Path Fill="#38BDF8" Data="M50 126H145V133C145 157.853 124.853 178 100 178H95C70.1472 178 50 157.853 50 133V126Z" />
-                                <Path Fill="#F8FAFC" Data="M39.1328 112.539L51.3008 116.797V122.441L34.2305 115.352V111.27L39.1328 112.539ZM51.3008 109.082L39.1328 113.418L34.2305 114.648V110.547L51.3008 103.457V109.082ZM72.3359 115.469H78.6641C78.5599 117.422 78.026 119.147 77.0625 120.645C76.112 122.129 74.7904 123.294 73.0977 124.141C71.4049 124.974 69.3932 125.391 67.0625 125.391C65.2005 125.391 63.5339 125.072 62.0625 124.434C60.5911 123.796 59.3411 122.884 58.3125 121.699C57.2969 120.501 56.5156 119.062 55.9688 117.383C55.4349 115.69 55.168 113.783 55.168 111.66V109.922C55.168 107.799 55.4479 105.892 56.0078 104.199C56.5677 102.507 57.3685 101.061 58.4102 99.8633C59.4518 98.6654 60.7018 97.7474 62.1602 97.1094C63.6185 96.4714 65.2461 96.1523 67.043 96.1523C69.4648 96.1523 71.5091 96.5885 73.1758 97.4609C74.8424 98.3333 76.1315 99.5312 77.043 101.055C77.9674 102.578 78.5208 104.316 78.7031 106.27H72.3555C72.3034 105.163 72.0951 104.232 71.7305 103.477C71.3659 102.708 70.806 102.129 70.0508 101.738C69.2956 101.348 68.293 101.152 67.043 101.152C66.1315 101.152 65.3307 101.322 64.6406 101.66C63.9635 101.999 63.3971 102.526 62.9414 103.242C62.4987 103.958 62.1667 104.87 61.9453 105.977C61.724 107.07 61.6133 108.372 61.6133 109.883V111.66C61.6133 113.158 61.7109 114.453 61.9062 115.547C62.1016 116.641 62.4141 117.546 62.8438 118.262C63.2865 118.978 63.8529 119.512 64.543 119.863C65.2331 120.215 66.0729 120.391 67.0625 120.391C68.1953 120.391 69.1393 120.215 69.8945 119.863C70.6497 119.499 71.2292 118.952 71.6328 118.223C72.0365 117.493 72.2708 116.576 72.3359 115.469ZM88.5664 96.5625V125H82.1992V96.5625H88.5664ZM99.7578 108.555V113.477H86.7891V108.555H99.7578ZM101.008 96.5625V101.504H86.7891V96.5625H101.008ZM113.117 125H106.867L106.906 120.078H113.117C114.536 120.078 115.734 119.753 116.711 119.102C117.688 118.438 118.43 117.461 118.938 116.172C119.445 114.87 119.699 113.288 119.699 111.426V110.117C119.699 108.711 119.556 107.474 119.27 106.406C118.983 105.326 118.56 104.421 118 103.691C117.44 102.962 116.743 102.415 115.91 102.051C115.09 101.686 114.146 101.504 113.078 101.504H106.75V96.5625H113.078C115.005 96.5625 116.763 96.888 118.352 97.5391C119.953 98.1901 121.333 99.1211 122.492 100.332C123.664 101.543 124.569 102.975 125.207 104.629C125.845 106.283 126.164 108.125 126.164 110.156V111.426C126.164 113.444 125.845 115.286 125.207 116.953C124.569 118.607 123.664 120.039 122.492 121.25C121.333 122.448 119.96 123.372 118.371 124.023C116.783 124.674 115.031 125 113.117 125ZM110.48 96.5625V125H104.113V96.5625H110.48ZM141.789 96.5625L131.73 127.441H127.297L137.355 96.5625H141.789ZM156.594 113.32L144.406 109.082V103.457L161.516 110.547V114.668L156.594 113.32ZM144.406 116.855L156.613 112.5L161.516 111.27V115.371L144.406 122.461V116.855Z" />
-                                <Path Fill="#F59E0B" Data="M68.0627 60.6519C68.3821 54.8593 73.1743 46 73.1743 46C73.1743 46 71.2574 55.5407 71.5769 60.6519C71.8964 65.763 72.5354 65.0815 73.4938 68.8296C74.4522 72.5778 73.8133 74.2815 73.4938 77.0074C73.1743 79.7333 72.8549 80.0741 72.2159 83.4815C71.5769 86.8889 69.9795 92 69.9795 92C69.9795 92 70.299 84.3333 70.299 81.437C70.299 78.5407 70.6185 74.6222 69.6601 70.5333C68.7017 66.4444 67.7432 66.4444 68.0627 60.6519Z" />
-                                <Path Fill="#EF4444" Data="M99.9582 38.7481C99.7452 30.9407 96.5504 19 96.5504 19C96.5504 19 97.8284 31.8593 97.6154 38.7481C97.4024 45.637 96.9764 44.7185 96.3375 49.7704C95.6985 54.8222 96.1245 57.1185 96.3375 60.7926C96.5505 64.4667 96.7634 64.9259 97.1894 69.5185C97.6154 74.1111 98.6803 81 98.6803 81C98.6803 81 98.4673 70.6667 98.4673 66.763C98.4673 62.8593 98.2544 57.5778 98.8933 52.0667C99.5322 46.5556 100.171 46.5556 99.9582 38.7481Z" />
-                                <Path Fill="#F59E0B" Data="M118.042 64.7407C118.255 59.7037 121.45 52 121.45 52C121.45 52 120.172 60.2963 120.385 64.7407C120.598 69.1852 121.024 68.5926 121.663 71.8519C122.301 75.1111 121.876 76.5926 121.663 78.963C121.45 81.3333 121.237 81.6296 120.811 84.5926C120.385 87.5556 119.32 92 119.32 92C119.32 92 119.533 85.3333 119.533 82.8148C119.533 80.2963 119.746 76.8889 119.107 73.3333C118.468 69.7778 117.829 69.7778 118.042 64.7407Z" />
-                            </Canvas>
-                        </Viewbox>
-                    </Border>
+        <!-- ================================================================= -->
+        <!-- 3. INTERACTIVE SEARCH & CATEGORY FILTER BAR                       -->
+        <!-- ================================================================= -->
+        <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16">
+            <Grid ColumnDefinitions="Auto,*,Auto">
 
-                    <!-- Information -->
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                            <TextBlock Text="FryPDF Desktop Studio" FontSize="18" FontWeight="Bold" Foreground="#F1F5F9" />
-                            <Border Background="#1E293B" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="5" Padding="6,1.5">
-                                <TextBlock Text="v1.0.0" FontSize="10.5" FontWeight="SemiBold" Foreground="#38BDF8" />
-                            </Border>
-                            <Border Background="#052E16" BorderBrush="#22C55E" BorderThickness="1" CornerRadius="5" Padding="6,1.5">
-                                <TextBlock Text="MIT License" FontSize="10.5" FontWeight="SemiBold" Foreground="#4ADE80" />
-                            </Border>
-                        </StackPanel>
-                        <TextBlock Text="Copyright © 2026 Code Fry Dev. All rights reserved." FontSize="12" Foreground="#CBD5E1" />
-                        <TextBlock Text="Privacy Guarantee: 100% offline and local document processing. No cloud uploads, telemetry, or user tracking."
-                                   FontSize="11.5" Foreground="#64748B" />
-                    </StackPanel>
+                <!-- Search Input Box -->
+                <Border Grid.Column="0"
+                        Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="20"
+                        Padding="12,0"
+                        Height="36"
+                        Width="320">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="15" Height="15" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding SearchQuery}"
+                                 PlaceholderText="Search libraries, maintainers, licenses..."
+                                 FontSize="12"
+                                 Foreground="{DynamicResource WinTextBrush}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 VerticalAlignment="Center" />
+                        <Button Grid.Column="2"
+                                Command="{Binding ClearLicenseSearchCommand}"
+                                IsVisible="{Binding SearchQuery.Length}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="3"
+                                Cursor="Hand"
+                                ToolTip.Tip="Clear search">
+                            <materialIcons:MaterialIcon Kind="CloseCircle" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
+                        </Button>
+                    </Grid>
+                </Border>
 
-                    <!-- Right Badge -->
-                    <Border Grid.Column="2" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Padding="14,10" VerticalAlignment="Center">
-                        <StackPanel Spacing="3" HorizontalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="ShieldCheckOutline" Width="20" Height="20" Foreground="#38BDF8" HorizontalAlignment="Center" />
-                            <TextBlock Text="Zero Telemetry" FontSize="11" FontWeight="Bold" Foreground="#F1F5F9" HorizontalAlignment="Center" />
-                            <TextBlock Text="100% Local Processing" FontSize="10" Foreground="#64748B" HorizontalAlignment="Center" />
-                        </StackPanel>
-                    </Border>
-                </Grid>
-            </Border>
+                <!-- Category Filters (Horizontal Scroll/Wrap) -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="14,0,0,0" VerticalAlignment="Center">
+                    <Button Classes="category-filter-btn"
+                            Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=All}"
+                            Command="{Binding SetLicenseCategoryCommand}"
+                            CommandParameter="All"
+                            Content="All (12)" />
 
-            <!-- ================================================================= -->
-            <!-- 3. SEARCH & CATEGORY FILTER BAR                                   -->
-            <!-- ================================================================= -->
-            <Border Background="#131C2B" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="16">
-                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Button Classes="category-filter-btn"
+                            Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=PDF &amp; Document Engines}"
+                            Command="{Binding SetLicenseCategoryCommand}"
+                            CommandParameter="PDF &amp; Document Engines"
+                            Content="PDF Engines" />
 
-                    <!-- Search Input -->
-                    <Border Grid.Column="0"
-                            Background="#0B1222"
-                            BorderBrush="#1E293B"
-                            BorderThickness="1"
-                            CornerRadius="20"
-                            Padding="12,0"
-                            Height="36"
-                            Width="320">
-                        <Grid ColumnDefinitions="Auto,*,Auto">
-                            <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="15" Height="15" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,6,0" />
-                            <TextBox Grid.Column="1"
-                                     Text="{Binding SearchQuery}"
-                                     PlaceholderText="Search libraries, maintainers, licenses..."
-                                     FontSize="12"
-                                     Foreground="#CBD5E1"
-                                     Background="Transparent"
-                                     BorderThickness="0"
-                                     VerticalAlignment="Center" />
-                            <Button Grid.Column="2"
-                                    Command="{Binding ClearLicenseSearchCommand}"
-                                    IsVisible="{Binding SearchQuery.Length}"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    Padding="3"
-                                    Cursor="Hand"
-                                    ToolTip.Tip="Clear search">
-                                <materialIcons:MaterialIcon Kind="CloseCircle" Width="14" Height="14" Foreground="#475569" />
-                            </Button>
-                        </Grid>
-                    </Border>
+                    <Button Classes="category-filter-btn"
+                            Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=UI &amp; Graphics Frameworks}"
+                            Command="{Binding SetLicenseCategoryCommand}"
+                            CommandParameter="UI &amp; Graphics Frameworks"
+                            Content="UI &amp; Graphics" />
 
-                    <!-- Category Filters -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="14,0,0,0" VerticalAlignment="Center">
-                        <Button Classes="category-filter-btn"
-                                Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=All}"
-                                Command="{Binding SetLicenseCategoryCommand}"
-                                CommandParameter="All"
-                                Content="All (12)" />
+                    <Button Classes="category-filter-btn"
+                            Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Office &amp; Data Formats}"
+                            Command="{Binding SetLicenseCategoryCommand}"
+                            CommandParameter="Office &amp; Data Formats"
+                            Content="Office &amp; Data" />
 
-                        <Button Classes="category-filter-btn"
-                                Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=PDF &amp; Document Engines}"
-                                Command="{Binding SetLicenseCategoryCommand}"
-                                CommandParameter="PDF &amp; Document Engines"
-                                Content="PDF Engines" />
-
-                        <Button Classes="category-filter-btn"
-                                Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=UI &amp; Graphics Frameworks}"
-                                Command="{Binding SetLicenseCategoryCommand}"
-                                CommandParameter="UI &amp; Graphics Frameworks"
-                                Content="UI &amp; Graphics" />
-
-                        <Button Classes="category-filter-btn"
-                                Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Office &amp; Data Formats}"
-                                Command="{Binding SetLicenseCategoryCommand}"
-                                CommandParameter="Office &amp; Data Formats"
-                                Content="Office &amp; Data" />
-
-                        <Button Classes="category-filter-btn"
-                                Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Architecture &amp; Runtime}"
-                                Command="{Binding SetLicenseCategoryCommand}"
-                                CommandParameter="Architecture &amp; Runtime"
-                                Content="Runtime &amp; MVVM" />
-                    </StackPanel>
-
-                    <!-- Count Badge -->
-                    <Border Grid.Column="2" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="10,5" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding MatchingLicensesCount, StringFormat='{}{0} Packages'}"
-                                   FontSize="11.5"
-                                   FontWeight="SemiBold"
-                                   Foreground="#64748B" />
-                    </Border>
-
-                </Grid>
-            </Border>
-
-            <!-- ================================================================= -->
-            <!-- 4. EMPTY STATE                                                    -->
-            <!-- ================================================================= -->
-            <Border Background="#131C2B" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="36" IsVisible="{Binding HasNoMatchingLicenses}">
-                <StackPanel HorizontalAlignment="Center" Spacing="10">
-                    <materialIcons:MaterialIcon Kind="PackageVariantClosed" Width="40" Height="40" Foreground="#334155" HorizontalAlignment="Center" />
-                    <TextBlock Text="No Matching Open-Source Packages" FontSize="15" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
-                    <TextBlock Text="Try searching for a different keyword such as Avalonia, QuestPDF, MIT, or Apache." FontSize="12.5" Foreground="#475569" HorizontalAlignment="Center" />
-                    <Button Command="{Binding ClearLicenseSearchCommand}"
-                            Background="#1E2D50"
-                            Foreground="#38BDF8"
-                            BorderBrush="#0F6CBD"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="14,6"
-                            FontSize="12"
-                            FontWeight="SemiBold"
-                            Cursor="Hand"
-                            HorizontalAlignment="Center"
-                            Margin="0,4,0,0">
-                        <TextBlock Text="Reset Filters" />
-                    </Button>
+                    <Button Classes="category-filter-btn"
+                            Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Architecture &amp; Runtime}"
+                            Command="{Binding SetLicenseCategoryCommand}"
+                            CommandParameter="Architecture &amp; Runtime"
+                            Content="Runtime &amp; MVVM" />
                 </StackPanel>
-            </Border>
 
-            <!-- ================================================================= -->
-            <!-- 5. THIRD-PARTY LIBRARY CARDS                                      -->
-            <!-- ================================================================= -->
-            <ItemsControl ItemsSource="{Binding FilteredLicenses}" IsVisible="{Binding !HasNoMatchingLicenses}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Spacing="10" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="models:ThirdPartyToolLicense">
-                        <Border Classes="library-card" Padding="18">
-                            <Grid RowDefinitions="Auto,Auto">
+                <!-- Count Badge -->
+                <Border Grid.Column="2" Background="{DynamicResource WinInputBgBrush}" CornerRadius="6" Padding="10,5" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding MatchingLicensesCount, StringFormat='{}{0} Packages'}"
+                               FontSize="11.5"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource WinMutedBrush}" />
+                </Border>
 
-                                <!-- Top Row -->
-                                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+            </Grid>
+        </Border>
 
-                                    <!-- Icon -->
-                                    <Border Grid.Column="0"
-                                            Width="44" Height="44"
-                                            Background="{Binding AccentColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                            CornerRadius="10"
-                                            Margin="0,0,16,0"
-                                            VerticalAlignment="Top">
-                                        <materialIcons:MaterialIcon Kind="{Binding IconKind}"
-                                                                    Width="24" Height="24"
-                                                                    Foreground="White"
-                                                                    HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Center" />
-                                    </Border>
+        <!-- ================================================================= -->
+        <!-- 4. NO MATCHING LIBRARIES EMPTY STATE                             -->
+        <!-- ================================================================= -->
+        <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="36" IsVisible="{Binding HasNoMatchingLicenses}">
+            <StackPanel HorizontalAlignment="Center" Spacing="10">
+                <materialIcons:MaterialIcon Kind="PackageVariantClosed" Width="40" Height="40" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
+                <TextBlock Text="No Matching Open-Source Packages" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                <TextBlock Text="Try searching for a different keyword such as Avalonia, QuestPDF, MIT, or Apache." FontSize="12.5" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
+                <Button Command="{Binding ClearLicenseSearchCommand}"
+                        Background="{DynamicResource WinAccentLightBrush}"
+                        Foreground="{DynamicResource WinAccentBrush}"
+                        CornerRadius="8"
+                        Padding="14,6"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Cursor="Hand"
+                        HorizontalAlignment="Center"
+                        Margin="0,4,0,0">
+                    <TextBlock Text="Reset Filters" />
+                </Button>
+            </StackPanel>
+        </Border>
 
-                                    <!-- Details -->
-                                    <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
-                                        <!-- Title row -->
-                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Bold" Foreground="#E2E8F0" VerticalAlignment="Center" />
+        <!-- ================================================================= -->
+        <!-- 5. THIRD-PARTY TOOLS & LIBRARIES REPEAT LIST                      -->
+        <!-- ================================================================= -->
+        <ItemsControl ItemsSource="{Binding FilteredLicenses}" IsVisible="{Binding !HasNoMatchingLicenses}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Spacing="12" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="models:ThirdPartyToolLicense">
+                    <Border Classes="library-card" Padding="18">
+                        <Grid RowDefinitions="Auto,Auto">
 
-                                            <!-- Version -->
-                                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="5" Padding="6,1.5" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Version, StringFormat='v{0}'}" FontSize="10.5" FontWeight="SemiBold" Foreground="#64748B" />
-                                            </Border>
+                            <!-- Top Row: Card Summary & Actions -->
+                            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
 
-                                            <!-- License badge -->
-                                            <Border Background="{Binding BadgeBackgroundHex, Converter={StaticResource HexToBrushConverter}}"
-                                                    CornerRadius="5"
-                                                    Padding="7,1.5"
-                                                    VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding LicenseType}"
-                                                           FontSize="10.5"
-                                                           FontWeight="Bold"
-                                                           Foreground="{Binding BadgeColorHex, Converter={StaticResource HexToBrushConverter}}" />
-                                            </Border>
-
-                                            <!-- Category -->
-                                            <Border Background="#0F1929" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="5" Padding="6,1.5" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Category}" FontSize="10.5" Foreground="#475569" />
-                                            </Border>
-                                        </StackPanel>
-
-                                        <!-- Purpose -->
-                                        <TextBlock Text="{Binding Purpose}" FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap" />
-
-                                        <!-- Maintainer & URL -->
-                                        <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center" Margin="0,2,0,0">
-                                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                                <materialIcons:MaterialIcon Kind="AccountOutline" Width="13" Height="13" Foreground="#334155" />
-                                                <TextBlock Text="{Binding Maintainer}" FontSize="11" Foreground="#475569" />
-                                            </StackPanel>
-
-                                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                                <materialIcons:MaterialIcon Kind="LinkVariant" Width="13" Height="13" Foreground="#334155" />
-                                                <TextBlock Text="{Binding ProjectUrl}" FontSize="11" Foreground="#0F6CBD" />
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <!-- Actions -->
-                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Top" Margin="10,0,0,0">
-                                        <Button Classes="card-action-btn"
-                                                Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).ToggleLicenseExpandCommand}"
-                                                CommandParameter="{Binding}">
-                                            <StackPanel Orientation="Horizontal" Spacing="5">
-                                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="13" Height="13" />
-                                                <TextBlock Text="License Text" VerticalAlignment="Center" />
-                                                <materialIcons:MaterialIcon Kind="ChevronDown" Width="13" Height="13" IsVisible="{Binding !IsExpanded}" />
-                                                <materialIcons:MaterialIcon Kind="ChevronUp" Width="13" Height="13" IsVisible="{Binding IsExpanded}" />
-                                            </StackPanel>
-                                        </Button>
-
-                                        <Button Classes="card-action-btn"
-                                                Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).CopyLicenseTextCommand}"
-                                                CommandParameter="{Binding}"
-                                                ToolTip.Tip="Copy license text to clipboard">
-                                            <materialIcons:MaterialIcon Kind="ContentCopy" Width="13" Height="13" />
-                                        </Button>
-
-                                        <Button Classes="card-action-btn"
-                                                Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenLibraryWebsiteCommand}"
-                                                CommandParameter="{Binding ProjectUrl}"
-                                                ToolTip.Tip="Open official project website or repository">
-                                            <materialIcons:MaterialIcon Kind="OpenInNew" Width="13" Height="13" />
-                                        </Button>
-                                    </StackPanel>
-
-                                </Grid>
-
-                                <!-- Expandable License Drawer -->
-                                <Border Grid.Row="1"
-                                        Margin="60,12,0,0"
-                                        Background="#080E1A"
-                                        BorderBrush="#1E293B"
-                                        BorderThickness="1"
-                                        CornerRadius="8"
-                                        Padding="14"
-                                        IsVisible="{Binding IsExpanded}">
-                                    <Grid RowDefinitions="Auto,Auto">
-                                        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,8">
-                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                <materialIcons:MaterialIcon Kind="CodeTags" Width="14" Height="14" Foreground="#38BDF8" />
-                                                <TextBlock Text="{Binding Name, StringFormat='Verbatim License Agreement — {0}'}"
-                                                           FontSize="11"
-                                                           FontWeight="Bold"
-                                                           Foreground="#475569" />
-                                            </StackPanel>
-
-                                            <Button Grid.Column="2"
-                                                    Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).CopyLicenseTextCommand}"
-                                                    CommandParameter="{Binding}"
-                                                    Background="#1E293B"
-                                                    Foreground="#38BDF8"
-                                                    BorderBrush="#334155"
-                                                    BorderThickness="1"
-                                                    CornerRadius="5"
-                                                    Padding="8,3"
-                                                    FontSize="10.5"
-                                                    FontWeight="SemiBold"
-                                                    Cursor="Hand">
-                                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <materialIcons:MaterialIcon Kind="ContentCopy" Width="11" Height="11" />
-                                                    <TextBlock Text="Copy Text" VerticalAlignment="Center" />
-                                                </StackPanel>
-                                            </Button>
-                                        </Grid>
-
-                                        <ScrollViewer Grid.Row="1" MaxHeight="220" VerticalScrollBarVisibility="Auto">
-                                            <TextBox Text="{Binding LicenseText}"
-                                                     IsReadOnly="True"
-                                                     FontFamily="Consolas, Menlo, Monaco, Courier New, monospace"
-                                                     FontSize="11"
-                                                     Foreground="#94A3B8"
-                                                     Background="Transparent"
-                                                     BorderThickness="0"
-                                                     TextWrapping="Wrap"
-                                                     Padding="0" />
-                                        </ScrollViewer>
-                                    </Grid>
+                                <!-- Package Icon -->
+                                <Border Grid.Column="0"
+                                        Width="44" Height="44"
+                                        Background="{Binding AccentColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                        CornerRadius="10"
+                                        Margin="0,0,16,0"
+                                        VerticalAlignment="Top">
+                                    <materialIcons:MaterialIcon Kind="{Binding IconKind}"
+                                                                Width="24" Height="24"
+                                                                Foreground="White"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center" />
                                 </Border>
 
+                                <!-- Center Details -->
+                                <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
+                                    <!-- Title, Version & License Badge -->
+                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+
+                                        <!-- Version Pill -->
+                                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="6,1.5" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Version, StringFormat='v{0}'}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                                        </Border>
+
+                                        <!-- License Type Badge -->
+                                        <Border Background="{Binding BadgeBackgroundHex, Converter={StaticResource HexToBrushConverter}}"
+                                                CornerRadius="5"
+                                                Padding="7,1.5"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding LicenseType}"
+                                                       FontSize="10.5"
+                                                       FontWeight="Bold"
+                                                       Foreground="{Binding BadgeColorHex, Converter={StaticResource HexToBrushConverter}}" />
+                                        </Border>
+
+                                        <!-- Category Pill -->
+                                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="6,1.5" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Category}" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" />
+                                        </Border>
+                                    </StackPanel>
+
+                                    <!-- Purpose / Role in FryPDF -->
+                                    <TextBlock Text="{Binding Purpose}" FontSize="12" Foreground="{DynamicResource WinTextBrush}" TextWrapping="Wrap" />
+
+                                    <!-- Maintainer & Repository URL -->
+                                    <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center" Margin="0,2,0,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="AccountOutline" Width="13" Height="13" Foreground="{DynamicResource WinSubtleBrush}" />
+                                            <TextBlock Text="{Binding Maintainer}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                                        </StackPanel>
+
+                                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="LinkVariant" Width="13" Height="13" Foreground="{DynamicResource WinSubtleBrush}" />
+                                            <TextBlock Text="{Binding ProjectUrl}" FontSize="11" Foreground="{DynamicResource WinAccentBrush}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Right Actions -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Top" Margin="10,0,0,0">
+                                    <!-- Toggle License Viewer -->
+                                    <Button Classes="card-action-btn"
+                                            Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).ToggleLicenseExpandCommand}"
+                                            CommandParameter="{Binding}">
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="13" Height="13" />
+                                            <TextBlock Text="License Text" VerticalAlignment="Center" />
+                                            <materialIcons:MaterialIcon Kind="ChevronDown" Width="13" Height="13" IsVisible="{Binding !IsExpanded}" />
+                                            <materialIcons:MaterialIcon Kind="ChevronUp" Width="13" Height="13" IsVisible="{Binding IsExpanded}" />
+                                        </StackPanel>
+                                    </Button>
+
+                                    <!-- Copy License Action -->
+                                    <Button Classes="card-action-btn"
+                                            Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).CopyLicenseTextCommand}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip.Tip="Copy license text to clipboard">
+                                        <materialIcons:MaterialIcon Kind="ContentCopy" Width="13" Height="13" />
+                                    </Button>
+
+                                    <!-- Open Project Link -->
+                                    <Button Classes="card-action-btn"
+                                            Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenLibraryWebsiteCommand}"
+                                            CommandParameter="{Binding ProjectUrl}"
+                                            ToolTip.Tip="Open official project website or repository">
+                                        <materialIcons:MaterialIcon Kind="OpenInNew" Width="13" Height="13" />
+                                    </Button>
+                                </StackPanel>
+
                             </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
 
-            <!-- ================================================================= -->
-            <!-- 6. IN-HOUSE SUBSYSTEMS                                            -->
-            <!-- ================================================================= -->
-            <Border Background="#131C2B" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="14" Padding="22">
-                <StackPanel Spacing="14">
-                    <StackPanel Spacing="2">
-                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="CogOutline" Width="18" Height="18" Foreground="#38BDF8" />
-                            <TextBlock Text="FryPDF Native Subsystems &amp; Architecture" FontSize="14" FontWeight="Bold" Foreground="#E2E8F0" />
+                            <!-- Bottom Row: Expandable Full License Text Drawer -->
+                            <Border Grid.Row="1"
+                                    Margin="60,14,0,0"
+                                    Background="{DynamicResource WinInputBgBrush}"
+                                    BorderBrush="{DynamicResource WinBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="14"
+                                    IsVisible="{Binding IsExpanded}">
+                                <Grid RowDefinitions="Auto,Auto">
+                                    <!-- Top Banner inside License Drawer -->
+                                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,8">
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="CodeTags" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                            <TextBlock Text="{Binding Name, StringFormat='Verbatim License Agreement — {0}'}"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       Foreground="{DynamicResource WinTextBrush}" />
+                                        </StackPanel>
+
+                                        <Button Grid.Column="2"
+                                                Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).CopyLicenseTextCommand}"
+                                                CommandParameter="{Binding}"
+                                                Background="{DynamicResource WinPanelBrush}"
+                                                Foreground="{DynamicResource WinAccentBrush}"
+                                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="5"
+                                                Padding="8,3"
+                                                FontSize="10.5"
+                                                FontWeight="SemiBold"
+                                                Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <materialIcons:MaterialIcon Kind="ContentCopy" Width="11" Height="11" />
+                                                <TextBlock Text="Copy Text" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- Monospace Verbatim Text -->
+                                    <ScrollViewer Grid.Row="1" MaxHeight="220" VerticalScrollBarVisibility="Auto">
+                                        <TextBox Text="{Binding LicenseText}"
+                                                 IsReadOnly="True"
+                                                 FontFamily="Consolas, Menlo, Monaco, Courier New, monospace"
+                                                 FontSize="11"
+                                                 Foreground="{DynamicResource WinTextBrush}"
+                                                 Background="Transparent"
+                                                 BorderThickness="0"
+                                                 TextWrapping="Wrap"
+                                                 Padding="0" />
+                                    </ScrollViewer>
+                                </Grid>
+                            </Border>
+
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- ================================================================= -->
+        <!-- 6. IN-HOUSE ENGINEERED SUBSYSTEMS OVERVIEW                        -->
+        <!-- ================================================================= -->
+        <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="22">
+            <StackPanel Spacing="14">
+                <StackPanel Spacing="2">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="CogOutline" Width="18" Height="18" Foreground="{DynamicResource WinAccentBrush}" />
+                        <TextBlock Text="FryPDF Native Subsystems &amp; Architecture" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                    </StackPanel>
+                    <TextBlock Text="Core features built from the ground up by CodeFryDev specifically for this application." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                </StackPanel>
+
+                <Grid ColumnDefinitions="*,*,*" Margin="0,4,0,0">
+                    <!-- Engine 1: Vector Canvas -->
+                    <Border Grid.Column="0" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14,12" Margin="0,0,6,0">
+                        <StackPanel Spacing="3">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="SelectDrag" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
+                                <TextBlock Text="Vector Canvas Engine" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                            </StackPanel>
+                            <TextBlock Text="Interactive multi-element selection, rotation, resizing, snap-to-grid, zoom scaling (25%-500%), and smart alignment guides."
+                                       FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
                         </StackPanel>
-                        <TextBlock Text="Core features built from the ground up by CodeFryDev specifically for this application." FontSize="11.5" Foreground="#475569" />
-                    </StackPanel>
+                    </Border>
 
-                    <Grid ColumnDefinitions="*,*,*" Margin="0,4,0,0">
-                        <!-- Engine 1 -->
-                        <Border Grid.Column="0" Background="#0B1222" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="14,12" Margin="0,0,6,0">
-                            <StackPanel Spacing="3">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="SelectDrag" Width="16" Height="16" Foreground="#0F6CBD" />
-                                    <TextBlock Text="Vector Canvas Engine" FontSize="12.5" FontWeight="Bold" Foreground="#CBD5E1" />
-                                </StackPanel>
-                                <TextBlock Text="Interactive multi-element selection, rotation, resizing, snap-to-grid, zoom scaling (25%-500%), and smart alignment guides."
-                                           FontSize="11" Foreground="#475569" TextWrapping="Wrap" />
+                    <!-- Engine 2: 32 Tools Automation Suite -->
+                    <Border Grid.Column="1" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14,12" Margin="3,0,3,0">
+                        <StackPanel Spacing="3">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="AutoFix" Width="16" Height="16" Foreground="#10B981" />
+                                <TextBlock Text="32-Tool Studio Suite" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                             </StackPanel>
-                        </Border>
+                            <TextBlock Text="Unified batch PDF operations, format conversion pipeline, chainable multi-step workflow builder, and compression optimization."
+                                       FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
 
-                        <!-- Engine 2 -->
-                        <Border Grid.Column="1" Background="#0B1222" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="14,12" Margin="3,0,3,0">
-                            <StackPanel Spacing="3">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="AutoFix" Width="16" Height="16" Foreground="#10B981" />
-                                    <TextBlock Text="32-Tool Studio Suite" FontSize="12.5" FontWeight="Bold" Foreground="#CBD5E1" />
-                                </StackPanel>
-                                <TextBlock Text="Unified batch PDF operations, format conversion pipeline, chainable multi-step workflow builder, and compression optimization."
-                                           FontSize="11" Foreground="#475569" TextWrapping="Wrap" />
+                    <!-- Engine 3: AcroForms & Bates System -->
+                    <Border Grid.Column="2" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14,12" Margin="6,0,0,0">
+                        <StackPanel Spacing="3">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FormSelect" Width="16" Height="16" Foreground="#8B5CF6" />
+                                <TextBlock Text="Forms &amp; Security Engine" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                             </StackPanel>
-                        </Border>
+                            <TextBlock Text="Live AcroForm formula recalculation, Bates legal numbering, permanent search-and-redact, and AES-256 permission encryption."
+                                       FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </Border>
 
-                        <!-- Engine 3 -->
-                        <Border Grid.Column="2" Background="#0B1222" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="14,12" Margin="6,0,0,0">
-                            <StackPanel Spacing="3">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="FormSelect" Width="16" Height="16" Foreground="#8B5CF6" />
-                                    <TextBlock Text="Forms &amp; Security Engine" FontSize="12.5" FontWeight="Bold" Foreground="#CBD5E1" />
-                                </StackPanel>
-                                <TextBlock Text="Live AcroForm formula recalculation, Bates legal numbering, permanent search-and-redact, and AES-256 permission encryption."
-                                           FontSize="11" Foreground="#475569" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </Border>
-                    </Grid>
+        <!-- ================================================================= -->
+        <!-- 7. LEGAL NOTICE & NO-WARRANTY DISCLAIMER                          -->
+        <!-- ================================================================= -->
+        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16,12">
+            <StackPanel Spacing="4">
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
+                    <TextBlock Text="Open Source Warranty &amp; Liability Disclaimer" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                 </StackPanel>
-            </Border>
+                <TextBlock Text="THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS, COPYRIGHT HOLDERS, OR CONTRIBUTORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY."
+                           FontSize="10" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
 
-            <!-- ================================================================= -->
-            <!-- 7. LEGAL NOTICE                                                   -->
-            <!-- ================================================================= -->
-            <Border Background="#0B1222" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="16,12">
-                <StackPanel Spacing="4">
-                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                        <materialIcons:MaterialIcon Kind="InformationOutline" Width="14" Height="14" Foreground="#334155" />
-                        <TextBlock Text="Open Source Warranty &amp; Liability Disclaimer" FontSize="11.5" FontWeight="Bold" Foreground="#334155" />
-                    </StackPanel>
-                    <TextBlock Text="THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS, COPYRIGHT HOLDERS, OR CONTRIBUTORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY."
-                               FontSize="10" Foreground="#334155" TextWrapping="Wrap" />
-                </StackPanel>
-            </Border>
-
-        </StackPanel>
-    </Border>
-
+    </StackPanel>
 </UserControl>

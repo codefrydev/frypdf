@@ -6,17 +6,18 @@
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.Views.HomeView"
              x:DataType="vm:HomeViewModel"
-             Background="#F0F4F9">
+             Background="{DynamicResource WinBgBrush}">
 
     <UserControl.Resources>
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:BooleanToStringConverter x:Key="BooleanToStringConverter" />
     </UserControl.Resources>
 
     <UserControl.Styles>
         <!-- Nav Tab Button Style -->
         <Style Selector="Button.nav-tab-btn">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="#64748B" />
+            <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="8" />
@@ -34,12 +35,12 @@
             </Setter>
         </Style>
         <Style Selector="Button.nav-tab-btn:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#F1F5F9" />
-            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
         </Style>
         <Style Selector="Button.nav-tab-btn.active /template/ ContentPresenter">
-            <Setter Property="Background" Value="#EFF6FF" />
-            <Setter Property="Foreground" Value="#0F6CBD" />
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
         </Style>
         <Style Selector="Button.nav-tab-btn.active">
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -50,15 +51,15 @@
 
         <!-- ===== LEFT SIDEBAR ===== -->
         <Border Grid.Column="0"
-                Background="#FFFFFF"
-                BorderBrush="#E2E8F0"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="0,0,1,0">
             <DockPanel>
 
                 <!-- Logo / Brand -->
                 <Border DockPanel.Dock="Top"
                         Padding="20,20,20,16"
-                        BorderBrush="#F1F5F9"
+                        BorderBrush="{DynamicResource WinBorderSubtleBrush}"
                         BorderThickness="0,0,0,1">
                     <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                         <Border Width="36" Height="36"
@@ -81,10 +82,10 @@
                             <TextBlock Text="FryPDF"
                                        FontSize="16"
                                        FontWeight="Bold"
-                                       Foreground="#0F172A" />
+                                       Foreground="{DynamicResource WinTextBrush}" />
                             <TextBlock Text="by CodeFryDev"
                                        FontSize="10"
-                                       Foreground="#94A3B8" />
+                                       Foreground="{DynamicResource WinSubtleBrush}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -94,7 +95,7 @@
                     <StackPanel Spacing="3">
 
                         <!-- Main Sections Header -->
-                        <TextBlock Text="OVERVIEW" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" Margin="8,4,0,4" />
+                        <TextBlock Text="OVERVIEW" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,4,0,4" />
 
                         <!-- 1. Home -->
                         <Button Classes="nav-tab-btn"
@@ -136,7 +137,7 @@
                         </Button>
 
                         <!-- Tool Categories Header -->
-                        <TextBlock Text="CATEGORIES" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" Margin="8,12,0,4" />
+                        <TextBlock Text="CATEGORIES" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,12,0,4" />
 
                         <!-- 4. Organize & Page -->
                         <Button Classes="nav-tab-btn"
@@ -146,7 +147,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <materialIcons:MaterialIcon Grid.Column="0" Kind="BookOpenPageVariantOutline" Width="18" Height="18" Foreground="#0284C7" Margin="0,0,10,0" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="Organize &amp; Page" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="6" FontSize="10.5" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="6" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
                             </Grid>
                         </Button>
 
@@ -158,7 +159,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <materialIcons:MaterialIcon Grid.Column="0" Kind="ShieldLockOutline" Width="18" Height="18" Foreground="#10B981" Margin="0,0,10,0" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="Security &amp; Optimize" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="7" FontSize="10.5" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="7" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
                             </Grid>
                         </Button>
 
@@ -170,7 +171,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <materialIcons:MaterialIcon Grid.Column="0" Kind="ExportVariant" Width="18" Height="18" Foreground="#6366F1" Margin="0,0,10,0" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="Convert from PDF" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="5" FontSize="10.5" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="5" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
                             </Grid>
                         </Button>
 
@@ -182,7 +183,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <materialIcons:MaterialIcon Grid.Column="0" Kind="Import" Width="18" Height="18" Foreground="#8B5CF6" Margin="0,0,10,0" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="Convert to PDF" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="6" FontSize="10.5" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="6" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
                             </Grid>
                         </Button>
 
@@ -194,7 +195,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <materialIcons:MaterialIcon Grid.Column="0" Kind="Draw" Width="18" Height="18" Foreground="#F59E0B" Margin="0,0,10,0" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="Edit &amp; Forms" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="4" FontSize="10.5" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="4" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
                             </Grid>
                         </Button>
 
@@ -206,12 +207,12 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <materialIcons:MaterialIcon Grid.Column="0" Kind="AutoFix" Width="18" Height="18" Foreground="#EC4899" Margin="0,0,10,0" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="AI &amp; Automation" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="4" FontSize="10.5" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="4" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
                             </Grid>
                         </Button>
 
                         <!-- Collections Header -->
-                        <TextBlock Text="LIBRARY" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" Margin="8,12,0,4" />
+                        <TextBlock Text="LIBRARY" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,12,0,4" />
 
                         <!-- 10. Starred Tools -->
                         <Button Classes="nav-tab-btn"
@@ -233,13 +234,13 @@
                                 Command="{Binding SelectNavSectionCommand}"
                                 CommandParameter="Trash">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="TrashCanOutline" Width="18" Height="18" Foreground="#94A3B8" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <materialIcons:MaterialIcon Grid.Column="0" Kind="TrashCanOutline" Width="18" Height="18" Foreground="{DynamicResource WinMutedBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="Trash &amp; Cache" VerticalAlignment="Center" />
                             </Grid>
                         </Button>
 
                         <!-- Legal & Open Source Header -->
-                        <TextBlock Text="ABOUT &amp; LEGAL" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" Margin="8,12,0,4" />
+                        <TextBlock Text="ABOUT &amp; LEGAL" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,12,0,4" />
 
                         <!-- 12. Licenses & Third-Party Tools -->
                         <Button Classes="nav-tab-btn"
@@ -258,18 +259,45 @@
                     </StackPanel>
                 </ScrollViewer>
 
-                <!-- Spacer -->
-                <Grid />
-
-                <!-- Version Badge -->
+                <!-- Sidebar Footer with Theme Toggle & Version -->
                 <Border DockPanel.Dock="Bottom"
-                        Padding="20,12"
-                        BorderBrush="#F1F5F9"
+                        Padding="14,10"
+                        BorderBrush="{DynamicResource WinBorderSubtleBrush}"
                         BorderThickness="0,1,0,0">
-                    <TextBlock Text="FryPDF v1.0 · Privacy-first PDF Studio"
-                                FontSize="10"
-                                Foreground="#CBD5E1"
-                                TextWrapping="Wrap" />
+                    <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                        <!-- Theme Toggle Button -->
+                        <Button Grid.Row="0"
+                                Command="{Binding ToggleThemeCommand}"
+                                Background="{DynamicResource WinInputBgBrush}"
+                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                BorderThickness="1"
+                                Foreground="{DynamicResource WinTextBrush}"
+                                CornerRadius="8"
+                                Padding="10,6"
+                                HorizontalAlignment="Stretch"
+                                Cursor="Hand"
+                                ToolTip.Tip="Toggle Dark and Light Studio Theme">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="WeatherSunny" Width="15" Height="15" Foreground="#F59E0B" IsVisible="{Binding IsDarkMode}" />
+                                    <materialIcons:MaterialIcon Kind="WeatherNight" Width="15" Height="15" Foreground="#818CF8" IsVisible="{Binding !IsDarkMode}" />
+                                    <TextBlock Text="{Binding IsDarkMode, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Dark Mode|Light Mode'}"
+                                               FontSize="11.5"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                                <materialIcons:MaterialIcon Grid.Column="2" Kind="SwapHorizontal" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+
+                        <!-- Version Badge -->
+                        <TextBlock Grid.Row="1"
+                                   Text="FryPDF v1.0 · Privacy-first PDF Studio"
+                                   FontSize="9.5"
+                                   Foreground="{DynamicResource WinSubtleBrush}"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" />
+                    </Grid>
                 </Border>
             </DockPanel>
         </Border>
@@ -279,8 +307,8 @@
 
             <!-- Top Search & Open File Bar -->
             <Border Grid.Row="0"
-                    Background="#FFFFFF"
-                    BorderBrush="#E2E8F0"
+                    Background="{DynamicResource WinPanelBrush}"
+                    BorderBrush="{DynamicResource WinBorderBrush}"
                     BorderThickness="0,0,0,1"
                     Padding="32,14"
                     IsVisible="{Binding !IsToolPageActive}">
@@ -288,8 +316,8 @@
 
                     <!-- Search Box -->
                     <Border Grid.Column="0"
-                            Background="#F8FAFC"
-                            BorderBrush="#E2E8F0"
+                            Background="{DynamicResource WinInputBgBrush}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="24"
                             Padding="14,0"
@@ -300,14 +328,14 @@
                             <materialIcons:MaterialIcon Grid.Column="0"
                                                         Kind="Magnify"
                                                         Width="16" Height="16"
-                                                        Foreground="#94A3B8"
+                                                        Foreground="{DynamicResource WinSubtleBrush}"
                                                         VerticalAlignment="Center"
                                                         Margin="0,0,8,0" />
                             <TextBox Grid.Column="1"
                                      Text="{Binding SearchQuery}"
                                      PlaceholderText="Search all 32 PDF tools &amp; templates (e.g. merge, compress, ocr, word, invoice)..."
                                      FontSize="13"
-                                     Foreground="#0F172A"
+                                     Foreground="{DynamicResource WinTextBrush}"
                                      Background="Transparent"
                                      BorderThickness="0"
                                      VerticalAlignment="Center"
@@ -320,29 +348,50 @@
                                     Padding="4"
                                     Cursor="Hand"
                                     ToolTip.Tip="Clear search">
-                                <materialIcons:MaterialIcon Kind="CloseCircle" Width="16" Height="16" Foreground="#94A3B8" />
+                                <materialIcons:MaterialIcon Kind="CloseCircle" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" />
                             </Button>
                         </Grid>
                     </Border>
 
-                    <!-- Open File Button -->
-                    <Button Grid.Column="1"
-                            Command="{Binding OpenFileCommand}"
-                            Background="#0F6CBD"
-                            Foreground="White"
-                            CornerRadius="8"
-                            Padding="16,0"
-                            Height="40"
-                            Cursor="Hand"
-                            ToolTip.Tip="Open a .frypdf or .pdf project file">
-                        <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
-                            <TextBlock Text="Open File"
-                                       FontSize="13"
-                                       FontWeight="SemiBold"
-                                       VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+                    <!-- Top Right Actions: Theme Toggle & Open File Button -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                        <Button Command="{Binding ToggleThemeCommand}"
+                                Background="{DynamicResource WinInputBgBrush}"
+                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                BorderThickness="1"
+                                Foreground="{DynamicResource WinTextBrush}"
+                                CornerRadius="8"
+                                Padding="12,0"
+                                Height="40"
+                                Cursor="Hand"
+                                ToolTip.Tip="Toggle Dark / Light Studio Theme">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="WeatherSunny" Width="17" Height="17" Foreground="#F59E0B" IsVisible="{Binding IsDarkMode}" />
+                                <materialIcons:MaterialIcon Kind="WeatherNight" Width="17" Height="17" Foreground="#818CF8" IsVisible="{Binding !IsDarkMode}" />
+                                <TextBlock Text="{Binding IsDarkMode, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Light Theme|Dark Theme'}"
+                                           FontSize="12.5"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding OpenFileCommand}"
+                                Background="{DynamicResource WinAccentBrush}"
+                                Foreground="White"
+                                CornerRadius="8"
+                                Padding="16,0"
+                                Height="40"
+                                Cursor="Hand"
+                                ToolTip.Tip="Open a .frypdf or .pdf project file">
+                            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
+                                <TextBlock Text="Open File"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
 
                 </Grid>
             </Border>

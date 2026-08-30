@@ -15,9 +15,9 @@
     <UserControl.Styles>
         <!-- Category Filter Pill Styles -->
         <Style Selector="Button.home-filter-pill">
-            <Setter Property="Background" Value="#F1F5F9" />
-            <Setter Property="Foreground" Value="#64748B" />
-            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Background" Value="{DynamicResource WinInputBgBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="20" />
             <Setter Property="Padding" Value="14,6" />
@@ -26,21 +26,21 @@
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.2" />
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2" />
-                    <BrushTransition Property="Foreground" Duration="0:0:0.2" />
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.15" />
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.home-filter-pill:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#E2E8F0" />
-            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
         </Style>
         <Style Selector="Button.home-filter-pill.active /template/ ContentPresenter">
-            <Setter Property="Background" Value="#EFF6FF" />
-            <Setter Property="BorderBrush" Value="#BFDBFE" />
-            <Setter Property="Foreground" Value="#0F6CBD" />
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
         </Style>
         <Style Selector="Button.home-filter-pill.active">
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -48,8 +48,8 @@
 
         <!-- PDF Tool Card Lift & Glow Animation -->
         <Style Selector="Border.pdf-tool-box">
-            <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="BoxShadow" Value="0 2 6 #08000000" />
@@ -58,13 +58,14 @@
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
                     <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.pdf-tool-btn:pointerover Border.pdf-tool-box">
             <Setter Property="RenderTransform" Value="translateY(-3px)" />
             <Setter Property="BoxShadow" Value="0 8 20 #150F6CBD" />
-            <Setter Property="BorderBrush" Value="#0F6CBD" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
         </Style>
 
         <!-- Workflow Banner Box -->
@@ -99,14 +100,14 @@
                     <TextBlock Text="PDF Tools Studio"
                                FontSize="18"
                                FontWeight="Bold"
-                               Foreground="#0F172A" />
-                    <Border Background="#EFF6FF" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
-                        <TextBlock Text="32 TOOLS" FontSize="10" FontWeight="Bold" Foreground="#0F6CBD" />
+                               Foreground="{DynamicResource WinTextBrush}" />
+                    <Border Background="{DynamicResource WinAccentLightBrush}" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
+                        <TextBlock Text="32 TOOLS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
                     </Border>
                 </StackPanel>
                 <TextBlock Text="Professional tools for conversion, editing, security &amp; automation"
                            FontSize="12"
-                           Foreground="#64748B" />
+                           Foreground="{DynamicResource WinMutedBrush}" />
             </StackPanel>
 
             <!-- Center: Category Filter Pills -->
@@ -250,9 +251,9 @@
                                 <!-- Details -->
                                 <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                                     <Grid ColumnDefinitions="*,Auto,Auto">
-                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="13" FontWeight="Bold" Foreground="#0F172A" TextTrimming="CharacterEllipsis" />
-                                        <Border Grid.Column="1" Background="#EFF6FF" CornerRadius="3" Padding="4,1" Margin="4,0,0,0" IsVisible="{Binding IsNew}">
-                                            <TextBlock Text="NEW" FontSize="8.5" FontWeight="Bold" Foreground="#0F6CBD" />
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" />
+                                        <Border Grid.Column="1" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="3" Padding="4,1" Margin="4,0,0,0" IsVisible="{Binding IsNew}">
+                                            <TextBlock Text="NEW" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
                                         </Border>
                                         <Button Grid.Column="2"
                                                 Command="{Binding ToggleStarCommand}"
@@ -264,11 +265,11 @@
                                                 ToolTip.Tip="Pin to Starred Tools">
                                             <Panel>
                                                 <materialIcons:MaterialIcon Kind="Star" IsVisible="{Binding IsStarred}" Width="14" Height="14" Foreground="#EAB308" />
-                                                <materialIcons:MaterialIcon Kind="StarOutline" IsVisible="{Binding !IsStarred}" Width="14" Height="14" Foreground="#CBD5E1" />
+                                                <materialIcons:MaterialIcon Kind="StarOutline" IsVisible="{Binding !IsStarred}" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
                                             </Panel>
                                         </Button>
                                     </Grid>
-                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#64748B" MaxLines="2" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" MaxLines="2" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Grid>
                         </Border>

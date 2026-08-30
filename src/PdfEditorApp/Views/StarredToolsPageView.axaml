@@ -13,8 +13,8 @@
     <UserControl.Styles>
         <!-- PDF Tool Card Lift & Glow Animation -->
         <Style Selector="Border.pdf-tool-box">
-            <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="BoxShadow" Value="0 2 6 #08000000" />
@@ -23,13 +23,14 @@
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
                     <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.pdf-tool-btn:pointerover Border.pdf-tool-box">
             <Setter Property="RenderTransform" Value="translateY(-3px)" />
             <Setter Property="BoxShadow" Value="0 8 20 #150F6CBD" />
-            <Setter Property="BorderBrush" Value="#0F6CBD" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
         </Style>
     </UserControl.Styles>
 
@@ -40,25 +41,25 @@
             <StackPanel Grid.Column="0" Spacing="2">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <materialIcons:MaterialIcon Kind="Star" Width="20" Height="20" Foreground="#EAB308" VerticalAlignment="Center" />
-                    <TextBlock Text="Starred PDF Tools" FontSize="18" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                    <TextBlock Text="Starred PDF Tools" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                     <Border Background="#FEF08A" CornerRadius="4" Padding="6,1" VerticalAlignment="Center" IsVisible="{Binding StarredTools.Count}">
                         <TextBlock Text="{Binding StarredTools.Count, StringFormat='{}{0} PINNED'}" FontSize="10" FontWeight="Bold" Foreground="#854D0E" />
                     </Border>
                 </StackPanel>
-                <TextBlock Text="Quick access to your most frequently used document tools" FontSize="12" Foreground="#64748B" />
+                <TextBlock Text="Quick access to your most frequently used document tools" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
             </StackPanel>
         </Grid>
 
         <!-- Empty State for Starred -->
-        <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="40" HorizontalAlignment="Stretch" IsVisible="{Binding !StarredTools.Count}">
+        <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="40" HorizontalAlignment="Stretch" IsVisible="{Binding !StarredTools.Count}">
             <StackPanel HorizontalAlignment="Center" Spacing="12">
-                <materialIcons:MaterialIcon Kind="StarOutline" Width="44" Height="44" Foreground="#CBD5E1" HorizontalAlignment="Center" />
-                <TextBlock Text="No Starred Tools Yet" FontSize="16" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center" />
-                <TextBlock Text="Click the star icon on any tool card in All Tools to pin your favorite tools here." FontSize="13" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                <materialIcons:MaterialIcon Kind="StarOutline" Width="44" Height="44" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
+                <TextBlock Text="No Starred Tools Yet" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                <TextBlock Text="Click the star icon on any tool card in All Tools to pin your favorite tools here." FontSize="13" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
                 <Button Command="{Binding SelectNavSectionCommand}"
                         CommandParameter="AllTools"
-                        Background="#EFF6FF"
-                        Foreground="#0F6CBD"
+                        Background="{DynamicResource WinAccentLightBrush}"
+                        Foreground="{DynamicResource WinAccentBrush}"
                         CornerRadius="8"
                         Padding="16,8"
                         FontSize="12.5"
@@ -108,7 +109,7 @@
                                 </Border>
                                 <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                                     <Grid ColumnDefinitions="*,Auto,Auto">
-                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="13" FontWeight="Bold" Foreground="#0F172A" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" />
                                         <Button Grid.Column="2"
                                                 Command="{Binding ToggleStarCommand}"
                                                 Background="Transparent"
@@ -120,7 +121,7 @@
                                             <materialIcons:MaterialIcon Kind="Star" Width="14" Height="14" Foreground="#EAB308" />
                                         </Button>
                                     </Grid>
-                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#64748B" MaxLines="2" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" MaxLines="2" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Grid>
                         </Border>

@@ -262,6 +262,11 @@ public partial class MainViewModel
     [RelayCommand]
     public void NextPage()
     {
+        if (IsPdfViewerVisible && PdfViewer != null)
+        {
+            PdfViewer.NextPage();
+            return;
+        }
         if (CurrentPage == null || Pages.Count == 0) return;
         int idx = Pages.IndexOf(CurrentPage);
         if (idx < Pages.Count - 1)
@@ -273,6 +278,11 @@ public partial class MainViewModel
     [RelayCommand]
     public void PreviousPage()
     {
+        if (IsPdfViewerVisible && PdfViewer != null)
+        {
+            PdfViewer.PreviousPage();
+            return;
+        }
         if (CurrentPage == null || Pages.Count == 0) return;
         int idx = Pages.IndexOf(CurrentPage);
         if (idx > 0)
@@ -284,6 +294,11 @@ public partial class MainViewModel
     [RelayCommand]
     public void FirstPage()
     {
+        if (IsPdfViewerVisible && PdfViewer != null)
+        {
+            PdfViewer.FirstPage();
+            return;
+        }
         if (Pages.Count > 0)
         {
             SelectPage(Pages[0]);
@@ -293,6 +308,11 @@ public partial class MainViewModel
     [RelayCommand]
     public void LastPage()
     {
+        if (IsPdfViewerVisible && PdfViewer != null)
+        {
+            PdfViewer.LastPage();
+            return;
+        }
         if (Pages.Count > 0)
         {
             SelectPage(Pages[^1]);

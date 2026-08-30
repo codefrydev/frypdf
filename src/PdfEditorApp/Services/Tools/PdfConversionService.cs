@@ -561,11 +561,17 @@ public class PdfConversionService : IPdfConversionService
             progress?.Report(50.0);
             ct.ThrowIfCancellationRequested();
 
+            if (slidesText.Count == 0)
+            {
+                slidesText.Add(new List<string> { "Presentation Slide" });
+            }
+
             var doc = QuestPDF.Fluent.Document.Create(container =>
             {
                 int sIndex = 1;
                 foreach (var slide in slidesText)
                 {
+                    var linesToRender = slide.Count > 0 ? slide : new List<string> { string.Empty };
                     container.Page(page =>
                     {
                         page.Size(PageSizes.A4.Landscape());
@@ -581,9 +587,9 @@ public class PdfConversionService : IPdfConversionService
                         page.Content().PaddingVertical(16).Column(col =>
                         {
                             col.Spacing(10);
-                            foreach (var line in slide)
+                            foreach (var line in linesToRender)
                             {
-                                col.Item().Text(line);
+                                col.Item().Text(string.IsNullOrWhiteSpace(line) ? " " : line);
                             }
                         });
 

@@ -92,6 +92,9 @@
                           VerticalScrollBarVisibility="Auto"
                           PointerPressed="OnCanvasBackgroundPointerPressed"
                           PointerMoved="OnCanvasPointerMoved">
+                <ScrollViewer.GestureRecognizers>
+                    <PinchGestureRecognizer />
+                </ScrollViewer.GestureRecognizers>
 
                 <!-- Canvas Background Context Menu -->
                 <ScrollViewer.ContextMenu>

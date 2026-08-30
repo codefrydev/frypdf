@@ -73,17 +73,33 @@
 
         <!-- View & Zoom -->
         <KeyBinding Gesture="Ctrl+Add" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Gesture="Cmd+Add" Command="{Binding ZoomInCommand}" />
         <KeyBinding Gesture="Ctrl+OemPlus" Command="{Binding ZoomInCommand}" />
         <KeyBinding Gesture="Cmd+OemPlus" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+OemPlus" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Gesture="Cmd+Shift+OemPlus" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+Add" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Gesture="Cmd+Shift+Add" Command="{Binding ZoomInCommand}" />
         <KeyBinding Gesture="Ctrl+Subtract" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Gesture="Cmd+Subtract" Command="{Binding ZoomOutCommand}" />
         <KeyBinding Gesture="Ctrl+OemMinus" Command="{Binding ZoomOutCommand}" />
         <KeyBinding Gesture="Cmd+OemMinus" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+OemMinus" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Gesture="Cmd+Shift+OemMinus" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+Subtract" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Gesture="Cmd+Shift+Subtract" Command="{Binding ZoomOutCommand}" />
         <KeyBinding Gesture="Ctrl+D0" Command="{Binding ResetZoomCommand}" />
         <KeyBinding Gesture="Cmd+D0" Command="{Binding ResetZoomCommand}" />
+        <KeyBinding Gesture="Ctrl+NumPad0" Command="{Binding ResetZoomCommand}" />
+        <KeyBinding Gesture="Cmd+NumPad0" Command="{Binding ResetZoomCommand}" />
         <KeyBinding Gesture="Ctrl+D1" Command="{Binding FitToWidthCommand}" />
         <KeyBinding Gesture="Cmd+D1" Command="{Binding FitToWidthCommand}" />
+        <KeyBinding Gesture="Ctrl+NumPad1" Command="{Binding FitToWidthCommand}" />
+        <KeyBinding Gesture="Cmd+NumPad1" Command="{Binding FitToWidthCommand}" />
         <KeyBinding Gesture="Ctrl+D9" Command="{Binding FitToPageCommand}" />
         <KeyBinding Gesture="Cmd+D9" Command="{Binding FitToPageCommand}" />
+        <KeyBinding Gesture="Ctrl+NumPad9" Command="{Binding FitToPageCommand}" />
+        <KeyBinding Gesture="Cmd+NumPad9" Command="{Binding FitToPageCommand}" />
 
         <!-- Page Navigation & Page Actions -->
         <KeyBinding Gesture="PageDown" Command="{Binding NextPageCommand}" />

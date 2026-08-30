@@ -167,7 +167,8 @@
                             </Button>
 
                             <!-- Direct Page Jump Input Box -->
-                            <TextBox Text="{Binding JumpPageText, Mode=TwoWay}"
+                            <TextBox x:Name="JumpPageTextBox"
+                                     Text="{Binding JumpPageText, Mode=TwoWay}"
                                      Width="34"
                                      Height="22"
                                      FontSize="11"
@@ -689,10 +690,14 @@
                 </Border>
 
                 <!-- Layout 1: Continuous Vertical Scroll Mode -->
-                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                <ScrollViewer x:Name="ContinuousScrollViewer"
+                              HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto"
                               Padding="32"
                               IsVisible="{Binding IsContinuousScroll}">
+                    <ScrollViewer.GestureRecognizers>
+                        <PinchGestureRecognizer />
+                    </ScrollViewer.GestureRecognizers>
                     <ItemsControl ItemsSource="{Binding Pages}"
                                   HorizontalAlignment="Center">
                         <ItemsControl.ItemsPanel>
@@ -754,10 +759,14 @@
                 </ScrollViewer>
 
                 <!-- Layout 2: Single Page Fit Mode -->
-                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                <ScrollViewer x:Name="SinglePageScrollViewer"
+                              HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto"
                               Padding="32"
                               IsVisible="{Binding IsSinglePageMode}">
+                    <ScrollViewer.GestureRecognizers>
+                        <PinchGestureRecognizer />
+                    </ScrollViewer.GestureRecognizers>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10"
                                 DataContext="{Binding SelectedPage}">
                         <Border Classes="reader-page-card"
@@ -804,10 +813,14 @@
                 </ScrollViewer>
 
                 <!-- Layout 3: Two-Page Spread (Facing Pages / Book Mode) -->
-                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                <ScrollViewer x:Name="TwoPageSpreadScrollViewer"
+                              HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto"
                               Padding="32"
                               IsVisible="{Binding IsTwoPageSpreadMode}">
+                    <ScrollViewer.GestureRecognizers>
+                        <PinchGestureRecognizer />
+                    </ScrollViewer.GestureRecognizers>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12"
                                 DataContext="{Binding SelectedSpread}">
                         <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
@@ -882,7 +895,8 @@
                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                         <materialIcons:MaterialIcon Kind="Magnify" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
 
-                        <TextBox Text="{Binding SearchQuery, Mode=TwoWay}"
+                        <TextBox x:Name="SearchQueryTextBox"
+                                 Text="{Binding SearchQuery, Mode=TwoWay}"
                                  PlaceholderText="Find in PDF..."
                                  Width="180"
                                  Height="26"

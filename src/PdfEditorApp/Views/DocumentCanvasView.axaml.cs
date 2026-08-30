@@ -37,6 +37,10 @@ public partial class DocumentCanvasView : UserControl
     private Point _panStart;
     private Vector _scrollStart;
 
+    // Pinch Gesture state
+    private bool _isPinching;
+    private double _pinchStartZoom = 1.0;
+
     public DocumentCanvasView()
     {
         InitializeComponent();
@@ -45,9 +49,10 @@ public partial class DocumentCanvasView : UserControl
 
         AddHandler(PointerMovedEvent, OnGlobalPointerMoved, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, OnGlobalPointerReleased, RoutingStrategies.Tunnel);
-        AddHandler(PointerWheelChangedEvent, OnCanvasPointerWheelChanged, RoutingStrategies.Tunnel);
-        AddHandler(PinchEvent, OnCanvasPinch, RoutingStrategies.Tunnel);
-        AddHandler(PinchEndedEvent, OnCanvasPinchEnded, RoutingStrategies.Tunnel);
+        AddHandler(PointerWheelChangedEvent, OnCanvasPointerWheelChanged, RoutingStrategies.Bubble | RoutingStrategies.Tunnel, handledEventsToo: true);
+        AddHandler(PointerTouchPadGestureMagnifyEvent, OnCanvasTouchPadGestureMagnify, RoutingStrategies.Bubble | RoutingStrategies.Tunnel, handledEventsToo: true);
+        AddHandler(PinchEvent, OnCanvasPinch, RoutingStrategies.Bubble | RoutingStrategies.Tunnel, handledEventsToo: true);
+        AddHandler(PinchEndedEvent, OnCanvasPinchEnded, RoutingStrategies.Bubble | RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(DoubleTappedEvent, OnCanvasDoubleTapped, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, OnCanvasKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnCanvasKeyUp, RoutingStrategies.Tunnel);
@@ -91,25 +96,44 @@ public partial class DocumentCanvasView : UserControl
 
     private void OnCanvasPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
-        bool isCtrlOrCmd = e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
-        if (isCtrlOrCmd && ViewModel != null && CanvasScrollViewer != null && PageElementsCanvas != null)
-        {
-            var pointerPos = e.GetPosition(PageElementsCanvas);
-            double oldZoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
-            double canvasX = pointerPos.X / oldZoom;
-            double canvasY = pointerPos.Y / oldZoom;
+        // Support Cmd (Meta), Ctrl, and Option (Alt) modifier keys as well as Zoom tool mode
+        bool isZoomModifier = e.KeyModifiers.HasFlag(KeyModifiers.Control) ||
+                              e.KeyModifiers.HasFlag(KeyModifiers.Meta) ||
+                              e.KeyModifiers.HasFlag(KeyModifiers.Alt);
+        bool isZoomTool = ViewModel?.ActiveToolMode == Models.ToolMode.Zoom;
 
-            double zoomFactor = e.Delta.Y > 0 ? 1.15 : (1.0 / 1.15);
-            double newZoom = Math.Clamp(Math.Round(oldZoom * zoomFactor, 2), 0.1, 5.0);
+        if ((isZoomModifier || isZoomTool) && ViewModel != null && CanvasScrollViewer != null)
+        {
+            double oldZoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+            double effectiveDelta = Math.Abs(e.Delta.Y) >= Math.Abs(e.Delta.X) ? e.Delta.Y : e.Delta.X;
+
+            // Proportional smooth zoom supporting both discrete mouse wheel ticks and continuous trackpad pinch gestures
+            double zoomDeltaFactor;
+            if (Math.Abs(effectiveDelta) >= 1.0)
+            {
+                // Discrete mouse wheel tick (e.g. standard external wheel)
+                zoomDeltaFactor = effectiveDelta > 0 ? 1.15 : (1.0 / 1.15);
+            }
+            else if (Math.Abs(effectiveDelta) > 0.0001)
+            {
+                // High-precision smooth trackpad pinch / scroll gesture
+                zoomDeltaFactor = Math.Pow(1.002, effectiveDelta * 100);
+            }
+            else
+            {
+                zoomDeltaFactor = 1.0;
+            }
+
+            double newZoom = Math.Clamp(Math.Round(oldZoom * zoomDeltaFactor, 3), 0.1, 5.0);
 
             if (Math.Abs(newZoom - oldZoom) > 0.001)
             {
-                ViewModel.ZoomLevel = newZoom;
-
-                // Adjust scroll offset so (canvasX, canvasY) remains anchored under the pointer
                 var mouseInViewer = e.GetPosition(CanvasScrollViewer);
-                double targetOffsetX = (canvasX * newZoom) - mouseInViewer.X;
-                double targetOffsetY = (canvasY * newZoom) - mouseInViewer.Y;
+                double ratio = newZoom / oldZoom;
+                double targetOffsetX = (CanvasScrollViewer.Offset.X + mouseInViewer.X) * ratio - mouseInViewer.X;
+                double targetOffsetY = (CanvasScrollViewer.Offset.Y + mouseInViewer.Y) * ratio - mouseInViewer.Y;
+
+                ViewModel.ZoomLevel = newZoom;
                 CanvasScrollViewer.Offset = new Vector(Math.Max(0, targetOffsetX), Math.Max(0, targetOffsetY));
             }
 
@@ -127,15 +151,61 @@ public partial class DocumentCanvasView : UserControl
         }
     }
 
-    private void OnCanvasPinch(object? sender, PinchEventArgs e)
+    private void OnCanvasTouchPadGestureMagnify(object? sender, PointerDeltaEventArgs e)
     {
         if (ViewModel != null && CanvasScrollViewer != null)
         {
             double oldZoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
-            double newZoom = Math.Clamp(Math.Round(oldZoom * e.Scale, 2), 0.1, 5.0);
-            if (Math.Abs(newZoom - oldZoom) > 0.005)
+            double delta = Math.Abs(e.Delta.Y) >= Math.Abs(e.Delta.X) ? e.Delta.Y : e.Delta.X;
+            if (delta == 0 && (e.Delta.X != 0 || e.Delta.Y != 0))
             {
+                delta = e.Delta.X != 0 ? e.Delta.X : e.Delta.Y;
+            }
+
+            double zoomFactor = 1.0 + delta;
+            double newZoom = Math.Clamp(Math.Round(oldZoom * zoomFactor, 3), 0.1, 5.0);
+
+            if (Math.Abs(newZoom - oldZoom) > 0.001)
+            {
+                var mouseInViewer = e.GetPosition(CanvasScrollViewer);
+                double ratio = newZoom / oldZoom;
+                double targetOffsetX = (CanvasScrollViewer.Offset.X + mouseInViewer.X) * ratio - mouseInViewer.X;
+                double targetOffsetY = (CanvasScrollViewer.Offset.Y + mouseInViewer.Y) * ratio - mouseInViewer.Y;
+
                 ViewModel.ZoomLevel = newZoom;
+                CanvasScrollViewer.Offset = new Vector(Math.Max(0, targetOffsetX), Math.Max(0, targetOffsetY));
+            }
+
+            UpdateViewportOnPlacementService();
+            e.Handled = true;
+        }
+    }
+
+    private void OnCanvasPinch(object? sender, PinchEventArgs e)
+    {
+        if (ViewModel != null && CanvasScrollViewer != null)
+        {
+            if (!_isPinching)
+            {
+                _isPinching = true;
+                _pinchStartZoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+            }
+
+            // e.Scale is the total cumulative scale of the pinch gesture since start (starts at 1.0)
+            double targetZoom = Math.Clamp(Math.Round(_pinchStartZoom * e.Scale, 3), 0.1, 5.0);
+            if (Math.Abs(targetZoom - ViewModel.ZoomLevel) > 0.002)
+            {
+                double oldZ = ViewModel.ZoomLevel;
+                ViewModel.ZoomLevel = targetZoom;
+
+                if (oldZ > 0)
+                {
+                    var origin = e.ScaleOrigin;
+                    double ratio = targetZoom / oldZ;
+                    double newOffsetX = (CanvasScrollViewer.Offset.X + origin.X) * ratio - origin.X;
+                    double newOffsetY = (CanvasScrollViewer.Offset.Y + origin.Y) * ratio - origin.Y;
+                    CanvasScrollViewer.Offset = new Vector(Math.Max(0, newOffsetX), Math.Max(0, newOffsetY));
+                }
             }
             e.Handled = true;
         }
@@ -143,6 +213,7 @@ public partial class DocumentCanvasView : UserControl
 
     private void OnCanvasPinchEnded(object? sender, PinchEndedEventArgs e)
     {
+        _isPinching = false;
         UpdateViewportOnPlacementService();
         e.Handled = true;
     }
@@ -250,7 +321,7 @@ public partial class DocumentCanvasView : UserControl
             ViewModel.CurrentPage.ClearSelection();
         }
 
-        if (pointerPoint.Properties.IsLeftButtonPressed)
+        if (pointerPoint.Properties.IsLeftButtonPressed && e.Pointer.Type != PointerType.Touch)
         {
             _isMarqueeSelecting = true;
             _marqueeStartPoint = pos;
@@ -619,12 +690,17 @@ public partial class DocumentCanvasView : UserControl
             {
                 case Key.D0:
                 case Key.NumPad0:
-                    ViewModel.FitToPageDynamic(CanvasScrollViewer?.Viewport.Width ?? 800, CanvasScrollViewer?.Viewport.Height ?? 800);
+                    ViewModel.ResetZoom();
                     e.Handled = true;
                     break;
                 case Key.D1:
                 case Key.NumPad1:
-                    ViewModel.ResetZoom();
+                    ViewModel.FitToWidthDynamic(CanvasScrollViewer?.Viewport.Width ?? 800);
+                    e.Handled = true;
+                    break;
+                case Key.D9:
+                case Key.NumPad9:
+                    ViewModel.FitToPageDynamic(CanvasScrollViewer?.Viewport.Width ?? 800, CanvasScrollViewer?.Viewport.Height ?? 800);
                     e.Handled = true;
                     break;
                 case Key.D2:

@@ -995,6 +995,11 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void ZoomIn()
     {
+        if (IsPdfViewerVisible && PdfViewer != null)
+        {
+            PdfViewer.ZoomIn();
+            return;
+        }
         ZoomLevel = Math.Clamp(Math.Round(ZoomLevel * 1.2, 2), 0.1, 5.0);
         ShowToast($"Zoom: {(int)(ZoomLevel * 100)}%", "MagnifyPlusOutline");
     }
@@ -1002,6 +1007,11 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void ZoomOut()
     {
+        if (IsPdfViewerVisible && PdfViewer != null)
+        {
+            PdfViewer.ZoomOut();
+            return;
+        }
         ZoomLevel = Math.Clamp(Math.Round(ZoomLevel / 1.2, 2), 0.1, 5.0);
         ShowToast($"Zoom: {(int)(ZoomLevel * 100)}%", "MagnifyMinusOutline");
     }
@@ -1009,6 +1019,11 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void ResetZoom()
     {
+        if (IsPdfViewerVisible && PdfViewer != null)
+        {
+            PdfViewer.ResetZoom();
+            return;
+        }
         ZoomLevel = 1.0;
         ShowToast("Zoom Reset (100%)", "Magnify");
     }
@@ -1016,12 +1031,22 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void FitToWidth()
     {
+        if (IsPdfViewerVisible && PdfViewer != null)
+        {
+            PdfViewer.FitToWidth();
+            return;
+        }
         ZoomLevel = 1.15;
         ShowToast("Fit to Width", "ArrowExpandHorizontal");
     }
 
     public void FitToWidthDynamic(double viewportWidth)
     {
+        if (IsPdfViewerVisible && PdfViewer != null)
+        {
+            PdfViewer.FitToWidth();
+            return;
+        }
         if (CurrentPage != null && viewportWidth > 100)
         {
             ZoomLevel = Math.Clamp(Math.Round((viewportWidth - 64.0) / CurrentPage.Width, 2), 0.1, 5.0);
@@ -1036,12 +1061,22 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void FitToPage()
     {
+        if (IsPdfViewerVisible && PdfViewer != null)
+        {
+            PdfViewer.FitToPage();
+            return;
+        }
         ZoomLevel = 0.85;
         ShowToast("Fit to Page", "FitToPageOutline");
     }
 
     public void FitToPageDynamic(double viewportWidth, double viewportHeight)
     {
+        if (IsPdfViewerVisible && PdfViewer != null)
+        {
+            PdfViewer.FitToPage();
+            return;
+        }
         if (CurrentPage != null && viewportWidth > 100 && viewportHeight > 100)
         {
             double scaleX = (viewportWidth - 64.0) / CurrentPage.Width;

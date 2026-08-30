@@ -266,6 +266,40 @@ public class PdfToolViewModelsTests
         Assert.True(vm.ActiveToolCard.IsStarred);
     }
 
+    [Fact]
+    public void PdfToolViewModelBase_SynchronizesPreviewItemsAndReordering()
+    {
+        var vm = (MergePdfToolViewModel)_factory.Create(PdfToolId.MergePdf);
+        vm.SelectedFiles.Add("doc1.pdf");
+        vm.SelectedFiles.Add("doc2.pdf");
+        vm.SyncPreviewItems();
+
+        Assert.Equal(2, vm.SelectedFilePreviewItems.Count);
+        Assert.Equal("doc1.pdf", vm.SelectedFilePreviewItems[0].FileName);
+        Assert.Equal("#1", vm.SelectedFilePreviewItems[0].OrderIndexText);
+        Assert.Equal("doc2.pdf", vm.SelectedFilePreviewItems[1].FileName);
+        Assert.Equal("#2", vm.SelectedFilePreviewItems[1].OrderIndexText);
+
+        // Reorder
+        vm.MoveFileDownCommand.Execute("doc1.pdf");
+        Assert.Equal("doc2.pdf", vm.SelectedFilePreviewItems[0].FileName);
+        Assert.Equal("#1", vm.SelectedFilePreviewItems[0].OrderIndexText);
+        Assert.Equal("doc1.pdf", vm.SelectedFilePreviewItems[1].FileName);
+        Assert.Equal("#2", vm.SelectedFilePreviewItems[1].OrderIndexText);
+    }
+
+    [Fact]
+    public void PdfFileHelper_SanitizesTrailingJunkBytesAfterEof()
+    {
+        string rawPdf = "%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<< >>\nstartxref\n0\n%%EOF\n<!-- trailing web server junk HTML -->\n\0\0\0";
+        byte[] bytes = System.Text.Encoding.ASCII.GetBytes(rawPdf);
+        byte[] sanitized = PdfFileHelper.SanitizePdfBytes(bytes);
+
+        string sanitizedText = System.Text.Encoding.ASCII.GetString(sanitized);
+        Assert.EndsWith("%%EOF\r\n", sanitizedText);
+        Assert.DoesNotContain("trailing web server junk", sanitizedText);
+    }
+
     private class MockRecentService : IRecentDocumentsService
     {
         public List<RecentDocumentItem> Items { get; } = new();

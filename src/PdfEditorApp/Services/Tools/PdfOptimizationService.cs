@@ -28,7 +28,7 @@ public class PdfOptimizationService : IPdfOptimizationService
             progress?.Report(15.0);
 
             ct.ThrowIfCancellationRequested();
-            using var inputDoc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Import);
+            using var inputDoc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Import);
             using var outputDoc = new PdfDocument();
 
             // Set document compression options
@@ -107,7 +107,7 @@ public class PdfOptimizationService : IPdfOptimizationService
             try
             {
                 // Attempt standard reconstruction
-                using var inputDoc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Import);
+                using var inputDoc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Import);
                 using var outputDoc = new PdfDocument();
 
                 outputDoc.Info.Title = !string.IsNullOrEmpty(inputDoc.Info.Title) ? inputDoc.Info.Title : Path.GetFileNameWithoutExtension(options.InputFilePath);
@@ -195,7 +195,7 @@ public class PdfOptimizationService : IPdfOptimizationService
             long origBytes = new FileInfo(options.InputFilePath).Length;
             progress?.Report(20.0);
 
-            using var inputDoc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Import);
+            using var inputDoc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Import);
             using var outputDoc = new PdfDocument();
 
             // Set PDF/A compliance markers

@@ -46,7 +46,7 @@ public class PdfPageService : IPdfPageService
                 string filePath = options.InputFiles[i];
                 if (!File.Exists(filePath)) continue;
 
-                using var inputDoc = PdfReader.Open(filePath, PdfDocumentOpenMode.Import);
+                using var inputDoc = PdfFileHelper.OpenDocumentSafely(filePath, PdfDocumentOpenMode.Import);
                 int pageCount = inputDoc.PageCount;
 
                 for (int p = 0; p < pageCount; p++)
@@ -97,7 +97,7 @@ public class PdfPageService : IPdfPageService
                 return new ToolExecutionResult { Success = false, ErrorMessage = "Input PDF file does not exist." };
 
             long origBytes = new FileInfo(options.InputFilePath).Length;
-            using var inputDoc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Import);
+            using var inputDoc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Import);
             int totalPages = inputDoc.PageCount;
 
             if (totalPages == 0)
@@ -207,7 +207,7 @@ public class PdfPageService : IPdfPageService
                 return new ToolExecutionResult { Success = false, ErrorMessage = "Input PDF file does not exist." };
 
             long origBytes = new FileInfo(options.InputFilePath).Length;
-            using var doc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Modify);
+            using var doc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Modify);
             int totalPages = doc.PageCount;
 
             var targetIndices = GetFilteredPageIndices(options.TargetFilter, options.CustomRange, totalPages);
@@ -258,7 +258,7 @@ public class PdfPageService : IPdfPageService
                 return new ToolExecutionResult { Success = false, ErrorMessage = "Input PDF file does not exist." };
 
             long origBytes = new FileInfo(options.InputFilePath).Length;
-            using var doc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Modify);
+            using var doc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Modify);
             int totalPages = doc.PageCount;
 
             var targetIndices = GetTargetPageIndices(options.TargetPages, options.CustomRange, totalPages);
@@ -317,7 +317,7 @@ public class PdfPageService : IPdfPageService
                 return new ToolExecutionResult { Success = false, ErrorMessage = "Input PDF file does not exist." };
 
             long origBytes = new FileInfo(options.InputFilePath).Length;
-            using var inputDoc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Import);
+            using var inputDoc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Import);
             using var outputDoc = new PdfDocument();
             int totalPages = inputDoc.PageCount;
 
@@ -374,7 +374,7 @@ public class PdfPageService : IPdfPageService
                 return new ToolExecutionResult { Success = false, ErrorMessage = "Input PDF file does not exist." };
 
             long origBytes = new FileInfo(options.InputFilePath).Length;
-            using var doc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Modify);
+            using var doc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Modify);
             int totalPages = doc.PageCount;
 
             var targetIndices = GetTargetPageIndices(options.TargetPages, options.CustomRange, totalPages);
@@ -464,7 +464,7 @@ public class PdfPageService : IPdfPageService
                 return new ToolExecutionResult { Success = false, ErrorMessage = "Input PDF file does not exist." };
 
             long origBytes = new FileInfo(options.InputFilePath).Length;
-            using var doc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Modify);
+            using var doc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Modify);
             int totalPages = doc.PageCount;
 
             var targetIndices = GetTargetPageIndices(options.TargetPages, options.CustomRange, totalPages);

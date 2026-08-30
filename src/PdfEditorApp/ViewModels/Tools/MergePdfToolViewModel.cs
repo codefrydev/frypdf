@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 
@@ -20,26 +19,6 @@ public partial class MergePdfToolViewModel : PdfToolViewModelBase
     public MergePdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {
-    }
-
-    [RelayCommand]
-    public void MoveFileUp(string filePath)
-    {
-        int index = SelectedFiles.IndexOf(filePath);
-        if (index > 0)
-        {
-            SelectedFiles.Move(index, index - 1);
-        }
-    }
-
-    [RelayCommand]
-    public void MoveFileDown(string filePath)
-    {
-        int index = SelectedFiles.IndexOf(filePath);
-        if (index >= 0 && index < SelectedFiles.Count - 1)
-        {
-            SelectedFiles.Move(index, index + 1);
-        }
     }
 
     protected override bool ValidateInputs(out string errorMessage)

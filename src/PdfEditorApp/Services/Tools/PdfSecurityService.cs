@@ -39,7 +39,7 @@ public class PdfSecurityService : IPdfSecurityService
             progress?.Report(20.0);
 
             ct.ThrowIfCancellationRequested();
-            using var doc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Modify);
+            using var doc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Modify);
 
             // Configure security settings
             var security = doc.SecuritySettings;
@@ -95,7 +95,7 @@ public class PdfSecurityService : IPdfSecurityService
 
             try
             {
-                using var inputDoc = PdfReader.Open(options.InputFilePath, options.Password ?? "", PdfDocumentOpenMode.Import);
+                using var inputDoc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Import, options.Password ?? "");
                 using var outputDoc = new PdfDocument();
 
                 outputDoc.Info.Title = inputDoc.Info.Title;
@@ -154,7 +154,7 @@ public class PdfSecurityService : IPdfSecurityService
             progress?.Report(20.0);
 
             ct.ThrowIfCancellationRequested();
-            using var doc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Modify);
+            using var doc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Modify);
 
             int targetPageIndex = Math.Max(0, Math.Min(doc.PageCount - 1, options.TargetPageNumber - 1));
             var page = doc.Pages[targetPageIndex];
@@ -255,7 +255,7 @@ public class PdfSecurityService : IPdfSecurityService
             progress?.Report(20.0);
 
             ct.ThrowIfCancellationRequested();
-            using var doc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Modify);
+            using var doc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Modify);
 
             int totalRedactions = 0;
             foreach (var r in options.Regions)

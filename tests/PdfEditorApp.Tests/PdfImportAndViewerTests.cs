@@ -239,6 +239,173 @@ public class PdfImportAndViewerTests
     }
 
     [Fact]
+    public async Task PdfViewerViewModel_ExtractsWordsAndLinesGeometry_AccuratelyOnPageLoad()
+    {
+        var sourceModel = _templateService.CreateInvoiceTemplate();
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(sourceModel);
+
+        var viewer = new PdfViewerViewModel();
+        await viewer.LoadDocumentBytesAsync(pdfBytes, "Invoice.pdf");
+
+        var page1 = viewer.SelectedPage;
+        Assert.NotNull(page1);
+        Assert.NotEmpty(page1.Words);
+        Assert.NotEmpty(page1.TextLines);
+
+        // Verify words geometry
+        foreach (var word in page1.Words)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(word.Text));
+            Assert.True(word.Bounds.Width > 0);
+            Assert.True(word.Bounds.Height > 0);
+            Assert.True(word.Bounds.Left >= 0);
+            Assert.True(word.Bounds.Top >= 0);
+        }
+
+        // Verify lines geometry
+        foreach (var line in page1.TextLines)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(line.Text));
+            Assert.NotEmpty(line.Words);
+            Assert.True(line.Bounds.Width > 0);
+            Assert.True(line.Bounds.Height > 0);
+        }
+    }
+
+    [Fact]
+    public async Task PdfViewerViewModel_WordAndLineSelection_SetsAccurateSelectionAndBounds()
+    {
+        var sourceModel = _templateService.CreateInvoiceTemplate();
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(sourceModel);
+
+        var viewer = new PdfViewerViewModel();
+        await viewer.LoadDocumentBytesAsync(pdfBytes, "Invoice.pdf");
+
+        var page1 = viewer.SelectedPage!;
+        Assert.NotEmpty(page1.Words);
+        var targetWord = page1.Words[0];
+
+        // 1. Select Word
+        page1.SelectWord(targetWord);
+        Assert.True(page1.HasSelection);
+        Assert.Equal(targetWord.Text, page1.SelectedText);
+        Assert.Single(page1.SelectionRects);
+        Assert.Equal(targetWord.Bounds, page1.SelectionRects[0]);
+
+        // 2. Select Line
+        var targetLine = page1.TextLines[0];
+        page1.SelectLine(targetLine);
+        Assert.True(page1.HasSelection);
+        Assert.Equal(targetLine.Text, page1.SelectedText);
+        Assert.Single(page1.SelectionRects);
+
+        // 3. Clear Selection
+        page1.ClearSelection();
+        Assert.False(page1.HasSelection);
+        Assert.Empty(page1.SelectedText);
+        Assert.Empty(page1.SelectionRects);
+    }
+
+    [Fact]
+    public async Task PdfViewerViewModel_DragRangeSelection_SelectsMultiLineText()
+    {
+        var sourceModel = _templateService.CreateInvoiceTemplate();
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(sourceModel);
+
+        var viewer = new PdfViewerViewModel();
+        await viewer.LoadDocumentBytesAsync(pdfBytes, "Invoice.pdf");
+
+        var page1 = viewer.SelectedPage!;
+        Assert.True(page1.TextLines.Count >= 2);
+
+        var line1 = page1.TextLines[0];
+        var line2 = page1.TextLines[1];
+
+        // Drag from first line middle to second line middle
+        var startPoint = new Avalonia.Point(line1.Bounds.Left + 5, line1.Bounds.Center.Y);
+        var endPoint = new Avalonia.Point(line2.Bounds.Right - 5, line2.Bounds.Center.Y);
+
+        page1.SetSelectionRange(startPoint, endPoint);
+
+        Assert.True(page1.HasSelection);
+        Assert.NotEmpty(page1.SelectedText);
+        Assert.True(page1.SelectionRects.Count >= 2);
+    }
+
+    [Fact]
+    public async Task PdfViewerViewModel_SelectAll_SelectsAllPageText()
+    {
+        var sourceModel = _templateService.CreateInvoiceTemplate();
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(sourceModel);
+
+        var viewer = new PdfViewerViewModel();
+        await viewer.LoadDocumentBytesAsync(pdfBytes, "Invoice.pdf");
+
+        viewer.SelectAllPageText();
+
+        Assert.True(viewer.HasTextSelection);
+        Assert.Equal(viewer.SelectedPage!.ExtractedText, viewer.ActiveSelectedText);
+        Assert.NotEmpty(viewer.SelectedPage.SelectionRects);
+
+        viewer.ClearSelection();
+        Assert.False(viewer.HasTextSelection);
+        Assert.Empty(viewer.ActiveSelectedText);
+    }
+
+    [Fact]
+    public async Task PdfViewerViewModel_HighlightSelectedText_CreatesAnnotationWithExactRectangles()
+    {
+        var sourceModel = _templateService.CreateInvoiceTemplate();
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(sourceModel);
+
+        var viewer = new PdfViewerViewModel();
+        await viewer.LoadDocumentBytesAsync(pdfBytes, "Invoice.pdf");
+
+        var page1 = viewer.SelectedPage!;
+        var firstWord = page1.Words[0];
+        page1.SelectWord(firstWord);
+        viewer.ActiveSelectedText = page1.SelectedText;
+        viewer.ActiveSelectedPageNumber = page1.PageNumber;
+        viewer.HasTextSelection = true;
+
+        viewer.HighlightSelectedText("#A7F3D0");
+
+        Assert.True(viewer.HasAnnotations);
+        var hlAnn = viewer.Annotations.FirstOrDefault(a => a.Type == "Highlight");
+        Assert.NotNull(hlAnn);
+        Assert.Equal("#A7F3D0", hlAnn.ColorHex);
+        Assert.Equal(firstWord.Text, hlAnn.Content);
+        Assert.NotEmpty(hlAnn.HighlightRects);
+        Assert.Equal(firstWord.Bounds, hlAnn.HighlightRects[0]);
+
+        // Selection should be cleared after highlighting
+        Assert.False(page1.HasSelection);
+        Assert.False(viewer.HasTextSelection);
+    }
+
+    [Fact]
+    public async Task PdfViewerViewModel_SearchSelectedText_SetsQueryAndNavigatesMatches()
+    {
+        var sourceModel = _templateService.CreateInvoiceTemplate();
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(sourceModel);
+
+        var viewer = new PdfViewerViewModel();
+        await viewer.LoadDocumentBytesAsync(pdfBytes, "Invoice.pdf");
+
+        var page1 = viewer.SelectedPage!;
+        var firstWord = page1.Words[0];
+        page1.SelectWord(firstWord);
+        viewer.ActiveSelectedText = firstWord.Text;
+
+        viewer.SearchSelectedText();
+
+        Assert.True(viewer.IsSearchBarVisible);
+        Assert.Equal(firstWord.Text, viewer.SearchQuery);
+        Assert.True(viewer.HasSearchResults);
+        Assert.True(viewer.TotalMatchesCount >= 1);
+    }
+
+    [Fact]
     public async Task PdfViewerViewModel_EditInStudioBridge_TriggersEventWithFilePath()
     {
         string tempPdfPath = Path.Combine(Path.GetTempPath(), $"FryPdf_Studio_Bridge_{Guid.NewGuid():N}.pdf");

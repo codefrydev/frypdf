@@ -33,7 +33,6 @@ public partial class PdfViewerView : UserControl
         AddHandler(PointerPressedEvent, OnViewerPointerPressed, RoutingStrategies.Tunnel);
         AddHandler(PointerMovedEvent, OnViewerPointerMoved, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, OnViewerPointerReleased, RoutingStrategies.Tunnel);
-        AddHandler(DoubleTappedEvent, OnViewerDoubleTapped, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, OnViewerKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnViewerKeyUp, RoutingStrategies.Tunnel);
     }
@@ -242,15 +241,6 @@ public partial class PdfViewerView : UserControl
         }
     }
 
-    private void OnViewerDoubleTapped(object? sender, TappedEventArgs e)
-    {
-        if (ViewModel != null)
-        {
-            ViewModel.ResetZoom();
-            e.Handled = true;
-        }
-    }
-
     private void OnViewerKeyUp(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.Space)
@@ -315,6 +305,25 @@ public partial class PdfViewerView : UserControl
         {
             switch (e.Key)
             {
+                case Key.C:
+                    if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+                    {
+                        ViewModel.CopySelectedCitationCommand.Execute(null);
+                    }
+                    else if (ViewModel.HasTextSelection)
+                    {
+                        ViewModel.CopySelectedTextCommand.Execute(null);
+                    }
+                    else
+                    {
+                        ViewModel.CopyPageTextCommand.Execute(null);
+                    }
+                    e.Handled = true;
+                    break;
+                case Key.A:
+                    ViewModel.SelectAllPageTextCommand.Execute(null);
+                    e.Handled = true;
+                    break;
                 case Key.D0:
                 case Key.NumPad0:
                     ViewModel.ResetZoomCommand.Execute(null);
@@ -341,7 +350,14 @@ public partial class PdfViewerView : UserControl
                     e.Handled = true;
                     break;
                 case Key.F:
-                    ViewModel.ToggleSearchBarCommand.Execute(null);
+                    if (ViewModel.HasTextSelection)
+                    {
+                        ViewModel.SearchSelectedTextCommand.Execute(null);
+                    }
+                    else
+                    {
+                        ViewModel.ToggleSearchBarCommand.Execute(null);
+                    }
                     e.Handled = true;
                     break;
                 case Key.R:
@@ -393,7 +409,12 @@ public partial class PdfViewerView : UserControl
                     e.Handled = true;
                     break;
                 case Key.Escape:
-                    if (ViewModel.IsSearchBarVisible)
+                    if (ViewModel.HasTextSelection)
+                    {
+                        ViewModel.ClearSelection();
+                        e.Handled = true;
+                    }
+                    else if (ViewModel.IsSearchBarVisible)
                     {
                         ViewModel.IsSearchBarVisible = false;
                         e.Handled = true;

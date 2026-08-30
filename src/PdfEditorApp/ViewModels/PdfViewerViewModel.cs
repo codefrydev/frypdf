@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Input.Platform;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
@@ -31,6 +32,29 @@ public enum PdfViewerSidebarTab
     Info
 }
 
+public class PdfViewerGlyphItem
+{
+    public char Character { get; set; }
+    public Rect Bounds { get; set; }
+}
+
+public class PdfViewerWordItem
+{
+    public string Text { get; set; } = string.Empty;
+    public Rect Bounds { get; set; }
+    public int LineIndex { get; set; }
+    public int WordIndex { get; set; }
+    public List<PdfViewerGlyphItem> Glyphs { get; } = new();
+}
+
+public class PdfViewerTextLineItem
+{
+    public int LineIndex { get; set; }
+    public Rect Bounds { get; set; }
+    public string Text { get; set; } = string.Empty;
+    public List<PdfViewerWordItem> Words { get; } = new();
+}
+
 public class PdfViewerPageItem : ObservableObject
 {
     private bool _isSelected;
@@ -38,6 +62,8 @@ public class PdfViewerPageItem : ObservableObject
     private float _renderedScale = 2.75f;
     private Bitmap? _thumbnailBitmap;
     private Bitmap? _bitmap;
+    private string _selectedText = string.Empty;
+    private bool _hasSelection;
 
     public int PageNumber { get; set; }
     public double WidthPoints { get; set; }
@@ -46,6 +72,200 @@ public class PdfViewerPageItem : ObservableObject
     public string PageLabel => $"Page {PageNumber}";
     public string PageSummary { get; set; } = string.Empty;
     public string ExtractedText { get; set; } = string.Empty;
+
+    public List<PdfViewerWordItem> Words { get; set; } = new();
+    public List<PdfViewerTextLineItem> TextLines { get; set; } = new();
+
+    public string SelectedText
+    {
+        get => _selectedText;
+        set
+        {
+            if (SetProperty(ref _selectedText, value))
+            {
+                HasSelection = !string.IsNullOrEmpty(value);
+            }
+        }
+    }
+
+    public bool HasSelection
+    {
+        get => _hasSelection;
+        private set => SetProperty(ref _hasSelection, value);
+    }
+
+    public List<Rect> SelectionRects { get; } = new();
+
+    public event Action? SelectionChanged;
+
+    public void NotifySelectionChanged()
+    {
+        OnPropertyChanged(nameof(SelectedText));
+        OnPropertyChanged(nameof(HasSelection));
+        SelectionChanged?.Invoke();
+    }
+
+    public void ClearSelection()
+    {
+        if (SelectionRects.Count > 0 || !string.IsNullOrEmpty(SelectedText))
+        {
+            SelectionRects.Clear();
+            SelectedText = string.Empty;
+            NotifySelectionChanged();
+        }
+    }
+
+    public void SelectWord(PdfViewerWordItem word)
+    {
+        SelectionRects.Clear();
+        SelectionRects.Add(word.Bounds);
+        SelectedText = word.Text;
+        NotifySelectionChanged();
+    }
+
+    public void SelectLine(PdfViewerTextLineItem line)
+    {
+        SelectionRects.Clear();
+        SelectionRects.Add(line.Bounds);
+        SelectedText = line.Text;
+        NotifySelectionChanged();
+    }
+
+    public void SelectAll()
+    {
+        SelectionRects.Clear();
+        if (Words.Count == 0 && TextLines.Count == 0)
+        {
+            SelectedText = string.Empty;
+            NotifySelectionChanged();
+            return;
+        }
+
+        if (TextLines.Count > 0)
+        {
+            foreach (var line in TextLines)
+            {
+                SelectionRects.Add(line.Bounds);
+            }
+        }
+        else
+        {
+            foreach (var word in Words)
+            {
+                SelectionRects.Add(word.Bounds);
+            }
+        }
+
+        SelectedText = ExtractedText;
+        NotifySelectionChanged();
+    }
+
+    public void SetSelectionRange(Point start, Point end)
+    {
+        SelectionRects.Clear();
+        if (Words.Count == 0 || TextLines.Count == 0)
+        {
+            SelectedText = string.Empty;
+            NotifySelectionChanged();
+            return;
+        }
+
+        // Determine natural reading order start & end
+        bool isStartFirst = (start.Y < end.Y - 4) || (Math.Abs(start.Y - end.Y) <= 4 && start.X <= end.X);
+        Point firstPoint = isStartFirst ? start : end;
+        Point secondPoint = isStartFirst ? end : start;
+
+        var startLine = TextLines
+            .Where(l => firstPoint.Y >= l.Bounds.Top - 4 && firstPoint.Y <= l.Bounds.Bottom + 4)
+            .OrderBy(l => Math.Max(0, Math.Max(l.Bounds.Left - firstPoint.X, firstPoint.X - l.Bounds.Right)))
+            .FirstOrDefault()
+            ?? TextLines.OrderBy(l => Math.Abs(l.Bounds.Center.Y - firstPoint.Y) * 10 + Math.Abs(l.Bounds.Center.X - firstPoint.X)).FirstOrDefault();
+
+        var endLine = TextLines
+            .Where(l => secondPoint.Y >= l.Bounds.Top - 4 && secondPoint.Y <= l.Bounds.Bottom + 4)
+            .OrderBy(l => Math.Max(0, Math.Max(l.Bounds.Left - secondPoint.X, secondPoint.X - l.Bounds.Right)))
+            .FirstOrDefault()
+            ?? TextLines.OrderBy(l => Math.Abs(l.Bounds.Center.Y - secondPoint.Y) * 10 + Math.Abs(l.Bounds.Center.X - secondPoint.X)).FirstOrDefault();
+
+        if (startLine == null || endLine == null)
+        {
+            SelectedText = string.Empty;
+            NotifySelectionChanged();
+            return;
+        }
+
+        int startLineIdx = Math.Min(startLine.LineIndex, endLine.LineIndex);
+        int endLineIdx = Math.Max(startLine.LineIndex, endLine.LineIndex);
+
+        var sb = new StringBuilder();
+
+        for (int lIdx = startLineIdx; lIdx <= endLineIdx; lIdx++)
+        {
+            var line = TextLines.FirstOrDefault(l => l.LineIndex == lIdx);
+            if (line == null || line.Words.Count == 0) continue;
+
+            List<PdfViewerWordItem> lineSelectedWords;
+
+            if (startLineIdx == endLineIdx)
+            {
+                double minX = Math.Min(start.X, end.X);
+                double maxX = Math.Max(start.X, end.X);
+
+                lineSelectedWords = line.Words
+                    .Where(w => w.Bounds.Right >= minX && w.Bounds.Left <= maxX)
+                    .ToList();
+
+                if (lineSelectedWords.Count == 0 && line.Bounds.Left <= maxX && line.Bounds.Right >= minX)
+                {
+                    lineSelectedWords = line.Words.ToList();
+                }
+            }
+            else if (lIdx == startLineIdx)
+            {
+                double fromX = firstPoint.X;
+                lineSelectedWords = line.Words
+                    .Where(w => w.Bounds.Right >= fromX)
+                    .ToList();
+
+                if (lineSelectedWords.Count == 0 && fromX <= line.Bounds.Left)
+                {
+                    lineSelectedWords = line.Words.ToList();
+                }
+            }
+            else if (lIdx == endLineIdx)
+            {
+                double toX = secondPoint.X;
+                lineSelectedWords = line.Words
+                    .Where(w => w.Bounds.Left <= toX)
+                    .ToList();
+
+                if (lineSelectedWords.Count == 0 && toX >= line.Bounds.Right)
+                {
+                    lineSelectedWords = line.Words.ToList();
+                }
+            }
+            else
+            {
+                lineSelectedWords = line.Words.ToList();
+            }
+
+            if (lineSelectedWords.Count > 0)
+            {
+                double left = lineSelectedWords.Min(w => w.Bounds.Left);
+                double right = lineSelectedWords.Max(w => w.Bounds.Right);
+                double top = lineSelectedWords.Min(w => w.Bounds.Top);
+                double bottom = lineSelectedWords.Max(w => w.Bounds.Bottom);
+                SelectionRects.Add(new Rect(left, top, Math.Max(1, right - left), Math.Max(1, bottom - top)));
+
+                string lineTxt = string.Join(" ", lineSelectedWords.Select(w => w.Text));
+                if (sb.Length > 0) sb.AppendLine();
+                sb.Append(lineTxt);
+            }
+        }
+
+        SelectedText = sb.ToString();
+        NotifySelectionChanged();
+    }
 
     public float RenderedScale
     {
@@ -121,6 +341,7 @@ public class PdfViewerAnnotationItem : ObservableObject
     public string IconKind { get; set; } = "FormatColorHighlight";
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public string TimeFormatted => CreatedAt.ToString("HH:mm · MMM d");
+    public List<Rect> HighlightRects { get; set; } = new();
 }
 
 public class PdfViewerMetadataItem
@@ -275,6 +496,32 @@ public partial class PdfViewerViewModel : ViewModelBase
     // Presentation / Fullscreen Mode
     [ObservableProperty]
     private bool _isFullscreen = false;
+
+    // Interactive Text Selection State
+    [ObservableProperty]
+    private string _activeSelectedText = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasTextSelection = false;
+
+    [ObservableProperty]
+    private int _activeSelectedPageNumber = 1;
+
+    public string SelectedTextSnippet
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(ActiveSelectedText)) return string.Empty;
+            string clean = ActiveSelectedText.Replace('\r', ' ').Replace('\n', ' ').Trim();
+            return clean.Length > 35 ? clean.Substring(0, 35) + "…" : clean;
+        }
+    }
+
+    partial void OnActiveSelectedTextChanged(string value)
+    {
+        HasTextSelection = !string.IsNullOrWhiteSpace(value);
+        OnPropertyChanged(nameof(SelectedTextSnippet));
+    }
 
     // Collections
     public ObservableCollection<PdfViewerPageItem> Pages { get; } = new();
@@ -442,7 +689,137 @@ public partial class PdfViewerViewModel : ViewModelBase
         }
     }
 
-    // --- Core Document Loading ---
+    // --- Core Document Loading & Text Geometry Extraction ---
+
+    public static (string text, List<PdfViewerWordItem> words, List<PdfViewerTextLineItem> lines) ExtractPageTextGeometry(Page page)
+    {
+        double pageHeight = Math.Max(100, page.Height);
+        var rawWords = page.GetWords().Where(w => !string.IsNullOrWhiteSpace(w.Text)).ToList();
+        if (rawWords.Count == 0)
+        {
+            return (page.Text ?? string.Empty, new List<PdfViewerWordItem>(), new List<PdfViewerTextLineItem>());
+        }
+
+        var wordItems = new List<PdfViewerWordItem>();
+        int wordIdx = 0;
+        foreach (var w in rawWords)
+        {
+            double x = Math.Max(0, w.BoundingBox.Left);
+            double y = Math.Max(0, pageHeight - w.BoundingBox.Top);
+            double width = Math.Max(1, w.BoundingBox.Width);
+            double height = Math.Max(1, w.BoundingBox.Height);
+
+            var wordItem = new PdfViewerWordItem
+            {
+                Text = w.Text,
+                Bounds = new Rect(x, y, width, height),
+                WordIndex = wordIdx++
+            };
+
+            if (w.Letters != null && w.Letters.Count > 0)
+            {
+                foreach (var letter in w.Letters)
+                {
+                    if (string.IsNullOrEmpty(letter.Value)) continue;
+                    double lx = Math.Max(0, letter.BoundingBox.Left);
+                    double ly = Math.Max(0, pageHeight - letter.BoundingBox.Top);
+                    double lw = Math.Max(0.5, letter.BoundingBox.Width);
+                    double lh = Math.Max(1, letter.BoundingBox.Height);
+
+                    wordItem.Glyphs.Add(new PdfViewerGlyphItem
+                    {
+                        Character = letter.Value[0],
+                        Bounds = new Rect(lx, ly, lw, lh)
+                    });
+                }
+            }
+
+            wordItems.Add(wordItem);
+        }
+
+        // Group words into lines based on vertical overlap
+        var sortedWords = wordItems.OrderBy(w => w.Bounds.Top).ThenBy(w => w.Bounds.Left).ToList();
+        var lineList = new List<PdfViewerTextLineItem>();
+
+        foreach (var word in sortedWords)
+        {
+            var line = lineList.FirstOrDefault(l =>
+            {
+                double overlapTop = Math.Max(l.Bounds.Top, word.Bounds.Top);
+                double overlapBottom = Math.Min(l.Bounds.Bottom, word.Bounds.Bottom);
+                double overlap = overlapBottom - overlapTop;
+                return overlap > Math.Min(l.Bounds.Height, word.Bounds.Height) * 0.45;
+            });
+
+            if (line == null)
+            {
+                line = new PdfViewerTextLineItem
+                {
+                    LineIndex = lineList.Count,
+                    Bounds = word.Bounds
+                };
+                line.Words.Add(word);
+                lineList.Add(line);
+            }
+            else
+            {
+                line.Words.Add(word);
+                line.Bounds = line.Bounds.Union(word.Bounds);
+            }
+        }
+
+        // Sort words in each line horizontally and build line text
+        var sb = new StringBuilder();
+        int lineIdx = 0;
+        foreach (var line in lineList.OrderBy(l => l.Bounds.Top))
+        {
+            line.LineIndex = lineIdx++;
+            var sortedLineWords = line.Words.OrderBy(w => w.Bounds.Left).ToList();
+            line.Words.Clear();
+            line.Words.AddRange(sortedLineWords);
+
+            foreach (var w in line.Words)
+            {
+                w.LineIndex = line.LineIndex;
+            }
+
+            line.Text = string.Join(" ", line.Words.Select(w => w.Text));
+            sb.AppendLine(line.Text);
+        }
+
+        string fullText = sb.ToString().TrimEnd();
+        if (string.IsNullOrWhiteSpace(fullText))
+        {
+            fullText = page.Text ?? string.Empty;
+        }
+
+        return (fullText, wordItems, lineList.OrderBy(l => l.Bounds.Top).ToList());
+    }
+
+    public byte[]? CurrentPdfBytes => _currentPdfBytes;
+
+    public void EnsurePageGeometry(PdfViewerPageItem page)
+    {
+        if (page.Words.Count > 0 || _currentPdfBytes == null || _currentPdfBytes.Length == 0) return;
+        try
+        {
+            using var doc = PdfDocument.Open(_currentPdfBytes);
+            if (page.PageNumber >= 1 && page.PageNumber <= doc.NumberOfPages)
+            {
+                var p = doc.GetPage(page.PageNumber);
+                var (txt, words, lines) = ExtractPageTextGeometry(p);
+                page.ExtractedText = txt;
+                page.Words = words;
+                page.TextLines = lines;
+                if (p.Width > 0 && p.Height > 0)
+                {
+                    page.WidthPoints = p.Width;
+                    page.HeightPoints = p.Height;
+                }
+            }
+        }
+        catch { }
+    }
 
     public async Task LoadDocumentAsync(string filePath, string? password = null)
     {
@@ -538,7 +915,7 @@ public partial class PdfViewerViewModel : ViewModelBase
                     double defaultWidth = Math.Max(100, firstPage.Width);
                     double defaultHeight = Math.Max(100, firstPage.Height);
                     int defaultRot = (int)firstPage.Rotation.Value;
-                    string firstPageText = firstPage.Text ?? "";
+                    var (firstPageText, firstWords, firstLines) = ExtractPageTextGeometry(firstPage);
                     string firstPageSummary = "";
                     if (!string.IsNullOrWhiteSpace(firstPageText))
                     {
@@ -569,6 +946,8 @@ public partial class PdfViewerViewModel : ViewModelBase
                             HeightPoints = defaultHeight,
                             RotationAngle = (i == 1) ? defaultRot : 0,
                             ExtractedText = (i == 1) ? firstPageText : "",
+                            Words = (i == 1) ? firstWords : new List<PdfViewerWordItem>(),
+                            TextLines = (i == 1) ? firstLines : new List<PdfViewerTextLineItem>(),
                             PageSummary = (i == 1) ? firstPageSummary : "",
                             Bitmap = (i == 1) ? bmp1 : null,
                             RenderedScale = 2.75f,
@@ -794,13 +1173,13 @@ public partial class PdfViewerViewModel : ViewModelBase
                     }
 
                     // Extract accurate dimensions and text if page > 1
-                    if (pageNum > 1 && string.IsNullOrEmpty(page.ExtractedText))
+                    if (pageNum > 1 && (page.Words.Count == 0 || string.IsNullOrEmpty(page.ExtractedText)))
                     {
                         try
                         {
                             using var doc = PdfDocument.Open(_currentPdfBytes);
                             var p = doc.GetPage(pageNum);
-                            string txt = p.Text ?? "";
+                            var (txt, words, lines) = ExtractPageTextGeometry(p);
                             double w = Math.Max(100, p.Width);
                             double h = Math.Max(100, p.Height);
                             int rot = (int)p.Rotation.Value;
@@ -820,6 +1199,8 @@ public partial class PdfViewerViewModel : ViewModelBase
                                     page.HeightPoints = h;
                                     page.RotationAngle = rot;
                                     page.ExtractedText = txt;
+                                    page.Words = words;
+                                    page.TextLines = lines;
                                     page.PageSummary = summary;
                                 });
                             }
@@ -1275,28 +1656,56 @@ public partial class PdfViewerViewModel : ViewModelBase
     [RelayCommand]
     public void AddHighlightAnnotation(string? customColorHex = null)
     {
-        if (SelectedPage == null) return;
+        var page = Pages.FirstOrDefault(p => p.PageNumber == ActiveSelectedPageNumber) ?? SelectedPage;
+        if (page == null) return;
         string color = string.IsNullOrWhiteSpace(customColorHex) ? SelectedHighlightColorHex : customColorHex;
+        string textToHighlight = !string.IsNullOrWhiteSpace(ActiveSelectedText) ? ActiveSelectedText : page.SelectedText;
+
+        var highlightRects = new List<Rect>(page.SelectionRects);
+
         var ann = new PdfViewerAnnotationItem
         {
             Type = "Highlight",
-            PageNumber = SelectedPage.PageNumber,
+            PageNumber = page.PageNumber,
             Author = "Reader Reviewer",
-            Content = $"Highlighted text passage on Page {SelectedPage.PageNumber}",
+            Content = !string.IsNullOrWhiteSpace(textToHighlight) ? textToHighlight : $"Highlighted text passage on Page {page.PageNumber}",
             ColorHex = color,
-            IconKind = "FormatColorHighlight"
+            IconKind = "FormatColorHighlight",
+            HighlightRects = highlightRects
         };
         Annotations.Add(ann);
-        SelectedPage.PageAnnotations.Add(ann);
+        page.PageAnnotations.Add(ann);
         OnPropertyChanged(nameof(HasAnnotations));
+        page.ClearSelection();
+        ClearSelection();
         SelectedSidebarTab = PdfViewerSidebarTab.Annotations;
-        ShowToastRequested?.Invoke($"Added Highlight on Page {SelectedPage.PageNumber}");
+        ShowToastRequested?.Invoke($"Added Highlight on Page {page.PageNumber}");
+    }
+
+    [RelayCommand]
+    public void HighlightSelectedText(string? customColorHex = null)
+    {
+        AddHighlightAnnotation(customColorHex);
     }
 
     [RelayCommand]
     public void OpenAddNoteDialog()
     {
         NewNoteText = string.Empty;
+        IsAddNoteOpen = true;
+    }
+
+    [RelayCommand]
+    public void AddNoteFromSelection()
+    {
+        if (!string.IsNullOrWhiteSpace(ActiveSelectedText))
+        {
+            NewNoteText = $"Re: \"{ActiveSelectedText}\"\n\n";
+        }
+        else
+        {
+            NewNoteText = string.Empty;
+        }
         IsAddNoteOpen = true;
     }
 
@@ -1366,11 +1775,105 @@ public partial class PdfViewerViewModel : ViewModelBase
         foreach (var p in Pages)
         {
             p.PageAnnotations.Remove(ann);
+            p.NotifySelectionChanged();
         }
         OnPropertyChanged(nameof(HasAnnotations));
     }
 
-    // --- Clipboard & Text Copy ---
+    // --- Interactive Selection & Clipboard Operations ---
+
+    [RelayCommand]
+    public async Task CopySelectedTextAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ActiveSelectedText))
+        {
+            if (SelectedPage != null && !string.IsNullOrWhiteSpace(SelectedPage.ExtractedText))
+            {
+                await CopyPageTextAsync();
+            }
+            return;
+        }
+
+        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
+        {
+            var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(desktop.MainWindow);
+            if (topLevel?.Clipboard != null)
+            {
+                await topLevel.Clipboard.SetTextAsync(ActiveSelectedText);
+                string snippet = ActiveSelectedText.Length > 40 ? ActiveSelectedText.Substring(0, 40) + "..." : ActiveSelectedText;
+                ShowToastRequested?.Invoke($"Copied: \"{snippet}\"");
+            }
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopySelectedCitationAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ActiveSelectedText)) return;
+
+        string citation = $"\"{ActiveSelectedText}\"\n— Page {ActiveSelectedPageNumber}, {DocumentTitle}";
+        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
+        {
+            var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(desktop.MainWindow);
+            if (topLevel?.Clipboard != null)
+            {
+                await topLevel.Clipboard.SetTextAsync(citation);
+                ShowToastRequested?.Invoke("Copied citation with page reference");
+            }
+        }
+    }
+
+    [RelayCommand]
+    public void SearchSelectedText()
+    {
+        if (string.IsNullOrWhiteSpace(ActiveSelectedText)) return;
+        SearchQuery = ActiveSelectedText.Trim();
+        IsSearchBarVisible = true;
+        SelectedSidebarTab = PdfViewerSidebarTab.Search;
+        IsSidebarOpen = true;
+        PerformSearch();
+    }
+
+    [RelayCommand]
+    public void SearchWebSelectedText()
+    {
+        if (string.IsNullOrWhiteSpace(ActiveSelectedText)) return;
+        try
+        {
+            string query = Uri.EscapeDataString(ActiveSelectedText.Trim());
+            string url = $"https://www.google.com/search?q={query}";
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            };
+            System.Diagnostics.Process.Start(psi);
+        }
+        catch { }
+    }
+
+    [RelayCommand]
+    public void SelectAllPageText()
+    {
+        var page = SelectedPage ?? Pages.FirstOrDefault(p => p.PageNumber == CurrentPageNumber);
+        if (page == null) return;
+        page.SelectAll();
+        ActiveSelectedText = page.SelectedText;
+        ActiveSelectedPageNumber = page.PageNumber;
+        HasTextSelection = !string.IsNullOrEmpty(ActiveSelectedText);
+        ShowToastRequested?.Invoke($"Selected all text on Page {page.PageNumber}");
+    }
+
+    [RelayCommand]
+    public void ClearSelection()
+    {
+        ActiveSelectedText = string.Empty;
+        HasTextSelection = false;
+        foreach (var p in Pages)
+        {
+            p.ClearSelection();
+        }
+    }
 
     [RelayCommand]
     public async Task CopyPageTextAsync()

@@ -58,6 +58,37 @@ public class PdfEngineTests
 
         string header = Encoding.ASCII.GetString(pdfBytes, 0, 5);
         Assert.Equal("%PDF-", header);
+
+        // Deconstruct the exported Annual Report PDF back into editable model
+        var importedDoc = PdfEditorApp.Core.Deconstruction.PdfDeconstructionEngine.Deconstruct(pdfBytes, "Annual Report");
+        Assert.NotNull(importedDoc);
+        Assert.Equal(3, importedDoc.Pages.Count);
+
+        for (int pIdx = 0; pIdx < importedDoc.Pages.Count; pIdx++)
+        {
+            var origPage = model.Pages[pIdx];
+            var impPage = importedDoc.Pages[pIdx];
+            Console.WriteLine($"=== PAGE {pIdx + 1} COMPARISON ===");
+            Console.WriteLine($"ORIGINAL: {origPage.Elements.Count} elements: {string.Join(", ", origPage.Elements.GroupBy(e => e.GetType().Name).Select(g => $"{g.Key}={g.Count()}"))}");
+            Console.WriteLine($"IMPORTED: {impPage.Elements.Count} elements: {string.Join(", ", impPage.Elements.GroupBy(e => e.GetType().Name).Select(g => $"{g.Key}={g.Count()}"))}");
+
+            // Look for missing high-level constructs or broken items
+            foreach (var origEl in origPage.Elements)
+            {
+                if (origEl is PdfTableElement table)
+                {
+                    Console.WriteLine($"  [ORIGINAL TABLE] X={table.X}, Y={table.Y}, Rows={table.Rows.Count}, Cols={table.Headers.Count}");
+                }
+                else if (origEl is PdfChartElement chart)
+                {
+                    Console.WriteLine($"  [ORIGINAL CHART] X={chart.X}, Y={chart.Y}, Type={chart.ChartType}, Title={chart.Title}");
+                }
+                else if (origEl is PdfQrCodeElement qr)
+                {
+                    Console.WriteLine($"  [ORIGINAL QR] X={qr.X}, Y={qr.Y}, Size={qr.Width}x{qr.Height}");
+                }
+            }
+        }
     }
 
     [Fact]

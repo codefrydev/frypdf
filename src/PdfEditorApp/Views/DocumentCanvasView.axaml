@@ -715,7 +715,7 @@
                                             <Panel>
                                                 <Image Source="{Binding PreviewBitmap}"
                                                        RenderOptions.BitmapInterpolationMode="HighQuality"
-                                                       Stretch="{Binding KeepAspectRatio, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter=True, FallbackValue=Uniform}"
+                                                       Stretch="{Binding KeepAspectRatio, Converter={x:Static converters:BooleanToStretchConverter.Instance}}"
                                                        IsVisible="{Binding PreviewBitmap, Converter={StaticResource NullToBooleanConverter}}" />
 
                                                 <Border Background="{DynamicResource WinInputBgBrush}"

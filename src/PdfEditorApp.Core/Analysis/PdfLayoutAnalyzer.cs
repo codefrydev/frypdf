@@ -24,6 +24,7 @@ public class ExtractedPdfLine
     public bool IsItalic { get; set; }
     public string ColorHex { get; set; } = "#0F172A";
 
+    public double Rotation { get; set; } = 0.0;
     public double Width => Math.Max(1, Right - Left);
     public double Height => Math.Max(1, Top - Bottom);
     public double MidY => (Top + Bottom) / 2.0;
@@ -49,6 +50,7 @@ public class ExtractedPdfParagraph
     public double LineHeight { get; set; } = 1.2;
     public bool IsHeading { get; set; }
     public bool IsBulletOrList { get; set; }
+    public double Rotation { get; set; } = 0.0;
 
     public double CanvasX { get; set; }
     public double CanvasY { get; set; }
@@ -64,31 +66,224 @@ public static class PdfLayoutAnalyzer
 {
     /// <summary>
     /// Analyzes words on a PDF page and reconstructs structured, editable paragraph blocks.
+    /// Supports multi-orientation text (horizontal, 90° and 270° vertical marginalia).
     /// </summary>
     /// <param name="page">The PDF page to analyze.</param>
     /// <param name="pageHeight">Page height in PDF points (for coordinate flip).</param>
     /// <param name="columnGapMultiplier">Multiplier to widen column gap threshold (1.5 for landscape/ID cards).</param>
     public static List<ExtractedPdfParagraph> AnalyzeAndGroupPageText(Page page, double pageHeight, double columnGapMultiplier = 1.0)
     {
-        var words = page.GetWords()
+        var rawWords = page.GetWords()
             .Where(w => !string.IsNullOrWhiteSpace(w.Text))
             .ToList();
 
-        if (words.Count == 0)
+        if (rawWords.Count == 0)
         {
             return new List<ExtractedPdfParagraph>();
         }
 
-        // 1. Group words into horizontal lines with multi-column separation
-        var lines = ExtractLinesFromWords(words, columnGapMultiplier);
+        // Clean null characters and non-printable noise from words
+        var words = CleanWords(rawWords);
+        if (words.Count == 0) return new List<ExtractedPdfParagraph>();
 
-        if (lines.Count == 0)
+        var allParagraphs = new List<ExtractedPdfParagraph>();
+
+        // Partition words by dominant orientation
+        var horizontalWords = new List<Word>();
+        var rotate270Words = new List<Word>();
+        var rotate90Words = new List<Word>();
+        var rotate180Words = new List<Word>();
+
+        foreach (var w in words)
         {
-            return new List<ExtractedPdfParagraph>();
+            var firstLetter = w.Letters.FirstOrDefault();
+            var orient = firstLetter?.TextOrientation ?? TextOrientation.Horizontal;
+
+            switch (orient)
+            {
+                case TextOrientation.Rotate270:
+                    rotate270Words.Add(w);
+                    break;
+                case TextOrientation.Rotate90:
+                    rotate90Words.Add(w);
+                    break;
+                case TextOrientation.Rotate180:
+                    rotate180Words.Add(w);
+                    break;
+                default:
+                    horizontalWords.Add(w);
+                    break;
+            }
         }
 
-        // 2. Cluster lines into coherent paragraphs and standalone headings
-        var paragraphs = ClusterLinesIntoParagraphs(lines, pageHeight);
+        // 1. Process standard Horizontal text
+        if (horizontalWords.Count > 0)
+        {
+            var hLines = ExtractLinesFromWords(horizontalWords, columnGapMultiplier);
+            var hParas = ClusterLinesIntoParagraphs(hLines, pageHeight);
+            allParagraphs.AddRange(hParas);
+        }
+
+        // 2. Process Rotate270 vertical text (e.g. bottom-to-top or top-to-bottom marginalia)
+        if (rotate270Words.Count > 0)
+        {
+            var v270Paras = ExtractVerticalParagraphs(rotate270Words, pageHeight, 270.0);
+            allParagraphs.AddRange(v270Paras);
+        }
+
+        // 3. Process Rotate90 vertical text
+        if (rotate90Words.Count > 0)
+        {
+            var v90Paras = ExtractVerticalParagraphs(rotate90Words, pageHeight, 90.0);
+            allParagraphs.AddRange(v90Paras);
+        }
+
+        // 4. Process Rotate180 text
+        if (rotate180Words.Count > 0)
+        {
+            var v180Paras = ExtractVerticalParagraphs(rotate180Words, pageHeight, 180.0);
+            allParagraphs.AddRange(v180Paras);
+        }
+
+        return allParagraphs;
+    }
+
+    private static List<Word> CleanWords(List<Word> rawWords)
+    {
+        var cleaned = new List<Word>();
+        foreach (var w in rawWords)
+        {
+            if (string.IsNullOrWhiteSpace(w.Text)) continue;
+
+            // Strip null chars and control codes
+            string txt = w.Text.Replace("\0", "").Trim();
+            if (string.IsNullOrWhiteSpace(txt)) continue;
+
+            cleaned.Add(w);
+        }
+        return cleaned;
+    }
+
+    private static List<ExtractedPdfParagraph> ExtractVerticalParagraphs(List<Word> words, double pageHeight, double rotationAngle)
+    {
+        var paragraphs = new List<ExtractedPdfParagraph>();
+        if (words == null || words.Count == 0) return paragraphs;
+
+        // Group words by vertical column baseline (matching X coordinate)
+        var colBuckets = new List<List<Word>>();
+        var sortedByX = words.OrderBy(w => w.BoundingBox.Left).ToList();
+
+        foreach (var word in sortedByX)
+        {
+            double wordLeft = word.BoundingBox.Left;
+            double wordRight = word.BoundingBox.Right;
+            double wordMidX = (wordLeft + wordRight) / 2.0;
+
+            List<Word>? matchingCol = null;
+            double bestDist = double.MaxValue;
+
+            foreach (var col in colBuckets)
+            {
+                double colMidX = (col.Min(w => w.BoundingBox.Left) + col.Max(w => w.BoundingBox.Right)) / 2.0;
+                double dist = Math.Abs(wordMidX - colMidX);
+                if (dist <= 12.0 && dist < bestDist)
+                {
+                    bestDist = dist;
+                    matchingCol = col;
+                }
+            }
+
+            if (matchingCol != null)
+            {
+                matchingCol.Add(word);
+            }
+            else
+            {
+                colBuckets.Add(new List<Word> { word });
+            }
+        }
+
+        foreach (var col in colBuckets)
+        {
+            // For Rotate270 text, reading direction is bottom-to-top (increasing Y)
+            var orderedWords = col.OrderBy(w => w.BoundingBox.Bottom).ToList();
+            if (orderedWords.Count == 0) continue;
+
+            var sb = new StringBuilder();
+            for (int i = 0; i < orderedWords.Count; i++)
+            {
+                var cur = orderedWords[i];
+                string txt = cur.Text.Replace("\0", "").Trim();
+                if (string.IsNullOrWhiteSpace(txt)) continue;
+
+                if (i > 0 && sb.Length > 0)
+                {
+                    var prev = orderedWords[i - 1];
+                    // Upward gap between top of prev word and bottom of cur word
+                    double verticalGap = cur.BoundingBox.Bottom - prev.BoundingBox.Top;
+                    double charSpan = Math.Max(3.0, cur.BoundingBox.Height);
+
+                    // Separate words only when there's a real space gap (e.g. > 1.8pt)
+                    if (verticalGap > 1.8 || (txt.Length > 1 && prev.Text.Length > 1))
+                    {
+                        sb.Append(' ');
+                    }
+                }
+                sb.Append(txt);
+            }
+
+            string fullText = sb.ToString().Trim();
+            if (string.IsNullOrWhiteSpace(fullText)) continue;
+
+            var firstLetter = orderedWords[0].Letters.FirstOrDefault();
+            double fontSize = firstLetter != null ? Math.Max(6.0, firstLetter.PointSize) : 10.0;
+            string fontFamily = firstLetter != null ? NormalizeFontFamily(firstLetter.FontName) : "Open Sans";
+            string colorHex = "#0F172A";
+
+            if (firstLetter?.Color != null)
+            {
+                var (r, g, b) = firstLetter.Color.ToRGBValues();
+                colorHex = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(b * 255):X2}";
+            }
+
+            double minLeft = orderedWords.Min(w => w.BoundingBox.Left);
+            double maxRight = orderedWords.Max(w => w.BoundingBox.Right);
+            double maxTop = orderedWords.Max(w => w.BoundingBox.Top);
+            double minBottom = orderedWords.Min(w => w.BoundingBox.Bottom);
+
+            double pdfSpanLength = maxTop - minBottom;
+            double pdfSpanThickness = maxRight - minLeft;
+
+            // Element unrotated dimensions: Width = length of text, Height = thickness/font size
+            double unrotatedW = Math.Max(30.0, pdfSpanLength + 10.0);
+            double unrotatedH = Math.Max(14.0, fontSize * 1.5);
+
+            // Bounding center in canvas coordinates
+            double centerPdfX = (minLeft + maxRight) / 2.0;
+            double centerPdfY = (maxTop + minBottom) / 2.0;
+            double centerCanvasX = centerPdfX;
+            double centerCanvasY = pageHeight - centerPdfY;
+
+            double canvasX = Math.Max(0, centerCanvasX - (unrotatedW / 2.0));
+            double canvasY = Math.Max(0, centerCanvasY - (unrotatedH / 2.0));
+
+            paragraphs.Add(new ExtractedPdfParagraph
+            {
+                Left = minLeft,
+                Right = maxRight,
+                Top = maxTop,
+                Bottom = minBottom,
+                Text = fullText,
+                FontSize = Math.Round(fontSize, 1),
+                FontFamily = fontFamily,
+                ColorHex = colorHex,
+                Rotation = rotationAngle,
+                CanvasX = Math.Round(canvasX, 1),
+                CanvasY = Math.Round(canvasY, 1),
+                CanvasWidth = Math.Round(unrotatedW, 1),
+                CanvasHeight = Math.Round(unrotatedH, 1)
+            });
+        }
 
         return paragraphs;
     }
@@ -128,7 +323,6 @@ public static class PdfLayoutAnalyzer
 
             // For scripts with tall ascenders (Devanagari, Arabic, CJK), use a tighter midY-only match
             // so characters in different rows are never bucketed together.
-            // Heuristic: if any letter in the word has a font height > 1.5x its em-size, be more strict.
             double threshold = Math.Max(3.0, wordHeight * 0.40);
 
             // Find matching bucket
@@ -192,7 +386,6 @@ public static class PdfLayoutAnalyzer
                 double wordHeight = Math.Max(6.0, word.BoundingBox.Height);
 
                 // Column gap threshold: adjusted by columnGapMultiplier for landscape/ID cards.
-                // For landscape PDFs (like Aadhaar cards with left+right columns), we split more aggressively.
                 double baseGap = Math.Max(20.0, wordHeight * 2.2);
                 double maxColGap = baseGap * Math.Max(0.5, columnGapMultiplier);
 
@@ -529,6 +722,9 @@ public static class PdfLayoutAnalyzer
         if (fn.Contains("caveat")) return "Caveat";
         if (fn.Contains("greatvibes") || fn.Contains("great vibes")) return "Great Vibes";
         if (fn.Contains("comicneue") || fn.Contains("comic")) return "Comic Neue";
+        if (fn.Contains("luckiest") || fn.Contains("bungee") || fn.Contains("fredoka")) return "Poppins";
+        if (fn.Contains("impact")) return "Oswald";
+        if (fn.Contains("alfaslab") || fn.Contains("alfa slab")) return "Montserrat";
 
         // --- Indian Scripts → mapped to Noto variants we have on disk ---
         if (fn.Contains("nirmala") || fn.Contains("mangal") || fn.Contains("devanagari") ||

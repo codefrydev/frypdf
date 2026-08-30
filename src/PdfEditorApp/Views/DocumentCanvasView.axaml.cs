@@ -355,6 +355,26 @@ public partial class DocumentCanvasView : UserControl
 
         if (sender is Control control && control.DataContext is ElementViewModelBase elementVm)
         {
+            // If the clicked element is locked (e.g. background watermark or full-page frame),
+            // check if there is an unlocked element under the cursor to select and edit instead.
+            if (elementVm.IsLocked && PageElementsCanvas != null && ViewModel?.CurrentPage != null)
+            {
+                var canvasPos = e.GetPosition(PageElementsCanvas);
+                double zoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+                double docX = canvasPos.X / zoom;
+                double docY = canvasPos.Y / zoom;
+
+                var topUnlocked = ViewModel.CurrentPage.Elements
+                    .Where(el => !el.IsLocked && docX >= el.X && docX <= el.X + el.Width && docY >= el.Y && docY <= el.Y + el.Height)
+                    .OrderByDescending(el => el.ZIndex)
+                    .FirstOrDefault();
+
+                if (topUnlocked != null)
+                {
+                    elementVm = topUnlocked;
+                }
+            }
+
             bool isToggle = e.KeyModifiers.HasFlag(KeyModifiers.Shift) || e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
 
             if (isToggle)
@@ -373,11 +393,11 @@ public partial class DocumentCanvasView : UserControl
                 ViewModel.SmartPlacement.SetContextMenuPointer(pos.X / zoom, pos.Y / zoom);
             }
 
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && ViewModel?.CurrentPage != null)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && ViewModel?.CurrentPage != null && !elementVm.IsLocked)
             {
                 _isDraggingElement = true;
                 _draggedElement = elementVm;
-                _draggedElements = ViewModel.CurrentPage.SelectedElements.ToList();
+                _draggedElements = ViewModel.CurrentPage.SelectedElements.Where(el => !el.IsLocked).ToList();
                 if (!_draggedElements.Contains(elementVm)) _draggedElements.Add(elementVm);
                 _dragStartPositions = _draggedElements.Select(el => (Element: el, el.X, el.Y)).ToList();
 

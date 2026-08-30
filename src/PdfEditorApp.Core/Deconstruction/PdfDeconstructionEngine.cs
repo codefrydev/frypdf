@@ -20,9 +20,21 @@ public static class PdfDeconstructionEngine
 {
     /// <summary>
     /// Deconstructs a binary PDF stream into a fully editable PdfDocumentModel.
+    /// If the PDF was exported by FryPDF, restores the 100% lossless original model (tables, charts, formulas, shapes).
+    /// Otherwise, performs intelligent AI deconstruction on standard 3rd-party PDFs.
     /// </summary>
     public static PdfDocumentModel Deconstruct(byte[] pdfBytes, string title = "Imported_Document.pdf", string? password = null)
     {
+        // 1. Check if the PDF contains an embedded native FryPDF project model for 100% lossless roundtrip
+        if (FryPdfEmbeddingHelper.TryExtractEmbeddedModel(pdfBytes, out var embeddedModel) && embeddedModel != null)
+        {
+            if (!string.IsNullOrWhiteSpace(title) && string.Equals(embeddedModel.Title, "Untitled.pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                embeddedModel.Title = title;
+            }
+            return embeddedModel;
+        }
+
         byte[] sanitized = PdfDocumentSanitizer.SanitizePdfBytes(pdfBytes);
 
         var parsingOptions = new ParsingOptions();
@@ -156,13 +168,11 @@ public static class PdfDeconstructionEngine
         else
         {
             // Born-Digital / Mixed Document Mode:
-            // Extract images and cluster text cleanly — ZERO ghost underlays!
+            // Extract images, vector paths, and cluster text cleanly — ZERO ghost underlays!
 
             pageModel.BackgroundColorHex = "#FFFFFF";
 
-            // A. Extract Embedded Images (Photos, Logos, Figures, Icons)
-            //    For mixed documents (e.g., Aadhaar, passports): extract ALL meaningful images.
-            //    Only skip images that are both full-page AND text exists on top of them (ghost background).
+            // A. Extract Embedded Images (Photos, Logos, Figures, Icons, Watermarks)
             try
             {
                 foreach (var img in images)
@@ -173,7 +183,7 @@ public static class PdfDeconstructionEngine
                     bool isFullPageBackground = imgW >= pageWidth * 0.95 && imgH >= pageHeight * 0.95 && hasSufficientText;
                     if (isFullPageBackground)
                     {
-                        // Skip — this is a ghost underlay baked into the source PDF (e.g., watermark layer)
+                        // Skip — this is a ghost underlay baked into the source PDF (e.g., raster full-page background)
                         continue;
                     }
 
@@ -183,6 +193,9 @@ public static class PdfDeconstructionEngine
                         double imgX = Math.Max(0, img.BoundingBox.Left);
                         double imgY = Math.Max(0, pageHeight - img.BoundingBox.Top);
 
+                        // Check if this image is a watermark or large decorative background
+                        bool isWatermarkOrLargeBg = (imgW >= pageWidth * 0.35 && imgH >= pageHeight * 0.35) && hasSufficientText;
+
                         var imgElement = new PdfImageElement
                         {
                             X = Math.Round(imgX, 1),
@@ -190,11 +203,13 @@ public static class PdfDeconstructionEngine
                             Width = Math.Round(imgW, 1),
                             Height = Math.Round(imgH, 1),
                             Base64Data = Convert.ToBase64String(imgBytes),
-                            ZIndex = zIndexCounter++,
+                            ZIndex = isWatermarkOrLargeBg ? 0 : zIndexCounter++,
+                            IsLocked = isWatermarkOrLargeBg,
+                            Opacity = isWatermarkOrLargeBg ? 0.30 : 1.0,
                             CornerRadius = 0,
                             BorderThickness = 0,
                             BorderColorHex = "Transparent",
-                            AltText = $"Embedded Image ({Math.Round(imgW):F0}x{Math.Round(imgH):F0})"
+                            AltText = isWatermarkOrLargeBg ? $"Watermark Background ({Math.Round(imgW):F0}x{Math.Round(imgH):F0})" : $"Embedded Image ({Math.Round(imgW):F0}x{Math.Round(imgH):F0})"
                         };
                         pageModel.Elements.Add(imgElement);
                     }
@@ -205,10 +220,91 @@ public static class PdfDeconstructionEngine
                 // Best-effort image extraction
             }
 
-            // B. Extract and Cluster Text Paragraphs with column-aware layout analysis
+            // B. Extract Vector Paths & Geometric Shapes (Dividers, Rectangles, Borders, Diagrams)
             try
             {
-                // Detect columns: if page is landscape or has a large vertical split, use aggressive column detection
+                if (page.Paths != null && page.Paths.Count > 0)
+                {
+                    int extractedShapeCount = 0;
+                    foreach (var path in page.Paths)
+                    {
+                        var bbox = path.GetBoundingRectangle();
+                        if (!bbox.HasValue) continue;
+
+                        var b = bbox.Value;
+                        if (b.Width <= 0.5 && b.Height <= 0.5) continue;
+
+                        // Ignore full-page border clipping frames
+                        if (b.Width >= pageWidth * 0.98 && b.Height >= pageHeight * 0.98) continue;
+
+                        double canvasX = Math.Max(0, b.Left);
+                        double canvasY = Math.Max(0, pageHeight - b.Top);
+                        double canvasW = Math.Max(1.0, b.Width);
+                        double canvasH = Math.Max(1.0, b.Height);
+
+                        string fillHex = "#0F6CBD";
+                        if (path.FillColor != null)
+                        {
+                            var (r, g, bVal) = path.FillColor.ToRGBValues();
+                            fillHex = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(bVal * 255):X2}";
+                        }
+
+                        string strokeHex = "#0F172A";
+                        if (path.StrokeColor != null)
+                        {
+                            var (r, g, bVal) = path.StrokeColor.ToRGBValues();
+                            strokeHex = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(bVal * 255):X2}";
+                        }
+
+                        // Check if it's a thin horizontal divider line
+                        if (canvasH <= 3.5 && canvasW >= 6.0)
+                        {
+                            var divider = new PdfDividerElement
+                            {
+                                X = Math.Round(canvasX, 1),
+                                Y = Math.Round(canvasY, 1),
+                                Width = Math.Round(canvasW, 1),
+                                Height = Math.Round(Math.Max(1.0, canvasH), 1),
+                                Thickness = Math.Round(Math.Max(1.0, canvasH), 1),
+                                ColorHex = path.IsStroked ? strokeHex : (path.IsFilled ? fillHex : "#CBD5E1"),
+                                ZIndex = zIndexCounter++
+                            };
+                            pageModel.Elements.Add(divider);
+                            extractedShapeCount++;
+                        }
+                        else if (canvasW >= 2.0 && canvasH >= 2.0 && (path.IsFilled || path.IsStroked))
+                        {
+                            // Vector Shape (Rectangle, Polygon, Diagram element)
+                            var shape = new PdfShapeElement
+                            {
+                                X = Math.Round(canvasX, 1),
+                                Y = Math.Round(canvasY, 1),
+                                Width = Math.Round(canvasW, 1),
+                                Height = Math.Round(canvasH, 1),
+                                FillColorHex = path.IsFilled ? fillHex : "Transparent",
+                                StrokeColorHex = path.IsStroked ? strokeHex : "Transparent",
+                                StrokeThickness = path.IsStroked ? Math.Max(1.0, path.LineWidth) : 0,
+                                CornerRadius = 0,
+                                ShapeType = ShapeType.Rectangle,
+                                ZIndex = zIndexCounter++
+                            };
+                            pageModel.Elements.Add(shape);
+                            extractedShapeCount++;
+                        }
+
+                        // Cap individual micro-paths per page to 300 to maintain smooth 60fps rendering
+                        if (extractedShapeCount >= 300) break;
+                    }
+                }
+            }
+            catch
+            {
+                // Best-effort vector path extraction
+            }
+
+            // C. Extract and Cluster Text Paragraphs with column-aware & orientation-aware layout analysis
+            try
+            {
                 bool isLandscape = pageWidth > pageHeight;
                 double columnGapMultiplier = isLandscape ? 1.5 : 1.0;
 
@@ -217,6 +313,27 @@ public static class PdfDeconstructionEngine
                 foreach (var para in paragraphs)
                 {
                     if (string.IsNullOrWhiteSpace(para.Text)) continue;
+
+                    string finalColor = para.ColorHex;
+                    // Contrast protection: if text is pure white or near white, ensure it is readable
+                    if (string.Equals(finalColor, "#FFFFFF", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(finalColor, "#FEFEFE", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(finalColor, "#FDFDFD", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // If no dark shape is present at this position, flip to high-contrast dark text
+                        bool hasDarkShapeUnderneath = pageModel.Elements.OfType<PdfShapeElement>().Any(s =>
+                            s.X <= para.CanvasX + 10 &&
+                            s.Y <= para.CanvasY + 10 &&
+                            s.X + s.Width >= para.CanvasX + para.CanvasWidth - 10 &&
+                            s.Y + s.Height >= para.CanvasY + para.CanvasHeight - 10 &&
+                            !string.Equals(s.FillColorHex, "Transparent", StringComparison.OrdinalIgnoreCase) &&
+                            !string.Equals(s.FillColorHex, "#FFFFFF", StringComparison.OrdinalIgnoreCase));
+
+                        if (!hasDarkShapeUnderneath)
+                        {
+                            finalColor = "#0F172A";
+                        }
+                    }
 
                     var textElement = new PdfTextElement
                     {
@@ -229,8 +346,9 @@ public static class PdfDeconstructionEngine
                         FontFamily = para.FontFamily,
                         IsBold = para.IsBold,
                         IsItalic = para.IsItalic,
-                        TextColorHex = para.ColorHex,
+                        TextColorHex = finalColor,
                         LineHeight = para.LineHeight,
+                        Rotation = para.Rotation,
                         ZIndex = zIndexCounter++
                     };
                     pageModel.Elements.Add(textElement);

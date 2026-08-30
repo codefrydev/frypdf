@@ -6,6 +6,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using QRCoder;
+using PdfEditorApp.Core.Utils;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services.MathEngine;
@@ -77,7 +78,16 @@ public class PdfExportService : IPdfExportService
     public byte[] GeneratePdfBytes(PdfDocumentModel model)
     {
         var document = new QuestPdfDocumentWrapper(model);
-        return document.GeneratePdf();
+        byte[] rawPdf = document.GeneratePdf();
+
+        // If scrub metadata is requested, do not embed internal model
+        if (model.SecuritySettings.ScrubMetadataOnExport)
+        {
+            return rawPdf;
+        }
+
+        // Embed full lossless FryPDF model metadata for 100% perfect roundtrip re-editing
+        return FryPdfEmbeddingHelper.EmbedModelInPdfBytes(rawPdf, model);
     }
 
     public Task<byte[]> ExportToBytesAsync(PdfDocumentModel model)

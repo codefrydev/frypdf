@@ -348,4 +348,215 @@ public class PdfImportAndViewerTests
             Assert.True(txt.Height > 0);
         }
     }
+
+    [Fact]
+    public async Task DeconstructSampleFiles_Investigate()
+    {
+        string baseDir = AppContext.BaseDirectory;
+        string rootDir = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", ".."));
+        string sample1Path = Path.Combine(rootDir, "sample1.pdf");
+        string sample2Path = Path.Combine(rootDir, "sample2.pdf");
+
+        if (!File.Exists(sample1Path) || !File.Exists(sample2Path))
+        {
+            // Sample reference files are optional external fixtures
+            return;
+        }
+
+        var doc1 = await _importService.ImportPdfAsync(sample1Path);
+        var doc2 = await _importService.ImportPdfAsync(sample2Path);
+
+        Console.WriteLine($"=== SAMPLE 1 ===");
+        Console.WriteLine($"Pages: {doc1.Pages.Count}");
+        for (int i = 0; i < doc1.Pages.Count; i++)
+        {
+            var p = doc1.Pages[i];
+            Console.WriteLine($"Page {i + 1}: {p.Width}x{p.Height}, Elements: {p.Elements.Count}");
+            foreach (var el in p.Elements)
+            {
+                if (el is PdfTextElement txt)
+                {
+                    Console.WriteLine($"  [TEXT] X={txt.X:F1}, Y={txt.Y:F1}, W={txt.Width:F1}, H={txt.Height:F1}, Font={txt.FontFamily} {txt.FontSize:F1}pt, Color={txt.TextColorHex}, Lines={txt.Text.Split('\n').Length}, Preview={txt.Text.Substring(0, Math.Min(40, txt.Text.Length)).Replace("\n", " ")}");
+                }
+                else if (el is PdfImageElement img)
+                {
+                    Console.WriteLine($"  [IMAGE] X={img.X:F1}, Y={img.Y:F1}, W={img.Width:F1}, H={img.Height:F1}, Alt={img.AltText}, Base64Len={img.Base64Data?.Length ?? 0}");
+                }
+                else
+                {
+                    Console.WriteLine($"  [{el.GetType().Name}] X={el.X:F1}, Y={el.Y:F1}, W={el.Width:F1}, H={el.Height:F1}");
+                }
+            }
+        }
+
+        // Assertions for Sample 1:
+        Assert.True(doc1.Pages.Count >= 1);
+        var page1 = doc1.Pages[0];
+        Assert.True(page1.Elements.Count > 0);
+
+        // Check vertical rotated text elements extracted cleanly
+        var rotatedElements = page1.Elements.OfType<PdfTextElement>().Where(t => t.Rotation == 270.0 || t.Rotation == 90.0).ToList();
+        foreach (var r in rotatedElements)
+        {
+            Console.WriteLine($"Rotated Text: \"{r.Text}\"");
+        }
+        Assert.NotEmpty(rotatedElements);
+        Assert.Contains(rotatedElements, r => r.Text.Replace(" ", "").Contains("Detailsason", StringComparison.OrdinalIgnoreCase) || r.Text.Replace(" ", "").Contains("Aadhaarno", StringComparison.OrdinalIgnoreCase));
+
+        // Check horizontal text blocks
+        var horizontalTexts = page1.Elements.OfType<PdfTextElement>().Where(t => t.Rotation == 0).ToList();
+        Assert.Contains(horizontalTexts, h => h.Text.Contains("4046/20511", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(horizontalTexts, h => h.Text.Contains("Ayush", StringComparison.OrdinalIgnoreCase));
+
+        // Assertions for Sample 2:
+        Assert.True(doc2.Pages.Count >= 1);
+        var s2Page1 = doc2.Pages[0];
+
+        // Verify vector shapes and dividers extracted
+        var shapes = s2Page1.Elements.OfType<PdfShapeElement>().ToList();
+        var dividers = s2Page1.Elements.OfType<PdfDividerElement>().ToList();
+        Assert.True(shapes.Count > 0 || dividers.Count > 0);
+
+        // Verify watermark image is locked with low ZIndex
+        var watermarks = s2Page1.Elements.OfType<PdfImageElement>().Where(img => img.IsLocked).ToList();
+        Assert.NotEmpty(watermarks);
+        Assert.True(watermarks[0].Opacity <= 0.35);
+        Assert.Equal(0, watermarks[0].ZIndex);
+
+        // Verify header text extracted with Poppins / display font and high contrast
+        var titleText = s2Page1.Elements.OfType<PdfTextElement>().FirstOrDefault(t => t.Text.Contains("MATHEMATICS", StringComparison.OrdinalIgnoreCase));
+        Assert.NotNull(titleText);
+        Assert.Equal("Poppins", titleText.FontFamily);
+
+        // Verify section heading extracted
+        var sectionHeading = s2Page1.Elements.OfType<PdfTextElement>().FirstOrDefault(t => t.Text.Contains("1.1 What is Mathematics", StringComparison.OrdinalIgnoreCase));
+        Assert.NotNull(sectionHeading);
+
+        // Verify no invisible white text on white canvas
+        var whiteTexts = s2Page1.Elements.OfType<PdfTextElement>().Where(t => string.Equals(t.TextColorHex, "#FFFFFF", StringComparison.OrdinalIgnoreCase)).ToList();
+        Assert.Empty(whiteTexts);
+    }
+
+    [Fact]
+    public void BooleanToStretchConverter_ConvertsCorrectly()
+    {
+        var converter = PdfEditorApp.Converters.BooleanToStretchConverter.Instance;
+        var uniform = converter.Convert(true, typeof(Avalonia.Media.Stretch), null, System.Globalization.CultureInfo.InvariantCulture);
+        var fill = converter.Convert(false, typeof(Avalonia.Media.Stretch), null, System.Globalization.CultureInfo.InvariantCulture);
+
+        Assert.Equal(Avalonia.Media.Stretch.Uniform, uniform);
+        Assert.Equal(Avalonia.Media.Stretch.Fill, fill);
+    }
+
+    [Fact]
+    public async Task PageViewModel_LoadsDeconstructedDocument_AllowsEditingAndExportRoundtrip()
+    {
+        var templateService = new TemplateService();
+        var exportService = new PdfExportService();
+
+        var originalDoc = templateService.CreateAnnualReportTemplate();
+        byte[] pdfBytes = await exportService.ExportToBytesAsync(originalDoc);
+
+        var doc = await _importService.ImportPdfBytesAsync(pdfBytes, "Annual_Report.pdf");
+        Assert.NotEmpty(doc.Pages);
+
+        var pageVm = new PdfEditorApp.ViewModels.PageViewModel();
+        pageVm.LoadFromModel(doc.Pages[0]);
+
+        Assert.NotEmpty(pageVm.Elements);
+
+        // Find title text element
+        var titleVm = pageVm.Elements.OfType<PdfEditorApp.ViewModels.ElementViewModels.TextElementViewModel>().FirstOrDefault(t => t.Text.Contains("ANNUAL CORPORATE REPORT", StringComparison.OrdinalIgnoreCase));
+        Assert.NotNull(titleVm);
+
+        // Edit text
+        titleVm.Text = "ADVANCED ANNUAL REPORT";
+        titleVm.FontSize = 28.0;
+        titleVm.TextColorHex = "#2563EB";
+
+        // Verify ToModel preserves modifications
+        var roundtripModel = pageVm.ToModel();
+        var roundtripTitle = roundtripModel.Elements.OfType<PdfTextElement>().FirstOrDefault(t => t.Text == "ADVANCED ANNUAL REPORT");
+        Assert.NotNull(roundtripTitle);
+        Assert.Equal(28.0, roundtripTitle.FontSize);
+        Assert.Equal("#2563EB", roundtripTitle.TextColorHex);
+    }
+
+    [Fact]
+    public async Task AnnualReport_ExportAndImport_PreservesAllElementsLosslessly()
+    {
+        var templateService = new TemplateService();
+        var exportService = new PdfExportService();
+
+        var originalDoc = templateService.CreateAnnualReportTemplate();
+        Assert.Equal(3, originalDoc.Pages.Count);
+
+        byte[] pdfBytes = await exportService.ExportToBytesAsync(originalDoc);
+        Assert.NotNull(pdfBytes);
+        Assert.True(pdfBytes.Length > 0);
+
+        var importedDoc = await _importService.ImportPdfBytesAsync(pdfBytes, "Annual_Report.pdf");
+        Assert.NotNull(importedDoc);
+        Assert.Equal(3, importedDoc.Pages.Count);
+
+        for (int pIdx = 0; pIdx < originalDoc.Pages.Count; pIdx++)
+        {
+            var origPage = originalDoc.Pages[pIdx];
+            var impPage = importedDoc.Pages[pIdx];
+
+            Assert.Equal(origPage.Elements.Count, impPage.Elements.Count);
+
+            for (int eIdx = 0; eIdx < origPage.Elements.Count; eIdx++)
+            {
+                var origEl = origPage.Elements[eIdx];
+                var impEl = impPage.Elements[eIdx];
+
+                Assert.Equal(origEl.GetType(), impEl.GetType());
+                Assert.Equal(origEl.X, impEl.X);
+                Assert.Equal(origEl.Y, impEl.Y);
+                Assert.Equal(origEl.Width, impEl.Width);
+                Assert.Equal(origEl.Height, impEl.Height);
+
+                if (origEl is PdfTableElement origTable && impEl is PdfTableElement impTable)
+                {
+                    Assert.Equal(origTable.Headers.Count, impTable.Headers.Count);
+                    Assert.Equal(origTable.Rows.Count, impTable.Rows.Count);
+                }
+                else if (origEl is PdfChartElement origChart && impEl is PdfChartElement impChart)
+                {
+                    Assert.Equal(origChart.ChartType, impChart.ChartType);
+                    Assert.Equal(origChart.Title, impChart.Title);
+                }
+                else if (origEl is PdfTextElement origText && impEl is PdfTextElement impText)
+                {
+                    Assert.Equal(origText.Text, impText.Text);
+                    Assert.Equal(origText.FontSize, impText.FontSize);
+                    Assert.Equal(origText.TextColorHex, impText.TextColorHex);
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Invoice_ExportAndImport_PreservesTablesAndFormulasLosslessly()
+    {
+        var templateService = new TemplateService();
+        var exportService = new PdfExportService();
+
+        var originalDoc = templateService.CreateInvoiceTemplate();
+        byte[] pdfBytes = await exportService.ExportToBytesAsync(originalDoc);
+
+        var importedDoc = await _importService.ImportPdfBytesAsync(pdfBytes, "Invoice.pdf");
+        Assert.NotNull(importedDoc);
+        Assert.Single(importedDoc.Pages);
+
+        var origTable = originalDoc.Pages[0].Elements.OfType<PdfTableElement>().FirstOrDefault();
+        var impTable = importedDoc.Pages[0].Elements.OfType<PdfTableElement>().FirstOrDefault();
+
+        Assert.NotNull(origTable);
+        Assert.NotNull(impTable);
+        Assert.Equal(origTable.Headers.Count, impTable.Headers.Count);
+        Assert.Equal(origTable.Rows.Count, impTable.Rows.Count);
+    }
 }
+

@@ -48,6 +48,56 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isPdfViewerVisible = false;
 
+    /// <summary>
+    /// Dynamic window title that accurately reflects the active application context:
+    /// Home dashboard ("FryPDF - Privacy-First PDF Studio"), specific tool ("Merge PDF - FryPDF"),
+    /// PDF Reader ("Document.pdf - FryPDF"), or Editor Studio ("Document.pdf - FryPDF").
+    /// </summary>
+    public string WindowTitle
+    {
+        get
+        {
+            if (IsHomePageVisible)
+            {
+                if (Home != null && Home.IsToolPageActive && Home.ActiveToolCard != null)
+                {
+                    return $"{Home.ActiveToolCard.Name} - FryPDF";
+                }
+                if (Home != null && Home.IsToolPageActive && Home.ActiveToolViewModel != null)
+                {
+                    return $"{Home.ActiveToolViewModel.Tool.Name} - FryPDF";
+                }
+                if (Home != null && Home.SelectedNavSection == HomeNavSection.Licensing)
+                {
+                    return "Licenses & Third-Party Tools - FryPDF";
+                }
+                return "FryPDF - Privacy-First PDF Studio";
+            }
+            else if (IsPdfViewerVisible)
+            {
+                if (PdfViewer != null && !string.IsNullOrWhiteSpace(PdfViewer.DocumentTitle) && PdfViewer.DocumentTitle != "Document.pdf")
+                {
+                    return $"{PdfViewer.DocumentTitle} - FryPDF";
+                }
+                return "PDF Reader - FryPDF";
+            }
+            else if (IsEditorVisible)
+            {
+                if (!string.IsNullOrWhiteSpace(DocumentTitle))
+                {
+                    return $"{DocumentTitle} - FryPDF";
+                }
+                return "FryPDF Editor";
+            }
+            return "FryPDF";
+        }
+    }
+
+    partial void OnIsHomePageVisibleChanged(bool value) => OnPropertyChanged(nameof(WindowTitle));
+    partial void OnIsEditorVisibleChanged(bool value) => OnPropertyChanged(nameof(WindowTitle));
+    partial void OnIsPdfViewerVisibleChanged(bool value) => OnPropertyChanged(nameof(WindowTitle));
+    partial void OnDocumentTitleChanged(string value) => OnPropertyChanged(nameof(WindowTitle));
+
     /// <summary>ViewModel for the Home / Start Screen.</summary>
     public HomeViewModel Home { get; }
 
@@ -474,6 +524,23 @@ public partial class MainViewModel : ViewModelBase
             }
         };
 
+        // Update window title dynamically when Home state or PDF Viewer title changes
+        Home.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName is nameof(Home.IsToolPageActive) or nameof(Home.ActiveToolViewModel) or nameof(Home.SelectedNavSection))
+            {
+                OnPropertyChanged(nameof(WindowTitle));
+            }
+        };
+
+        PdfViewer.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(PdfViewer.DocumentTitle))
+            {
+                OnPropertyChanged(nameof(WindowTitle));
+            }
+        };
+
         // Initialize quick command palette indexing
         InitCommandPalette();
 
@@ -727,6 +794,8 @@ public partial class MainViewModel : ViewModelBase
     public void NavigateToHome()
     {
         Home.RefreshRecent();
+        Home.BackToTools();
+        Home.SelectedNavSection = HomeNavSection.Home;
         IsEditorVisible = false;
         IsPdfViewerVisible = false;
         IsHomePageVisible = true;

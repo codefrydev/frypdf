@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Input;
+using PdfEditorApp.Models;
 using PdfEditorApp.ViewModels;
 using Xunit;
 
@@ -118,5 +119,48 @@ public class GestureAndNavigationTests
 
         viewerVm.SetZoomPreset("50%");
         Assert.Equal(0.5, viewerVm.ZoomLevel);
+    }
+
+    [Fact]
+    public void MainViewModel_WindowTitle_ReflectsActiveViewAndContextCorrectly()
+    {
+        // 1. Initial State: App opens on Home Dashboard
+        var mainVm = new MainViewModel();
+        Assert.True(mainVm.IsHomePageVisible);
+        Assert.False(mainVm.IsEditorVisible);
+        Assert.False(mainVm.IsPdfViewerVisible);
+        Assert.Equal("FryPDF - Privacy-First PDF Studio", mainVm.WindowTitle);
+
+        // 2. Open a tool in Home page (e.g. Merge PDF)
+        mainVm.OpenTool(PdfToolId.MergePdf);
+        Assert.True(mainVm.IsHomePageVisible);
+        Assert.True(mainVm.Home.IsToolPageActive);
+        Assert.Contains("Merge", mainVm.WindowTitle);
+        Assert.EndsWith("FryPDF", mainVm.WindowTitle);
+
+        // 3. Navigate to Licensing section
+        mainVm.Home.BackToTools();
+        mainVm.Home.SelectNavSectionCommand.Execute("Licensing");
+        Assert.Equal("Licenses & Third-Party Tools - FryPDF", mainVm.WindowTitle);
+
+        // 4. Open an Editor template document
+        mainVm.OpenEditorWithTemplate("Invoice");
+        Assert.False(mainVm.IsHomePageVisible);
+        Assert.True(mainVm.IsEditorVisible);
+        Assert.False(mainVm.IsPdfViewerVisible);
+        Assert.Contains("FryPDF", mainVm.WindowTitle);
+
+        // 5. Navigate back to Home
+        mainVm.NavigateToHome();
+        Assert.True(mainVm.IsHomePageVisible);
+        Assert.False(mainVm.IsEditorVisible);
+        Assert.Equal("FryPDF - Privacy-First PDF Studio", mainVm.WindowTitle);
+
+        // 6. Open in PDF Viewer Mode
+        mainVm.PdfViewer.DocumentTitle = "Quarterly_Financials.pdf";
+        mainVm.OpenInViewer("dummy/Quarterly_Financials.pdf");
+        Assert.False(mainVm.IsHomePageVisible);
+        Assert.True(mainVm.IsPdfViewerVisible);
+        Assert.Equal("Quarterly_Financials.pdf - FryPDF", mainVm.WindowTitle);
     }
 }

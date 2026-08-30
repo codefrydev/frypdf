@@ -213,8 +213,8 @@
                         <materialIcons:MaterialIcon Kind="DrawPen" Width="22" Height="22" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Grid.Column="1" Spacing="3">
-                        <TextBlock Text="1-Click Studio Bridge" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                        <TextBlock Text="Transition smoothly from reading into FryPDF Studio Editor if you ever need to edit text, fonts, or images." FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                        <TextBlock Text="1-Click Editor Bridge" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Transition smoothly from reading into FryPDF Editor if you ever need to edit text, fonts, or images." FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                 </Grid>
             </Border>

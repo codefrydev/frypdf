@@ -359,7 +359,7 @@
 
                     <Rectangle Width="1" Height="16" Fill="{DynamicResource WinBorderBrush}" Margin="1,0" />
 
-                    <!-- EDIT IN FRYPDF STUDIO PRIMARY ACTION BUTTON -->
+                    <!-- EDIT IN FRYPDF PRIMARY ACTION BUTTON -->
                     <Button Background="#0F6CBD"
                             Foreground="White"
                             CornerRadius="6"
@@ -368,7 +368,7 @@
                             FontSize="11.5"
                             Command="{Binding EditInStudioCommand}"
                             Cursor="Hand"
-                            ToolTip.Tip="Open in FryPDF Studio Editor to modify text, layout, and images">
+                            ToolTip.Tip="Open in FryPDF Editor to modify text, layout, and images">
                         <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="DrawPen" Width="14" Height="14" Foreground="White" />
                             <TextBlock Text="Edit in FryPDF" VerticalAlignment="Center" />

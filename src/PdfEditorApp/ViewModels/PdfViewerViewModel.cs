@@ -141,7 +141,7 @@ public class PdfViewerSearchMatch
 /// Professional, Adobe Acrobat-style standalone PDF Reader & Viewer ViewModel.
 /// Features continuous scroll, single-page, and two-page spread viewing, sharp Skia rendering,
 /// eye-comfort reading themes (Sepia, Night/Dark, High Contrast), real page thumbnails,
-/// document outline / bookmarks, in-document search, annotations, and seamless bridge to FryPDF Studio Editor.
+/// document outline / bookmarks, in-document search, annotations, and seamless bridge to FryPDF Editor.
 /// </summary>
 public partial class PdfViewerViewModel : ViewModelBase
 {

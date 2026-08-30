@@ -15,7 +15,16 @@ public partial class App : Application
 
     public override void Initialize()
     {
+        Name = "FryPDF";
         AvaloniaXamlLoader.Load(this);
+    }
+
+    private void AboutMenuItem_OnClick(object? sender, EventArgs e)
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.DataContext is MainViewModel mainVm)
+        {
+            mainVm.OpenAboutDialogCommand.Execute(null);
+        }
     }
 
     public override void OnFrameworkInitializationCompleted()

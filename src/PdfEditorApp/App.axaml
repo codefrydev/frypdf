@@ -4,7 +4,14 @@
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.App"
+             Name="FryPDF"
              RequestedThemeVariant="Default">
+
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="About FryPDF" Click="AboutMenuItem_OnClick" />
+        </NativeMenu>
+    </NativeMenu.Menu>
 
     <Application.Resources>
         <ResourceDictionary>

@@ -16,7 +16,7 @@
 
 ---
 
-- 📕 **Dedicated PDF Reader**: Pure reading mode with continuous vertical scroll, single-page fit, and two-page book spreads. Features eye-comfort themes (Daylight, Warm Sepia, Dark Night, High Contrast), real page thumbnails, table of contents/bookmarks tree, live text search with match jumping, review annotations (multi-color highlights, sticky notes, approval stamps), and a 1-click bridge to FryPDF Studio Editor.
+- 📕 **Dedicated PDF Reader**: Pure reading mode with continuous vertical scroll, single-page fit, and two-page book spreads. Features eye-comfort themes (Daylight, Warm Sepia, Dark Night, High Contrast), real page thumbnails, table of contents/bookmarks tree, live text search with match jumping, review annotations (multi-color highlights, sticky notes, approval stamps), and a 1-click bridge to FryPDF Editor.
 - 📖 **Universal PDF File Editing**: Open and deconstruct real-world `.pdf` files into fully editable visual canvas objects (grouped text, fonts, colors, embedded images, and AcroForms) with zero deserialization errors.
 - 🎨 **Visual Document Canvas**: Fluid zoom (25%–500%), page margins, smart snap-to-grid, viewport-centered smart placement, multi-element alignment, and layering.
 - 📝 **Interactive AcroForms**: Text fields, checkboxes, radio buttons, dropdowns, combo boxes, and signature boxes with real-time formula recalculation and validation.

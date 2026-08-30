@@ -8,6 +8,7 @@ public class PdfInkElement : PdfElementBase
     public string StrokeColorHex { get; set; } = "#0F6CBD";
     public double StrokeThickness { get; set; } = 3.0;
     public bool IsHighlighter { get; set; } = false;
+    public bool IsSmoothSpline { get; set; } = true;
 
     public override PdfElementBase Clone()
     {

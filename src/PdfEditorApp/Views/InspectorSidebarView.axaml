@@ -194,27 +194,53 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- 1. TYPOGRAPHY CARD (Visible when Text element is selected) -->
+                    <!-- 1. ADVANCED TYPOGRAPHY & TEXT STUDIO CARD -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding TextElement, Converter={StaticResource NullToBooleanConverter}}">
-                        <StackPanel Spacing="10">
-                            <!-- Card Title & Auto-Fit Action -->
+                        <StackPanel Spacing="12">
+                            <!-- Card Header & Auto-Fit Tools -->
                             <Grid ColumnDefinitions="*,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                     <materialIcons:MaterialIcon Kind="FormatFont" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                    <TextBlock Text="Typography &amp; Text" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="Typography &amp; Text Studio" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
-                                <Button Grid.Column="1" Classes="secondary-btn" Height="24" Padding="6,2" Command="{Binding AutoFitTextHeightCommand}" ToolTip.Tip="Automatically resize height to perfectly fit text content without clipping">
-                                    <StackPanel Orientation="Horizontal" Spacing="3">
-                                        <materialIcons:MaterialIcon Kind="ArrowExpandVertical" Width="12" Height="12" Foreground="{StaticResource WinAccentBrush}" />
-                                        <TextBlock Text="Auto-Fit" FontSize="10" FontWeight="SemiBold" />
-                                    </StackPanel>
-                                </Button>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                    <Button Classes="mini-tool-btn" Height="24" Padding="5,1" Command="{Binding AutoFitTextBothCommand}" ToolTip.Tip="Auto-Fit dimensions (Width &amp; Height)">
+                                        <materialIcons:MaterialIcon Kind="FitToPageOutline" Width="13" Height="13" Foreground="{StaticResource WinAccentBrush}" />
+                                    </Button>
+                                    <Button Classes="mini-tool-btn" Height="24" Padding="5,1" Command="{Binding AutoFitTextWidthCommand}" ToolTip.Tip="Auto-Fit Width to content">
+                                        <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="13" Height="13" Foreground="{StaticResource WinAccentBrush}" />
+                                    </Button>
+                                    <Button Classes="mini-tool-btn" Height="24" Padding="5,1" Command="{Binding AutoFitTextHeightCommand}" ToolTip.Tip="Auto-Fit Height to content">
+                                        <materialIcons:MaterialIcon Kind="ArrowExpandVertical" Width="13" Height="13" Foreground="{StaticResource WinAccentBrush}" />
+                                    </Button>
+                                </StackPanel>
                             </Grid>
+
+                            <!-- Typography Presets -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Quick Typography Presets" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="normal"><TextBlock Text="Normal" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="wave"><TextBlock Text="〰 Wave" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="scurve"><TextBlock Text="∿ S-Curve" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="bridge"><TextBlock Text="⌢ Bridge" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="valley"><TextBlock Text="⌣ Valley" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="rise"><TextBlock Text="↗ Rise" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="archup"><TextBlock Text="⤴ Arch Up" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="archdown"><TextBlock Text="⤵ Arch Down" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="circlebadge"><TextBlock Text="◯ Badge" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="toparc"><TextBlock Text="⌒ Top Arc" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="bottomarc"><TextBlock Text="ᴗ Bottom Arc" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="outlined"><TextBlock Text="Outline" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="shadowheading"><TextBlock Text="Shadow" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="5,1" Margin="1" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="neonglow"><TextBlock Text="✨ Neon Glow" FontSize="9.5" /></Button>
+                                </WrapPanel>
+                            </StackPanel>
 
                             <!-- In-Inspector Text Editor -->
                             <StackPanel Spacing="3">
-                                <TextBlock Text="Content Text" Classes="inspector-label" />
+                                <TextBlock Text="Text Content" Classes="inspector-label" />
                                 <TextBox Text="{Binding TextElement.Text, Mode=TwoWay}"
                                          AcceptsReturn="True" TextWrapping="Wrap"
                                          Height="54" FontSize="12" CornerRadius="5" Padding="6,4" />
@@ -238,14 +264,14 @@
                                 <StackPanel Grid.Column="1" Spacing="3">
                                     <TextBlock Text="Size (pt)" Classes="inspector-label" />
                                     <NumericUpDown Value="{Binding TextElement.FontSize, Mode=TwoWay}"
-                                                   Minimum="6" Maximum="144" Increment="1" FormatString="0"
+                                                   Minimum="4" Maximum="288" Increment="1" FormatString="0"
                                                    HorizontalAlignment="Stretch" Height="30" FontSize="12" />
                                 </StackPanel>
                             </Grid>
 
-                            <!-- Bold / Italic / Underline / Strikethrough / Alignment -->
+                            <!-- Bold / Italic / Underline / Double Underline / Strikethrough / Alignment -->
                             <StackPanel Spacing="3">
-                                <TextBlock Text="Style &amp; Formatting" Classes="inspector-label" />
+                                <TextBlock Text="Style, Underline &amp; Alignment" Classes="inspector-label" />
                                 <WrapPanel Orientation="Horizontal">
                                     <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
                                             Classes.active="{Binding TextElement.IsBold, FallbackValue=False}"
@@ -261,8 +287,14 @@
 
                                     <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
                                             Classes.active="{Binding TextElement.IsUnderline, FallbackValue=False}"
-                                            Command="{Binding ToggleUnderlineCommand}" ToolTip.Tip="Underline (Ctrl+U)">
+                                            Command="{Binding ToggleUnderlineCommand}" ToolTip.Tip="Single Underline (Ctrl+U)">
                                         <materialIcons:MaterialIcon Kind="FormatUnderline" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                                    </Button>
+
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                            Classes.active="{Binding TextElement.IsDoubleUnderline, FallbackValue=False}"
+                                            Command="{Binding ToggleDoubleUnderlineCommand}" ToolTip.Tip="Double Underline">
+                                        <materialIcons:MaterialIcon Kind="FormatUnderline" Width="15" Height="15" Foreground="{StaticResource WinAccentBrush}" />
                                     </Button>
 
                                     <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
@@ -285,60 +317,113 @@
 
                                     <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="3,0" />
 
+                                    <!-- Horizontal Alignment -->
                                     <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                            Classes.active="{Binding TextElement.Alignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Left}"
                                             Command="{Binding SetAlignmentCommand}" CommandParameter="Left" ToolTip.Tip="Align Left">
                                         <materialIcons:MaterialIcon Kind="FormatAlignLeft" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
 
                                     <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                            Classes.active="{Binding TextElement.Alignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Center}"
                                             Command="{Binding SetAlignmentCommand}" CommandParameter="Center" ToolTip.Tip="Align Center">
                                         <materialIcons:MaterialIcon Kind="FormatAlignCenter" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
 
                                     <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                            Classes.active="{Binding TextElement.Alignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Right}"
                                             Command="{Binding SetAlignmentCommand}" CommandParameter="Right" ToolTip.Tip="Align Right">
                                         <materialIcons:MaterialIcon Kind="FormatAlignRight" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                                    </Button>
+
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                            Classes.active="{Binding TextElement.Alignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Justify}"
+                                            Command="{Binding SetAlignmentCommand}" CommandParameter="Justify" ToolTip.Tip="Justify">
+                                        <materialIcons:MaterialIcon Kind="FormatAlignJustify" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
                                     </Button>
                                 </WrapPanel>
                             </StackPanel>
 
-                            <!-- Text Case Transforms -->
-                            <StackPanel Spacing="3">
-                                <TextBlock Text="Text Case" Classes="inspector-label" />
-                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                    <Button Classes="secondary-btn" Height="24" Padding="6,2" Command="{Binding TransformTextCaseCommand}" CommandParameter="Upper"><TextBlock Text="UPPERCASE" FontSize="9.5" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="6,2" Command="{Binding TransformTextCaseCommand}" CommandParameter="Lower"><TextBlock Text="lowercase" FontSize="9.5" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="6,2" Command="{Binding TransformTextCaseCommand}" CommandParameter="Title"><TextBlock Text="Title Case" FontSize="9.5" /></Button>
-                                </StackPanel>
-                            </StackPanel>
-
-                            <!-- Tracking, Line Spacing & Padding -->
-                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+                            <!-- Vertical Alignment & Text Case -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                                 <StackPanel Grid.Column="0" Spacing="3">
-                                    <TextBlock Text="Tracking" Classes="inspector-label" />
+                                    <TextBlock Text="Vertical Align" Classes="inspector-label" />
+                                    <StackPanel Orientation="Horizontal" Spacing="2">
+                                        <Button Classes="mini-tool-btn" Width="26" Height="24"
+                                                Classes.active="{Binding TextElement.VerticalAlignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Top}"
+                                                Command="{Binding SetVerticalAlignmentCommand}" CommandParameter="Top" ToolTip.Tip="Top Align">
+                                            <materialIcons:MaterialIcon Kind="AlignVerticalTop" Width="13" Height="13" Foreground="{StaticResource WinTextBrush}" />
+                                        </Button>
+                                        <Button Classes="mini-tool-btn" Width="26" Height="24"
+                                                Classes.active="{Binding TextElement.VerticalAlignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Center}"
+                                                Command="{Binding SetVerticalAlignmentCommand}" CommandParameter="Center" ToolTip.Tip="Middle Align">
+                                            <materialIcons:MaterialIcon Kind="AlignVerticalCenter" Width="13" Height="13" Foreground="{StaticResource WinTextBrush}" />
+                                        </Button>
+                                        <Button Classes="mini-tool-btn" Width="26" Height="24"
+                                                Classes.active="{Binding TextElement.VerticalAlignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Bottom}"
+                                                Command="{Binding SetVerticalAlignmentCommand}" CommandParameter="Bottom" ToolTip.Tip="Bottom Align">
+                                            <materialIcons:MaterialIcon Kind="AlignVerticalBottom" Width="13" Height="13" Foreground="{StaticResource WinTextBrush}" />
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Spacing="3">
+                                    <TextBlock Text="Text Case" Classes="inspector-label" />
+                                    <StackPanel Orientation="Horizontal" Spacing="2">
+                                        <Button Classes="secondary-btn" Height="24" Padding="4,1" Command="{Binding TransformTextCaseCommand}" CommandParameter="Upper"><TextBlock Text="AA" FontSize="9" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="4,1" Command="{Binding TransformTextCaseCommand}" CommandParameter="Lower"><TextBlock Text="aa" FontSize="9" /></Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="4,1" Command="{Binding TransformTextCaseCommand}" CommandParameter="Title"><TextBlock Text="Aa" FontSize="9" /></Button>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Spacing: Tracking, Word Spacing, Line Height, Paragraph Spacing -->
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="6" RowSpacing="6">
+                                <StackPanel Grid.Row="0" Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Tracking / Spacing" Classes="inspector-label" />
                                     <NumericUpDown Value="{Binding TextElement.CharacterSpacing, Mode=TwoWay}"
-                                                   Minimum="-2" Maximum="10" Increment="0.5" FormatString="0.0"
+                                                   Minimum="-5" Maximum="50" Increment="0.5" FormatString="0.0"
                                                    HorizontalAlignment="Stretch" Height="28" FontSize="11.5" />
                                 </StackPanel>
-                                <StackPanel Grid.Column="1" Spacing="3">
+                                <StackPanel Grid.Row="0" Grid.Column="1" Spacing="2">
+                                    <TextBlock Text="Word Spacing" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding TextElement.WordSpacing, Mode=TwoWay}"
+                                                   Minimum="-10" Maximum="50" Increment="1" FormatString="0.0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="11.5" />
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="0" Spacing="2">
                                     <TextBlock Text="Line Height" Classes="inspector-label" />
                                     <NumericUpDown Value="{Binding TextElement.LineHeight, Mode=TwoWay}"
-                                                   Minimum="0.8" Maximum="3.0" Increment="0.1" FormatString="0.0"
+                                                   Minimum="0.5" Maximum="4.0" Increment="0.1" FormatString="0.0"
                                                    HorizontalAlignment="Stretch" Height="28" FontSize="11.5" />
                                 </StackPanel>
-                                <StackPanel Grid.Column="2" Spacing="3">
-                                    <TextBlock Text="Padding" Classes="inspector-label" />
-                                    <NumericUpDown Value="{Binding TextElement.Padding, Mode=TwoWay}"
-                                                   Minimum="0" Maximum="64" Increment="1" FormatString="0"
+                                <StackPanel Grid.Row="1" Grid.Column="1" Spacing="2">
+                                    <TextBlock Text="Paragraph Spacing" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding TextElement.ParagraphSpacing, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="50" Increment="1" FormatString="0"
                                                    HorizontalAlignment="Stretch" Height="28" FontSize="11.5" />
                                 </StackPanel>
                             </Grid>
 
-                            <!-- Text Color Swatches & Custom ColorPicker -->
+                            <!-- Text Wrap & Text Opacity -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <CheckBox Grid.Column="0" IsChecked="{Binding TextElement.TextWrap, Mode=TwoWay}" VerticalAlignment="Center">
+                                    <TextBlock Text="Wrap Multiline Text" FontSize="11" />
+                                </CheckBox>
+                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="Text Opacity" Classes="inspector-label" Margin="0" />
+                                        <TextBlock Grid.Column="1" Text="{Binding TextElement.TextOpacity, StringFormat='{}{0:P0}'}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinAccentBrush}" />
+                                    </Grid>
+                                    <Slider Value="{Binding TextElement.TextOpacity, Mode=TwoWay}" Minimum="0.0" Maximum="1.0" Height="20" Margin="0" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Text Color -->
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Text Color" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Color Studio (Spectrum, RGB/HSV, Palette &amp; Hex)">
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Color Studio">
                                         <Button.Flyout>
                                             <Flyout Placement="BottomEdgeAlignedLeft">
                                                 <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
@@ -380,12 +465,78 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <!-- Text Background Color Swatches & Custom ColorPicker -->
+                            <!-- Text Stroke / Outline Studio -->
+                            <Border Background="{StaticResource WinSubtleBgBrush}" CornerRadius="6" Padding="8" BorderThickness="1" BorderBrush="{StaticResource WinBorderBrush}">
+                                <StackPanel Spacing="6">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding TextElement.HasStroke, Mode=TwoWay}" VerticalAlignment="Center">
+                                            <TextBlock Text="Text Outline / Stroke" FontWeight="SemiBold" FontSize="11" />
+                                        </CheckBox>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" IsVisible="{Binding TextElement.HasStroke}">
+                                            <Button Classes="color-studio-btn" ToolTip.Tip="Custom Stroke Color">
+                                                <Button.Flyout>
+                                                    <Flyout Placement="BottomEdgeAlignedLeft">
+                                                        <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                            <ColorView Color="{Binding TextElement.StrokeColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                                       IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                        </Border>
+                                                    </Flyout>
+                                                </Button.Flyout>
+                                                <Border Width="20" Height="20" CornerRadius="10" Background="{Binding TextElement.StrokeColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="#94A3B8" BorderThickness="1" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="*,80" ColumnSpacing="6" IsVisible="{Binding TextElement.HasStroke}">
+                                        <Slider Grid.Column="0" Value="{Binding TextElement.StrokeWidth, Mode=TwoWay}" Minimum="0.5" Maximum="12" Height="20" Margin="0" />
+                                        <NumericUpDown Grid.Column="1" Value="{Binding TextElement.StrokeWidth, Mode=TwoWay}" Minimum="0.5" Maximum="20" Increment="0.5" FormatString="0.0 pt" Height="26" FontSize="11" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Text Drop Shadow & Glow Studio -->
+                            <Border Background="{StaticResource WinSubtleBgBrush}" CornerRadius="6" Padding="8" BorderThickness="1" BorderBrush="{StaticResource WinBorderBrush}">
+                                <StackPanel Spacing="6">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding TextElement.HasShadow, Mode=TwoWay}" VerticalAlignment="Center">
+                                            <TextBlock Text="Text Shadow &amp; Glow" FontWeight="SemiBold" FontSize="11" />
+                                        </CheckBox>
+                                        <Button Grid.Column="1" Classes="color-studio-btn" ToolTip.Tip="Shadow Color" IsVisible="{Binding TextElement.HasShadow}">
+                                            <Button.Flyout>
+                                                <Flyout Placement="BottomEdgeAlignedLeft">
+                                                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                        <ColorView Color="{Binding TextElement.ShadowColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                                   IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                    </Border>
+                                                </Flyout>
+                                            </Button.Flyout>
+                                            <Border Width="20" Height="20" CornerRadius="10" Background="{Binding TextElement.ShadowColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="#94A3B8" BorderThickness="1" />
+                                        </Button>
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="4" IsVisible="{Binding TextElement.HasShadow}">
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="Offset X" Classes="inspector-label" />
+                                            <NumericUpDown Value="{Binding TextElement.ShadowOffsetX, Mode=TwoWay}" Minimum="-50" Maximum="50" Increment="1" FormatString="0" Height="26" FontSize="10.5" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="2">
+                                            <TextBlock Text="Offset Y" Classes="inspector-label" />
+                                            <NumericUpDown Value="{Binding TextElement.ShadowOffsetY, Mode=TwoWay}" Minimum="-50" Maximum="50" Increment="1" FormatString="0" Height="26" FontSize="10.5" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Spacing="2">
+                                            <TextBlock Text="Blur Radius" Classes="inspector-label" />
+                                            <NumericUpDown Value="{Binding TextElement.ShadowBlurRadius, Mode=TwoWay}" Minimum="0" Maximum="40" Increment="1" FormatString="0" Height="26" FontSize="10.5" />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Background Highlight & Box Decoration -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Highlight / Background Color" Classes="inspector-label" />
+                                <TextBlock Text="Highlight / Background Box" Classes="inspector-label" />
                                 <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="secondary-btn" Height="22" Padding="6,1" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#00000000"><TextBlock Text="None" FontSize="9.5" /></Button>
-                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Highlight Color Studio">
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom Highlight Color">
                                         <Button.Flyout>
                                             <Flyout Placement="BottomEdgeAlignedLeft">
                                                 <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
@@ -413,7 +564,232 @@
                                     <Button Width="22" Height="22" CornerRadius="4" Background="#FEE2E2" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#FEE2E2" ToolTip.Tip="Red Highlight" />
                                     <Button Width="22" Height="22" CornerRadius="4" Background="#F1F5F9" Command="{Binding SetTextBackgroundCommand}" CommandParameter="#F1F5F9" ToolTip.Tip="Light Gray" />
                                 </StackPanel>
+
+                                <!-- Box Padding, Corner Radius, Border -->
+                                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6" Margin="0,4,0,0">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock Text="Padding" Classes="inspector-label" />
+                                        <NumericUpDown Value="{Binding TextElement.Padding, Mode=TwoWay}" Minimum="0" Maximum="64" Increment="1" FormatString="0" Height="26" FontSize="11" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="2">
+                                        <TextBlock Text="Corner Radius" Classes="inspector-label" />
+                                        <NumericUpDown Value="{Binding TextElement.CornerRadius, Mode=TwoWay}" Minimum="0" Maximum="64" Increment="1" FormatString="0" Height="26" FontSize="11" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Spacing="2">
+                                        <TextBlock Text="Border Thick." Classes="inspector-label" />
+                                        <NumericUpDown Value="{Binding TextElement.BorderThickness, Mode=TwoWay}" Minimum="0" Maximum="20" Increment="0.5" FormatString="0.0" Height="26" FontSize="11" />
+                                    </StackPanel>
+                                </Grid>
                             </StackPanel>
+
+                            <!-- ========================================================= -->
+                            <!-- CURVED & CIRCULAR TYPOGRAPHY STUDIO SECTION               -->
+                            <!-- ========================================================= -->
+                            <Border Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="8" Padding="10">
+                                <StackPanel Spacing="8">
+                                    <!-- Shape Mode Selector -->
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="VectorCurve" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                            <TextBlock Text="Curved &amp; Circular Text" FontWeight="Bold" FontSize="11.5" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Mode Toggle: Normal, Curved Arc, Circular, Bézier Curve -->
+                                    <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="3">
+                                        <Button Grid.Column="0" Classes="secondary-btn" Height="28" Padding="2"
+                                                Classes.active="{Binding TextElement.ShapeMode, Converter={StaticResource EqualityConverter}, ConverterParameter=Normal}"
+                                                Command="{Binding SetTextShapeModeCommand}" CommandParameter="Normal">
+                                            <TextBlock Text="Straight" FontSize="10" />
+                                        </Button>
+                                        <Button Grid.Column="1" Classes="secondary-btn" Height="28" Padding="2"
+                                                Classes.active="{Binding TextElement.ShapeMode, Converter={StaticResource EqualityConverter}, ConverterParameter=Curved}"
+                                                Command="{Binding SetTextShapeModeCommand}" CommandParameter="Curved">
+                                            <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="VectorCurve" Width="11" Height="11" />
+                                                <TextBlock Text="Arc" FontSize="10" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Grid.Column="2" Classes="secondary-btn" Height="28" Padding="2"
+                                                Classes.active="{Binding TextElement.ShapeMode, Converter={StaticResource EqualityConverter}, ConverterParameter=Circular}"
+                                                Command="{Binding SetTextShapeModeCommand}" CommandParameter="Circular">
+                                            <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="CircleOutline" Width="11" Height="11" />
+                                                <TextBlock Text="Circle" FontSize="10" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Grid.Column="3" Classes="secondary-btn" Height="28" Padding="2"
+                                                Classes.active="{Binding TextElement.ShapeMode, Converter={StaticResource EqualityConverter}, ConverterParameter=BezierCurve}"
+                                                Command="{Binding SetTextShapeModeCommand}" CommandParameter="BezierCurve">
+                                            <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="VectorBezier" Width="11" Height="11" />
+                                                <TextBlock Text="Bézier" FontSize="10" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- CURVED MODE CONTROLS -->
+                                    <StackPanel Spacing="6" IsVisible="{Binding TextElement.IsCurvedMode}">
+                                        <!-- Curve Radius & Arc Sweep Angle -->
+                                        <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <TextBlock Text="Curve Radius (pt)" Classes="inspector-label" />
+                                                <NumericUpDown Value="{Binding TextElement.CurveRadius, Mode=TwoWay}" Minimum="20" Maximum="2000" Increment="10" FormatString="0" Height="26" FontSize="11" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Spacing="2">
+                                                <TextBlock Text="Arc Angle (°)" Classes="inspector-label" />
+                                                <NumericUpDown Value="{Binding TextElement.CurveArcAngle, Mode=TwoWay}" Minimum="10" Maximum="360" Increment="10" FormatString="0°" Height="26" FontSize="11" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Start Angle & Direction -->
+                                        <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <TextBlock Text="Start Angle (°)" Classes="inspector-label" />
+                                                <NumericUpDown Value="{Binding TextElement.CurveStartAngle, Mode=TwoWay}" Minimum="-180" Maximum="180" Increment="15" FormatString="0°" Height="26" FontSize="11" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Spacing="2">
+                                                <TextBlock Text="Arch Direction" Classes="inspector-label" />
+                                                <Button Classes="secondary-btn" Height="26" HorizontalAlignment="Stretch" Command="{Binding ToggleCurveDirectionCommand}">
+                                                    <TextBlock Text="{Binding TextElement.CurveClockwise, Converter={x:Static converters:BooleanToFontWeightConverter.Instance}}" FontSize="10" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Invert Text Checkbox -->
+                                        <CheckBox IsChecked="{Binding TextElement.CurveInvert, Mode=TwoWay}">
+                                            <TextBlock Text="Invert / Reverse Text Orientation" FontSize="10.5" />
+                                        </CheckBox>
+                                    </StackPanel>
+
+                                    <!-- CIRCULAR MODE CONTROLS -->
+                                    <StackPanel Spacing="6" IsVisible="{Binding TextElement.IsCircularMode}">
+                                        <!-- Placement Buttons: Top Arc, Bottom Arc, Full Circle -->
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="Circular Placement" Classes="inspector-label" />
+                                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="4">
+                                                <Button Grid.Column="0" Classes="secondary-btn" Height="26"
+                                                        Classes.active="{Binding TextElement.CircularPlacement, Converter={StaticResource EqualityConverter}, ConverterParameter=TopArc}"
+                                                        Command="{Binding SetCircularPlacementCommand}" CommandParameter="TopArc">
+                                                    <TextBlock Text="Top Arc" FontSize="10" />
+                                                </Button>
+                                                <Button Grid.Column="1" Classes="secondary-btn" Height="26"
+                                                        Classes.active="{Binding TextElement.CircularPlacement, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomArc}"
+                                                        Command="{Binding SetCircularPlacementCommand}" CommandParameter="BottomArc">
+                                                    <TextBlock Text="Bottom Arc" FontSize="10" />
+                                                </Button>
+                                                <Button Grid.Column="2" Classes="secondary-btn" Height="26"
+                                                        Classes.active="{Binding TextElement.CircularPlacement, Converter={StaticResource EqualityConverter}, ConverterParameter=FullCircle}"
+                                                        Command="{Binding SetCircularPlacementCommand}" CommandParameter="FullCircle">
+                                                    <TextBlock Text="Full Circle" FontSize="10" />
+                                                </Button>
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <!-- Circle Radius & Start Angle -->
+                                        <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <TextBlock Text="Circle Radius" Classes="inspector-label" />
+                                                <NumericUpDown Value="{Binding TextElement.CurveRadius, Mode=TwoWay}" Minimum="20" Maximum="2000" Increment="5" FormatString="0 pt" Height="26" FontSize="11" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Spacing="2">
+                                                <TextBlock Text="Rotation (°)" Classes="inspector-label" />
+                                                <NumericUpDown Value="{Binding TextElement.CurveStartAngle, Mode=TwoWay}" Minimum="-180" Maximum="180" Increment="15" FormatString="0°" Height="26" FontSize="11" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <CheckBox IsChecked="{Binding TextElement.CurveInvert, Mode=TwoWay}">
+                                            <TextBlock Text="Invert / Reverse Text Orientation" FontSize="10.5" />
+                                        </CheckBox>
+                                    </StackPanel>
+
+                                    <!-- BÉZIER CURVE MODE CONTROLS -->
+                                    <StackPanel Spacing="6" IsVisible="{Binding TextElement.IsBezierMode}">
+                                        <!-- Bézier Presets -->
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="Curve Shape Presets" Classes="inspector-label" />
+                                            <WrapPanel Orientation="Horizontal">
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1" Command="{Binding SetBezierPresetCommand}" CommandParameter="Wave"><TextBlock Text="Wave" FontSize="9.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1" Command="{Binding SetBezierPresetCommand}" CommandParameter="SCurve"><TextBlock Text="S-Curve" FontSize="9.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1" Command="{Binding SetBezierPresetCommand}" CommandParameter="Bridge"><TextBlock Text="Bridge (Arch)" FontSize="9.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1" Command="{Binding SetBezierPresetCommand}" CommandParameter="Valley"><TextBlock Text="Valley (Dip)" FontSize="9.5" /></Button>
+                                                <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1" Command="{Binding SetBezierPresetCommand}" CommandParameter="Rise"><TextBlock Text="Rise" FontSize="9.5" /></Button>
+                                            </WrapPanel>
+                                        </StackPanel>
+
+                                        <!-- Control Point 1 & Control Point 2 -->
+                                        <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <TextBlock Text="Control Pt 1 (X, Y)" Classes="inspector-label" />
+                                                <Grid ColumnDefinitions="*,*" ColumnSpacing="2">
+                                                    <NumericUpDown Grid.Column="0" Value="{Binding TextElement.BezierP1X, Mode=TwoWay}" Minimum="-0.5" Maximum="1.5" Increment="0.05" FormatString="0.00" Height="26" FontSize="10" />
+                                                    <NumericUpDown Grid.Column="1" Value="{Binding TextElement.BezierP1Y, Mode=TwoWay}" Minimum="-0.5" Maximum="1.5" Increment="0.05" FormatString="0.00" Height="26" FontSize="10" />
+                                                </Grid>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Spacing="2">
+                                                <TextBlock Text="Control Pt 2 (X, Y)" Classes="inspector-label" />
+                                                <Grid ColumnDefinitions="*,*" ColumnSpacing="2">
+                                                    <NumericUpDown Grid.Column="0" Value="{Binding TextElement.BezierP2X, Mode=TwoWay}" Minimum="-0.5" Maximum="1.5" Increment="0.05" FormatString="0.00" Height="26" FontSize="10" />
+                                                    <NumericUpDown Grid.Column="1" Value="{Binding TextElement.BezierP2Y, Mode=TwoWay}" Minimum="-0.5" Maximum="1.5" Increment="0.05" FormatString="0.00" Height="26" FontSize="10" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <CheckBox IsChecked="{Binding TextElement.CurveInvert, Mode=TwoWay}">
+                                            <TextBlock Text="Invert / Reverse Text Orientation" FontSize="10.5" />
+                                        </CheckBox>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- ========================================================= -->
+                            <!-- PER-CHARACTER TRANSFORMS & SCALING                        -->
+                            <!-- ========================================================= -->
+                            <Border Background="{StaticResource WinSubtleBgBrush}" CornerRadius="6" Padding="8" BorderThickness="1" BorderBrush="{StaticResource WinBorderBrush}">
+                                <StackPanel Spacing="6">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="Glyph Offsets &amp; Scaling" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center" />
+                                        <Button Grid.Column="1" Classes="secondary-btn" Height="22" Padding="6,1" Command="{Binding ResetTextTransformsCommand}" ToolTip.Tip="Reset scale and baseline transforms">
+                                            <TextBlock Text="Reset" FontSize="9.5" />
+                                        </Button>
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="Baseline Shift" Classes="inspector-label" />
+                                            <NumericUpDown Value="{Binding TextElement.BaselineShift, Mode=TwoWay}" Minimum="-100" Maximum="100" Increment="1" FormatString="0 pt" Height="26" FontSize="10.5" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="2">
+                                            <TextBlock Text="Char Rotation (°)" Classes="inspector-label" />
+                                            <NumericUpDown Value="{Binding TextElement.CharacterRotation, Mode=TwoWay}" Minimum="-180" Maximum="180" Increment="5" FormatString="0°" Height="26" FontSize="10.5" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="*,*,Auto,Auto" ColumnSpacing="6">
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="Scale X" Classes="inspector-label" />
+                                            <NumericUpDown Value="{Binding TextElement.ScaleX, Mode=TwoWay}" Minimum="0.1" Maximum="5.0" Increment="0.1" FormatString="0.0" Height="26" FontSize="10.5" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="2">
+                                            <TextBlock Text="Scale Y" Classes="inspector-label" />
+                                            <NumericUpDown Value="{Binding TextElement.ScaleY, Mode=TwoWay}" Minimum="0.1" Maximum="5.0" Increment="0.1" FormatString="0.0" Height="26" FontSize="10.5" />
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Classes="mini-tool-btn" Width="28" Height="26" Margin="0,14,0,0"
+                                                Classes.active="{Binding TextElement.FlipX, FallbackValue=False}"
+                                                Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).ToggleTextFlipXCommand}"
+                                                ToolTip.Tip="Flip Text Horizontally">
+                                            <materialIcons:MaterialIcon Kind="FlipHorizontal" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                        </Button>
+                                        <Button Grid.Column="3" Classes="mini-tool-btn" Width="28" Height="26" Margin="0,14,0,0"
+                                                Classes.active="{Binding TextElement.FlipY, FallbackValue=False}"
+                                                Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).ToggleTextFlipYCommand}"
+                                                ToolTip.Tip="Flip Text Vertically">
+                                            <materialIcons:MaterialIcon Kind="FlipVertical" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
                         </StackPanel>
                     </Border>
 
@@ -432,6 +808,16 @@
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Rectangle"><TextBlock Text="Rect" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RoundedRectangle"><TextBlock Text="Rounded" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Circle"><TextBlock Text="Circle" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="BezierCurve"><TextBlock Text="∿ Bézier Curve" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CurvedArrow"><TextBlock Text="⤴ Curved Arrow" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="SCurveConnector"><TextBlock Text="⤹ S-Connector" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="WaveLine"><TextBlock Text="〰 Wave Line" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="ArcLine"><TextBlock Text="◠ Arc" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CurlyBrace"><TextBlock Text="{}{ Curly Brace" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CurvedCallout"><TextBlock Text="💬 Curved Bubble" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Teardrop"><TextBlock Text="💧 Teardrop" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="WaveRibbon"><TextBlock Text="🎗 Wave Ribbon" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="OrganicBlob"><TextBlock Text="🫧 Blob" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="MedalRibbonBadge"><TextBlock Text="🎖 Medal Ribbon" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="LaurelWreathSeal"><TextBlock Text="🌿 Laurel Seal" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="RosetteSeal"><TextBlock Text="🏵 Rosette" FontSize="10" /></Button>
@@ -448,6 +834,17 @@
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Trapezoid"><TextBlock Text="Trapezoid" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="Parallelogram"><TextBlock Text="Parallelogram" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetShapeTypeCommand}" CommandParameter="CustomSvgPath"><TextBlock Text="🖋 Custom SVG" FontSize="10" /></Button>
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <!-- Line Dash Pattern & Endcaps (for Lines & Curves) -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Line Stroke Pattern" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetShapeDashStyleCommand}" CommandParameter="Solid"><TextBlock Text="— Solid" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetShapeDashStyleCommand}" CommandParameter="Dashed"><TextBlock Text="-- Dashed" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetShapeDashStyleCommand}" CommandParameter="Dotted"><TextBlock Text="·· Dotted" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetShapeDashStyleCommand}" CommandParameter="DashDot"><TextBlock Text="-·- Dash-Dot" FontSize="10" /></Button>
                                 </WrapPanel>
                             </StackPanel>
 
@@ -715,7 +1112,47 @@
                         <StackPanel Spacing="10">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="Minus" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Divider Line Settings" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Divider Line &amp; Decorative Wave" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- Divider Style Presets -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Divider Style (6 Styles)" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetDividerStyleCommand}" CommandParameter="Straight"><TextBlock Text="— Straight" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetDividerStyleCommand}" CommandParameter="Wave"><TextBlock Text="〰 Wave" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetDividerStyleCommand}" CommandParameter="SCurve"><TextBlock Text="∿ S-Curve" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetDividerStyleCommand}" CommandParameter="Arch"><TextBlock Text="◠ Arch" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetDividerStyleCommand}" CommandParameter="DoubleWave"><TextBlock Text="≋ Double Wave" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetDividerStyleCommand}" CommandParameter="CalligraphicFlourish"><TextBlock Text="❦ Flourish" FontSize="10" /></Button>
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <!-- Wave Parameters (Amplitude & Frequency) -->
+                            <Grid ColumnDefinitions="*,*" Margin="0,2">
+                                <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,4,0">
+                                    <TextBlock Text="Wave Amplitude (px)" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding DividerElement.WaveAmplitude, Mode=TwoWay}"
+                                                   Minimum="2" Maximum="50" Increment="1" FormatString="0.0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="3" Margin="4,0,0,0">
+                                    <TextBlock Text="Wave Cycles" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding DividerElement.WaveFrequency, Mode=TwoWay}"
+                                                   Minimum="1" Maximum="20" Increment="1" FormatString="0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="12" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Line Dash Pattern -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Dash Pattern" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetDividerDashStyleCommand}" CommandParameter="Solid"><TextBlock Text="— Solid" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetDividerDashStyleCommand}" CommandParameter="Dashed"><TextBlock Text="-- Dashed" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetDividerDashStyleCommand}" CommandParameter="Dotted"><TextBlock Text="·· Dotted" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="6,1" Margin="2" Command="{Binding SetDividerDashStyleCommand}" CommandParameter="DashDot"><TextBlock Text="-·- Dash-Dot" FontSize="10" /></Button>
+                                </WrapPanel>
                             </StackPanel>
 
                             <StackPanel Spacing="3">
@@ -1340,6 +1777,11 @@
                             <Grid ColumnDefinitions="*,Auto">
                                 <TextBlock Grid.Column="0" Text="Highlighter Mode" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
                                 <ToggleSwitch Grid.Column="1" IsChecked="{Binding InkElement.IsHighlighter, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Smooth Bézier Spline" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding InkElement.IsSmoothSpline, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
                             </Grid>
 
                             <StackPanel Spacing="4">

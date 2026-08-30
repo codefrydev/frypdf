@@ -138,6 +138,46 @@ public static class SvgShapeHelper
                 string.Format(ci, "M 0,{0:F1} L {1:F1},{0:F1}",
                     h / 2.0, w),
 
+            ShapeType.BezierCurve =>
+                string.Format(ci, "M 0,{0:F1} C {1:F1},0 {2:F1},{3:F1} {4:F1},{0:F1}",
+                    h * 0.5, w * 0.33, w * 0.67, h, w),
+
+            ShapeType.CurvedArrow =>
+                string.Format(ci, "M 0,{0:F1} C {1:F1},0 {2:F1},{3:F1} {4:F1},{0:F1} M {5:F1},{6:F1} L {4:F1},{0:F1} L {7:F1},{8:F1}",
+                    h * 0.5, w * 0.33, w * 0.67, h, w - 8.0, w - 18.0, (h * 0.5) - 8.0, w - 18.0, (h * 0.5) + 8.0),
+
+            ShapeType.SCurveConnector =>
+                string.Format(ci, "M 0,{0:F1} C {1:F1},{0:F1} {2:F1},0 {3:F1},0",
+                    h, w * 0.45, w * 0.55, w),
+
+            ShapeType.WaveLine =>
+                string.Format(ci, "M 0,{0:F1} C {1:F1},0 {2:F1},{3:F1} {4:F1},{0:F1} C {5:F1},0 {6:F1},{3:F1} {7:F1},{0:F1}",
+                    h * 0.5, w * 0.125, w * 0.375, h, w * 0.5, w * 0.625, w * 0.875, w),
+
+            ShapeType.ArcLine =>
+                string.Format(ci, "M 0,{0:F1} Q {1:F1},0 {2:F1},{0:F1}",
+                    h, w * 0.5, w),
+
+            ShapeType.CurlyBrace =>
+                string.Format(ci, "M {0:F1},0 C {1:F1},0 {1:F1},{2:F1} 0,{3:F1} C {1:F1},{4:F1} {1:F1},{5:F1} {0:F1},{5:F1}",
+                    w, w * 0.45, h * 0.4, h * 0.5, h * 0.6, h),
+
+            ShapeType.CurvedCallout =>
+                string.Format(ci, "M {0:F1},0 L {1:F1},0 A {0:F1},{0:F1} 0 0 1 {2:F1},{0:F1} L {2:F1},{3:F1} A {0:F1},{0:F1} 0 0 1 {1:F1},{4:F1} L {5:F1},{4:F1} Q {6:F1},{4:F1} {7:F1},{8:F1} Q {9:F1},{10:F1} {9:F1},{4:F1} L {0:F1},{4:F1} A {0:F1},{0:F1} 0 0 1 0,{3:F1} L 0,{0:F1} A {0:F1},{0:F1} 0 0 1 {0:F1},0 Z",
+                    r, w - r, w, h * 0.72 - r, h * 0.72, w * 0.5, w * 0.38, w * 0.22, h, w * 0.32, h * 0.82),
+
+            ShapeType.Teardrop =>
+                string.Format(ci, "M {0:F1},0 C {1:F1},{2:F1} {3:F1},{4:F1} {0:F1},{5:F1} C 0,{4:F1} {6:F1},{2:F1} {0:F1},0 Z",
+                    w * 0.5, w * 0.85, h * 0.45, w, h * 0.75, h, w * 0.15),
+
+            ShapeType.WaveRibbon =>
+                string.Format(ci, "M 0,{0:F1} Q {1:F1},0 {2:F1},{0:F1} Q {3:F1},{4:F1} {5:F1},{0:F1} L {5:F1},{6:F1} Q {3:F1},{7:F1} {2:F1},{6:F1} Q {1:F1},{8:F1} 0,{6:F1} Z",
+                    h * 0.2, w * 0.25, w * 0.5, w * 0.75, h * 0.4, w, h * 0.8, h, h * 0.6),
+
+            ShapeType.OrganicBlob =>
+                string.Format(ci, "M {0:F1},0 C {1:F1},{2:F1} {3:F1},{4:F1} {5:F1},{6:F1} C {0:F1},{7:F1} {8:F1},{6:F1} 0,{4:F1} C 0,{2:F1} {8:F1},0 {0:F1},0 Z",
+                    w * 0.5, w * 0.9, h * 0.12, w, h * 0.6, w * 0.75, h * 0.9, h, w * 0.15),
+
             ShapeType.Card =>
                 string.Format(ci, "M {0:F1},0 L {1:F1},0 A {0:F1},{0:F1} 0 0 1 {2:F1},{0:F1} L {2:F1},{3:F1} A {0:F1},{0:F1} 0 0 1 {1:F1},{4:F1} L {0:F1},{4:F1} A {0:F1},{0:F1} 0 0 1 0,{3:F1} L 0,{0:F1} A {0:F1},{0:F1} 0 0 1 {0:F1},0 Z",
                     r, w - r, w, h - r, h),
@@ -148,6 +188,147 @@ public static class SvgShapeHelper
 
             _ => string.Format(ci, "M 0,0 L {0:F1},0 L {0:F1},{1:F1} L 0,{1:F1} Z", w, h)
         };
+    }
+
+    public static string? GetDashArray(LineDashStyle style, double strokeThickness)
+    {
+        double st = Math.Max(1.0, strokeThickness);
+        var ci = CultureInfo.InvariantCulture;
+        return style switch
+        {
+            LineDashStyle.Dashed => string.Format(ci, "{0:F1},{1:F1}", st * 3.5, st * 2.0),
+            LineDashStyle.Dotted => string.Format(ci, "{0:F1},{1:F1}", st, st * 2.0),
+            LineDashStyle.DashDot => string.Format(ci, "{0:F1},{1:F1},{2:F1},{1:F1}", st * 4.0, st * 2.0, st),
+            _ => null
+        };
+    }
+
+    public static string GenerateSmoothInkSvgPath(string pointsData, bool isSmoothSpline = true)
+    {
+        if (string.IsNullOrWhiteSpace(pointsData)) return "M 0,0";
+
+        var ci = CultureInfo.InvariantCulture;
+        var rawParts = pointsData.Trim().Split(new[] { ' ', ';', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+        var points = new System.Collections.Generic.List<(double X, double Y)>();
+
+        foreach (var p in rawParts)
+        {
+            var coords = p.Split(',');
+            if (coords.Length == 2 &&
+                double.TryParse(coords[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double x) &&
+                double.TryParse(coords[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double y))
+            {
+                points.Add((x, y));
+            }
+        }
+
+        if (points.Count == 0) return "M 0,0";
+        if (points.Count == 1) return string.Format(ci, "M {0:F1},{1:F1} L {0:F1},{1:F1}", points[0].X, points[0].Y);
+        if (points.Count == 2 || !isSmoothSpline)
+        {
+            var sbPoly = new StringBuilder();
+            sbPoly.AppendFormat(ci, "M {0:F1},{1:F1}", points[0].X, points[0].Y);
+            for (int i = 1; i < points.Count; i++)
+            {
+                sbPoly.AppendFormat(ci, " L {0:F1},{1:F1}", points[i].X, points[i].Y);
+            }
+            return sbPoly.ToString();
+        }
+
+        // Catmull-Rom to Cubic Bézier Spline Conversion
+        var sb = new StringBuilder();
+        sb.AppendFormat(ci, "M {0:F1},{1:F1}", points[0].X, points[0].Y);
+
+        int n = points.Count;
+        for (int i = 0; i < n - 1; i++)
+        {
+            var p0 = i > 0 ? points[i - 1] : points[i];
+            var p1 = points[i];
+            var p2 = points[i + 1];
+            var p3 = i < n - 2 ? points[i + 2] : p2;
+
+            // Catmull-Rom tangents: T1 = (p2 - p0)/2, T2 = (p3 - p1)/2
+            double t1x = (p2.X - p0.X) / 2.0;
+            double t1y = (p2.Y - p0.Y) / 2.0;
+            double t2x = (p3.X - p1.X) / 2.0;
+            double t2y = (p3.Y - p1.Y) / 2.0;
+
+            // Cubic Bézier control points: C1 = p1 + T1/3, C2 = p2 - T2/3
+            double c1x = p1.X + (t1x / 3.0);
+            double c1y = p1.Y + (t1y / 3.0);
+            double c2x = p2.X - (t2x / 3.0);
+            double c2y = p2.Y - (t2y / 3.0);
+
+            sb.AppendFormat(ci, " C {0:F1},{1:F1} {2:F1},{3:F1} {4:F1},{5:F1}", c1x, c1y, c2x, c2y, p2.X, p2.Y);
+        }
+
+        return sb.ToString();
+    }
+
+    public static string GenerateDividerSvgPath(DividerStyle style, double width, double height, double amplitude = 6.0, double frequency = 4.0, bool isVertical = false)
+    {
+        double w = Math.Max(10, width);
+        double h = Math.Max(4, height);
+        var ci = CultureInfo.InvariantCulture;
+
+        if (isVertical)
+        {
+            double midX = w / 2.0;
+            return style switch
+            {
+                DividerStyle.Wave => string.Format(ci, "M {0:F1},0 C {1:F1},{2:F1} {3:F1},{4:F1} {0:F1},{5:F1} C {1:F1},{6:F1} {3:F1},{7:F1} {0:F1},{8:F1}",
+                    midX, midX - amplitude, h * 0.15, midX + amplitude, h * 0.35, h * 0.5, h * 0.65, h * 0.85, h),
+                DividerStyle.Arch => string.Format(ci, "M {0:F1},0 Q {1:F1},{2:F1} {0:F1},{3:F1}",
+                    midX, midX - amplitude, h * 0.5, h),
+                _ => string.Format(ci, "M {0:F1},0 L {0:F1},{1:F1}", midX, h)
+            };
+        }
+
+        double midY = h / 2.0;
+        double amp = Math.Min(midY, Math.Max(2.0, amplitude));
+        int cycles = Math.Max(1, (int)Math.Round(frequency));
+
+        return style switch
+        {
+            DividerStyle.Wave => GenerateHarmonicWavePath(w, midY, amp, cycles),
+            DividerStyle.SCurve => string.Format(ci, "M 0,{0:F1} C {1:F1},{2:F1} {3:F1},{4:F1} {5:F1},{0:F1}",
+                midY, w * 0.35, midY - amp, w * 0.65, midY + amp, w),
+            DividerStyle.Arch => string.Format(ci, "M 0,{0:F1} Q {1:F1},{2:F1} {3:F1},{0:F1}",
+                midY, w * 0.5, midY - amp, w),
+            DividerStyle.DoubleWave => GenerateDoubleWavePath(w, midY, amp, cycles),
+            DividerStyle.CalligraphicFlourish => string.Format(ci, "M 0,{0:F1} C {1:F1},{2:F1} {3:F1},{4:F1} {5:F1},{0:F1} L {6:F1},{0:F1} L {7:F1},{2:F1} L {8:F1},{0:F1} L {9:F1},{0:F1} C {10:F1},{2:F1} {11:F1},{4:F1} {12:F1},{0:F1}",
+                midY, w * 0.1, midY - amp, w * 0.25, midY + amp, w * 0.45, w * 0.48, w * 0.5, w * 0.52, w * 0.55, w * 0.75, w * 0.9, w),
+            _ => string.Format(ci, "M 0,{0:F1} L {1:F1},{0:F1}", midY, w)
+        };
+    }
+
+    private static string GenerateHarmonicWavePath(double w, double midY, double amp, int cycles)
+    {
+        var ci = CultureInfo.InvariantCulture;
+        var sb = new StringBuilder();
+        sb.AppendFormat(ci, "M 0,{0:F1}", midY);
+
+        double cycleWidth = w / cycles;
+        for (int i = 0; i < cycles; i++)
+        {
+            double startX = i * cycleWidth;
+            double endX = startX + cycleWidth;
+            double cp1x = startX + (cycleWidth * 0.25);
+            double cp2x = startX + (cycleWidth * 0.75);
+
+            sb.AppendFormat(ci, " C {0:F1},{1:F1} {2:F1},{3:F1} {4:F1},{5:F1}",
+                cp1x, midY - amp, cp2x, midY + amp, endX, midY);
+        }
+
+        return sb.ToString();
+    }
+
+    private static string GenerateDoubleWavePath(double w, double midY, double amp, int cycles)
+    {
+        var ci = CultureInfo.InvariantCulture;
+        string wave1 = GenerateHarmonicWavePath(w, midY - (amp * 0.4), amp * 0.6, cycles);
+        string wave2 = GenerateHarmonicWavePath(w, midY + (amp * 0.4), amp * 0.6, cycles);
+        return wave1 + " " + wave2;
     }
 
     private static string GenerateStarPath(double w, double h, int points, double innerRadiusRatio)
@@ -201,6 +382,8 @@ public static class SvgShapeHelper
             : shape.StrokeColorHex;
 
         double strokeThickness = shape.StrokeThickness > 0 ? shape.StrokeThickness : 0;
+        string? dashArray = GetDashArray(shape.DashStyle, strokeThickness);
+        string dashAttr = !string.IsNullOrEmpty(dashArray) ? string.Format(ci, " stroke-dasharray=\"{0}\"", dashArray) : "";
 
         var sb = new StringBuilder();
         sb.AppendFormat(ci, @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 {0:F1} {1:F1}"" width=""{0:F1}"" height=""{1:F1}"">", w, h);
@@ -233,8 +416,8 @@ public static class SvgShapeHelper
         else
         {
             string pathData = GetVectorPath(shape.ShapeType, w, h, shape.CornerRadius, shape.CustomPathData);
-            sb.AppendFormat(ci, @"<path d=""{0}"" fill=""{1}"" stroke=""{2}"" stroke-width=""{3:F1}"" stroke-linejoin=""round"" stroke-linecap=""round"" />",
-                pathData, fill, stroke, strokeThickness);
+            sb.AppendFormat(ci, @"<path d=""{0}"" fill=""{1}"" stroke=""{2}"" stroke-width=""{3:F1}"" stroke-linejoin=""round"" stroke-linecap=""round""{4} />",
+                pathData, fill, stroke, strokeThickness, dashAttr);
         }
 
         if (!string.IsNullOrWhiteSpace(shape.Label))
@@ -248,4 +431,38 @@ public static class SvgShapeHelper
         sb.Append("</svg>");
         return sb.ToString();
     }
+
+    public static string GenerateDividerSvgMarkup(PdfDividerElement div)
+    {
+        double w = Math.Max(10, div.Width);
+        double h = Math.Max(4, div.Height);
+        var ci = CultureInfo.InvariantCulture;
+
+        string stroke = !string.IsNullOrWhiteSpace(div.ColorHex) ? div.ColorHex : "#0F6CBD";
+        double thickness = Math.Max(1.0, div.Thickness);
+        string pathData = GenerateDividerSvgPath(div.Style, w, h, div.WaveAmplitude, div.WaveFrequency, div.IsVertical);
+        string? dashArray = GetDashArray(div.DashStyle, thickness);
+        string dashAttr = !string.IsNullOrEmpty(dashArray) ? string.Format(ci, " stroke-dasharray=\"{0}\"", dashArray) : "";
+
+        return string.Format(ci,
+            @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 {0:F1} {1:F1}"" width=""{0:F1}"" height=""{1:F1}""><path d=""{2}"" fill=""none"" stroke=""{3}"" stroke-width=""{4:F1}"" stroke-linecap=""round"" stroke-linejoin=""round""{5} /></svg>",
+            w, h, pathData, stroke, thickness, dashAttr);
+    }
+
+    public static string GenerateInkSvgMarkup(PdfInkElement ink)
+    {
+        double w = Math.Max(10, ink.Width);
+        double h = Math.Max(6, ink.Height);
+        var ci = CultureInfo.InvariantCulture;
+
+        string stroke = !string.IsNullOrWhiteSpace(ink.StrokeColorHex) ? ink.StrokeColorHex : "#0F6CBD";
+        double thickness = Math.Max(1.0, ink.StrokeThickness);
+        double opacity = Math.Clamp(ink.Opacity, 0.05, 1.0);
+        string pathData = GenerateSmoothInkSvgPath(ink.PointsData, ink.IsSmoothSpline);
+
+        return string.Format(ci,
+            @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 {0:F1} {1:F1}"" width=""{0:F1}"" height=""{1:F1}""><path d=""{2}"" fill=""none"" stroke=""{3}"" stroke-width=""{4:F1}"" stroke-linecap=""round"" stroke-linejoin=""round"" opacity=""{5:F2}"" /></svg>",
+            w, h, pathData, stroke, thickness, opacity);
+    }
 }
+

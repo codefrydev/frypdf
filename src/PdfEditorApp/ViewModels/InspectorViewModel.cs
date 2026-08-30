@@ -5,6 +5,7 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
+using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
@@ -1220,6 +1221,321 @@ public partial class InspectorViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void ToggleDoubleUnderline()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            bool oldVal = el.IsDoubleUnderline;
+            bool newVal = !oldVal;
+            el.IsDoubleUnderline = newVal;
+            UndoRedo?.RecordAction(
+                newVal ? "Format Double Underline" : "Remove Double Underline",
+                () => el.IsDoubleUnderline = oldVal,
+                () => el.IsDoubleUnderline = newVal
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void SetVerticalAlignment(string vAlignStr)
+    {
+        if (TextElement != null && Enum.TryParse<TextVerticalAlignment>(vAlignStr, true, out var vAlign) && TextElement.VerticalAlignment != vAlign)
+        {
+            var el = TextElement;
+            var oldVal = el.VerticalAlignment;
+            el.VerticalAlignment = vAlign;
+            UndoRedo?.RecordAction(
+                $"Vertical Align {vAlign}",
+                () => el.VerticalAlignment = oldVal,
+                () => el.VerticalAlignment = vAlign
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void SetTextShapeMode(string modeStr)
+    {
+        if (TextElement != null && Enum.TryParse<TextShapeMode>(modeStr, true, out var mode) && TextElement.ShapeMode != mode)
+        {
+            var el = TextElement;
+            var oldVal = el.ShapeMode;
+            el.ShapeMode = mode;
+            UndoRedo?.RecordAction(
+                $"Change Text Shape {mode}",
+                () => el.ShapeMode = oldVal,
+                () => el.ShapeMode = mode
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void SetCircularPlacement(string placementStr)
+    {
+        if (TextElement != null && Enum.TryParse<CircularTextPlacement>(placementStr, true, out var placement) && TextElement.CircularPlacement != placement)
+        {
+            var el = TextElement;
+            var oldVal = el.CircularPlacement;
+            el.CircularPlacement = placement;
+            UndoRedo?.RecordAction(
+                $"Circular Placement {placement}",
+                () => el.CircularPlacement = oldVal,
+                () => el.CircularPlacement = placement
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void SetBezierPreset(string presetStr)
+    {
+        if (TextElement != null && Enum.TryParse<BezierCurvePreset>(presetStr, true, out var preset))
+        {
+            var el = TextElement;
+            var oldPreset = el.BezierPreset;
+            double p0x = el.BezierP0X, p0y = el.BezierP0Y;
+            double p1x = el.BezierP1X, p1y = el.BezierP1Y;
+            double p2x = el.BezierP2X, p2y = el.BezierP2Y;
+            double p3x = el.BezierP3X, p3y = el.BezierP3Y;
+
+            el.ApplyBezierPreset(preset);
+
+            UndoRedo?.RecordAction(
+                $"Bézier Curve Preset: {preset}",
+                () =>
+                {
+                    el.BezierPreset = oldPreset;
+                    el.BezierP0X = p0x; el.BezierP0Y = p0y;
+                    el.BezierP1X = p1x; el.BezierP1Y = p1y;
+                    el.BezierP2X = p2x; el.BezierP2Y = p2y;
+                    el.BezierP3X = p3x; el.BezierP3Y = p3y;
+                },
+                () => el.ApplyBezierPreset(preset)
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void ResetBezierControlPoints()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            el.ApplyBezierPreset(BezierCurvePreset.Wave);
+        }
+    }
+
+    [RelayCommand]
+    public void ApplyTypographyPreset(string presetName)
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            var oldModel = (PdfTextElement)el.ToModel();
+            el.ApplyTypographyPreset(presetName);
+            var newModel = (PdfTextElement)el.ToModel();
+
+            UndoRedo?.RecordAction(
+                $"Typography Preset: {presetName}",
+                () => el.LoadFromModel(oldModel),
+                () => el.LoadFromModel(newModel)
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleTextStroke()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            bool oldVal = el.HasStroke;
+            bool newVal = !oldVal;
+            el.HasStroke = newVal;
+            UndoRedo?.RecordAction(
+                newVal ? "Enable Text Outline" : "Disable Text Outline",
+                () => el.HasStroke = oldVal,
+                () => el.HasStroke = newVal
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void SetTextStrokeColor(string hex)
+    {
+        if (TextElement != null && TextElement.StrokeColorHex != hex)
+        {
+            var el = TextElement;
+            string oldHex = el.StrokeColorHex;
+            el.StrokeColorHex = hex;
+            el.HasStroke = true;
+            UndoRedo?.RecordAction(
+                "Change Text Stroke Color",
+                () => el.StrokeColorHex = oldHex,
+                () => el.StrokeColorHex = hex
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleTextShadow()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            bool oldVal = el.HasShadow;
+            bool newVal = !oldVal;
+            el.HasShadow = newVal;
+            UndoRedo?.RecordAction(
+                newVal ? "Enable Text Shadow" : "Disable Text Shadow",
+                () => el.HasShadow = oldVal,
+                () => el.HasShadow = newVal
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void SetTextShadowColor(string hex)
+    {
+        if (TextElement != null && TextElement.ShadowColorHex != hex)
+        {
+            var el = TextElement;
+            string oldHex = el.ShadowColorHex;
+            el.ShadowColorHex = hex;
+            el.HasShadow = true;
+            UndoRedo?.RecordAction(
+                "Change Text Shadow Color",
+                () => el.ShadowColorHex = oldHex,
+                () => el.ShadowColorHex = hex
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleCurveDirection()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            bool oldVal = el.CurveClockwise;
+            bool newVal = !oldVal;
+            el.CurveClockwise = newVal;
+            UndoRedo?.RecordAction(
+                newVal ? "Curve Clockwise" : "Curve Counter-Clockwise",
+                () => el.CurveClockwise = oldVal,
+                () => el.CurveClockwise = newVal
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleCurveInvert()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            bool oldVal = el.CurveInvert;
+            bool newVal = !oldVal;
+            el.CurveInvert = newVal;
+            UndoRedo?.RecordAction(
+                newVal ? "Invert Text Orientation" : "Normal Text Orientation",
+                () => el.CurveInvert = oldVal,
+                () => el.CurveInvert = newVal
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void AutoFitTextWidth()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            double oldW = el.Width;
+            double newW = el.CalculateRequiredWidth();
+            if (Math.Abs(newW - oldW) > 0.5)
+            {
+                el.Width = newW;
+                UndoRedo?.RecordAction(
+                    "Auto-Fit Text Width",
+                    () => el.Width = oldW,
+                    () => el.Width = newW
+                );
+            }
+        }
+    }
+
+    [RelayCommand]
+    public void AutoFitTextBoth()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            double oldW = el.Width, oldH = el.Height;
+            double newW = el.CalculateRequiredWidth();
+            double newH = el.CalculateRequiredHeight();
+            el.Width = newW;
+            el.Height = newH;
+            UndoRedo?.RecordAction(
+                "Auto-Fit Text Dimensions",
+                () => { el.Width = oldW; el.Height = oldH; },
+                () => { el.Width = newW; el.Height = newH; }
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void ResetTextTransforms()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            double sx = el.ScaleX, sy = el.ScaleY, bShift = el.BaselineShift, cRot = el.CharacterRotation;
+            bool fx = el.FlipX, fy = el.FlipY;
+
+            el.ResetTransforms();
+            UndoRedo?.RecordAction(
+                "Reset Text Transforms",
+                () => { el.ScaleX = sx; el.ScaleY = sy; el.FlipX = fx; el.FlipY = fy; el.BaselineShift = bShift; el.CharacterRotation = cRot; },
+                () => { el.ResetTransforms(); }
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleTextFlipX()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            bool oldVal = el.FlipX;
+            bool newVal = !oldVal;
+            el.FlipX = newVal;
+            UndoRedo?.RecordAction(
+                newVal ? "Flip Text Horizontally" : "Unflip Text Horizontally",
+                () => el.FlipX = oldVal,
+                () => el.FlipX = newVal
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleTextFlipY()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            bool oldVal = el.FlipY;
+            bool newVal = !oldVal;
+            el.FlipY = newVal;
+            UndoRedo?.RecordAction(
+                newVal ? "Flip Text Vertically" : "Unflip Text Vertically",
+                () => el.FlipY = oldVal,
+                () => el.FlipY = newVal
+            );
+        }
+    }
+
+    [RelayCommand]
     public void SetTextBackground(string hex)
     {
         if (TextElement != null)
@@ -1253,7 +1569,79 @@ public partial class InspectorViewModel : ViewModelBase
         }
     }
 
-    // --- ADDITIONAL ELEMENT COLOR & PROPERTY COMMANDS ---
+    [RelayCommand]
+    public void SetDividerStyle(string styleStr)
+    {
+        if (DividerElement != null && Enum.TryParse<DividerStyle>(styleStr, true, out var style))
+        {
+            var el = DividerElement;
+            var oldStyle = el.Style;
+            el.Style = style;
+            UndoRedo?.RecordAction($"Divider Style: {style}", () => el.Style = oldStyle, () => el.Style = style);
+        }
+    }
+
+    [RelayCommand]
+    public void SetDividerDashStyle(string dashStr)
+    {
+        if (DividerElement != null && Enum.TryParse<LineDashStyle>(dashStr, true, out var dash))
+        {
+            var el = DividerElement;
+            var oldDash = el.DashStyle;
+            el.DashStyle = dash;
+            UndoRedo?.RecordAction($"Divider Pattern: {dash}", () => el.DashStyle = oldDash, () => el.DashStyle = dash);
+        }
+    }
+
+    [RelayCommand]
+    public void SetShapeDashStyle(string dashStr)
+    {
+        if (ShapeElement != null && Enum.TryParse<LineDashStyle>(dashStr, true, out var dash))
+        {
+            var el = ShapeElement;
+            var oldDash = el.DashStyle;
+            el.DashStyle = dash;
+            UndoRedo?.RecordAction($"Line Pattern: {dash}", () => el.DashStyle = oldDash, () => el.DashStyle = dash);
+        }
+    }
+
+    [RelayCommand]
+    public void SetShapeStartCap(string capStr)
+    {
+        if (ShapeElement != null && Enum.TryParse<LineEndCap>(capStr, true, out var cap))
+        {
+            var el = ShapeElement;
+            var oldCap = el.StartCap;
+            el.StartCap = cap;
+            UndoRedo?.RecordAction($"Start Cap: {cap}", () => el.StartCap = oldCap, () => el.StartCap = cap);
+        }
+    }
+
+    [RelayCommand]
+    public void SetShapeEndCap(string capStr)
+    {
+        if (ShapeElement != null && Enum.TryParse<LineEndCap>(capStr, true, out var cap))
+        {
+            var el = ShapeElement;
+            var oldCap = el.EndCap;
+            el.EndCap = cap;
+            UndoRedo?.RecordAction($"End Cap: {cap}", () => el.EndCap = oldCap, () => el.EndCap = cap);
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleInkSmoothSpline()
+    {
+        if (InkElement != null)
+        {
+            var el = InkElement;
+            bool oldVal = el.IsSmoothSpline;
+            bool newVal = !oldVal;
+            el.IsSmoothSpline = newVal;
+            UndoRedo?.RecordAction(newVal ? "Enable Bézier Ink Smoothing" : "Disable Bézier Ink Smoothing",
+                () => el.IsSmoothSpline = oldVal, () => el.IsSmoothSpline = newVal);
+        }
+    }
 
     [RelayCommand]
     public void SetDividerColor(string hex)

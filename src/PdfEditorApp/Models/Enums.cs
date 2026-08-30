@@ -172,6 +172,51 @@ public enum TextAlignmentMode
     Justify
 }
 
+public enum TextVerticalAlignment
+{
+    Top,
+    Center,
+    Bottom
+}
+
+public enum TextShapeMode
+{
+    Normal,
+    Curved,
+    Circular,
+    BezierCurve
+}
+
+public enum BezierCurvePreset
+{
+    Custom,
+    Wave,
+    SCurve,
+    Bridge,
+    Valley,
+    Rise
+}
+
+public enum TextWrappingMode
+{
+    Wrap,
+    NoWrap
+}
+
+public enum CircularTextPlacement
+{
+    TopArc,
+    BottomArc,
+    FullCircle,
+    CustomArc
+}
+
+public enum CurveDirectionMode
+{
+    Clockwise,
+    CounterClockwise
+}
+
 public enum ShapeType
 {
     Rectangle,
@@ -206,12 +251,51 @@ public enum ShapeType
     Cloud,
     Line,
     Arrow,
+    BezierCurve,
+    CurvedArrow,
+    SCurveConnector,
+    WaveLine,
+    ArcLine,
+    CurlyBrace,
+    CurvedCallout,
+    Teardrop,
+    WaveRibbon,
+    OrganicBlob,
     Star,
     Card,
     StickyNote,
     RevisionCloud,
     DimensionLine,
     CustomSvgPath
+}
+
+public enum LineEndCap
+{
+    None,
+    Arrow,
+    StealthArrow,
+    OpenArrow,
+    Circle,
+    Diamond,
+    Square
+}
+
+public enum LineDashStyle
+{
+    Solid,
+    Dashed,
+    Dotted,
+    DashDot
+}
+
+public enum DividerStyle
+{
+    Straight,
+    Wave,
+    SCurve,
+    Arch,
+    DoubleWave,
+    CalligraphicFlourish
 }
 
 public enum ChartType

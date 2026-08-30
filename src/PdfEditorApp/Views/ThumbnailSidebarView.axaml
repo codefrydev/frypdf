@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:controls="using:PdfEditorApp.Views.Controls"
              xmlns:elvm="using:PdfEditorApp.ViewModels.ElementViewModels"
              xmlns:models="using:PdfEditorApp.Models"
              xmlns:converters="using:PdfEditorApp.Converters"
@@ -153,21 +154,61 @@
 
                                                             <!-- Text Element Mini Template -->
                                                             <DataTemplate DataType="elvm:TextElementViewModel">
-                                                                <Border Width="{Binding Width}" Height="{Binding Height}"
-                                                                        Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                        BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                        BorderThickness="{Binding BorderThickness, Converter={StaticResource DoubleToThickness}}"
-                                                                        Padding="{Binding Padding, Converter={StaticResource DoubleToThickness}}">
-                                                                    <TextBlock Text="{Binding Text}"
-                                                                               FontFamily="{Binding AvaloniaFontFamily}"
-                                                                               FontSize="{Binding FontSize}"
-                                                                               FontWeight="{Binding IsBold, Converter={x:Static converters:BooleanToFontWeightConverter.Instance}}"
-                                                                               FontStyle="{Binding IsItalic, Converter={x:Static converters:BooleanToFontStyleConverter.Instance}}"
-                                                                               LineHeight="{Binding ComputedLineHeight}"
-                                                                               Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                               TextAlignment="{Binding Alignment, Converter={StaticResource TextAlignmentConverter}}"
-                                                                               TextWrapping="Wrap" />
-                                                                </Border>
+                                                                <controls:AdvancedTextControl
+                                                                    Width="{Binding Width}" Height="{Binding Height}"
+                                                                    Text="{Binding Text}"
+                                                                    FontFamilyName="{Binding FontFamily}"
+                                                                    FontSize="{Binding FontSize}"
+                                                                    IsBold="{Binding IsBold}"
+                                                                    IsItalic="{Binding IsItalic}"
+                                                                    IsUnderline="{Binding IsUnderline}"
+                                                                    IsDoubleUnderline="{Binding IsDoubleUnderline}"
+                                                                    IsStrikethrough="{Binding IsStrikethrough}"
+                                                                    TextBrush="{Binding TextBrush}"
+                                                                    TextOpacity="{Binding TextOpacity}"
+                                                                    Alignment="{Binding Alignment}"
+                                                                    TextVerticalAlignment="{Binding VerticalAlignment}"
+                                                                    LineHeight="{Binding LineHeight}"
+                                                                    CharacterSpacing="{Binding CharacterSpacing}"
+                                                                    WordSpacing="{Binding WordSpacing}"
+                                                                    ParagraphSpacing="{Binding ParagraphSpacing}"
+                                                                    TextWrap="{Binding TextWrap}"
+                                                                    HasStroke="{Binding HasStroke}"
+                                                                    StrokeBrush="{Binding StrokeBrush}"
+                                                                    StrokeWidth="{Binding StrokeWidth}"
+                                                                    HasShadow="{Binding HasShadow}"
+                                                                    ShadowBrush="{Binding ShadowBrush}"
+                                                                    ShadowOffsetX="{Binding ShadowOffsetX}"
+                                                                    ShadowOffsetY="{Binding ShadowOffsetY}"
+                                                                    ShadowBlurRadius="{Binding ShadowBlurRadius}"
+                                                                    ShadowOpacity="{Binding ShadowOpacity}"
+                                                                    BackgroundBrush="{Binding BackgroundBrush}"
+                                                                    BorderBrush="{Binding BorderBrush}"
+                                                                    BorderThickness="{Binding BorderThickness}"
+                                                                    CornerRadius="{Binding CornerRadius}"
+                                                                    Padding="{Binding Padding}"
+                                                                    ShapeMode="{Binding ShapeMode}"
+                                                                    CurveRadius="{Binding CurveRadius}"
+                                                                    CurveArcAngle="{Binding CurveArcAngle}"
+                                                                    CurveStartAngle="{Binding CurveStartAngle}"
+                                                                    CurveClockwise="{Binding CurveClockwise}"
+                                                                    CurveInvert="{Binding CurveInvert}"
+                                                                    CircularPlacement="{Binding CircularPlacement}"
+                                                                    BaselineShift="{Binding BaselineShift}"
+                                                                    CharacterRotation="{Binding CharacterRotation}"
+                                                                    ScaleX="{Binding ScaleX}"
+                                                                    ScaleY="{Binding ScaleY}"
+                                                                    FlipX="{Binding FlipX}"
+                                                                    FlipY="{Binding FlipY}"
+                                                                    BezierPreset="{Binding BezierPreset}"
+                                                                    BezierP0X="{Binding BezierP0X}"
+                                                                    BezierP0Y="{Binding BezierP0Y}"
+                                                                    BezierP1X="{Binding BezierP1X}"
+                                                                    BezierP1Y="{Binding BezierP1Y}"
+                                                                    BezierP2X="{Binding BezierP2X}"
+                                                                    BezierP2Y="{Binding BezierP2Y}"
+                                                                    BezierP3X="{Binding BezierP3X}"
+                                                                    BezierP3Y="{Binding BezierP3Y}" />
                                                             </DataTemplate>
 
                                                             <!-- Shape Element Mini Template -->
@@ -177,7 +218,31 @@
                                                                           Fill="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                           Stroke="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                           StrokeThickness="{Binding StrokeThickness}"
+                                                                          StrokeDashArray="{Binding DashArrayString}"
                                                                           Stretch="Fill" />
+                                                                </Grid>
+                                                            </DataTemplate>
+
+                                                            <!-- Divider Element Mini Template -->
+                                                            <DataTemplate DataType="elvm:DividerElementViewModel">
+                                                                <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                                                    <Path Data="{Binding PathData}"
+                                                                          Stroke="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                          StrokeThickness="{Binding Thickness}"
+                                                                          StrokeDashArray="{Binding DashArrayString}"
+                                                                          Stretch="Fill"
+                                                                          VerticalAlignment="Center" />
+                                                                </Grid>
+                                                            </DataTemplate>
+
+                                                            <!-- Ink Element Mini Template -->
+                                                            <DataTemplate DataType="elvm:InkElementViewModel">
+                                                                <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                                                    <Path Data="{Binding PathData}"
+                                                                          Stroke="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                          StrokeThickness="{Binding StrokeThickness}"
+                                                                          Opacity="{Binding Opacity}"
+                                                                          Stretch="None" />
                                                                 </Grid>
                                                             </DataTemplate>
 

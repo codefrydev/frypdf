@@ -9,6 +9,7 @@ using QRCoder;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services.MathEngine;
+using PdfEditorApp.Services.Typography;
 
 namespace PdfEditorApp.Services;
 
@@ -243,7 +244,7 @@ internal class QuestPdfDocumentWrapper : IDocument
                 break;
 
             case PdfDividerElement divEl:
-                container.AlignMiddle().LineHorizontal((float)divEl.Thickness).LineColor(divEl.ColorHex);
+                ComposeDivider(container, divEl);
                 break;
 
             case PdfTableElement tableEl:
@@ -276,7 +277,7 @@ internal class QuestPdfDocumentWrapper : IDocument
                 break;
 
             case PdfInkElement inkEl:
-                container.Background(inkEl.StrokeColorHex);
+                ComposeInk(container, inkEl);
                 break;
 
             case PdfStickyNoteElement noteEl:
@@ -304,6 +305,36 @@ internal class QuestPdfDocumentWrapper : IDocument
 
     private void ComposeText(IContainer container, PdfTextElement textEl)
     {
+        // For curved/circular typography, outline strokes, drop shadows, double underlines, custom scaling/flipping or baseline shifts,
+        // render with high-precision vector SVG so all transformations and glyph geometries remain 100% scalable in the PDF.
+        bool requiresVectorSvg = textEl.ShapeMode != TextShapeMode.Normal ||
+                                 textEl.HasStroke ||
+                                 textEl.HasShadow ||
+                                 textEl.IsDoubleUnderline ||
+                                 Math.Abs(textEl.ScaleX - 1.0) > 0.01 ||
+                                 Math.Abs(textEl.ScaleY - 1.0) > 0.01 ||
+                                 textEl.FlipX ||
+                                 textEl.FlipY ||
+                                 Math.Abs(textEl.BaselineShift) > 0.01 ||
+                                 Math.Abs(textEl.CharacterRotation) > 0.01 ||
+                                 Math.Abs(textEl.WordSpacing) > 0.01 ||
+                                 Math.Abs(textEl.ParagraphSpacing) > 0.01 ||
+                                 textEl.VerticalAlignment != TextVerticalAlignment.Top;
+
+        if (requiresVectorSvg)
+        {
+            try
+            {
+                string svgMarkup = TextLayoutEngine.GenerateSvgMarkup(textEl);
+                container.Svg(svgMarkup).FitArea();
+                return;
+            }
+            catch
+            {
+                // Fallback to standard text composition on any unexpected error
+            }
+        }
+
         var target = container;
 
         if (textEl.CornerRadius > 0)
@@ -401,6 +432,48 @@ internal class QuestPdfDocumentWrapper : IDocument
                     .FontColor(shapeEl.LabelColorHex ?? "#201F1E")
                     .Bold();
             }
+        }
+    }
+
+    private void ComposeDivider(IContainer container, PdfDividerElement divEl)
+    {
+        if (divEl.Style == DividerStyle.Straight && divEl.DashStyle == LineDashStyle.Solid)
+        {
+            if (divEl.IsVertical)
+            {
+                container.AlignCenter().LineVertical((float)divEl.Thickness).LineColor(divEl.ColorHex);
+            }
+            else
+            {
+                container.AlignMiddle().LineHorizontal((float)divEl.Thickness).LineColor(divEl.ColorHex);
+            }
+            return;
+        }
+
+        try
+        {
+            string svgMarkup = SvgShapeHelper.GenerateDividerSvgMarkup(divEl);
+            container.Svg(svgMarkup).FitArea();
+        }
+        catch
+        {
+            if (divEl.IsVertical)
+                container.AlignCenter().LineVertical((float)divEl.Thickness).LineColor(divEl.ColorHex);
+            else
+                container.AlignMiddle().LineHorizontal((float)divEl.Thickness).LineColor(divEl.ColorHex);
+        }
+    }
+
+    private void ComposeInk(IContainer container, PdfInkElement inkEl)
+    {
+        try
+        {
+            string svgMarkup = SvgShapeHelper.GenerateInkSvgMarkup(inkEl);
+            container.Svg(svgMarkup).FitArea();
+        }
+        catch
+        {
+            container.Background(inkEl.StrokeColorHex);
         }
     }
 

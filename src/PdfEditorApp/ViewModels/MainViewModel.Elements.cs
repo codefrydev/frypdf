@@ -476,6 +476,107 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
+    public void AddWaveDividerElement()
+    {
+        if (CurrentPage == null) return;
+        double width = Math.Max(200, CurrentPage.Width - 80);
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, width, 24);
+        var divEl = new DividerElementViewModel
+        {
+            X = posX,
+            Y = posY,
+            Width = width,
+            Height = 24,
+            Thickness = 2.0,
+            Style = DividerStyle.Wave,
+            WaveAmplitude = 8.0,
+            WaveFrequency = 5.0,
+            ColorHex = "#2563EB"
+        };
+        AddElementWithUndo(divEl, "Added Wave Divider");
+    }
+
+    [RelayCommand]
+    public void AddFlourishDividerElement()
+    {
+        if (CurrentPage == null) return;
+        double width = Math.Max(200, CurrentPage.Width - 80);
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, width, 24);
+        var divEl = new DividerElementViewModel
+        {
+            X = posX,
+            Y = posY,
+            Width = width,
+            Height = 24,
+            Thickness = 1.8,
+            Style = DividerStyle.CalligraphicFlourish,
+            WaveAmplitude = 6.0,
+            ColorHex = "#D97706"
+        };
+        AddElementWithUndo(divEl, "Added Calligraphic Flourish Divider");
+    }
+
+    [RelayCommand]
+    public void AddBezierCurveElement()
+    {
+        if (CurrentPage == null) return;
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 220, 90);
+        var curveEl = new ShapeElementViewModel
+        {
+            X = posX,
+            Y = posY,
+            Width = 220,
+            Height = 90,
+            ShapeType = ShapeType.BezierCurve,
+            FillColorHex = "#00000000",
+            StrokeColorHex = "#2563EB",
+            StrokeThickness = 2.5,
+            StartCap = LineEndCap.None,
+            EndCap = LineEndCap.None
+        };
+        AddElementWithUndo(curveEl, "Added Bézier Curve Line");
+    }
+
+    [RelayCommand]
+    public void AddCurvedArrowElement()
+    {
+        if (CurrentPage == null) return;
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 220, 90);
+        var arrowEl = new ShapeElementViewModel
+        {
+            X = posX,
+            Y = posY,
+            Width = 220,
+            Height = 90,
+            ShapeType = ShapeType.CurvedArrow,
+            FillColorHex = "#00000000",
+            StrokeColorHex = "#7C3AED",
+            StrokeThickness = 2.5,
+            EndCap = LineEndCap.Arrow
+        };
+        AddElementWithUndo(arrowEl, "Added Curved Arrow");
+    }
+
+    [RelayCommand]
+    public void AddCurlyBraceElement()
+    {
+        if (CurrentPage == null) return;
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, 40, 160);
+        var braceEl = new ShapeElementViewModel
+        {
+            X = posX,
+            Y = posY,
+            Width = 40,
+            Height = 160,
+            ShapeType = ShapeType.CurlyBrace,
+            FillColorHex = "#00000000",
+            StrokeColorHex = "#0F6CBD",
+            StrokeThickness = 2.0
+        };
+        AddElementWithUndo(braceEl, "Added Calligraphic Curly Brace");
+    }
+
+    [RelayCommand]
     public void AddTableElement()
     {
         if (CurrentPage == null) return;

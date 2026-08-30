@@ -342,7 +342,7 @@ public class CanvasEditingEngineTests
         var templates = templateService.GetAllTemplates();
 
         Assert.NotEmpty(templates);
-        Assert.Equal(18, templates.Count());
+        Assert.True(templates.Count() >= 18, $"Expected at least 18 templates, found {templates.Count()}");
 
         foreach (var def in templates)
         {

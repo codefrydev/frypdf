@@ -102,7 +102,7 @@ public partial class HomeViewModel : ViewModelBase
                 var pageVm = new PageViewModel();
                 pageVm.LoadFromModel(page);
 
-                bool isFeatured = def.Id is "annualreport" or "invoice" or "resume" or "resumemodern" or "academic" or "mathresearch" or "physicsresearch" or "certificate";
+                bool isFeatured = def.Id is "annualreport" or "invoice" or "resume" or "resumemodern" or "academic" or "mathresearch" or "physicsresearch" or "certificate" or "typographyshowcase";
                 string subtitle = def.Id switch
                 {
                     "annualreport" => "Executive Summary & Charts",
@@ -122,6 +122,7 @@ public partial class HomeViewModel : ViewModelBase
                     "weddingtraditional" => "Marigold & Ganesha Crest",
                     "weddingroyalfloral" => "Botanical Laurel Wreath",
                     "galainvitation" => "Black-Tie Art Deco",
+                    "typographyshowcase" => "Bézier Waves & Ink Specimen",
                     _ => def.Category
                 };
 
@@ -144,6 +145,7 @@ public partial class HomeViewModel : ViewModelBase
                     "weddingtraditional" => "Festive",
                     "weddingroyalfloral" => "Luxury",
                     "galainvitation" => "Art Deco",
+                    "typographyshowcase" => "Featured",
                     _ => def.Category
                 };
 
@@ -243,6 +245,7 @@ public partial class HomeViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsWeddingTraditionalTemplateVisible));
         OnPropertyChanged(nameof(IsWeddingRoyalFloralTemplateVisible));
         OnPropertyChanged(nameof(IsGalaInvitationTemplateVisible));
+        OnPropertyChanged(nameof(IsTypographyShowcaseTemplateVisible));
     }
 
     public bool IsBlankTemplateVisible               => FilteredTemplates.Any(t => t.Id == "");
@@ -263,6 +266,7 @@ public partial class HomeViewModel : ViewModelBase
     public bool IsWeddingTraditionalTemplateVisible  => FilteredTemplates.Any(t => t.Id == "weddingtraditional");
     public bool IsWeddingRoyalFloralTemplateVisible  => FilteredTemplates.Any(t => t.Id == "weddingroyalfloral");
     public bool IsGalaInvitationTemplateVisible      => FilteredTemplates.Any(t => t.Id == "galainvitation");
+    public bool IsTypographyShowcaseTemplateVisible  => FilteredTemplates.Any(t => t.Id == "typographyshowcase");
 
     // --- Commands ---
 

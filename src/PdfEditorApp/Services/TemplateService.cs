@@ -41,6 +41,7 @@ public class TemplateService : ITemplateService
         RegisterTemplate(new WeddingInvitationTraditionalTemplate());
         RegisterTemplate(new WeddingInvitationRoyalFloralTemplate());
         RegisterTemplate(new GalaInvitationTemplate());
+        RegisterTemplate(new CreativeTypographyShowcaseTemplate());
 
         // General
         RegisterTemplate(_blankTemplate);
@@ -99,6 +100,8 @@ public class TemplateService : ITemplateService
     public PdfDocumentModel CreateWeddingInvitationRoyalFloralTemplate() => CreateTemplate("weddingroyalfloral");
 
     public PdfDocumentModel CreateGalaInvitationTemplate() => CreateTemplate("galainvitation");
+
+    public PdfDocumentModel CreateTypographyShowcaseTemplate() => CreateTemplate("typographyshowcase");
 
     public PdfDocumentModel CreateBlankDocument(PageFormat format = PageFormat.A4, PageOrientation orientation = PageOrientation.Portrait)
     {

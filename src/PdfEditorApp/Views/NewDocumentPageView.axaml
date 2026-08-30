@@ -220,8 +220,8 @@
                                 <!-- Live Realistic Scaled Page Preview Card -->
                                 <Border Classes="template-card-box"
                                         Width="156" Height="118"
-                                        Background="#FFFFFF"
-                                        BorderBrush="#CBD5E1"
+                                        Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
                                         BorderThickness="1"
                                         CornerRadius="8"
                                         ClipToBounds="True"
@@ -297,7 +297,7 @@
                                                         <!-- Table Element -->
                                                         <DataTemplate DataType="elvm:TableElementViewModel">
                                                             <Border Width="{Binding Width}" Height="{Binding Height}"
-                                                                    Background="White"
+                                                                    Background="{DynamicResource WinPanelBrush}"
                                                                     BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                     BorderThickness="1" CornerRadius="4" ClipToBounds="True">
                                                                 <Grid RowDefinitions="Auto,*">
@@ -318,7 +318,7 @@
                                                                     <ItemsControl Grid.Row="1" ItemsSource="{Binding Rows}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate DataType="elvm:TableRowItem">
-                                                                                <Border BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="8,5">
+                                                                                <Border BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="8,5">
                                                                                     <ItemsControl ItemsSource="{Binding Cells}">
                                                                                         <ItemsControl.ItemsPanel>
                                                                                             <ItemsPanelTemplate>
@@ -327,7 +327,7 @@
                                                                                         </ItemsControl.ItemsPanel>
                                                                                         <ItemsControl.ItemTemplate>
                                                                                             <DataTemplate DataType="x:String">
-                                                                                                <TextBlock Text="{Binding}" FontSize="10" Foreground="#334155" VerticalAlignment="Center" />
+                                                                                                <TextBlock Text="{Binding}" FontSize="10" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                                                                             </DataTemplate>
                                                                                         </ItemsControl.ItemTemplate>
                                                                                     </ItemsControl>
@@ -345,7 +345,7 @@
                                                                     BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                     BorderThickness="1" CornerRadius="6" Padding="10,8">
                                                                 <Grid RowDefinitions="Auto,*">
-                                                                    <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="11" FontWeight="Bold" Foreground="#334155" />
+                                                                    <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                                                     <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="0,6,0,0">
                                                                         <ItemsControl.ItemsPanel>
                                                                             <ItemsPanelTemplate>
@@ -356,7 +356,7 @@
                                                                             <DataTemplate DataType="elvm:ChartBarItem">
                                                                                 <Grid RowDefinitions="*,Auto" Margin="2,0" VerticalAlignment="Bottom">
                                                                                     <Border Grid.Row="0" Height="{Binding BarHeightPx}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="2,2,0,0" />
-                                                                                    <TextBlock Grid.Row="1" Text="{Binding Category}" FontSize="8.5" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                                                                    <TextBlock Grid.Row="1" Text="{Binding Category}" FontSize="8.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                                                                                 </Grid>
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
@@ -377,7 +377,7 @@
                                                         </DataTemplate>
                                                         <!-- QR Code Element -->
                                                         <DataTemplate DataType="elvm:QrCodeElementViewModel">
-                                                            <Border Width="{Binding Width}" Height="{Binding Height}" Background="{Binding LightColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4" Padding="4">
+                                                            <Border Width="{Binding Width}" Height="{Binding Height}" Background="{Binding LightColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="4">
                                                                 <Image Source="{Binding QrBitmap}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                             </Border>
                                                         </DataTemplate>
@@ -387,11 +387,11 @@
                                         </Viewbox>
 
                                         <!-- Blank Canvas Special Clean Sheet View -->
-                                        <Grid IsVisible="{Binding IsBlank}" Background="#FFFFFF">
-                                            <Border Margin="10" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="4" Background="#F8FAFC">
+                                        <Grid IsVisible="{Binding IsBlank}" Background="{DynamicResource WinPanelBrush}">
+                                            <Border Margin="10" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1.5" CornerRadius="4" Background="{DynamicResource WinInputBgBrush}">
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
                                                     <materialIcons:MaterialIcon Kind="FilePlusOutline" Width="28" Height="28" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                                    <TextBlock Text="Blank Canvas" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" />
+                                                    <TextBlock Text="Blank Canvas" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                                                 </StackPanel>
                                             </Border>
                                         </Grid>
@@ -403,11 +403,11 @@
                                     <TextBlock Text="{Binding Name}"
                                                FontSize="12.5"
                                                FontWeight="SemiBold"
-                                               Foreground="#0F172A"
+                                               Foreground="{DynamicResource WinTextBrush}"
                                                TextTrimming="CharacterEllipsis" />
                                     <TextBlock Text="{Binding Subtitle}"
                                                FontSize="11"
-                                               Foreground="#94A3B8"
+                                               Foreground="{DynamicResource WinSubtleBrush}"
                                                TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
 
@@ -420,8 +420,8 @@
 
         <!-- ===== 2. EXPANDED FULL GALLERY GRID VIEW ===== -->
         <Border IsVisible="{Binding IsTemplateGalleryExpanded}"
-                Background="#FFFFFF"
-                BorderBrush="#E2E8F0"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="12"
                 Padding="24,20"
@@ -436,13 +436,13 @@
                         <TextBlock Text="{Binding MatchingTemplatesCount, StringFormat='All Templates ({0})'}"
                                    FontSize="14"
                                    FontWeight="Bold"
-                                   Foreground="#0F172A"
+                                   Foreground="{DynamicResource WinTextBrush}"
                                    VerticalAlignment="Center" />
                     </StackPanel>
                     <Button Grid.Column="1"
                             Command="{Binding CollapseTemplateGalleryCommand}"
-                            Background="#F1F5F9"
-                            Foreground="#64748B"
+                            Background="{DynamicResource WinHoverBrush}"
+                            Foreground="{DynamicResource WinMutedBrush}"
                             CornerRadius="16"
                             Padding="12,5"
                             FontSize="11.5"
@@ -479,8 +479,8 @@
                                     Cursor="Hand">
                                 <Border Classes="template-card-box"
                                         Width="184"
-                                        Background="#FFFFFF"
-                                        BorderBrush="#E2E8F0"
+                                        Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
                                         BorderThickness="1"
                                         CornerRadius="10"
                                         ClipToBounds="True"
@@ -489,8 +489,8 @@
 
                                         <!-- Top Live Realistic Page Preview Box -->
                                         <Border Height="132"
-                                                Background="#F8FAFC"
-                                                BorderBrush="#F1F5F9"
+                                                Background="{DynamicResource WinInputBgBrush}"
+                                                BorderBrush="{DynamicResource WinBorderSubtleBrush}"
                                                 BorderThickness="0,0,0,1"
                                                 ClipToBounds="True">
                                             <Panel>
@@ -564,7 +564,7 @@
                                                                 <!-- Table Element -->
                                                                 <DataTemplate DataType="elvm:TableElementViewModel">
                                                                     <Border Width="{Binding Width}" Height="{Binding Height}"
-                                                                            Background="White"
+                                                                            Background="{DynamicResource WinPanelBrush}"
                                                                             BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                             BorderThickness="1" CornerRadius="4" ClipToBounds="True">
                                                                         <Grid RowDefinitions="Auto,*">
@@ -585,7 +585,7 @@
                                                                             <ItemsControl Grid.Row="1" ItemsSource="{Binding Rows}">
                                                                                 <ItemsControl.ItemTemplate>
                                                                                     <DataTemplate DataType="elvm:TableRowItem">
-                                                                                        <Border BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="8,5">
+                                                                                        <Border BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="8,5">
                                                                                             <ItemsControl ItemsSource="{Binding Cells}">
                                                                                                 <ItemsControl.ItemsPanel>
                                                                                                     <ItemsPanelTemplate>
@@ -594,7 +594,7 @@
                                                                                                 </ItemsControl.ItemsPanel>
                                                                                                 <ItemsControl.ItemTemplate>
                                                                                                     <DataTemplate DataType="x:String">
-                                                                                                        <TextBlock Text="{Binding}" FontSize="10" Foreground="#334155" VerticalAlignment="Center" />
+                                                                                                        <TextBlock Text="{Binding}" FontSize="10" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                                                                                     </DataTemplate>
                                                                                                 </ItemsControl.ItemTemplate>
                                                                                             </ItemsControl>
@@ -612,7 +612,7 @@
                                                                             BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                             BorderThickness="1" CornerRadius="6" Padding="10,8">
                                                                         <Grid RowDefinitions="Auto,*">
-                                                                            <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="11" FontWeight="Bold" Foreground="#334155" />
+                                                                            <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                                                             <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="0,6,0,0">
                                                                                 <ItemsControl.ItemsPanel>
                                                                                     <ItemsPanelTemplate>
@@ -623,7 +623,7 @@
                                                                                     <DataTemplate DataType="elvm:ChartBarItem">
                                                                                         <Grid RowDefinitions="*,Auto" Margin="2,0" VerticalAlignment="Bottom">
                                                                                             <Border Grid.Row="0" Height="{Binding BarHeightPx}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="2,2,0,0" />
-                                                                                            <TextBlock Grid.Row="1" Text="{Binding Category}" FontSize="8.5" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                                                                            <TextBlock Grid.Row="1" Text="{Binding Category}" FontSize="8.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                                                                                         </Grid>
                                                                                     </DataTemplate>
                                                                                 </ItemsControl.ItemTemplate>
@@ -644,7 +644,7 @@
                                                                 </DataTemplate>
                                                                 <!-- QR Code Element -->
                                                                 <DataTemplate DataType="elvm:QrCodeElementViewModel">
-                                                                    <Border Width="{Binding Width}" Height="{Binding Height}" Background="{Binding LightColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4" Padding="4">
+                                                                    <Border Width="{Binding Width}" Height="{Binding Height}" Background="{Binding LightColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="4">
                                                                         <Image Source="{Binding QrBitmap}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                                     </Border>
                                                                 </DataTemplate>
@@ -654,11 +654,11 @@
                                                 </Viewbox>
 
                                                 <!-- Blank Canvas Clean Sheet -->
-                                                <Grid IsVisible="{Binding IsBlank}" Background="#FFFFFF">
-                                                    <Border Margin="12" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="4" Background="#F8FAFC">
+                                                <Grid IsVisible="{Binding IsBlank}" Background="{DynamicResource WinPanelBrush}">
+                                                    <Border Margin="12" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1.5" CornerRadius="4" Background="{DynamicResource WinInputBgBrush}">
                                                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
                                                             <materialIcons:MaterialIcon Kind="FilePlusOutline" Width="30" Height="30" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                                            <TextBlock Text="Blank Canvas" FontSize="11.5" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" />
+                                                            <TextBlock Text="Blank Canvas" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                                                         </StackPanel>
                                                     </Border>
                                                 </Grid>
@@ -673,22 +673,24 @@
                                                                Text="{Binding Name}"
                                                                FontSize="13"
                                                                FontWeight="Bold"
-                                                               Foreground="#0F172A"
+                                                               Foreground="{DynamicResource WinTextBrush}"
                                                                TextTrimming="CharacterEllipsis" />
                                                     <Border Grid.Column="1"
-                                                            Background="#EFF6FF"
+                                                            Background="{DynamicResource WinAccentLightBrush}"
+                                                            BorderBrush="{DynamicResource WinAccentBorderBrush}"
+                                                            BorderThickness="1"
                                                             CornerRadius="4"
                                                             Padding="6,1"
                                                             Margin="4,0,0,0">
                                                         <TextBlock Text="{Binding Badge}"
                                                                    FontSize="9.5"
                                                                    FontWeight="Bold"
-                                                                   Foreground="#0F6CBD" />
+                                                                   Foreground="{DynamicResource WinAccentBrush}" />
                                                     </Border>
                                                 </Grid>
                                                 <TextBlock Text="{Binding Description}"
                                                            FontSize="11"
-                                                           Foreground="#64748B"
+                                                           Foreground="{DynamicResource WinMutedBrush}"
                                                            TextWrapping="Wrap"
                                                            MaxLines="2"
                                                            TextTrimming="CharacterEllipsis" />
@@ -707,27 +709,27 @@
 
         <!-- No Results State -->
         <Border IsVisible="{Binding HasNoMatchingTemplates}"
-                Background="#FFFFFF"
-                BorderBrush="#E2E8F0"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="12"
                 Padding="32,24"
                 Margin="0,8,0,0">
             <StackPanel HorizontalAlignment="Center" Spacing="10">
-                <materialIcons:MaterialIcon Kind="TextSearchVariant" Width="36" Height="36" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                <materialIcons:MaterialIcon Kind="TextSearchVariant" Width="36" Height="36" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
                 <TextBlock Text="No templates match your search"
                            FontSize="14"
                            FontWeight="SemiBold"
-                           Foreground="#334155"
+                           Foreground="{DynamicResource WinTextBrush}"
                            HorizontalAlignment="Center" />
                 <TextBlock Text="Try searching for another keyword or clear category filters."
                            FontSize="12"
-                           Foreground="#94A3B8"
+                           Foreground="{DynamicResource WinSubtleBrush}"
                            HorizontalAlignment="Center" />
                 <Button Command="{Binding ClearTemplateSearchCommand}"
                         HorizontalAlignment="Center"
-                        Background="#EFF6FF"
-                        Foreground="#0F6CBD"
+                        Background="{DynamicResource WinAccentLightBrush}"
+                        Foreground="{DynamicResource WinAccentBrush}"
                         CornerRadius="6"
                         Padding="14,6"
                         FontSize="12"

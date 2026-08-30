@@ -281,7 +281,7 @@
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                     <materialIcons:MaterialIcon Kind="WeatherSunny" Width="15" Height="15" Foreground="#F59E0B" IsVisible="{Binding IsDarkMode}" />
                                     <materialIcons:MaterialIcon Kind="WeatherNight" Width="15" Height="15" Foreground="#818CF8" IsVisible="{Binding !IsDarkMode}" />
-                                    <TextBlock Text="{Binding IsDarkMode, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Dark Mode|Light Mode'}"
+                                    <TextBlock Text="{Binding IsDarkMode, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Light Mode|Dark Mode'}"
                                                FontSize="11.5"
                                                FontWeight="SemiBold"
                                                VerticalAlignment="Center" />

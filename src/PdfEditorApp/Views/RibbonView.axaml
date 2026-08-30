@@ -157,87 +157,87 @@
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding PasteCommand}" ToolTip.Tip="Paste Element (⌘V / Ctrl+V)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ContentPaste" Width="22" Height="22" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Paste" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="ContentPaste" Width="22" Height="22" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Paste" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <StackPanel VerticalAlignment="Center" Spacing="2">
                                         <Button Classes="mini-tool-btn" Command="{Binding CutCommand}" ToolTip.Tip="Cut Element (⌘X / Ctrl+X)">
-                                            <materialIcons:MaterialIcon Kind="ContentCut" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="ContentCut" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Command="{Binding CopyCommand}" ToolTip.Tip="Copy Element (⌘C / Ctrl+C)">
-                                            <materialIcons:MaterialIcon Kind="ContentCopy" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="ContentCopy" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Command="{Binding DuplicateCommand}" ToolTip.Tip="Duplicate Element (⌘D / Ctrl+D)">
-                                            <materialIcons:MaterialIcon Kind="ContentDuplicate" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="ContentDuplicate" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                     </StackPanel>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Clipboard" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Clipboard" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- History Group -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding UndoCommand}" ToolTip.Tip="Undo Action (⌘Z / Ctrl+Z)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="Undo" Width="20" Height="20" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Undo" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="Undo" Width="20" Height="20" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Undo" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding RedoCommand}" ToolTip.Tip="Redo Action (⌘Y / Ctrl+Y)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="Redo" Width="20" Height="20" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Redo" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="Redo" Width="20" Height="20" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Redo" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="History" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="History" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Quick Insert Group -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding AddTextElementCommand}" ToolTip.Tip="Insert Text (T)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="FormatColorText" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Text" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="FormatColorText" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Text" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddHeadingElementCommand}" ToolTip.Tip="Insert Heading (H)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="FormatHeader1" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Heading" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="FormatHeader1" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Heading" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddImageElementCommand}" ToolTip.Tip="Insert Image (⌘I / Ctrl+I)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ImageOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Image" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="ImageOutline" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Image" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddShapeElementCommand}" CommandParameter="Rectangle" ToolTip.Tip="Insert Rectangle Shape (R)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ShapeOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Shape" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="ShapeOutline" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Shape" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Quick Content" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Quick Content" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Quick Actions Group -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                     <Button Classes="secondary-btn" Height="34" Padding="12,6" Command="{Binding OpenNewDocumentDialogCommand}" ToolTip.Tip="New Document / Templates (⌘N / Ctrl+N)">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                            <materialIcons:MaterialIcon Kind="FilePlusOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                            <materialIcons:MaterialIcon Kind="FilePlusOutline" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                                             <TextBlock Text="Templates" VerticalAlignment="Center" FontWeight="Medium" FontSize="12" />
                                         </StackPanel>
                                     </Button>
@@ -248,7 +248,7 @@
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Actions" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Actions" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 
@@ -261,39 +261,39 @@
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding AddTextElementCommand}" ToolTip.Tip="Insert Editable Text Block">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="FormatColorText" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Edit Text" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="FormatColorText" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Edit Text" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddHeadingElementCommand}" ToolTip.Tip="Insert Section Heading">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="FormatHeader1" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Heading" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="FormatHeader1" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Heading" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddImageElementCommand}" ToolTip.Tip="Insert Image from File">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ImageOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Image" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="ImageOutline" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Image" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddTableElementCommand}" ToolTip.Tip="Insert Multi-Column Table">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="TableLarge" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Table" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="TableLarge" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Table" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddMathElementCommand}" ToolTip.Tip="Insert Mathematical LaTeX Equation (⌘M)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Sigma" Width="20" Height="20" Foreground="#0284C7" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Equation" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Equation" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Content" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Content" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Advanced Typography Group -->
                             <Grid RowDefinitions="*,Auto">
@@ -315,88 +315,88 @@
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="2">
                                         <Button Classes="mini-tool-btn" Classes.active="{Binding Inspector.TextElement.IsBold, FallbackValue=False}" Command="{Binding Inspector.ToggleBoldCommand}" ToolTip.Tip="Bold">
-                                            <materialIcons:MaterialIcon Kind="FormatBold" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="FormatBold" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Classes.active="{Binding Inspector.TextElement.IsItalic, FallbackValue=False}" Command="{Binding Inspector.ToggleItalicCommand}" ToolTip.Tip="Italic">
-                                            <materialIcons:MaterialIcon Kind="FormatItalic" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="FormatItalic" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Classes.active="{Binding Inspector.TextElement.IsUnderline, FallbackValue=False}" Command="{Binding Inspector.ToggleUnderlineCommand}" ToolTip.Tip="Underline">
-                                            <materialIcons:MaterialIcon Kind="FormatUnderline" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="FormatUnderline" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Classes.active="{Binding Inspector.TextElement.IsStrikethrough, FallbackValue=False}" Command="{Binding Inspector.ToggleStrikethroughCommand}" ToolTip.Tip="Strikethrough">
-                                            <materialIcons:MaterialIcon Kind="FormatStrikethrough" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="FormatStrikethrough" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
-                                        <Rectangle Width="1" Height="16" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+                                        <Rectangle Width="1" Height="16" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
                                         <Button Classes="mini-tool-btn" Command="{Binding Inspector.ToggleBulletsCommand}" ToolTip.Tip="Bullet List">
-                                            <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Command="{Binding Inspector.ToggleNumberingCommand}" ToolTip.Tip="Numbered List">
-                                            <materialIcons:MaterialIcon Kind="FormatListNumbered" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="FormatListNumbered" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Command="{Binding Inspector.TransformTextCaseCommand}" CommandParameter="Upper" ToolTip.Tip="UPPERCASE">
-                                            <materialIcons:MaterialIcon Kind="FormatLetterCaseUpper" Width="15" Height="15" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="FormatLetterCaseUpper" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                     </StackPanel>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Typography" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Typography" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Alignment Suite Group -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" VerticalAlignment="Center" Spacing="4" HorizontalAlignment="Center">
                                     <StackPanel Orientation="Horizontal" Spacing="2">
                                         <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignLeftCommand}" ToolTip.Tip="Align Page Left Margin">
-                                            <materialIcons:MaterialIcon Kind="AlignHorizontalLeft" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="AlignHorizontalLeft" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignCenterCommand}" ToolTip.Tip="Center Horizontally">
-                                            <materialIcons:MaterialIcon Kind="AlignHorizontalCenter" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="AlignHorizontalCenter" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignRightCommand}" ToolTip.Tip="Align Page Right Margin">
-                                            <materialIcons:MaterialIcon Kind="AlignHorizontalRight" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="AlignHorizontalRight" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Command="{Binding Inspector.DistributeHorizontallyCommand}" ToolTip.Tip="Distribute Horizontally">
-                                            <materialIcons:MaterialIcon Kind="DistributeHorizontalCenter" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="DistributeHorizontalCenter" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="2">
                                         <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignTopCommand}" ToolTip.Tip="Align Page Top Margin">
-                                            <materialIcons:MaterialIcon Kind="AlignVerticalTop" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="AlignVerticalTop" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignMiddleCommand}" ToolTip.Tip="Center Vertically">
-                                            <materialIcons:MaterialIcon Kind="AlignVerticalCenter" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="AlignVerticalCenter" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Command="{Binding Inspector.AlignBottomCommand}" ToolTip.Tip="Align Page Bottom">
-                                            <materialIcons:MaterialIcon Kind="AlignVerticalBottom" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="AlignVerticalBottom" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Button Classes="mini-tool-btn" Command="{Binding Inspector.DistributeVerticallyCommand}" ToolTip.Tip="Distribute Vertically">
-                                            <materialIcons:MaterialIcon Kind="DistributeVerticalCenter" Width="14" Height="14" Foreground="{StaticResource WinTextBrush}" />
+                                            <materialIcons:MaterialIcon Kind="DistributeVerticalCenter" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                     </StackPanel>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Align &amp; Distribute" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Align &amp; Distribute" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Search & Measure Group -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding OpenFindReplaceCommand}" ToolTip.Tip="Interactive Find &amp; Replace (⌘F / Ctrl+F)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="FindReplace" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Find &amp; Replace" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="FindReplace" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Find &amp; Replace" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddMeasurementElementCommand}" ToolTip.Tip="Add Dimension Measurement Tool">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="RulerSquare" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Measure" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Measure" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Search &amp; Measure" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Search &amp; Measure" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 
@@ -410,50 +410,50 @@
                                     <Button Classes="tool-btn" Command="{Binding AddStickyNoteElementCommand}" ToolTip.Tip="Insert Sticky Review Note (N)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="NoteTextOutline" Width="20" Height="20" Foreground="#D97706" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Sticky Note" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Sticky Note" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddCalloutElementCommand}" ToolTip.Tip="Insert Callout Markup Note">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="ChatAlertOutline" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Callout" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Callout" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddRevisionCloudElementCommand}" ToolTip.Tip="Insert Revision Cloud Perimeter">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="CloudOutline" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Rev Cloud" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Rev Cloud" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddMeasurementElementCommand}" ToolTip.Tip="Insert Dimension Measurement">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="RulerSquare" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Measure" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Measure" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddInkElementCommand}" CommandParameter="true" ToolTip.Tip="Highlighter Stroke (H)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Marker" Width="20" Height="20" Foreground="#EAB308" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Highlight" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Highlight" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddInkElementCommand}" CommandParameter="false" ToolTip.Tip="Freehand Pen (D)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="DrawPen" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Draw Ink" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Draw Ink" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding OpenCustomStampDialogCommand}" ToolTip.Tip="Custom Stamp Creator">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="CertificateOutline" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Custom Stamp" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Custom Stamp" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Markup Tools" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Markup Tools" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Standard Stamps -->
                             <Grid RowDefinitions="*,Auto">
@@ -461,23 +461,23 @@
                                     <Button Classes="tool-btn" Command="{Binding AddStampElementCommand}" CommandParameter="Approved" ToolTip.Tip="Add 'APPROVED' Stamp">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="CheckDecagramOutline" Width="20" Height="20" Foreground="#16A34A" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Approved" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Approved" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddStampElementCommand}" CommandParameter="Confidential" ToolTip.Tip="Add 'CONFIDENTIAL' Stamp">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="ShieldLockOutline" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Confidential" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Confidential" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding ExportCommentsSummaryCommand}" ToolTip.Tip="Export Review Notes to Markdown">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Export Notes" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Export Notes" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Stamps &amp; Summary" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Stamps &amp; Summary" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 
@@ -489,45 +489,45 @@
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding AddTextElementCommand}" ToolTip.Tip="Insert Text Block">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="TextBoxOutline" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Text Box" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="TextBoxOutline" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Text Box" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddImageElementCommand}" ToolTip.Tip="Insert Image from Disk">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ImagePlus" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Image" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="ImagePlus" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Image" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddQrCodeElementCommand}" ToolTip.Tip="Insert Vector QR Code">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Qrcode" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="QR Code" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="QR Code" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddBarcodeElementCommand}" ToolTip.Tip="Insert Barcode">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="Barcode" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Barcode" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="Barcode" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Barcode" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddTableElementCommand}" ToolTip.Tip="Insert Table">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="TablePlus" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Table" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="TablePlus" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Table" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddChartElementCommand}" ToolTip.Tip="Insert Chart">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ChartBar" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Chart" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="ChartBar" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Chart" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Visual Elements" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Visual Elements" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Equations & Formulas Group -->
                             <Grid RowDefinitions="*,Auto">
@@ -535,13 +535,13 @@
                                     <Button Classes="tool-btn" Command="{Binding AddMathElementCommand}" ToolTip.Tip="Insert Vector LaTeX Math Equation (⌘M)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Sigma" Width="20" Height="20" Foreground="#0284C7" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Math Formula" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Math Formula" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding OpenMathStudioCommand}" ToolTip.Tip="Open Mathematical Equation Studio Dialog">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="FunctionVariant" Width="20" Height="20" Foreground="#0369A1" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Math Studio" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Math Studio" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" ToolTip.Tip="Insert Standard Formula Presets">
@@ -560,15 +560,15 @@
                                             </MenuFlyout>
                                         </Button.Flyout>
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="BookOpenVariantOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Presets ▾" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="BookOpenVariantOutline" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Presets ▾" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Equations &amp; Math" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Equations &amp; Math" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Certificates & Decorative Badges Group -->
                             <Grid RowDefinitions="*,Auto">
@@ -576,44 +576,44 @@
                                     <Button Classes="tool-btn" Command="{Binding AddMedalBadgeElementCommand}" ToolTip.Tip="Insert Award Medal with Ribbon Tails">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Medal" Width="20" Height="20" Foreground="#D97706" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Medal Badge" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Medal Badge" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddLaurelSealElementCommand}" ToolTip.Tip="Insert Official Laurel Wreath Seal">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Seal" Width="20" Height="20" Foreground="#F59E0B" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Laurel Seal" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Laurel Seal" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddRibbonBannerElementCommand}" ToolTip.Tip="Insert Ceremonial Ribbon Banner">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Ribbon" Width="20" Height="20" Foreground="#990000" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Banner" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Banner" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddCornerAccentElementCommand}" CommandParameter="TopLeft" ToolTip.Tip="Insert Polygonal Corner Geometric Accent">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="VectorPolygon" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Corner Art" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Corner Art" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddSignatureBlockCommand}" ToolTip.Tip="Insert Complete Signature Line with Name and Title">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="Signature" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Signature Line" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="Signature" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Signature Line" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddDateBlockCommand}" ToolTip.Tip="Insert Date of Issuance Block">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="CalendarCheck" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Date Block" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="CalendarCheck" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Date Block" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Certificates &amp; Badges" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Certificates &amp; Badges" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Invitations & Vector Ornaments Group -->
                             <Grid RowDefinitions="*,Auto">
@@ -621,41 +621,41 @@
                                     <Button Classes="tool-btn" Command="{Binding AddSvgElementCommand}" ToolTip.Tip="Insert Vector SVG Ornament / Illustration">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="VectorCurve" Width="20" Height="20" Foreground="#D97706" HorizontalAlignment="Center" />
-                                            <TextBlock Text="SVG Vector" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="SVG Vector" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddOrnamentElementCommand}" CommandParameter="GaneshaCrest" ToolTip.Tip="Insert Auspicious Lord Ganesha Crest">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="CardsHeartOutline" Width="20" Height="20" Foreground="#8B0000" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Ganesha Crest" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Ganesha Crest" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddOrnamentElementCommand}" CommandParameter="MarigoldToran" ToolTip.Tip="Insert Festive Marigold Toran Garland">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="FlowerTulipOutline" Width="20" Height="20" Foreground="#EA580C" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Toran Garland" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Toran Garland" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddOrnamentElementCommand}" CommandParameter="TraditionalDeepam" ToolTip.Tip="Insert Traditional Brass Oil Lamp (Deepam)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Candle" Width="20" Height="20" Foreground="#D97706" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Deepam Lamp" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Deepam Lamp" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddOrnamentElementCommand}" CommandParameter="BotanicalWreath" ToolTip.Tip="Insert Royal Botanical Laurel Wreath">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Leaf" Width="20" Height="20" Foreground="#059669" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Floral Wreath" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Floral Wreath" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddOrnamentElementCommand}" CommandParameter="ArtDecoFrame" ToolTip.Tip="Insert Luxury Art Deco Geometric Gold Frame">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="CropFree" Width="20" Height="20" Foreground="#F59E0B" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Art Deco Frame" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Art Deco Frame" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Invitations &amp; Ornaments" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Invitations &amp; Ornaments" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 
@@ -668,51 +668,51 @@
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding OpenSignatureStudioCommand}" ToolTip.Tip="Open Full Digital Signature Studio">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="Draw" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Signature Studio" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="Draw" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Signature Studio" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddFormFieldElementCommand}" CommandParameter="Signature" ToolTip.Tip="Insert Interactive Signature Line Field">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="SignatureFreehand" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Signature Line" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Signature Line" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Signatures" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Signatures" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Signer Markup Tools (Date, Initials, Check, Cross) -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding AddDateStampCommand}" ToolTip.Tip="Stamp Today's Date">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="CalendarClockOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Date Stamp" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="CalendarClockOutline" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Date Stamp" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddInitialsBadgeCommand}" CommandParameter="JD" ToolTip.Tip="Stamp Signer Initials">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="AccountOutline" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Initials" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Initials" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddCheckmarkBadgeCommand}" ToolTip.Tip="Stamp Green Checkmark (✓)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="CheckBold" Width="20" Height="20" Foreground="#16A34A" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Check (✓)" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Check (✓)" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddCrossBadgeCommand}" ToolTip.Tip="Stamp Red Cross (✕)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="CloseThick" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Cross (✕)" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Cross (✕)" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Signer Markups" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Signer Markups" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 
@@ -724,42 +724,42 @@
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding AddFormFieldElementCommand}" CommandParameter="Text" ToolTip.Tip="Insert Text Input Field">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="FormTextbox" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Text Field" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="FormTextbox" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Text Field" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddFormFieldElementCommand}" CommandParameter="Checkbox" ToolTip.Tip="Insert Checkbox">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="CheckboxMarkedOutline" Width="20" Height="20" Foreground="#16A34A" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Checkbox" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Checkbox" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddFormFieldElementCommand}" CommandParameter="Radio" ToolTip.Tip="Insert Radio Option">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="RadioboxMarked" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Radio" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Radio" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddFormFieldElementCommand}" CommandParameter="Dropdown" ToolTip.Tip="Insert Dropdown List">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="FormDropdown" Width="20" Height="20" Foreground="#7C3AED" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Dropdown" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Dropdown" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddFormFieldElementCommand}" CommandParameter="DatePicker" ToolTip.Tip="Insert Date Picker Field">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="CalendarMonthOutline" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Date Picker" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Date Picker" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding AddFormFieldElementCommand}" CommandParameter="Number" ToolTip.Tip="Insert Numeric Currency Field">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Numeric" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Number" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Number" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="AcroForm Fields" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="AcroForm Fields" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 
@@ -771,51 +771,51 @@
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding AddPageCommand}" ToolTip.Tip="Insert Blank Page">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="FilePlusOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Add Page" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="FilePlusOutline" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Add Page" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding DuplicateCurrentPageCommand}" ToolTip.Tip="Duplicate Current Page">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ContentDuplicate" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Duplicate" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="ContentDuplicate" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Duplicate" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding RotateCurrentPageCommand}" ToolTip.Tip="Rotate Page 90° Clockwise">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="RotateRight" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Rotate 90°" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="RotateRight" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Rotate 90°" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding BatchRotatePagesCommand}" CommandParameter="all" ToolTip.Tip="Rotate All Pages 90° CW">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Rotate3dVariant" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Rotate All" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Rotate All" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding MovePageUpCommand}" ToolTip.Tip="Move Active Page Up">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ArrowUpBold" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Move Up" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="ArrowUpBold" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Move Up" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding MovePageDownCommand}" ToolTip.Tip="Move Active Page Down">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ArrowDownBold" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Move Down" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="ArrowDownBold" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Move Down" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding DeleteCurrentPageCommand}" ToolTip.Tip="Delete Current Page">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="DeleteOutline" Width="20" Height="20" Foreground="{StaticResource WinDangerBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Delete" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinDangerBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="DeleteOutline" Width="20" Height="20" Foreground="{DynamicResource WinDangerBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Delete" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinDangerBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Page Operations" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Page Operations" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Split & Extract Tools -->
                             <Grid RowDefinitions="*,Auto">
@@ -823,14 +823,14 @@
                                     <Button Classes="tool-btn" Command="{Binding OpenSplitExtractDialogCommand}" ToolTip.Tip="Split / Extract Document Pages">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="CallSplit" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Split / Extract" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Split / Extract" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Partition" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Partition" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Header/Footer & Watermark Group -->
                             <Grid RowDefinitions="*,Auto">
@@ -838,17 +838,17 @@
                                     <Button Classes="tool-btn" Command="{Binding OpenHeaderFooterDialogCommand}" ToolTip.Tip="Header &amp; Footer Layout Studio">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="PageLayoutHeaderFooter" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Header &amp; Footer" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Header &amp; Footer" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding OpenWatermarkManagerCommand}" ToolTip.Tip="Watermark Studio">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Watermark" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Watermark" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Watermark" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Layout &amp; Stamps" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Layout &amp; Stamps" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 
@@ -861,51 +861,51 @@
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding OpenSecurityDialogCommand}" ToolTip.Tip="Document Security, Passwords &amp; Permissions">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ShieldLockOutline" Width="20" Height="20" Foreground="{StaticResource WinDangerBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Protect PDF" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="ShieldLockOutline" Width="20" Height="20" Foreground="{DynamicResource WinDangerBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Protect PDF" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding SanitizeDocumentCommand}" ToolTip.Tip="Sanitize Document (Scrub Metadata &amp; Internal Notes)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="ShieldCheck" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Sanitize" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="ShieldCheck" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Sanitize" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Security" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Security" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Legal Redaction Suite -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding AddRedactionElementCommand}" CommandParameter="[REDACTED]" ToolTip.Tip="Insert FOIA Redaction Box">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="EyeOffOutline" Width="20" Height="20" Foreground="#0F172A" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Redact Box" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="EyeOffOutline" Width="20" Height="20" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Redact Box" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding OpenSearchRedactDialogCommand}" ToolTip.Tip="Search &amp; Redact Privacy Suite">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="DatabaseSearchOutline" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Search &amp; Redact" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Search &amp; Redact" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding BurnInAllRedactionsCommand}" ToolTip.Tip="Burn In All Redactions Permanently">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="ShieldCheckOutline" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Burn In Redactions" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Burn In Redactions" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding OpenBatesNumberingDialogCommand}" ToolTip.Tip="Legal Bates Numbering Studio">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Numeric" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Bates Studio" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Bates Studio" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Legal &amp; Privacy" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Legal &amp; Privacy" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 
@@ -918,27 +918,27 @@
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding OpenPreflightDialogCommand}" ToolTip.Tip="Run Preflight Health Check &amp; Compliance Audit">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="FileCheckOutline" Width="20" Height="20" Foreground="{StaticResource WinSuccessBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Preflight Audit" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="FileCheckOutline" Width="20" Height="20" Foreground="{DynamicResource WinSuccessBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Preflight Audit" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding OpenCompareDialogCommand}" ToolTip.Tip="Document Comparison &amp; Visual Diff Matrix">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="FileCompare" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Compare Diff" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Compare Diff" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding ExportPreflightReportCommand}" ToolTip.Tip="Export Preflight Report">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="DownloadOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Save Report" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="DownloadOutline" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Save Report" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Compliance &amp; Diff" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Compliance &amp; Diff" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Canvas Guides & Grid -->
                             <Grid RowDefinitions="*,Auto">
@@ -946,26 +946,26 @@
                                     <Button Classes="tool-btn" Command="{Binding ToggleRulersCommand}" ToolTip.Tip="Toggle Canvas Rulers (⌘R / Ctrl+R)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Ruler" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Rulers" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Rulers" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding ToggleGridCommand}" ToolTip.Tip="Toggle Visual Grid Dots">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="Grid" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Show Grid" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="Grid" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Show Grid" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding ToggleSnapToGridCommand}" ToolTip.Tip="Snap-to-Grid Movement">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="Magnet" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Snap to Grid" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="Magnet" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Snap to Grid" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Canvas Guides" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Canvas Guides" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Presentation & Workspace -->
                             <Grid RowDefinitions="*,Auto">
@@ -973,20 +973,20 @@
                                     <Button Classes="tool-btn" Command="{Binding TogglePresentationModeCommand}" ToolTip.Tip="Full-Screen Read / Presentation Mode (F5 / F11)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="Presentation" Width="20" Height="20" Foreground="#7C3AED" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Present" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Present" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding ToggleThemeCommand}" ToolTip.Tip="Toggle Dark / Light Workspace Theme">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="ThemeLightDark" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Theme" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Theme" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="View Mode" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="View Mode" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Workspace Panels & Collapse/Expand -->
                             <Grid RowDefinitions="*,Auto">
@@ -994,56 +994,56 @@
                                     <Button Classes="tool-btn" Command="{Binding ToggleLeftSidebarCommand}" ToolTip.Tip="Toggle Pages Sidebar (⌘B / Ctrl+B)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="DockLeft" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Pages Bar" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Pages Bar" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding ToggleRibbonCollapseCommand}" ToolTip.Tip="Toggle Ribbon Toolbar (⌘F1 / Ctrl+F1)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="ViewAgendaOutline" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Ribbon" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Ribbon" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding ToggleInspectorCollapseCommand}" ToolTip.Tip="Toggle Properties Inspector (⌘⇧P / Ctrl+Shift+P)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="DockRight" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Inspector" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Inspector" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding ExpandAllPanelsCommand}" ToolTip.Tip="Restore &amp; Expand All Workspace Panels">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="ViewQuiltOutline" Width="20" Height="20" Foreground="#16A34A" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Expand All" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Expand All" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Workspace Panels" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Workspace Panels" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <!-- Support & About Group -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Classes="tool-btn" Command="{Binding OpenAboutDialogCommand}" ToolTip.Tip="About FryPDF &amp; CodeFryDev Support">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="InformationOutline" Width="20" Height="20" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="About &amp; Help" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="InformationOutline" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="About &amp; Help" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding NavigateToLicensingCommand}" ToolTip.Tip="Open Source Licenses &amp; Third-Party Tools">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="CertificateOutline" Width="20" Height="20" Foreground="#4F46E5" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Licenses" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="Licenses" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding OpenShortcutsHelpCommand}" ToolTip.Tip="Keyboard Shortcuts Reference (F1)">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
-                                            <materialIcons:MaterialIcon Kind="KeyboardOutline" Width="20" Height="20" Foreground="#475569" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Shortcuts" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <materialIcons:MaterialIcon Kind="KeyboardOutline" Width="20" Height="20" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Shortcuts" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Support" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Support" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 
@@ -1060,27 +1060,27 @@
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="PDF Engine" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="PDF Engine" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
 
-                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
 
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                     <Button Classes="secondary-btn" Height="34" Padding="12,6" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save Document Project (.frypdf)">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                            <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                            <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                                             <TextBlock Text="Save Project (.frypdf)" FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="secondary-btn" Height="34" Padding="12,6" Command="{Binding OpenProjectCommand}" ToolTip.Tip="Open Project (.frypdf)">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                            <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                            <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                                             <TextBlock Text="Open Project" FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Project Files" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                                <TextBlock Grid.Row="1" Text="Project Files" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
                         </StackPanel>
 

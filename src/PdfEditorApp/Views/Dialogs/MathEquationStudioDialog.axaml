@@ -12,8 +12,8 @@
 
     <!-- Modal Backdrop Overlay -->
     <Grid Background="#70000000">
-        <Border Background="White"
-                BorderBrush="{StaticResource WinBorderBrush}"
+        <Border Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="12"
                 Width="960"
@@ -25,7 +25,7 @@
             <Grid RowDefinitions="Auto,*,Auto">
 
                 <!-- 1. Header Bar -->
-                <Border Grid.Row="0" Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" CornerRadius="12,12,0,0" Padding="20,16">
+                <Border Grid.Row="0" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" CornerRadius="12,12,0,0" Padding="20,16">
                     <Grid ColumnDefinitions="Auto,*,Auto">
                         <!-- Icon & Title -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
@@ -34,19 +34,19 @@
                             </Border>
                             <StackPanel Spacing="2">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="Mathematical Equation Studio" FontSize="16" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                                    <TextBlock Text="Mathematical Equation Studio" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Background="#E0F2FE" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
                                         <TextBlock Text="LaTeX Vector Engine" FontSize="10" FontWeight="SemiBold" Foreground="#0369A1" />
                                     </Border>
                                 </StackPanel>
                                 <TextBlock Text="Interactive LaTeX formula typesetter with live vector rendering and comprehensive symbol palettes"
-                                           FontSize="11.5" Foreground="#64748B" />
+                                           FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
                             </StackPanel>
                         </StackPanel>
 
                         <!-- Close Button -->
                         <Button Grid.Column="2" Classes="mini-tool-btn" Width="32" Height="32" Command="{Binding CloseMathStudioCommand}" ToolTip.Tip="Close (Esc)">
-                            <materialIcons:MaterialIcon Kind="Close" Width="18" Height="18" Foreground="#64748B" />
+                            <materialIcons:MaterialIcon Kind="Close" Width="18" Height="18" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
                     </Grid>
                 </Border>
@@ -55,7 +55,7 @@
                 <Grid Grid.Row="1" ColumnDefinitions="420,*" Margin="16,14,16,14">
 
                     <!-- LEFT: Palettes, Presets Library & Cheat Sheet -->
-                    <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,12,0">
+                    <Border Grid.Column="0" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,12,0">
                         <TabControl>
                             <!-- Tab 1: Math Symbol Palettes -->
                             <TabItem Header="Symbols &amp; Operators" FontSize="11.5" FontWeight="SemiBold">
@@ -64,7 +64,7 @@
 
                                         <!-- Calculus & Physics -->
                                         <StackPanel Spacing="4">
-                                            <TextBlock Text="Calculus, Integrals &amp; Physics" FontSize="11" FontWeight="Bold" Foreground="#0F172A" />
+                                            <TextBlock Text="Calculus, Integrals &amp; Physics" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                             <WrapPanel Orientation="Horizontal">
                                                 <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="int"><TextBlock Text="∫ dx" FontSize="10.5" /></Button>
                                                 <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="iint"><TextBlock Text="∬" FontSize="10.5" /></Button>
@@ -86,7 +86,7 @@
 
                                         <!-- Fractions, Roots & Exponents -->
                                         <StackPanel Spacing="4">
-                                            <TextBlock Text="Fractions, Roots &amp; Powers" FontSize="11" FontWeight="Bold" Foreground="#0F172A" />
+                                            <TextBlock Text="Fractions, Roots &amp; Powers" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                             <WrapPanel Orientation="Horizontal">
                                                 <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="frac"><TextBlock Text="a / b" FontSize="10.5" /></Button>
                                                 <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="sqrt"><TextBlock Text="√x" FontSize="10.5" /></Button>
@@ -100,7 +100,7 @@
 
                                         <!-- Greek Alphabet -->
                                         <StackPanel Spacing="4">
-                                            <TextBlock Text="Greek Letters" FontSize="11" FontWeight="Bold" Foreground="#0F172A" />
+                                            <TextBlock Text="Greek Letters" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                             <WrapPanel Orientation="Horizontal">
                                                 <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\alpha"><TextBlock Text="α" FontSize="10" /></Button>
                                                 <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\beta"><TextBlock Text="β" FontSize="10" /></Button>
@@ -127,7 +127,7 @@
 
                                         <!-- Matrices & Delimiters -->
                                         <StackPanel Spacing="4">
-                                            <TextBlock Text="Matrices, Brackets &amp; Sets" FontSize="11" FontWeight="Bold" Foreground="#0F172A" />
+                                            <TextBlock Text="Matrices, Brackets &amp; Sets" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                             <WrapPanel Orientation="Horizontal">
                                                 <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="pmatrix"><TextBlock Text="(2x2 Matrix)" FontSize="10.5" /></Button>
                                                 <Button Classes="secondary-btn" Height="26" Padding="6,2" Margin="2" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="bmatrix"><TextBlock Text="[2x2 Matrix]" FontSize="10.5" /></Button>
@@ -142,7 +142,7 @@
 
                                         <!-- Operators, Relations & Arrows -->
                                         <StackPanel Spacing="4">
-                                            <TextBlock Text="Operators, Relations &amp; Arrows" FontSize="11" FontWeight="Bold" Foreground="#0F172A" />
+                                            <TextBlock Text="Operators, Relations &amp; Arrows" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                             <WrapPanel Orientation="Horizontal">
                                                 <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\pm"><TextBlock Text="±" FontSize="10" /></Button>
                                                 <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="1.5" Command="{Binding InsertMathStudioSymbolCommand}" CommandParameter="\times"><TextBlock Text="×" FontSize="10" /></Button>
@@ -177,7 +177,7 @@
                                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,8,0,0">
                                     <StackPanel Spacing="6">
                                         <!-- Quick preset buttons -->
-                                        <TextBlock Text="Calculus &amp; Analysis" FontSize="11" FontWeight="Bold" Foreground="#0F172A" />
+                                        <TextBlock Text="Calculus &amp; Analysis" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                         <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="gaussian_integral">
                                             <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Gaussian Integral (∫ e^(-x²) dx = √π)" FontSize="11" /><TextBlock Grid.Column="1" Text="Calculus" FontSize="9.5" Foreground="#0284C7" /></Grid>
                                         </Button>
@@ -188,7 +188,7 @@
                                             <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Fourier Transform (f̂(ξ))" FontSize="11" /><TextBlock Grid.Column="1" Text="Calculus" FontSize="9.5" Foreground="#0284C7" /></Grid>
                                         </Button>
 
-                                        <TextBlock Text="Physics &amp; Quantum" FontSize="11" FontWeight="Bold" Foreground="#0F172A" Margin="0,6,0,0" />
+                                        <TextBlock Text="Physics &amp; Quantum" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,6,0,0" />
                                         <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="schrodinger_time_dependent">
                                             <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Schrödinger Equation (iℏ ∂Ψ/∂t = ĤΨ)" FontSize="11" /><TextBlock Grid.Column="1" Text="Physics" FontSize="9.5" Foreground="#0891B2" /></Grid>
                                         </Button>
@@ -199,7 +199,7 @@
                                             <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Maxwell's Equations (Differential)" FontSize="11" /><TextBlock Grid.Column="1" Text="Physics" FontSize="9.5" Foreground="#0891B2" /></Grid>
                                         </Button>
 
-                                        <TextBlock Text="Quantitative Finance &amp; Statistics" FontSize="11" FontWeight="Bold" Foreground="#0F172A" Margin="0,6,0,0" />
+                                        <TextBlock Text="Quantitative Finance &amp; Statistics" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,6,0,0" />
                                         <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="black_scholes_pde">
                                             <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Black-Scholes-Merton PDE" FontSize="11" /><TextBlock Grid.Column="1" Text="Finance" FontSize="9.5" Foreground="#16A34A" /></Grid>
                                         </Button>
@@ -210,7 +210,7 @@
                                             <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Normal (Gaussian) Distribution" FontSize="11" /><TextBlock Grid.Column="1" Text="Stats" FontSize="9.5" Foreground="#7C3AED" /></Grid>
                                         </Button>
 
-                                        <TextBlock Text="Algebra &amp; Fundamentals" FontSize="11" FontWeight="Bold" Foreground="#0F172A" Margin="0,6,0,0" />
+                                        <TextBlock Text="Algebra &amp; Fundamentals" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,6,0,0" />
                                         <Button Classes="secondary-btn" Height="30" HorizontalAlignment="Stretch" Margin="0,1" Command="{Binding ApplyMathStudioPresetCommand}" CommandParameter="quadratic_formula">
                                             <Grid ColumnDefinitions="*,Auto"><TextBlock Grid.Column="0" Text="Quadratic Formula (x = (-b ± √D)/2a)" FontSize="11" /><TextBlock Grid.Column="1" Text="Algebra" FontSize="9.5" Foreground="#D97706" /></Grid>
                                         </Button>
@@ -227,23 +227,23 @@
                     <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" Margin="4,0,0,0">
 
                         <!-- Live HD Vector Preview Card -->
-                        <Border Grid.Row="0" Background="#F1F5F9" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12" Height="150">
+                        <Border Grid.Row="0" Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12" Height="150">
                             <Grid RowDefinitions="Auto,*">
                                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                         <materialIcons:MaterialIcon Kind="EyeOutline" Width="14" Height="14" Foreground="#0284C7" />
-                                        <TextBlock Text="Live Vector Typesetting Preview" FontSize="11" FontWeight="Bold" Foreground="#334155" />
+                                        <TextBlock Text="Live Vector Typesetting Preview" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                     </StackPanel>
                                     <Border Grid.Column="1" Background="#E2E8F0" CornerRadius="4" Padding="5,1">
-                                        <TextBlock Text="{Binding MathStudioPresetName}" FontSize="9.5" FontWeight="SemiBold" Foreground="#475569" />
+                                        <TextBlock Text="{Binding MathStudioPresetName}" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                                     </Border>
                                 </Grid>
 
                                 <!-- Vector Math Formula Control -->
-                                <Border Grid.Row="1" Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="10">
+                                <Border Grid.Row="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10">
                                     <views:MathFormulaControl Formula="{Binding MathStudioFormula}"
                                                               FontSize="18"
-                                                              TextColor="{StaticResource WinTextBrush}"
+                                                              TextColor="{DynamicResource WinTextBrush}"
                                                               ShowEquationNumber="{Binding MathStudioShowNumber}"
                                                               EquationNumber="{Binding MathStudioEquationNumber}"
                                                               Alignment="Center"
@@ -256,8 +256,8 @@
                         <!-- LaTeX Syntax Input Area -->
                         <StackPanel Grid.Row="1" Spacing="4">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="LaTeX Expression Code" FontSize="11.5" FontWeight="Bold" Foreground="#0F172A" />
-                                <TextBlock Grid.Column="1" Text="Standard LaTeX math markup" FontSize="10" Foreground="#64748B" />
+                                <TextBlock Grid.Column="0" Text="LaTeX Expression Code" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                <TextBlock Grid.Column="1" Text="Standard LaTeX math markup" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
                             </Grid>
                             <TextBox Text="{Binding MathStudioFormula, Mode=TwoWay}"
                                      AcceptsReturn="True" TextWrapping="Wrap"
@@ -288,10 +288,10 @@
                 </Grid>
 
                 <!-- 3. Footer Action Bar -->
-                <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,1,0,0" CornerRadius="0,0,12,12" Padding="20,14">
+                <Border Grid.Row="2" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,1,0,0" CornerRadius="0,0,12,12" Padding="20,14">
                     <Grid ColumnDefinitions="*,Auto">
                         <TextBlock Grid.Column="0" Text="Equations render as 100% scalable vector artwork in exported PDF files."
-                                   FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                                   FontSize="11" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                             <Button Classes="secondary-btn" Height="32" Width="90" Command="{Binding CloseMathStudioCommand}">

@@ -70,22 +70,23 @@
 
         <!-- Workflow Banner Box -->
         <Style Selector="Border.workflow-banner-box">
-            <Setter Property="Background" Value="#FFF7ED" />
-            <Setter Property="BorderBrush" Value="#FED7AA" />
-            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="BoxShadow" Value="0 4 12 #10EA580C" />
+            <Setter Property="BoxShadow" Value="0 2 8 #08000000" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
                     <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.workflow-banner-btn:pointerover Border.workflow-banner-box">
             <Setter Property="RenderTransform" Value="translateY(-3px)" />
-            <Setter Property="BoxShadow" Value="0 10 24 #25EA580C" />
+            <Setter Property="BoxShadow" Value="0 8 20 #20EA580C" />
             <Setter Property="BorderBrush" Value="#EA580C" />
         </Style>
     </UserControl.Styles>
@@ -161,22 +162,19 @@
                 </Button>
             </StackPanel>
 
-            <!-- Right: Open Workflow Studio Button -->
-            <Button Grid.Column="2"
-                    Command="{Binding OpenWorkflowBuilderCommand}"
-                    Background="#FFF7ED"
-                    BorderBrush="#FFEDD5"
+            <!-- Right: Tool Count Indicator -->
+            <Border Grid.Column="2"
+                    Background="{DynamicResource WinInputBgBrush}"
+                    BorderBrush="{DynamicResource WinBorderBrush}"
                     BorderThickness="1"
-                    Foreground="#EA580C"
-                    CornerRadius="8"
-                    Padding="12,7"
-                    Cursor="Hand"
-                    ToolTip.Tip="Open Automated Workflow Pipeline Builder">
-                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                    <materialIcons:MaterialIcon Kind="LightningBoltOutline" Width="16" Height="16" Foreground="#EA580C" />
-                    <TextBlock Text="Batch Pipelines" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
-                </StackPanel>
-            </Button>
+                    CornerRadius="6"
+                    Padding="10,5"
+                    VerticalAlignment="Center">
+                <TextBlock Text="{Binding MatchingToolsCount, StringFormat='{}{0} Tools'}"
+                           FontSize="11.5"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource WinMutedBrush}" />
+            </Border>
         </Grid>
 
         <!-- Create a Workflow Banner Card (Top Callout) -->
@@ -192,17 +190,17 @@
                 IsVisible="{Binding WorkflowBannerCard, Converter={StaticResource NullToBooleanConverter}}">
             <Border Classes="workflow-banner-box" Padding="18,14">
                 <Grid ColumnDefinitions="Auto,*,Auto">
-                    <Border Grid.Column="0" Width="44" Height="44" Background="#FFEDD5" CornerRadius="10" Margin="0,0,14,0">
-                        <materialIcons:MaterialIcon Kind="LightningBoltOutline" Width="24" Height="24" Foreground="#EA580C" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Border Grid.Column="0" Width="44" Height="44" Background="#EA580C" CornerRadius="10" Margin="0,0,14,0">
+                        <materialIcons:MaterialIcon Kind="LightningBoltOutline" Width="24" Height="24" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="Create a workflow" FontSize="15" FontWeight="Bold" Foreground="#9A3412" />
+                            <TextBlock Text="Create a workflow" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                             <Border Background="#EA580C" CornerRadius="4" Padding="6,1">
                                 <TextBlock Text="AUTOMATE" FontSize="9.5" FontWeight="Bold" Foreground="White" />
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Combine multiple tools into an automated batch processing pipeline for recurring document workflows." FontSize="12" Foreground="#C2410C" />
+                        <TextBlock Text="Combine multiple tools into an automated batch processing pipeline for recurring document workflows." FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
                     </StackPanel>
                     <Border Grid.Column="2" Background="#EA580C" CornerRadius="6" Padding="12,6" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Spacing="6">

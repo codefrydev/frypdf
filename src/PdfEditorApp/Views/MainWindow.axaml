@@ -118,7 +118,7 @@
               RowDefinitions="Auto,Auto,*,Auto">
 
             <!-- 1. Top Modern Title Bar -->
-            <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" Height="44" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="14,0"
+            <Border Grid.Row="0" Background="{DynamicResource WinBgBrush}" Height="44" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="14,0"
                     IsVisible="{Binding !IsPresentationMode}">
                 <Grid ColumnDefinitions="Auto,*,Auto">
 
@@ -141,7 +141,7 @@
                                         </Canvas>
                                     </Viewbox>
                                 </Border>
-                                <TextBlock Text="FryPDF" FontSize="13" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="FryPDF" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
 
@@ -151,22 +151,22 @@
                                 Command="{Binding NavigateToHomeCommand}"
                                 ToolTip.Tip="Go to Home / Start Screen"
                                 Margin="-2,0,0,0">
-                            <materialIcons:MaterialIcon Kind="HomeOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="HomeOutline" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
 
                         <!-- Separator -->
-                        <Rectangle Width="1" Height="16" Fill="{StaticResource WinBorderBrush}" />
+                        <Rectangle Width="1" Height="16" Fill="{DynamicResource WinBorderBrush}" />
 
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                             <TextBlock Text="{Binding DocumentTitle}"
                                        FontSize="13"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource WinTextBrush}"
+                                       Foreground="{DynamicResource WinTextBrush}"
                                        VerticalAlignment="Center" />
 
                             <!-- App Subtitle Pill -->
-                            <Border Background="{StaticResource WinHoverBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
-                                <TextBlock Text="by CodeFryDev" FontSize="10.5" FontWeight="Medium" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                            <Border Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
+                                <TextBlock Text="by CodeFryDev" FontSize="10.5" FontWeight="Medium" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                             </Border>
                         </StackPanel>
                     </StackPanel>
@@ -176,23 +176,23 @@
                             HorizontalAlignment="Center"
                             Width="380"
                             Height="30"
-                            Background="White"
-                            BorderBrush="{StaticResource WinBorderBrush}"
+                            Background="{DynamicResource WinPanelBrush}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="7"
                             Padding="10,0"
                             Command="{Binding OpenCommandPaletteCommand}"
                             ToolTip.Tip="Open Quick Command Palette (⌘K / Ctrl+K)">
                         <Grid ColumnDefinitions="Auto,*,Auto">
-                            <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="15" Height="15" Foreground="{StaticResource WinAccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1"
                                        Text="Type ⌘K to run commands, insert tools, search..."
                                        FontSize="11.5"
-                                       Foreground="{StaticResource WinMutedBrush}"
+                                       Foreground="{DynamicResource WinMutedBrush}"
                                        VerticalAlignment="Center" />
                             <!-- Quick Shortcut Badge -->
-                            <Border Grid.Column="2" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
-                                <TextBlock Text="⌘K" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" />
+                            <Border Grid.Column="2" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
+                                <TextBlock Text="⌘K" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" />
                             </Border>
                         </Grid>
                     </Button>
@@ -200,27 +200,27 @@
                     <!-- Right: Quick Save, Panel Toggles & Actions -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                         <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding ToggleLeftSidebarCommand}" ToolTip.Tip="Toggle Pages Sidebar (⌘B / Ctrl+B)">
-                            <materialIcons:MaterialIcon Kind="DockLeft" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="DockLeft" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
                         <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding ToggleRibbonCollapseCommand}" ToolTip.Tip="Toggle Ribbon Toolbar (⌘F1 / Ctrl+F1)">
-                            <materialIcons:MaterialIcon Kind="DockTop" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="DockTop" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
                         <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding ToggleInspectorCollapseCommand}" ToolTip.Tip="Toggle Properties Inspector (⌘⇧P / Ctrl+Shift+P)">
-                            <materialIcons:MaterialIcon Kind="DockRight" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="DockRight" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
-                        <Rectangle Width="1" Height="16" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+                        <Rectangle Width="1" Height="16" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
                         <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save Project (⌘S / Ctrl+S)">
-                            <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
                         <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding ExportPdfCommand}" ToolTip.Tip="Export to PDF (⌘E / Ctrl+E)">
-                            <materialIcons:MaterialIcon Kind="ExportVariant" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="ExportVariant" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
-                        <Rectangle Width="1" Height="16" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+                        <Rectangle Width="1" Height="16" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
                         <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding OpenShortcutsHelpCommand}" ToolTip.Tip="Keyboard Shortcuts Cheat Sheet (F1 / ?)">
-                            <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
                         <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding OpenAboutDialogCommand}" ToolTip.Tip="About FryPDF &amp; Support (CodeFryDev)">
-                            <materialIcons:MaterialIcon Kind="InformationOutline" Width="15" Height="15" Foreground="{StaticResource WinAccentBrush}" />
+                            <materialIcons:MaterialIcon Kind="InformationOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -244,16 +244,16 @@
             </Grid>
 
             <!-- 4. Bottom Status Bar -->
-            <Border Grid.Row="3" Background="{StaticResource WinBgBrush}" Height="32" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,1,0,0" Padding="14,0">
+            <Border Grid.Row="3" Background="{DynamicResource WinBgBrush}" Height="32" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,1,0,0" Padding="14,0">
                 <Grid ColumnDefinitions="Auto,*,Auto">
 
                     <!-- Left: Page Info, Dimensions & Document Status -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                         <!-- Page Number Chip -->
-                        <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="7,2">
+                        <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="7,2">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="13" Height="13" Foreground="{StaticResource WinMutedBrush}" />
-                                <TextBlock FontSize="11" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                                <TextBlock FontSize="11" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center">
                                     <TextBlock.Text>
                                         <MultiBinding StringFormat="Page {0} of {1}">
                                             <Binding Path="CurrentPageNumber" />
@@ -265,17 +265,17 @@
                         </Border>
 
                         <!-- Page Dimensions Chip -->
-                        <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="7,2">
+                        <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="7,2">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="AspectRatio" Width="13" Height="13" Foreground="{StaticResource WinMutedBrush}" />
-                                <TextBlock Text="{Binding PageDimensionsDisplay}" FontSize="11" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <materialIcons:MaterialIcon Kind="AspectRatio" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                                <TextBlock Text="{Binding PageDimensionsDisplay}" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                         </Border>
 
                         <!-- Status Message with Active Indicator Dot -->
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="6,0,0,0">
                             <Ellipse Width="6" Height="6" Fill="#10B981" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{StaticResource WinMutedBrush}" FontWeight="Medium" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" FontWeight="Medium" VerticalAlignment="Center" />
                         </StackPanel>
                     </StackPanel>
 
@@ -283,19 +283,19 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                         <!-- Fit to Width -->
                         <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToWidthCommand}" ToolTip.Tip="Fit to Width (⌘1 / Ctrl+1)">
-                            <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
 
                         <!-- Fit to Page -->
                         <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToPageCommand}" ToolTip.Tip="Fit Entire Page (⌘9 / Ctrl+9)">
-                            <materialIcons:MaterialIcon Kind="FitToScreenOutline" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="FitToScreenOutline" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
 
-                        <Rectangle Width="1" Height="14" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+                        <Rectangle Width="1" Height="14" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
 
                         <!-- Zoom Out -->
                         <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom Out (⌘- / Ctrl+-)">
-                            <materialIcons:MaterialIcon Kind="Minus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="Minus" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
 
                         <!-- Zoom Slider -->
@@ -309,12 +309,12 @@
 
                         <!-- Zoom In -->
                         <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom In (⌘+ / Ctrl++)">
-                            <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
 
                         <!-- Zoom Percentage Pill (Click to Reset 100%) -->
-                        <Button Background="White"
-                                BorderBrush="{StaticResource WinBorderBrush}"
+                        <Button Background="{DynamicResource WinPanelBrush}"
+                                BorderBrush="{DynamicResource WinBorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="5"
                                 Padding="6,2"
@@ -324,20 +324,20 @@
                             <TextBlock Text="{Binding ZoomLevel, Converter={StaticResource ZoomPercentageConverter}}"
                                        FontSize="11"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource WinTextBrush}"
+                                       Foreground="{DynamicResource WinTextBrush}"
                                        Width="36"
                                        TextAlignment="Center"
                                        VerticalAlignment="Center" />
                         </Button>
 
-                        <Rectangle Width="1" Height="14" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+                        <Rectangle Width="1" Height="14" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
 
                         <!-- Quick Panel Dock Buttons -->
                         <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ToggleLeftSidebarCommand}" ToolTip.Tip="Toggle Pages Sidebar (⌘B)">
-                            <materialIcons:MaterialIcon Kind="DockLeft" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="DockLeft" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
                         <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ToggleInspectorCollapseCommand}" ToolTip.Tip="Toggle Properties Inspector (⌘⇧P)">
-                            <materialIcons:MaterialIcon Kind="DockRight" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="DockRight" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
                     </StackPanel>
                 </Grid>

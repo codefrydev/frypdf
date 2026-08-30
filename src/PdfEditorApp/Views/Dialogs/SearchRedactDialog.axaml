@@ -9,8 +9,8 @@
     <Grid Background="#60000000">
         <!-- Dialog Card -->
         <Border Width="640"
-                Background="White"
-                BorderBrush="{StaticResource WinBorderBrush}"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="10"
                 BoxShadow="0 20 60 #35000000"
@@ -23,19 +23,19 @@
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
                     <StackPanel Grid.Column="0" Spacing="4">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border Width="30" Height="30" Background="#F1F5F9" CornerRadius="6">
-                                <materialIcons:MaterialIcon Kind="DatabaseSearchOutline" Width="18" Height="18" Foreground="#0F172A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Width="30" Height="30" Background="{DynamicResource WinHoverBrush}" CornerRadius="6">
+                                <materialIcons:MaterialIcon Kind="DatabaseSearchOutline" Width="18" Height="18" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="Search &amp; Redact Privacy Suite" FontSize="17" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="Search &amp; Redact Privacy Suite" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                         </StackPanel>
-                        <TextBlock Text="Search for sensitive words or patterns and automatically apply FOIA / GDPR privileged blackout boxes." FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                        <TextBlock Text="Search for sensitive words or patterns and automatically apply FOIA / GDPR privileged blackout boxes." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
                     </StackPanel>
 
                     <Button Grid.Column="1"
                             Classes="mini-tool-btn"
                             Width="30" Height="30"
                             Command="{Binding CloseSearchRedactDialogCommand}">
-                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                     </Button>
                 </Grid>
 
@@ -44,7 +44,7 @@
 
                     <!-- Search Input -->
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Search Text / Keyword to Redact" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                        <TextBlock Text="Search Text / Keyword to Redact" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                         <TextBox Text="{Binding SearchRedactQuery, Mode=TwoWay}"
                                  Height="36" FontSize="13" CornerRadius="6"
                                  Padding="10,8" PlaceholderText="e.g. Confidential, Revenue, Social Security..." />
@@ -52,7 +52,7 @@
 
                     <!-- Legal Exemption Code Presets -->
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Legal &amp; Statutory Exemption Code" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                        <TextBlock Text="Legal &amp; Statutory Exemption Code" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                         <TextBox Text="{Binding SelectedExemptionCode, Mode=TwoWay}"
                                  Height="34" FontSize="12" CornerRadius="6"
                                  Padding="10,6" PlaceholderText="[REDACTED]" />
@@ -74,10 +74,10 @@
                     </StackPanel>
 
                     <!-- Warning Badge -->
-                    <Border Background="#FEF2F2" BorderBrush="{StaticResource WinDangerBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                    <Border Background="#FEF2F2" BorderBrush="{DynamicResource WinDangerBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
                         <StackPanel Spacing="2">
-                            <TextBlock Text="⚠️ Permanent Redaction Notice" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource WinDangerBrush}" />
-                            <TextBlock Text="Redactions are vector blackout boxes. To ensure text cannot be selected or copied, apply 'Burn In All Redactions' before exporting." FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" />
+                            <TextBlock Text="⚠️ Permanent Redaction Notice" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinDangerBrush}" />
+                            <TextBlock Text="Redactions are vector blackout boxes. To ensure text cannot be selected or copied, apply 'Burn In All Redactions' before exporting." FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
                 </StackPanel>

@@ -15,8 +15,8 @@
     <Grid Background="#70000000" IsVisible="{Binding IsOpen}">
         <Border Width="920"
                 Height="680"
-                Background="#FFFFFF"
-                BorderBrush="#CBD5E1"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="14"
                 BoxShadow="0 20 40 #40000000"
@@ -66,14 +66,14 @@
 
                     <!-- Left Column: Pipeline Steps List -->
                     <Border Grid.Column="0"
-                            Background="#F8FAFC"
-                            BorderBrush="#E2E8F0"
+                            Background="{DynamicResource WinInputBgBrush}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
                             BorderThickness="0,0,1,0"
                             Padding="16">
                         <Grid RowDefinitions="Auto,*,Auto">
                             <!-- Presets Selector -->
                             <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,14">
-                                <TextBlock Text="Workflow Preset" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                                <TextBlock Text="Workflow Preset" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                                 <ComboBox ItemsSource="{Binding PresetWorkflows}"
                                           SelectedItem="{Binding CurrentWorkflow, Mode=OneWay}"
                                           HorizontalAlignment="Stretch">
@@ -88,13 +88,13 @@
                             <!-- Step Items Sequence -->
                             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="Pipeline Execution Steps" FontSize="11.5" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,4" />
+                                    <TextBlock Text="Pipeline Execution Steps" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,0,0,4" />
 
                                     <ItemsControl ItemsSource="{Binding Steps}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate DataType="models:WorkflowStepDefinition">
-                                                <Border Background="#FFFFFF"
-                                                        BorderBrush="#CBD5E1"
+                                                <Border Background="{DynamicResource WinPanelBrush}"
+                                                        BorderBrush="{DynamicResource WinBorderBrush}"
                                                         BorderThickness="1"
                                                         CornerRadius="8"
                                                         Padding="10,8"
@@ -102,8 +102,8 @@
                                                     <Grid ColumnDefinitions="Auto,*,Auto">
                                                         <CheckBox Grid.Column="0" IsChecked="{Binding IsEnabled}" Margin="0,0,8,0" VerticalAlignment="Center" />
                                                         <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                                            <TextBlock Text="{Binding StepName}" FontSize="12" FontWeight="SemiBold" Foreground="#1E293B" />
-                                                            <TextBlock Text="{Binding StepDescription}" FontSize="10.5" Foreground="#64748B" TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock Text="{Binding StepName}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                                            <TextBlock Text="{Binding StepDescription}" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" TextTrimming="CharacterEllipsis" />
                                                         </StackPanel>
                                                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
                                                             <Button Command="{Binding $parent[UserControl].((vm:WorkflowBuilderViewModel)DataContext).MoveStepUpCommand}"
@@ -112,7 +112,7 @@
                                                                     BorderThickness="0"
                                                                     Padding="3"
                                                                     Cursor="Hand">
-                                                                <materialIcons:MaterialIcon Kind="ChevronUp" Width="14" Height="14" Foreground="#64748B" />
+                                                                <materialIcons:MaterialIcon Kind="ChevronUp" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                                                             </Button>
                                                             <Button Command="{Binding $parent[UserControl].((vm:WorkflowBuilderViewModel)DataContext).MoveStepDownCommand}"
                                                                     CommandParameter="{Binding}"
@@ -120,7 +120,7 @@
                                                                     BorderThickness="0"
                                                                     Padding="3"
                                                                     Cursor="Hand">
-                                                                <materialIcons:MaterialIcon Kind="ChevronDown" Width="14" Height="14" Foreground="#64748B" />
+                                                                <materialIcons:MaterialIcon Kind="ChevronDown" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                                                             </Button>
                                                             <Button Command="{Binding $parent[UserControl].((vm:WorkflowBuilderViewModel)DataContext).RemoveStepCommand}"
                                                                     CommandParameter="{Binding}"
@@ -158,9 +158,9 @@
                             </Border>
 
                             <!-- Add Steps Tool Palette -->
-                            <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="16">
+                            <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16">
                                 <StackPanel Spacing="12">
-                                    <TextBlock Text="Add Step to Pipeline" FontSize="13" FontWeight="Bold" Foreground="#1E293B" />
+                                    <TextBlock Text="Add Step to Pipeline" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                     <ItemsControl ItemsSource="{Binding AvailableTools}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
@@ -171,8 +171,8 @@
                                             <DataTemplate DataType="models:PdfToolDefinition">
                                                 <Button Command="{Binding $parent[UserControl].((vm:WorkflowBuilderViewModel)DataContext).AddStepCommand}"
                                                         CommandParameter="{Binding}"
-                                                        Background="#F8FAFC"
-                                                        BorderBrush="#E2E8F0"
+                                                        Background="{DynamicResource WinInputBgBrush}"
+                                                        BorderBrush="{DynamicResource WinBorderBrush}"
                                                         BorderThickness="1"
                                                         CornerRadius="6"
                                                         Padding="10,6"
@@ -180,7 +180,7 @@
                                                         Cursor="Hand">
                                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                                         <materialIcons:MaterialIcon Kind="{Binding IconKind}" Width="14" Height="14" Foreground="{Binding IconColorHex, Converter={StaticResource HexToBrushConverter}}" />
-                                                        <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="Medium" Foreground="#1E293B" />
+                                                        <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" />
                                                     </StackPanel>
                                                 </Button>
                                             </DataTemplate>
@@ -190,10 +190,10 @@
                             </Border>
 
                             <!-- Input Files Batch Section -->
-                            <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="16">
+                            <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16">
                                 <StackPanel Spacing="12">
                                     <Grid ColumnDefinitions="*,Auto">
-                                        <TextBlock Grid.Column="0" Text="Input Batch Files" FontSize="13" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="0" Text="Input Batch Files" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                         <Button Grid.Column="1"
                                                 Command="{Binding AddInputFilesCommand}"
                                                 Background="#0F6CBD"
@@ -214,9 +214,9 @@
                                     <ItemsControl ItemsSource="{Binding InputFiles}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate DataType="x:String">
-                                                <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="0,0,0,4">
+                                                <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="0,0,0,4">
                                                     <Grid ColumnDefinitions="*,Auto">
-                                                        <TextBlock Grid.Column="0" Text="{Binding}" FontSize="11.5" Foreground="#1E293B" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                        <TextBlock Grid.Column="0" Text="{Binding}" FontSize="11.5" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                                         <Button Grid.Column="1"
                                                                 Command="{Binding $parent[UserControl].((vm:WorkflowBuilderViewModel)DataContext).RemoveInputFileCommand}"
                                                                 CommandParameter="{Binding}"
@@ -224,7 +224,7 @@
                                                                 BorderThickness="0"
                                                                 Padding="3"
                                                                 Cursor="Hand">
-                                                            <materialIcons:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="#94A3B8" />
+                                                            <materialIcons:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
                                                         </Button>
                                                     </Grid>
                                                 </Border>
@@ -235,10 +235,10 @@
                             </Border>
 
                             <!-- Pipeline Execution Progress -->
-                            <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14,10" IsVisible="{Binding IsRunning}">
+                            <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" IsVisible="{Binding IsRunning}">
                                 <StackPanel Spacing="8">
                                     <Grid ColumnDefinitions="*,Auto">
-                                        <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold" Foreground="#1E293B" />
+                                        <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                                         <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="12" FontWeight="Bold" Foreground="#EA580C" />
                                     </Grid>
                                     <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="6" CornerRadius="3" Foreground="#EA580C" />
@@ -251,19 +251,19 @@
 
                 <!-- 3. Bottom Action Bar -->
                 <Border Grid.Row="2"
-                        Background="#F8FAFC"
-                        BorderBrush="#E2E8F0"
+                        Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
                         BorderThickness="0,1,0,0"
                         Padding="20,14">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding InputFiles.Count, StringFormat='{}{0} input files queued'}" FontSize="12" Foreground="#64748B" />
+                            <TextBlock Text="{Binding InputFiles.Count, StringFormat='{}{0} input files queued'}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
                             <Button Command="{Binding CancelWorkflowCommand}"
-                                    Background="#F1F5F9"
-                                    Foreground="#64748B"
+                                    Background="{DynamicResource WinHoverBrush}"
+                                    Foreground="{DynamicResource WinMutedBrush}"
                                     CornerRadius="6"
                                     Padding="14,8"
                                     FontSize="12"
@@ -273,8 +273,8 @@
                                 Cancel
                             </Button>
                             <Button Command="{Binding CloseCommand}"
-                                    Background="#F1F5F9"
-                                    Foreground="#64748B"
+                                    Background="{DynamicResource WinHoverBrush}"
+                                    Foreground="{DynamicResource WinMutedBrush}"
                                     CornerRadius="6"
                                     Padding="14,8"
                                     FontSize="12"

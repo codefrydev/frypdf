@@ -15,8 +15,8 @@
     <Grid Background="#60000000">
         <Border Width="720"
                 MaxHeight="620"
-                Background="White"
-                BorderBrush="{StaticResource WinBorderBrush}"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="10"
                 BoxShadow="0 20 60 #35000000"
@@ -32,16 +32,16 @@
                             <Border Width="30" Height="30" Background="#EFF6FF" CornerRadius="6">
                                 <materialIcons:MaterialIcon Kind="FileCompare" Width="18" Height="18" Foreground="#0F6CBD" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="Document Comparison &amp; Diff Report" FontSize="17" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="Document Comparison &amp; Diff Report" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                         </StackPanel>
-                        <TextBlock Text="Detailed comparison matrix between document revisions." FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                        <TextBlock Text="Detailed comparison matrix between document revisions." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
                     </StackPanel>
 
                     <Button Grid.Column="1"
                             Classes="mini-tool-btn"
                             Width="30" Height="30"
                             Command="{Binding CloseCompareDialogCommand}">
-                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                     </Button>
                 </Grid>
 
@@ -51,10 +51,10 @@
 
                         <!-- Summary Cards Row -->
                         <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
-                            <Border Grid.Column="0" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+                            <Border Grid.Column="0" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
                                 <StackPanel Spacing="2">
-                                    <TextBlock Text="TOTAL DIFFS" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource WinMutedBrush}" />
-                                    <TextBlock Text="{Binding ActiveComparisonReport.TotalDifferencesCount, FallbackValue=0}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" />
+                                    <TextBlock Text="TOTAL DIFFS" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" />
+                                    <TextBlock Text="{Binding ActiveComparisonReport.TotalDifferencesCount, FallbackValue=0}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                 </StackPanel>
                             </Border>
                             <Border Grid.Column="1" Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="8" Padding="10">
@@ -78,14 +78,14 @@
                         </Grid>
 
                         <!-- Differences Items List -->
-                        <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+                        <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
                             <StackPanel Spacing="8">
-                                <TextBlock Text="ITEMIZED AUDIT TRAIL" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource WinMutedBrush}" LetterSpacing="0.5" />
+                                <TextBlock Text="ITEMIZED AUDIT TRAIL" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" LetterSpacing="0.5" />
 
                                 <ItemsControl ItemsSource="{Binding ActiveComparisonReport.Differences}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate DataType="models:DocumentDifferenceItem">
-                                            <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,6">
+                                            <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,6">
                                                 <Grid ColumnDefinitions="Auto,*,Auto">
                                                     <!-- Diff Icon Badge -->
                                                     <Border Grid.Column="0" Width="28" Height="28" CornerRadius="14" Background="{Binding BadgeColorHex, Converter={StaticResource HexToBrushConverter}}" Margin="0,0,10,0">
@@ -94,17 +94,17 @@
 
                                                     <!-- Description & Old/New details -->
                                                     <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Description}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                                                        <TextBlock Text="{Binding Description}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                                            <TextBlock Text="{Binding ElementKindDisplay}" FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" />
-                                                            <TextBlock Text="•" FontSize="10" Foreground="{StaticResource WinSubtleBrush}" />
-                                                            <TextBlock Text="{Binding PageNumber, StringFormat='Page {0}'}" FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" />
+                                                            <TextBlock Text="{Binding ElementKindDisplay}" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" />
+                                                            <TextBlock Text="•" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                            <TextBlock Text="{Binding PageNumber, StringFormat='Page {0}'}" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" />
                                                         </StackPanel>
                                                     </StackPanel>
 
                                                     <!-- Diff Type Badge -->
-                                                    <Border Grid.Column="2" Background="{StaticResource WinHoverBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding DiffType}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinMutedBrush}" />
+                                                    <Border Grid.Column="2" Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding DiffType}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                                                     </Border>
                                                 </Grid>
                                             </Border>

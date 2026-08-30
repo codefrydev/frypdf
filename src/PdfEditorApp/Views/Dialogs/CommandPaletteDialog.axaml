@@ -17,8 +17,8 @@
         <!-- Centered Command Palette Card -->
         <Border Width="580"
                 MaxHeight="480"
-                Background="White"
-                BorderBrush="#CBD5E1"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="12"
                 BoxShadow="0 20 60 #40000000"
@@ -31,8 +31,8 @@
 
                 <!-- 1. Search Input Bar -->
                 <Border Grid.Row="0"
-                        Background="#F8FAFC"
-                        BorderBrush="#E2E8F0"
+                        Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
                         BorderThickness="0,0,0,1"
                         Padding="14,10">
                     <Grid ColumnDefinitions="Auto,*,Auto">
@@ -40,7 +40,7 @@
                                                     Kind="Magnify"
                                                     Width="20"
                                                     Height="20"
-                                                    Foreground="{StaticResource WinAccentBrush}"
+                                                    Foreground="{DynamicResource WinAccentBrush}"
                                                     Margin="0,0,10,0"
                                                     VerticalAlignment="Center" />
 
@@ -52,7 +52,7 @@
                                  Background="Transparent"
                                  FontSize="14"
                                  FontWeight="Medium"
-                                 Foreground="{StaticResource WinTextBrush}"
+                                 Foreground="{DynamicResource WinTextBrush}"
                                  VerticalAlignment="Center"
                                  Padding="0"
                                  KeyDown="OnSearchInputKeyDown" />
@@ -96,7 +96,7 @@
                                             <materialIcons:MaterialIcon Kind="{Binding IconKind}"
                                                                         Width="18"
                                                                         Height="18"
-                                                                        Foreground="{StaticResource WinAccentBrush}"
+                                                                        Foreground="{DynamicResource WinAccentBrush}"
                                                                         HorizontalAlignment="Center"
                                                                         VerticalAlignment="Center" />
                                         </Border>
@@ -106,17 +106,17 @@
                                             <TextBlock Text="{Binding Title}"
                                                        FontSize="13"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{StaticResource WinTextBrush}" />
+                                                       Foreground="{DynamicResource WinTextBrush}" />
                                             <TextBlock Text="{Binding Subtitle}"
                                                        FontSize="11"
-                                                       Foreground="{StaticResource WinMutedBrush}"
+                                                       Foreground="{DynamicResource WinMutedBrush}"
                                                        TextTrimming="CharacterEllipsis" />
                                         </StackPanel>
 
                                         <!-- Category Tag -->
                                         <Border Grid.Column="2"
-                                                Background="#F1F5F9"
-                                                BorderBrush="#E2E8F0"
+                                                Background="{DynamicResource WinHoverBrush}"
+                                                BorderBrush="{DynamicResource WinBorderBrush}"
                                                 BorderThickness="1"
                                                 CornerRadius="4"
                                                 Padding="6,2"
@@ -125,7 +125,7 @@
                                             <TextBlock Text="{Binding Category}"
                                                        FontSize="10"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{StaticResource WinSubtleBrush}" />
+                                                       Foreground="{DynamicResource WinSubtleBrush}" />
                                         </Border>
 
                                         <!-- Shortcut Badge -->
@@ -144,8 +144,8 @@
 
                 <!-- 3. Bottom Footer Helper Hints -->
                 <Border Grid.Row="2"
-                        Background="#F8FAFC"
-                        BorderBrush="#E2E8F0"
+                        Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
                         BorderThickness="0,1,0,0"
                         Padding="14,8">
                     <Grid ColumnDefinitions="*,Auto">
@@ -157,21 +157,21 @@
                                 <Border Classes="kbd-badge">
                                     <TextBlock Text="↓" Classes="kbd-text" />
                                 </Border>
-                                <TextBlock Text="Navigate" FontSize="11" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Navigate" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                 <Border Classes="kbd-badge">
                                     <TextBlock Text="↵" Classes="kbd-text" />
                                 </Border>
-                                <TextBlock Text="Execute" FontSize="11" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Execute" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                 <Border Classes="kbd-badge">
                                     <TextBlock Text="Esc" Classes="kbd-text" />
                                 </Border>
-                                <TextBlock Text="Close" FontSize="11" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Close" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                         </StackPanel>
 
@@ -179,7 +179,7 @@
                                    Text="{Binding FilteredPaletteCommands.Count, StringFormat='{}{0} commands'}"
                                    FontSize="11"
                                    FontWeight="Medium"
-                                   Foreground="{StaticResource WinSubtleBrush}"
+                                   Foreground="{DynamicResource WinSubtleBrush}"
                                    VerticalAlignment="Center" />
                     </Grid>
                 </Border>

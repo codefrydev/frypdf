@@ -6,7 +6,7 @@
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.Views.PdfToolPageView"
              x:DataType="vm:PdfToolViewModelBase"
-             Background="#F8FAFC">
+             Background="{DynamicResource WinInputBgBrush}">
 
     <UserControl.Resources>
         <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
@@ -62,8 +62,8 @@
 
         <!-- 1. Top Navigation & Header Banner -->
         <Border Grid.Row="0"
-                Background="#FFFFFF"
-                BorderBrush="#E2E8F0"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="0,0,0,1"
                 Padding="28,18">
             <Grid ColumnDefinitions="Auto,*,Auto">
@@ -77,7 +77,7 @@
                         </StackPanel>
                     </Button>
 
-                    <Rectangle Width="1" Height="28" Fill="#E2E8F0" />
+                    <Rectangle Width="1" Height="28" Fill="{DynamicResource WinBorderBrush}" />
 
                     <!-- Tool Large Icon Badge -->
                     <Border Width="48" Height="48"
@@ -98,9 +98,9 @@
                             <TextBlock Text="{Binding Tool.Name}"
                                        FontSize="18"
                                        FontWeight="Bold"
-                                       Foreground="#0F172A" />
-                            <Border Background="#F1F5F9" CornerRadius="6" Padding="8,2" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Tool.CategoryDisplayName}" FontSize="11" FontWeight="Medium" Foreground="#64748B" />
+                                       Foreground="{DynamicResource WinTextBrush}" />
+                            <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="6" Padding="8,2" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Tool.CategoryDisplayName}" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource WinMutedBrush}" />
                             </Border>
                             <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Padding="6,1" IsVisible="{Binding Tool.IsNew}">
                                 <TextBlock Text="NEW" FontSize="10" FontWeight="Bold" Foreground="#0F6CBD" />
@@ -108,7 +108,7 @@
                         </StackPanel>
                         <TextBlock Text="{Binding Tool.Description}"
                                    FontSize="12.5"
-                                   Foreground="#64748B"
+                                   Foreground="{DynamicResource WinMutedBrush}"
                                    MaxWidth="650" />
                     </StackPanel>
                 </StackPanel>
@@ -118,7 +118,7 @@
                     <Button Classes="star-btn" Command="{Binding ToggleStarCommand}" ToolTip.Tip="Toggle Favorite / Starred Tool">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="Star" Width="16" Height="16" Foreground="#F59E0B" IsVisible="{Binding IsToolStarred}" />
-                            <materialIcons:MaterialIcon Kind="StarOutline" Width="16" Height="16" Foreground="#94A3B8" IsVisible="{Binding !IsToolStarred}" />
+                            <materialIcons:MaterialIcon Kind="StarOutline" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" IsVisible="{Binding !IsToolStarred}" />
                             <TextBlock Text="{Binding IsToolStarred, Converter={StaticResource EqualityConverter}, ConverterParameter=True, StringFormat='Starred'}"
                                        FontSize="12" FontWeight="SemiBold"
                                        Foreground="{Binding IsToolStarred, Converter={StaticResource EqualityConverter}, ConverterParameter=True, StringFormat='#B45309'}"
@@ -127,10 +127,10 @@
                         </StackPanel>
                     </Button>
 
-                    <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,6">
+                    <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,6">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="ShieldCheckOutline" Width="15" Height="15" Foreground="#16A34A" />
-                            <TextBlock Text="Local &amp; Secure · 100% Offline" FontSize="11.5" FontWeight="Medium" Foreground="#334155" />
+                            <TextBlock Text="Local &amp; Secure · 100% Offline" FontSize="11.5" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" />
                         </StackPanel>
                     </Border>
                 </StackPanel>

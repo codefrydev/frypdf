@@ -64,42 +64,42 @@
                 </Border>
 
                 <!-- Processing Card -->
-                <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="20,16" IsVisible="{Binding IsRunning}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20,16" IsVisible="{Binding IsRunning}">
                     <StackPanel Spacing="12">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="14" FontWeight="Bold" Foreground="#9333EA" VerticalAlignment="Center" />
                         </Grid>
-                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#9333EA" Background="#F1F5F9" />
-                        <Button Command="{Binding CancelExecutionCommand}" HorizontalAlignment="Right" Background="#F1F5F9" Foreground="#64748B" CornerRadius="6" Padding="12,5" FontSize="11.5" Cursor="Hand">
+                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#9333EA" Background="{DynamicResource WinHoverBrush}" />
+                        <Button Command="{Binding CancelExecutionCommand}" HorizontalAlignment="Right" Background="{DynamicResource WinHoverBrush}" Foreground="{DynamicResource WinMutedBrush}" CornerRadius="6" Padding="12,5" FontSize="11.5" Cursor="Hand">
                             Cancel
                         </Button>
                     </StackPanel>
                 </Border>
 
                 <!-- LIVE ROTATION ORIENTATION PREVIEW -->
-                <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 2 8 #06000000">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 2 8 #06000000">
                     <StackPanel Spacing="14">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                 <materialIcons:MaterialIcon Kind="RotateRight" Width="18" Height="18" Foreground="#9333EA" />
-                                <TextBlock Text="Live Page Orientation Preview" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                                <TextBlock Text="Live Page Orientation Preview" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                             <Border Background="#FAF5FF" CornerRadius="6" Padding="8,3">
                                 <TextBlock Text="{Binding RotationDegrees, StringFormat='{}{0}° Angle'}" FontSize="11" FontWeight="SemiBold" Foreground="#9333EA" />
                             </Border>
                         </Grid>
 
-                        <Border Width="260" Height="220" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" HorizontalAlignment="Center">
+                        <Border Width="260" Height="220" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" HorizontalAlignment="Center">
                             <LayoutTransformControl HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <LayoutTransformControl.LayoutTransform>
                                     <RotateTransform Angle="{Binding RotationDegrees}" />
                                 </LayoutTransformControl.LayoutTransform>
-                                <Border Width="110" Height="150" Background="White" BorderBrush="#9333EA" BorderThickness="2" CornerRadius="6" BoxShadow="0 4 12 #159333EA" Padding="10">
+                                <Border Width="110" Height="150" Background="{DynamicResource WinPanelBrush}" BorderBrush="#9333EA" BorderThickness="2" CornerRadius="6" BoxShadow="0 4 12 #159333EA" Padding="10">
                                     <Grid RowDefinitions="Auto,*,Auto">
                                         <Border Grid.Row="0" Width="40" Height="6" Background="#E2E8F0" CornerRadius="2" HorizontalAlignment="Left" />
                                         <materialIcons:MaterialIcon Grid.Row="1" Kind="ArrowUpBold" Width="28" Height="28" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Row="2" Text="TOP" FontSize="9" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Row="2" Text="TOP" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
                                     </Grid>
                                 </Border>
                             </LayoutTransformControl>
@@ -108,14 +108,14 @@
                 </Border>
 
                 <!-- Dropzone Box -->
-                <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
                         <Border Width="64" Height="64" Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="RotateRight" Width="34" Height="34" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Text="Select PDF to Rotate" FontSize="16" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center" />
-                            <TextBlock Text="Permanently reorient pages 90°, 180°, or 270° clockwise" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" />
+                            <TextBlock Text="Select PDF to Rotate" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Permanently reorient pages 90°, 180°, or 270° clockwise" FontSize="13" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                         </StackPanel>
                         <Button Command="{Binding AddFilesCommand}" Background="#9333EA" Foreground="White" CornerRadius="8" Padding="24,10" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -127,10 +127,10 @@
                 </Border>
 
                 <!-- Document List -->
-                <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="20" IsVisible="{Binding HasSelectedFiles}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" IsVisible="{Binding HasSelectedFiles}">
                     <StackPanel Spacing="12">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="Loaded Documents" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                            <TextBlock Text="Loaded Documents" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             <Button Command="{Binding AddFilesCommand}" Background="#FAF5FF" Foreground="#9333EA" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="6" Padding="12,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand">
                                 Add More
                             </Button>
@@ -138,14 +138,14 @@
                         <ItemsControl ItemsSource="{Binding SelectedFiles}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="x:String">
-                                    <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,8">
+                                    <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,8">
                                         <Grid ColumnDefinitions="Auto,*,Auto">
                                             <Border Grid.Column="0" Width="32" Height="32" Background="#FAF5FF" CornerRadius="6" Margin="0,0,12,0">
                                                 <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
-                                            <TextBlock Grid.Column="1" Text="{Binding}" FontSize="12.5" FontWeight="Medium" Foreground="#1E293B" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Grid.Column="1" Text="{Binding}" FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                             <Button Grid.Column="2" Command="{Binding $parent[UserControl].((vm:RotatePdfToolViewModel)DataContext).RemoveFileCommand}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Padding="6" Cursor="Hand">
-                                                <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="#94A3B8" />
+                                                <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" />
                                             </Button>
                                         </Grid>
                                     </Border>
@@ -159,12 +159,12 @@
         </ScrollViewer>
 
         <!-- RIGHT: Rotation Options -->
-        <Border Grid.Column="1" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
+        <Border Grid.Column="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
             <DockPanel>
                 <Border DockPanel.Dock="Top" Margin="0,0,0,16">
                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                         <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#9333EA" />
-                        <TextBlock Text="Rotation Options" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                        <TextBlock Text="Rotation Options" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
 
@@ -179,14 +179,14 @@
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Rotation Angle" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                        <TextBlock Text="Rotation Angle" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <RadioButton Content="90° CW" IsChecked="{Binding RotationDegrees, Converter={StaticResource EqualityConverter}, ConverterParameter=90}" />
                             <RadioButton Content="180°" IsChecked="{Binding RotationDegrees, Converter={StaticResource EqualityConverter}, ConverterParameter=180}" />
                             <RadioButton Content="270° CCW" IsChecked="{Binding RotationDegrees, Converter={StaticResource EqualityConverter}, ConverterParameter=270}" />
                         </StackPanel>
 
-                        <TextBlock Text="Apply To Pages" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                        <TextBlock Text="Apply To Pages" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                         <StackPanel Spacing="6">
                             <RadioButton Content="All Pages" IsChecked="{Binding TargetFilter, Converter={StaticResource EqualityConverter}, ConverterParameter=All}" />
                             <RadioButton Content="Odd Pages Only" IsChecked="{Binding TargetFilter, Converter={StaticResource EqualityConverter}, ConverterParameter=OddPagesOnly}" />
@@ -195,7 +195,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="4" IsVisible="{Binding TargetFilter, Converter={StaticResource EqualityConverter}, ConverterParameter=CustomRange}">
-                            <TextBlock Text="Range Expression (e.g. 1-5, 8)" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                            <TextBlock Text="Range Expression (e.g. 1-5, 8)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                             <TextBox Text="{Binding CustomRange}" FontSize="12" />
                         </StackPanel>
                     </StackPanel>

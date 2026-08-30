@@ -14,8 +14,8 @@
     <!-- Modal Backdrop -->
     <Grid Background="#60000000">
         <Border Width="580"
-                Background="White"
-                BorderBrush="{StaticResource WinBorderBrush}"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="10"
                 BoxShadow="0 20 60 #35000000"
@@ -31,16 +31,16 @@
                             <Border Width="30" Height="30" Background="#EFF6FF" CornerRadius="6">
                                 <materialIcons:MaterialIcon Kind="CallSplit" Width="18" Height="18" Foreground="#0F6CBD" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="Organize: Split &amp; Extract Pages" FontSize="17" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="Organize: Split &amp; Extract Pages" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                         </StackPanel>
-                        <TextBlock Text="Extract or split pages into independent documents or sub-ranges." FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                        <TextBlock Text="Extract or split pages into independent documents or sub-ranges." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
                     </StackPanel>
 
                     <Button Grid.Column="1"
                             Classes="mini-tool-btn"
                             Width="30" Height="30"
                             Command="{Binding CloseSplitExtractDialogCommand}">
-                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                     </Button>
                 </Grid>
 
@@ -70,21 +70,21 @@
                     <StackPanel Spacing="6" IsVisible="{Binding SplitExtractMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SplitEveryNPages}">
                         <TextBlock Text="Pages per Document" Classes="inspector-label" />
                         <NumericUpDown Value="{Binding SplitPageInterval, Mode=TwoWay}" Minimum="1" Maximum="{Binding TotalPagesCount}" Height="32" FontSize="12" />
-                        <TextBlock Text="Each output document will contain exactly this number of pages." FontSize="11" Foreground="{StaticResource WinMutedBrush}" />
+                        <TextBlock Text="Each output document will contain exactly this number of pages." FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
                     </StackPanel>
 
                     <!-- Split by Page Ranges Option -->
                     <StackPanel Spacing="6" IsVisible="{Binding SplitExtractMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SplitByPageRanges}">
                         <TextBlock Text="Page Ranges (e.g. 1-2, 3-4)" Classes="inspector-label" />
                         <TextBox Text="{Binding SplitPageRanges, Mode=TwoWay}" Height="32" FontSize="12" PlaceholderText="e.g. 1-2, 3" />
-                        <TextBlock Text="Specify comma-separated ranges to partition into multiple PDF projects." FontSize="11" Foreground="{StaticResource WinMutedBrush}" />
+                        <TextBlock Text="Specify comma-separated ranges to partition into multiple PDF projects." FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
                     </StackPanel>
 
                     <!-- Extract Selected Page Option -->
                     <StackPanel Spacing="6" IsVisible="{Binding SplitExtractMode, Converter={StaticResource EqualityConverter}, ConverterParameter=ExtractSelectedPages}">
                         <TextBlock Text="Extract Current Active Page into New Project" Classes="inspector-label" />
-                        <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10">
-                            <TextBlock Text="{Binding CurrentPageNumber, StringFormat='Active: Page {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinAccentBrush}" />
+                        <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <TextBlock Text="{Binding CurrentPageNumber, StringFormat='Active: Page {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
                         </Border>
                     </StackPanel>
 

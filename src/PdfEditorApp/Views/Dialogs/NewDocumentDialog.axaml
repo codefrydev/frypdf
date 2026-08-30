@@ -15,8 +15,8 @@
         <!-- Dialog Card -->
         <Border Width="880"
                 MaxHeight="720"
-                Background="White"
-                BorderBrush="{StaticResource WinBorderBrush}"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="16"
                 BoxShadow="0 24 64 #40000000, 0 4 20 #15000000"
@@ -31,25 +31,25 @@
                     <!-- Title & Subtitle -->
                     <StackPanel Grid.Column="0" Spacing="3" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border Width="32" Height="32" Background="{StaticResource WinAccentLightBrush}" CornerRadius="8">
-                                <materialIcons:MaterialIcon Kind="FileDocumentPlusOutline" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Width="32" Height="32" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="8">
+                                <materialIcons:MaterialIcon Kind="FileDocumentPlusOutline" Width="18" Height="18" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="New Document &amp; Template Gallery" FontSize="19" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="New Document &amp; Template Gallery" FontSize="19" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                         </StackPanel>
-                        <TextBlock Text="Select a professionally crafted template or start with a custom blank canvas." FontSize="12" Foreground="{StaticResource WinMutedBrush}" Margin="40,0,0,0" />
+                        <TextBlock Text="Select a professionally crafted template or start with a custom blank canvas." FontSize="12" Foreground="{DynamicResource WinMutedBrush}" Margin="40,0,0,0" />
                     </StackPanel>
 
                     <!-- Live Search Box -->
                     <Border Grid.Column="1"
                             Width="240" Height="34"
-                            Background="#F8FAFC"
-                            BorderBrush="#CBD5E1"
+                            Background="{DynamicResource WinInputBgBrush}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="8"
                             Margin="0,0,12,0"
                             Padding="8,0">
                         <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                            <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                             <TextBox Grid.Column="1"
                                      Text="{Binding TemplateSearchQuery, Mode=TwoWay}"
                                      PlaceholderText="Search templates..."
@@ -64,7 +64,7 @@
                                     Padding="0"
                                     IsVisible="{Binding TemplateSearchQuery.Length}"
                                     Command="{Binding ClearTemplateSearchCommand}">
-                                <materialIcons:MaterialIcon Kind="CloseCircle" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                                <materialIcons:MaterialIcon Kind="CloseCircle" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                             </Button>
                         </Grid>
                     </Border>
@@ -74,7 +74,7 @@
                             Classes="mini-tool-btn"
                             Width="32" Height="32"
                             Command="{Binding CloseNewDocumentDialogCommand}">
-                        <materialIcons:MaterialIcon Kind="Close" Width="18" Height="18" Foreground="{StaticResource WinMutedBrush}" />
+                        <materialIcons:MaterialIcon Kind="Close" Width="18" Height="18" Foreground="{DynamicResource WinMutedBrush}" />
                     </Button>
                 </Grid>
 
@@ -146,7 +146,7 @@
                                 Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=General}"
                                 Command="{Binding SetTemplateCategoryCommand}" CommandParameter="General">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="FileOutline" Width="14" Height="14" Foreground="#64748B" />
+                                <materialIcons:MaterialIcon Kind="FileOutline" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                                 <TextBlock Text="Blank Canvas" />
                             </StackPanel>
                         </Button>
@@ -167,10 +167,10 @@
                                     Command="{Binding SelectTemplateCommand}" CommandParameter="AnnualReport">
                                 <Grid RowDefinitions="125,Auto">
                                     <!-- Visual Mockup Area -->
-                                    <Border Grid.Row="0" Background="#F1F5F9" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
+                                    <Border Grid.Row="0" Background="{DynamicResource WinHoverBrush}" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
                                         <Grid>
                                             <!-- Mini Paper Sheet Mockup -->
-                                            <Border Width="110" Height="105" Background="White" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
+                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
                                                 <StackPanel Spacing="3">
                                                     <!-- Header Line & Logo -->
                                                     <Grid ColumnDefinitions="*,Auto">
@@ -182,7 +182,7 @@
                                                     <Border Height="3" Background="#94A3B8" Width="90" HorizontalAlignment="Left" CornerRadius="1" />
                                                     <Border Height="3" Background="#CBD5E1" Width="80" HorizontalAlignment="Left" CornerRadius="1" />
                                                     <!-- Mini 4-Bar Chart Mockup -->
-                                                    <Border Height="36" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="2" Margin="0,3,0,0" Padding="6,2">
+                                                    <Border Height="36" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="2" Margin="0,3,0,0" Padding="6,2">
                                                         <Grid ColumnDefinitions="*,*,*,*" VerticalAlignment="Bottom">
                                                             <Border Grid.Column="0" Width="10" Height="12" Background="#93C5FD" CornerRadius="1,1,0,0" HorizontalAlignment="Center" />
                                                             <Border Grid.Column="1" Width="10" Height="18" Background="#60A5FA" CornerRadius="1,1,0,0" HorizontalAlignment="Center" />
@@ -201,7 +201,7 @@
                                     </Border>
 
                                     <!-- Card Content Info -->
-                                    <Border Grid.Row="1" Padding="14,12" Background="White" CornerRadius="0,0,11,11">
+                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="0,0,11,11">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
                                                 <Border Grid.Column="0" Background="#EFF6FF" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
@@ -209,8 +209,8 @@
                                                 </Border>
                                                 <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="#0F6CBD" />
                                             </Grid>
-                                            <TextBlock Text="Annual Corporate Report" FontSize="13" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" Margin="0,2,0,0" />
-                                            <TextBlock Text="Executive summary, infrastructure SLA table &amp; balance sheet" FontSize="11" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
+                                            <TextBlock Text="Annual Corporate Report" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,2,0,0" />
+                                            <TextBlock Text="Executive summary, infrastructure SLA table &amp; balance sheet" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -227,7 +227,7 @@
                                     <Border Grid.Row="0" Background="#F0FDF4" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
                                         <Grid>
                                             <!-- Mini Paper Sheet Mockup -->
-                                            <Border Width="110" Height="105" Background="White" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
+                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
                                                 <StackPanel Spacing="3">
                                                     <!-- Top Invoice Banner -->
                                                     <Grid ColumnDefinitions="*,Auto">
@@ -237,9 +237,9 @@
                                                     <Border Height="1.5" Background="#16A34A" Margin="0,2,0,4" />
                                                     <!-- Mini Itemized Table Rows -->
                                                     <Border Height="10" Background="#0F6CBD" CornerRadius="1" Margin="0,0,0,1" />
-                                                    <Border Height="6" Background="#F8FAFC" Margin="0,0,0,1" />
-                                                    <Border Height="6" Background="#F1F5F9" Margin="0,0,0,1" />
-                                                    <Border Height="6" Background="#F8FAFC" Margin="0,0,0,3" />
+                                                    <Border Height="6" Background="{DynamicResource WinInputBgBrush}" Margin="0,0,0,1" />
+                                                    <Border Height="6" Background="{DynamicResource WinHoverBrush}" Margin="0,0,0,1" />
+                                                    <Border Height="6" Background="{DynamicResource WinInputBgBrush}" Margin="0,0,0,3" />
                                                     <!-- Total Due Badge -->
                                                     <Border Height="10" Width="45" Background="#DCFCE7" BorderBrush="#86EFAC" BorderThickness="0.5" CornerRadius="2" HorizontalAlignment="Right">
                                                         <TextBlock Text="$27,125" FontSize="7" FontWeight="Bold" Foreground="#166534" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -255,7 +255,7 @@
                                     </Border>
 
                                     <!-- Card Content Info -->
-                                    <Border Grid.Row="1" Padding="14,12" Background="White" CornerRadius="0,0,11,11">
+                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="0,0,11,11">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
                                                 <Border Grid.Column="0" Background="#DCFCE7" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
@@ -263,8 +263,8 @@
                                                 </Border>
                                                 <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="#16A34A" />
                                             </Grid>
-                                            <TextBlock Text="Modern Service Invoice" FontSize="13" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" Margin="0,2,0,0" />
-                                            <TextBlock Text="Itemized billing table, tax calculation &amp; payment terms" FontSize="11" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
+                                            <TextBlock Text="Modern Service Invoice" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,2,0,0" />
+                                            <TextBlock Text="Itemized billing table, tax calculation &amp; payment terms" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -281,7 +281,7 @@
                                     <Border Grid.Row="0" Background="#F5F3FF" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
                                         <Grid>
                                             <!-- Mini Paper Sheet Mockup -->
-                                            <Border Width="110" Height="105" Background="White" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
+                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
                                                 <StackPanel Spacing="3">
                                                     <!-- Header with Avatar & QR -->
                                                     <Grid ColumnDefinitions="Auto,*,Auto">
@@ -294,13 +294,13 @@
                                                     </Grid>
                                                     <Border Height="1.5" Background="#7C3AED" Margin="0,2,0,3" />
                                                     <!-- Summary Card -->
-                                                    <Border Height="14" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0.5" CornerRadius="2" Padding="3,1">
+                                                    <Border Height="14" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0.5" CornerRadius="2" Padding="3,1">
                                                         <Border Height="2.5" Background="#64748B" Width="80" HorizontalAlignment="Left" CornerRadius="1" />
                                                     </Border>
                                                     <!-- 2 Columns Skills Matrix -->
                                                     <Grid ColumnDefinitions="*,*" Margin="0,2,0,2">
-                                                        <Border Grid.Column="0" Height="12" Background="#F1F5F9" CornerRadius="1.5" Margin="0,0,2,0" />
-                                                        <Border Grid.Column="1" Height="12" Background="#F1F5F9" CornerRadius="1.5" Margin="2,0,0,0" />
+                                                        <Border Grid.Column="0" Height="12" Background="{DynamicResource WinHoverBrush}" CornerRadius="1.5" Margin="0,0,2,0" />
+                                                        <Border Grid.Column="1" Height="12" Background="{DynamicResource WinHoverBrush}" CornerRadius="1.5" Margin="2,0,0,0" />
                                                     </Grid>
                                                     <!-- Experience Lines -->
                                                     <Border Height="3" Background="#334155" Width="85" HorizontalAlignment="Left" CornerRadius="1" />
@@ -316,7 +316,7 @@
                                     </Border>
 
                                     <!-- Card Content Info -->
-                                    <Border Grid.Row="1" Padding="14,12" Background="White" CornerRadius="0,0,11,11">
+                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="0,0,11,11">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
                                                 <Border Grid.Column="0" Background="#EDE9FE" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
@@ -324,8 +324,8 @@
                                                 </Border>
                                                 <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="#7C3AED" />
                                             </Grid>
-                                            <TextBlock Text="Executive Resume / CV" FontSize="13" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" Margin="0,2,0,0" />
-                                            <TextBlock Text="Complete career layout with QR code, metrics &amp; credentials" FontSize="11" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
+                                            <TextBlock Text="Executive Resume / CV" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,2,0,0" />
+                                            <TextBlock Text="Complete career layout with QR code, metrics &amp; credentials" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -342,7 +342,7 @@
                                     <Border Grid.Row="0" Background="#FFFBEB" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
                                         <Grid>
                                             <!-- Mini Paper Sheet Mockup -->
-                                            <Border Width="110" Height="105" Background="White" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
+                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
                                                 <StackPanel Spacing="3">
                                                     <!-- Centered Paper Title -->
                                                     <Border Height="5" Width="70" Background="#1E293B" CornerRadius="1" HorizontalAlignment="Center" />
@@ -378,7 +378,7 @@
                                     </Border>
 
                                     <!-- Card Content Info -->
-                                    <Border Grid.Row="1" Padding="14,12" Background="White" CornerRadius="0,0,11,11">
+                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="0,0,11,11">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
                                                 <Border Grid.Column="0" Background="#FEF3C7" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
@@ -386,8 +386,8 @@
                                                 </Border>
                                                 <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="#D97706" />
                                             </Grid>
-                                            <TextBlock Text="Academic Research Paper" FontSize="13" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" Margin="0,2,0,0" />
-                                            <TextBlock Text="2-column formatted research paper with abstract &amp; references" FontSize="11" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
+                                            <TextBlock Text="Academic Research Paper" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,2,0,0" />
+                                            <TextBlock Text="2-column formatted research paper with abstract &amp; references" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -404,7 +404,7 @@
                                     <Border Grid.Row="0" Background="#EFF6FF" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
                                         <Grid>
                                             <!-- Mini Landscape Certificate Sheet -->
-                                            <Border Width="135" Height="92" Background="White" BorderBrush="#0F6CBD" BorderThickness="1.5" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="4">
+                                            <Border Width="135" Height="92" Background="{DynamicResource WinPanelBrush}" BorderBrush="#0F6CBD" BorderThickness="1.5" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="4">
                                                 <Border BorderBrush="#F59E0B" BorderThickness="0.75" CornerRadius="2" Padding="6,4">
                                                     <StackPanel Spacing="2.5" VerticalAlignment="Center">
                                                         <Border Height="4" Width="70" Background="#0F6CBD" CornerRadius="1" HorizontalAlignment="Center" />
@@ -428,7 +428,7 @@
                                     </Border>
 
                                     <!-- Card Content Info -->
-                                    <Border Grid.Row="1" Padding="14,12" Background="White" CornerRadius="0,0,11,11">
+                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="0,0,11,11">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
                                                 <Border Grid.Column="0" Background="#EFF6FF" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
@@ -436,8 +436,8 @@
                                                 </Border>
                                                 <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="#2563EB" />
                                             </Grid>
-                                            <TextBlock Text="Certificate of Achievement" FontSize="13" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" Margin="0,2,0,0" />
-                                            <TextBlock Text="Award of excellence with double ornamental borders &amp; gold seal" FontSize="11" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
+                                            <TextBlock Text="Certificate of Achievement" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,2,0,0" />
+                                            <TextBlock Text="Award of excellence with double ornamental borders &amp; gold seal" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -451,16 +451,16 @@
                                     Command="{Binding SelectTemplateCommand}" CommandParameter="Blank">
                                 <Grid RowDefinitions="125,Auto">
                                     <!-- Visual Mockup Area -->
-                                    <Border Grid.Row="0" Background="#F8FAFC" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
+                                    <Border Grid.Row="0" Background="{DynamicResource WinInputBgBrush}" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
                                         <Grid>
                                             <!-- Mini Paper Sheet Mockup -->
-                                            <Border Width="110" Height="105" Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                 <StackPanel Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <Border Width="32" Height="32" Background="#F1F5F9" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
-                                                        <materialIcons:MaterialIcon Kind="Plus" Width="18" Height="18" Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    <Border Width="32" Height="32" Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
+                                                        <materialIcons:MaterialIcon Kind="Plus" Width="18" Height="18" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                     </Border>
-                                                    <Border Background="#F1F5F9" CornerRadius="3" Padding="6,1.5">
-                                                        <TextBlock Text="Custom Page" FontSize="8.5" FontWeight="SemiBold" Foreground="#64748B" />
+                                                    <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="3" Padding="6,1.5">
+                                                        <TextBlock Text="Custom Page" FontSize="8.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                                                     </Border>
                                                 </StackPanel>
                                             </Border>
@@ -473,16 +473,16 @@
                                     </Border>
 
                                     <!-- Card Content Info -->
-                                    <Border Grid.Row="1" Padding="14,12" Background="White" CornerRadius="0,0,11,11">
+                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="0,0,11,11">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
-                                                <Border Grid.Column="0" Background="#F1F5F9" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
-                                                    <TextBlock Text="GENERAL" FontSize="9.5" FontWeight="Bold" Foreground="#475569" />
+                                                <Border Grid.Column="0" Background="{DynamicResource WinHoverBrush}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
+                                                    <TextBlock Text="GENERAL" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" />
                                                 </Border>
-                                                <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="#475569" />
+                                                <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                                             </Grid>
-                                            <TextBlock Text="Blank Canvas" FontSize="13" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" Margin="0,2,0,0" />
-                                            <TextBlock Text="Start fresh with a clean, fully customizable document" FontSize="11" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
+                                            <TextBlock Text="Blank Canvas" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,2,0,0" />
+                                            <TextBlock Text="Start fresh with a clean, fully customizable document" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -491,13 +491,13 @@
                         </Grid>
 
                         <!-- No Matching Templates Empty State -->
-                        <Border IsVisible="{Binding HasNoMatchingTemplates}" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="32,48" HorizontalAlignment="Stretch" Margin="8">
+                        <Border IsVisible="{Binding HasNoMatchingTemplates}" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="32,48" HorizontalAlignment="Stretch" Margin="8">
                             <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                <Border Width="48" Height="48" Background="#F1F5F9" CornerRadius="24" HorizontalAlignment="Center">
-                                    <materialIcons:MaterialIcon Kind="MagnifyClose" Width="24" Height="24" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Width="48" Height="48" Background="{DynamicResource WinHoverBrush}" CornerRadius="24" HorizontalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="MagnifyClose" Width="24" Height="24" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="No templates found" FontSize="15" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" />
-                                <TextBlock Text="Try adjusting your search query or switching to another category." FontSize="12" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                <TextBlock Text="No templates found" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
+                                <TextBlock Text="Try adjusting your search query or switching to another category." FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                                 <Button Classes="secondary-btn"
                                         Content="Show All Templates"
                                         HorizontalAlignment="Center"
@@ -518,8 +518,8 @@
                             HorizontalAlignment="Left"
                             Command="{Binding OpenProjectCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" />
-                            <TextBlock Text="Open Existing Project (.frypdf)" FontSize="12.5" FontWeight="Medium" Foreground="{StaticResource WinAccentBrush}" VerticalAlignment="Center" />
+                            <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="18" Height="18" Foreground="{DynamicResource WinAccentBrush}" />
+                            <TextBlock Text="Open Existing Project (.frypdf)" FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
 

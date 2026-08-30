@@ -40,7 +40,7 @@
                 </Border>
 
                 <!-- Rich Merged Result & Interactive Document Preview Card -->
-                <Border Background="#FFFFFF" BorderBrush="#86EFAC" BorderThickness="1.5" CornerRadius="14" Padding="20" BoxShadow="0 8 24 #1516A34A" IsVisible="{Binding IsComplete}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="#86EFAC" BorderThickness="1.5" CornerRadius="14" Padding="20" BoxShadow="0 8 24 #1516A34A" IsVisible="{Binding IsComplete}">
                     <StackPanel Spacing="16">
                         
                         <!-- Header & Primary Status -->
@@ -52,7 +52,7 @@
                                 <TextBlock Text="PDFs Merged Successfully!" FontSize="16" FontWeight="Bold" Foreground="#166534" />
                                 <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="12.5" Foreground="#15803D" TextWrapping="Wrap" />
                             </StackPanel>
-                            <Button Grid.Column="2" Command="{Binding StartOverCommand}" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" Foreground="#64748B" CornerRadius="8" Padding="12,6" FontSize="12" Cursor="Hand">
+                            <Button Grid.Column="2" Command="{Binding StartOverCommand}" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" Foreground="{DynamicResource WinMutedBrush}" CornerRadius="8" Padding="12,6" FontSize="12" Cursor="Hand">
                                 <StackPanel Orientation="Horizontal" Spacing="5">
                                     <materialIcons:MaterialIcon Kind="Refresh" Width="14" Height="14" />
                                     <TextBlock Text="Merge Another" VerticalAlignment="Center" />
@@ -87,7 +87,7 @@
                             </Button>
 
                             <!-- Reveal in Folder -->
-                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#F1F5F9" Foreground="#334155" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" Padding="14,10" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
+                            <Button Command="{Binding OpenOutputFolderCommand}" Background="{DynamicResource WinHoverBrush}" Foreground="{DynamicResource WinTextBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
                                     <TextBlock Text="Show in Folder" VerticalAlignment="Center" />
@@ -96,17 +96,17 @@
                         </WrapPanel>
 
                         <!-- Document Metadata Summary -->
-                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="14,10">
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14,10">
                             <Grid ColumnDefinitions="*,Auto,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                     <materialIcons:MaterialIcon Kind="FileDocumentCheckOutline" Width="18" Height="18" Foreground="#16A34A" />
-                                    <TextBlock Text="{Binding OutputFilePreview.FileName}" FontSize="12.5" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="350" />
+                                    <TextBlock Text="{Binding OutputFilePreview.FileName}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="350" />
                                 </StackPanel>
                                 <Border Grid.Column="1" Background="#DCFCE7" CornerRadius="6" Padding="8,2" Margin="10,0">
                                     <TextBlock Text="{Binding OutputFilePreview.PageCountText}" FontSize="11.5" FontWeight="Bold" Foreground="#166534" />
                                 </Border>
                                 <Border Grid.Column="2" Background="#E2E8F0" CornerRadius="6" Padding="8,2">
-                                    <TextBlock Text="{Binding OutputFilePreview.FileSizeFormatted}" FontSize="11.5" FontWeight="Bold" Foreground="#334155" />
+                                    <TextBlock Text="{Binding OutputFilePreview.FileSizeFormatted}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                 </Border>
                             </Grid>
                         </Border>
@@ -114,8 +114,8 @@
                         <!-- IN-APP MERGED PDF PAGE STRIP PREVIEW -->
                         <StackPanel Spacing="8">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="Merged Document Pages Preview" FontSize="13" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="{Binding OutputPageThumbnails.Count, StringFormat='{}{0} Pages Generated'}" FontSize="11.5" Foreground="#64748B" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="0" Text="Merged Document Pages Preview" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding OutputPageThumbnails.Count, StringFormat='{}{0} Pages Generated'}" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                             </Grid>
 
                             <!-- Horizontal Scrollable Page Gallery -->
@@ -128,7 +128,7 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate DataType="models:PdfPagePreviewThumbnail">
-                                            <Border Width="110" Height="150" Background="White" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="8" Padding="8" BoxShadow="0 3 8 #0A000000">
+                                            <Border Width="110" Height="150" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1.5" CornerRadius="8" Padding="8" BoxShadow="0 3 8 #0A000000">
                                                 <Grid RowDefinitions="Auto,*,Auto">
                                                     
                                                     <!-- Top Page Badge -->
@@ -136,23 +136,23 @@
                                                         <Border Grid.Column="0" Background="#EA580C" CornerRadius="4" Padding="5,1" HorizontalAlignment="Left">
                                                             <TextBlock Text="{Binding PageNumber, StringFormat='{}#{0}'}" FontSize="9.5" FontWeight="Bold" Foreground="White" />
                                                         </Border>
-                                                        <TextBlock Grid.Column="1" Text="{Binding DimensionsText}" FontSize="8.5" Foreground="#94A3B8" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding DimensionsText}" FontSize="8.5" Foreground="{DynamicResource WinSubtleBrush}" />
                                                     </Grid>
 
                                                     <!-- Visual Page Sheet Lines -->
-                                                    <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4" Padding="6,6" Margin="0,0,0,6">
+                                                    <Border Grid.Row="1" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,6" Margin="0,0,0,6">
                                                         <StackPanel Spacing="4" VerticalAlignment="Center">
                                                             <Border Height="3" Background="#EA580C" CornerRadius="1.5" Margin="0,0,20,0" Opacity="0.8" />
                                                             <Border Height="2" Background="#CBD5E1" CornerRadius="1" Margin="0,0,6,0" />
                                                             <Border Height="2" Background="#E2E8F0" CornerRadius="1" Margin="0,0,12,0" />
                                                             <Border Height="2" Background="#CBD5E1" CornerRadius="1" Margin="0,0,4,0" />
                                                             <Border Height="2" Background="#E2E8F0" CornerRadius="1" Margin="0,0,16,0" />
-                                                            <Border Height="2" Background="#F1F5F9" CornerRadius="1" Margin="0,0,8,0" />
+                                                            <Border Height="2" Background="{DynamicResource WinHoverBrush}" CornerRadius="1" Margin="0,0,8,0" />
                                                         </StackPanel>
                                                     </Border>
 
                                                     <!-- Bottom Label -->
-                                                    <TextBlock Grid.Row="2" Text="{Binding PageLabel}" FontSize="9.5" FontWeight="SemiBold" Foreground="#475569" HorizontalAlignment="Center" />
+                                                    <TextBlock Grid.Row="2" Text="{Binding PageLabel}" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
@@ -165,31 +165,31 @@
                 </Border>
 
                 <!-- Processing Progress Card -->
-                <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="20,16" BoxShadow="0 4 12 #08000000" IsVisible="{Binding IsRunning}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20,16" BoxShadow="0 4 12 #08000000" IsVisible="{Binding IsRunning}">
                     <StackPanel Spacing="12">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                                 <materialIcons:MaterialIcon Kind="CogSyncOutline" Width="20" Height="20" Foreground="#EA580C" />
-                                <TextBlock Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                             <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="14" FontWeight="Bold" Foreground="#EA580C" VerticalAlignment="Center" />
                         </Grid>
-                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#EA580C" Background="#F1F5F9" />
-                        <Button Command="{Binding CancelExecutionCommand}" HorizontalAlignment="Right" Background="#F1F5F9" Foreground="#64748B" CornerRadius="6" Padding="12,5" FontSize="11.5" Cursor="Hand">
+                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#EA580C" Background="{DynamicResource WinHoverBrush}" />
+                        <Button Command="{Binding CancelExecutionCommand}" HorizontalAlignment="Right" Background="{DynamicResource WinHoverBrush}" Foreground="{DynamicResource WinMutedBrush}" CornerRadius="6" Padding="12,5" FontSize="11.5" Cursor="Hand">
                             Cancel Merge
                         </Button>
                     </StackPanel>
                 </Border>
 
                 <!-- Large Drag & Drop Box when empty -->
-                <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
                         <Border Width="64" Height="64" Background="#FFF7ED" BorderBrush="#FED7AA" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="CallMerge" Width="34" Height="34" Foreground="#EA580C" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Text="Drag and drop PDF files to combine" FontSize="16" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center" />
-                            <TextBlock Text="Combine multiple PDF documents into a single organized file with full page previews" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" />
+                            <TextBlock Text="Drag and drop PDF files to combine" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Combine multiple PDF documents into a single organized file with full page previews" FontSize="13" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                         </StackPanel>
                         <Button Command="{Binding AddFilesCommand}" Background="#EA580C" Foreground="White" CornerRadius="8" Padding="24,10" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -197,7 +197,7 @@
                                 <TextBlock Text="Select PDF Documents" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
-                        <TextBlock Text="Select 2 or more PDF files to preview and arrange" FontSize="11.5" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                        <TextBlock Text="Select 2 or more PDF files to preview and arrange" FontSize="11.5" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
                     </StackPanel>
                 </Border>
 
@@ -216,12 +216,12 @@
                 </Border>
 
                 <!-- Selected Files List with Rich Visual Previews & Reorder Controls -->
-                <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 2 6 #05000000" IsVisible="{Binding HasSelectedFiles}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 2 6 #05000000" IsVisible="{Binding HasSelectedFiles}">
                     <StackPanel Spacing="14">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                 <materialIcons:MaterialIcon Kind="FormatListNumbered" Width="18" Height="18" Foreground="#EA580C" />
-                                <TextBlock Text="Documents in Merge Sequence" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                                <TextBlock Text="Documents in Merge Sequence" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                 <Border Background="#FFF7ED" CornerRadius="12" Padding="8,2" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding SelectedFilePreviewItems.Count, StringFormat='{}{0} files'}" FontSize="11" FontWeight="Bold" Foreground="#EA580C" />
                                 </Border>
@@ -240,17 +240,17 @@
                             </StackPanel>
                         </Grid>
 
-                        <TextBlock Text="Drag or use the Up/Down buttons to adjust the merge order. Each document's pages will be appended sequentially." FontSize="11.5" Foreground="#64748B" />
+                        <TextBlock Text="Drag or use the Up/Down buttons to adjust the merge order. Each document's pages will be appended sequentially." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
 
                         <!-- Visual Document Preview Items List -->
                         <ItemsControl ItemsSource="{Binding SelectedFilePreviewItems}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="models:PdfFilePreviewItem">
-                                    <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,0,0,10" BoxShadow="0 2 6 #04000000">
+                                    <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,0,0,10" BoxShadow="0 2 6 #04000000">
                                         <Grid ColumnDefinitions="Auto,*,Auto">
                                             
                                             <!-- Mini-Page Sheet Thumbnail Preview -->
-                                            <Border Grid.Column="0" Width="64" Height="82" Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4" BoxShadow="0 2 6 #0A000000" Margin="0,0,14,0" Padding="6,5">
+                                            <Border Grid.Column="0" Width="64" Height="82" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" BoxShadow="0 2 6 #0A000000" Margin="0,0,14,0" Padding="6,5">
                                                 <Grid RowDefinitions="Auto,*,Auto">
                                                     <!-- Miniature Page Header -->
                                                     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,4">
@@ -262,7 +262,7 @@
                                                     <StackPanel Grid.Row="1" Spacing="3" VerticalAlignment="Center">
                                                         <Border Height="2.5" Background="#E2E8F0" CornerRadius="1" Margin="0,0,4,0" />
                                                         <Border Height="2.5" Background="#E2E8F0" CornerRadius="1" Margin="0,0,10,0" />
-                                                        <Border Height="2.5" Background="#F1F5F9" CornerRadius="1" Margin="0,0,2,0" />
+                                                        <Border Height="2.5" Background="{DynamicResource WinHoverBrush}" CornerRadius="1" Margin="0,0,2,0" />
                                                         <Border Height="2.5" Background="#E2E8F0" CornerRadius="1" Margin="0,0,8,0" />
                                                     </StackPanel>
                                                     
@@ -279,22 +279,22 @@
                                                     <Border Background="#EA580C" CornerRadius="4" Padding="6,1.5">
                                                         <TextBlock Text="{Binding OrderIndexText}" FontSize="10.5" FontWeight="Bold" Foreground="White" />
                                                     </Border>
-                                                    <TextBlock Text="{Binding FileName}" FontSize="13" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="320" ToolTip.Tip="{Binding FilePath}" />
+                                                    <TextBlock Text="{Binding FileName}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="320" ToolTip.Tip="{Binding FilePath}" />
                                                 </StackPanel>
 
                                                 <!-- Metadata Badges Strip -->
                                                 <WrapPanel Orientation="Horizontal">
-                                                    <Border Background="#F1F5F9" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                                                    <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
                                                         <StackPanel Orientation="Horizontal" Spacing="4">
-                                                            <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="13" Height="13" Foreground="#475569" />
-                                                            <TextBlock Text="{Binding PageCountText}" FontSize="11" FontWeight="SemiBold" Foreground="#334155" />
+                                                            <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                                                            <TextBlock Text="{Binding PageCountText}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                                                         </StackPanel>
                                                     </Border>
 
-                                                    <Border Background="#F1F5F9" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                                                    <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
                                                         <StackPanel Orientation="Horizontal" Spacing="4">
-                                                            <materialIcons:MaterialIcon Kind="DatabaseOutline" Width="13" Height="13" Foreground="#475569" />
-                                                            <TextBlock Text="{Binding FileSizeFormatted}" FontSize="11" FontWeight="SemiBold" Foreground="#334155" />
+                                                            <materialIcons:MaterialIcon Kind="DatabaseOutline" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                                                            <TextBlock Text="{Binding FileSizeFormatted}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                                                         </StackPanel>
                                                     </Border>
 
@@ -304,16 +304,16 @@
                                                 </WrapPanel>
 
                                                 <!-- Truncated Path Subtitle -->
-                                                <TextBlock Text="{Binding FilePath}" FontSize="10.5" Foreground="#94A3B8" TextTrimming="CharacterEllipsis" MaxWidth="380" />
+                                                <TextBlock Text="{Binding FilePath}" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" TextTrimming="CharacterEllipsis" MaxWidth="380" />
                                             </StackPanel>
 
                                             <!-- Reordering & Remove Actions -->
                                             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                                <Button Command="{Binding $parent[UserControl].((vm:MergePdfToolViewModel)DataContext).MoveFileUpCommand}" CommandParameter="{Binding FilePath}" Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="7" Cursor="Hand" ToolTip.Tip="Move Up in Sequence">
-                                                    <materialIcons:MaterialIcon Kind="ArrowUp" Width="16" Height="16" Foreground="#475569" />
+                                                <Button Command="{Binding $parent[UserControl].((vm:MergePdfToolViewModel)DataContext).MoveFileUpCommand}" CommandParameter="{Binding FilePath}" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="7" Cursor="Hand" ToolTip.Tip="Move Up in Sequence">
+                                                    <materialIcons:MaterialIcon Kind="ArrowUp" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                                                 </Button>
-                                                <Button Command="{Binding $parent[UserControl].((vm:MergePdfToolViewModel)DataContext).MoveFileDownCommand}" CommandParameter="{Binding FilePath}" Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="7" Cursor="Hand" ToolTip.Tip="Move Down in Sequence">
-                                                    <materialIcons:MaterialIcon Kind="ArrowDown" Width="16" Height="16" Foreground="#475569" />
+                                                <Button Command="{Binding $parent[UserControl].((vm:MergePdfToolViewModel)DataContext).MoveFileDownCommand}" CommandParameter="{Binding FilePath}" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="7" Cursor="Hand" ToolTip.Tip="Move Down in Sequence">
+                                                    <materialIcons:MaterialIcon Kind="ArrowDown" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                                                 </Button>
                                                 <Button Command="{Binding $parent[UserControl].((vm:MergePdfToolViewModel)DataContext).RemoveFileCommand}" CommandParameter="{Binding FilePath}" Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="6" Padding="7" Cursor="Hand" ToolTip.Tip="Remove from Merge">
                                                     <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="#DC2626" />
@@ -332,12 +332,12 @@
         </ScrollViewer>
 
         <!-- RIGHT: Merge Options & Action Panel -->
-        <Border Grid.Column="1" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
+        <Border Grid.Column="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
             <DockPanel>
                 <Border DockPanel.Dock="Top" Margin="0,0,0,16">
                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                         <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#EA580C" />
-                        <TextBlock Text="Merge Configuration" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                        <TextBlock Text="Merge Configuration" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
 
@@ -348,25 +348,25 @@
                             <TextBlock Text="Merge PDFs Now" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <TextBlock Text="Combine all selected files into one document" FontSize="11" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                    <TextBlock Text="Combine all selected files into one document" FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
                 </StackPanel>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Spacing="16">
                         
                         <!-- Summary Stats Card -->
-                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                             <StackPanel Spacing="8">
-                                <TextBlock Text="Output Document Stats" FontSize="11.5" FontWeight="Bold" Foreground="#475569" />
+                                <TextBlock Text="Output Document Stats" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" />
                                 <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Input Files:" FontSize="12" Foreground="#64748B" />
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedFilePreviewItems.Count, StringFormat='{}{0}'}" FontSize="12" FontWeight="Bold" Foreground="#0F172A" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Input Files:" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedFilePreviewItems.Count, StringFormat='{}{0}'}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
 
-                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Total Output Pages:" FontSize="12" Foreground="#64748B" Margin="0,4,0,0" />
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Total Output Pages:" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" Margin="0,4,0,0" />
                                     <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TotalSelectedPages, StringFormat='{}{0} pages'}" FontSize="12" FontWeight="Bold" Foreground="#EA580C" Margin="0,4,0,0" />
 
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Total Input Size:" FontSize="12" Foreground="#64748B" Margin="0,4,0,0" />
-                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding TotalSummaryText}" FontSize="11.5" FontWeight="SemiBold" Foreground="#334155" Margin="0,4,0,0" TextTrimming="CharacterEllipsis" MaxWidth="150" />
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Total Input Size:" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" Margin="0,4,0,0" />
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding TotalSummaryText}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" Margin="0,4,0,0" TextTrimming="CharacterEllipsis" MaxWidth="150" />
                                 </Grid>
                             </StackPanel>
                         </Border>
@@ -379,7 +379,7 @@
                         </Border>
 
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Merge Options" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                            <TextBlock Text="Merge Options" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                             <CheckBox Content="Preserve Bookmarks &amp; Outlines" IsChecked="{Binding PreserveBookmarks}" FontSize="12" />
                             <CheckBox Content="Normalize Page Dimensions (A4 standard)" IsChecked="{Binding NormalizePageSizes}" FontSize="12" />
                         </StackPanel>

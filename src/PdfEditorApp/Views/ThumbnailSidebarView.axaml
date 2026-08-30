@@ -24,21 +24,21 @@
                 <MenuItem.Icon><materialIcons:MaterialIcon Kind="FilePlusOutline" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Duplicate Page" InputGesture="Ctrl+Shift+D" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).DuplicateCurrentPageCommand}">
-                <MenuItem.Icon><materialIcons:MaterialIcon Kind="FileMultipleOutline" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="FileMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" /></MenuItem.Icon>
             </MenuItem>
             <Separator />
             <MenuItem Header="Rotate 90° Clockwise" InputGesture="Ctrl+Shift+R" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).RotateCurrentPageCommand}">
-                <MenuItem.Icon><materialIcons:MaterialIcon Kind="RotateRight" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="RotateRight" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" /></MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Rotate 90° Counter-Clockwise" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).RotateCurrentPageCounterClockwiseCommand}">
-                <MenuItem.Icon><materialIcons:MaterialIcon Kind="RotateLeft" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="RotateLeft" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" /></MenuItem.Icon>
             </MenuItem>
             <Separator />
             <MenuItem Header="Move Page Up" InputGesture="Ctrl+Shift+Up" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).MovePageUpCommand}">
-                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ChevronUp" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ChevronUp" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" /></MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Move Page Down" InputGesture="Ctrl+Shift+Down" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).MovePageDownCommand}">
-                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ChevronDown" Width="16" Height="16" Foreground="#475569" /></MenuItem.Icon>
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ChevronDown" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" /></MenuItem.Icon>
             </MenuItem>
             <Separator />
             <MenuItem Header="Delete Page" InputGesture="Ctrl+Shift+Delete" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).DeleteCurrentPageCommand}">
@@ -50,12 +50,12 @@
     <!-- Outer Container: dynamically switches between Expanded (240px) and Collapsed (38px) mode -->
     <Panel>
         <!-- A. EXPANDED MODE (Width 240) -->
-        <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,1,0" Width="240"
+        <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,1,0" Width="240"
                 IsVisible="{Binding !IsLeftSidebarCollapsed}">
             <Grid RowDefinitions="Auto,*,Auto">
 
                 <!-- 1. Sidebar Tab Bar Header (Thumbnails, Outline, Comments) -->
-                <Border Grid.Row="0" Background="{StaticResource WinBgBrush}" Height="42" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="8,0">
+                <Border Grid.Row="0" Background="{DynamicResource WinBgBrush}" Height="42" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="8,0">
                     <Grid ColumnDefinitions="*,Auto">
                         <!-- Tab Switcher -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
@@ -64,7 +64,7 @@
                                     Command="{Binding SelectSidebarTabCommand}"
                                     CommandParameter="{x:Static models:SidebarTabKind.Thumbnails}"
                                     ToolTip.Tip="Page Thumbnails">
-                                <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                             </Button>
 
                             <Button Classes="mini-tool-btn" Width="30" Height="30"
@@ -72,7 +72,7 @@
                                     Command="{Binding SelectSidebarTabCommand}"
                                     CommandParameter="{x:Static models:SidebarTabKind.Outline}"
                                     ToolTip.Tip="Document Outline &amp; Bookmarks">
-                                <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                             </Button>
 
                             <Button Classes="mini-tool-btn" Width="30" Height="30"
@@ -80,7 +80,7 @@
                                     Command="{Binding SelectSidebarTabCommand}"
                                     CommandParameter="{x:Static models:SidebarTabKind.Comments}"
                                     ToolTip.Tip="Comments &amp; Review Annotations">
-                                <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                                <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                             </Button>
                         </StackPanel>
 
@@ -88,17 +88,17 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
                             <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding AddPageCommand}" ToolTip.Tip="Add New Page (⌘⇧N)"
                                     IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}">
-                                <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                                <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                             </Button>
                             <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding RotateCurrentPageCommand}" ToolTip.Tip="Rotate 90° CW (⌘⇧R)"
                                     IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}">
-                                <materialIcons:MaterialIcon Kind="RotateRight" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                                <materialIcons:MaterialIcon Kind="RotateRight" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                             </Button>
-                            <Rectangle Width="1" Height="14" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+                            <Rectangle Width="1" Height="14" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
                             <Button Classes="mini-tool-btn" Width="26" Height="26"
                                     Command="{Binding ToggleLeftSidebarCommand}"
                                     ToolTip.Tip="Collapse Pages Sidebar (⌘B / Ctrl+B)">
-                                <materialIcons:MaterialIcon Kind="ChevronLeft" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                                <materialIcons:MaterialIcon Kind="ChevronLeft" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                             </Button>
                         </StackPanel>
                     </Grid>
@@ -124,7 +124,7 @@
                                     <StackPanel HorizontalAlignment="Center" Spacing="6">
 
                                         <!-- Real Live Miniature Page Card -->
-                                        <Border Background="White"
+                                        <Border Background="{DynamicResource WinPanelBrush}"
                                                 BorderThickness="{Binding IsSelected, Converter={StaticResource BoolToThickness}, ConverterParameter='2.5|1'}"
                                                 BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#CBD5E1'}"
                                                 CornerRadius="6"
@@ -260,15 +260,15 @@
                                                             <!-- Table Element Mini Template -->
                                                             <DataTemplate DataType="elvm:TableElementViewModel">
                                                                 <Border Width="{Binding Width}" Height="{Binding Height}"
-                                                                        Background="White"
+                                                                        Background="{DynamicResource WinPanelBrush}"
                                                                         BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                         BorderThickness="1" Padding="4">
                                                                     <Grid RowDefinitions="Auto,*">
                                                                         <Rectangle Grid.Row="0" Height="20" Fill="{Binding HeaderBackgroundHex, Converter={StaticResource HexToBrushConverter}}" />
                                                                         <StackPanel Grid.Row="1" Spacing="4" Margin="0,4,0,0">
-                                                                            <Rectangle Height="8" Fill="#E2E8F0" />
+                                                                            <Rectangle Height="8" Fill="{DynamicResource WinBorderBrush}" />
                                                                             <Rectangle Height="8" Fill="#F1F5F9" />
-                                                                            <Rectangle Height="8" Fill="#E2E8F0" />
+                                                                            <Rectangle Height="8" Fill="{DynamicResource WinBorderBrush}" />
                                                                         </StackPanel>
                                                                     </Grid>
                                                                 </Border>
@@ -281,7 +281,7 @@
                                                                         BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                         BorderThickness="1" CornerRadius="4" Padding="6">
                                                                     <Grid RowDefinitions="Auto,*">
-                                                                        <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="11" FontWeight="Bold" Foreground="#334155" />
+                                                                        <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                                                                         <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="0,4,0,0">
                                                                             <ItemsControl.ItemsPanel>
                                                                                 <ItemsPanelTemplate>
@@ -303,15 +303,15 @@
                                                             <!-- Image Element Mini Template -->
                                                             <DataTemplate DataType="elvm:ImageElementViewModel">
                                                                 <Border Width="{Binding Width}" Height="{Binding Height}"
-                                                                        Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4">
-                                                                    <materialIcons:MaterialIcon Kind="ImageOutline" Width="28" Height="28" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                        Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4">
+                                                                    <materialIcons:MaterialIcon Kind="ImageOutline" Width="28" Height="28" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                                 </Border>
                                                             </DataTemplate>
 
                                                             <!-- QR Code Mini Template -->
                                                             <DataTemplate DataType="elvm:QrCodeElementViewModel">
                                                                 <Border Width="{Binding Width}" Height="{Binding Height}"
-                                                                        Background="{Binding LightColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4" Padding="4">
+                                                                        Background="{Binding LightColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="4">
                                                                     <Image Source="{Binding QrBitmap}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                                 </Border>
                                                             </DataTemplate>
@@ -319,7 +319,7 @@
                                                             <!-- Barcode Mini Template -->
                                                             <DataTemplate DataType="elvm:BarcodeElementViewModel">
                                                                 <Border Width="{Binding Width}" Height="{Binding Height}"
-                                                                        Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="3" Padding="4">
+                                                                        Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="3" Padding="4">
                                                                     <materialIcons:MaterialIcon Kind="Barcode" Width="100" Height="24" Foreground="{Binding BarColorHex, Converter={StaticResource HexToBrushConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                                 </Border>
                                                             </DataTemplate>
@@ -350,7 +350,7 @@
                                                                         Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                         BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                         BorderThickness="1" CornerRadius="3" Padding="3">
-                                                                    <TextBlock Text="{Binding Label}" FontSize="9" FontWeight="SemiBold" Foreground="#334155" />
+                                                                    <TextBlock Text="{Binding Label}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                                                                 </Border>
                                                             </DataTemplate>
 
@@ -406,7 +406,7 @@
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="12"
                               IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Outline}">
                     <StackPanel Spacing="6">
-                        <TextBlock Text="DOCUMENT OUTLINE" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource WinSubtleBrush}" Margin="2,0,0,6" LetterSpacing="0.5" />
+                        <TextBlock Text="DOCUMENT OUTLINE" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="2,0,0,6" LetterSpacing="0.5" />
                         <ItemsControl ItemsSource="{Binding OutlineItems}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="models:OutlineItem">
@@ -418,8 +418,8 @@
                                             Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).JumpToOutlineItemCommand}"
                                             CommandParameter="{Binding}">
                                         <Grid ColumnDefinitions="Auto,*">
-                                            <materialIcons:MaterialIcon Grid.Column="0" Kind="BookmarkOutline" Width="14" Height="14" Foreground="{StaticResource WinAccentBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="11.5" Foreground="{StaticResource WinTextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            <materialIcons:MaterialIcon Grid.Column="0" Kind="BookmarkOutline" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="11.5" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                         </Grid>
                                     </Button>
                                 </DataTemplate>
@@ -432,12 +432,12 @@
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="12"
                               IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Comments}">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="COMMENTS &amp; ANNOTATIONS" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource WinSubtleBrush}" Margin="2,0,0,6" LetterSpacing="0.5" />
+                        <TextBlock Text="COMMENTS &amp; ANNOTATIONS" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="2,0,0,6" LetterSpacing="0.5" />
                         <ItemsControl ItemsSource="{Binding CommentItems}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="models:CommentItem">
-                                    <Button Background="White"
-                                            BorderBrush="#E2E8F0"
+                                    <Button Background="{DynamicResource WinPanelBrush}"
+                                            BorderBrush="{DynamicResource WinBorderBrush}"
                                             BorderThickness="1"
                                             CornerRadius="6"
                                             Padding="8"
@@ -449,9 +449,9 @@
                                             <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,4">
                                                 <materialIcons:MaterialIcon Grid.Column="0" Kind="NoteTextOutline" Width="14" Height="14" Foreground="#B45309" Margin="0,0,4,0" />
                                                 <TextBlock Grid.Column="1" Text="{Binding Author}" FontSize="11" FontWeight="Bold" Foreground="#78350F" />
-                                                <TextBlock Grid.Column="2" Text="{Binding PageIndex, StringFormat='p. {0}'}" FontSize="9.5" Foreground="#94A3B8" />
+                                                <TextBlock Grid.Column="2" Text="{Binding PageIndex, StringFormat='p. {0}'}" FontSize="9.5" Foreground="{DynamicResource WinSubtleBrush}" />
                                             </Grid>
-                                            <TextBlock Grid.Row="1" Text="{Binding Text}" FontSize="10.5" Foreground="#334155" TextWrapping="Wrap" Margin="0,0,0,4" />
+                                            <TextBlock Grid.Row="1" Text="{Binding Text}" FontSize="10.5" Foreground="{DynamicResource WinTextBrush}" TextWrapping="Wrap" Margin="0,0,0,4" />
                                             <Border Grid.Row="2" Background="#FEF3C7" CornerRadius="3" Padding="4,1" HorizontalAlignment="Left">
                                                 <TextBlock Text="{Binding Status}" FontSize="8.5" FontWeight="SemiBold" Foreground="#B45309" />
                                             </Border>
@@ -466,7 +466,7 @@
             </Panel>
 
             <!-- 3. Bottom Reorder Page Actions -->
-            <Border Grid.Row="2" Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,1,0,0" Padding="10,8">
+            <Border Grid.Row="2" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,1,0,0" Padding="10,8">
                 <Grid ColumnDefinitions="*,*">
                     <Button Grid.Column="0"
                             Classes="secondary-btn"
@@ -474,7 +474,7 @@
                             Margin="0,0,3,0"
                             Command="{Binding MovePageUpCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="ChevronUp" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="ChevronUp" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                             <TextBlock Text="Move Up" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
@@ -485,7 +485,7 @@
                             Margin="3,0,0,0"
                             Command="{Binding MovePageDownCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="ChevronDown" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="ChevronDown" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                             <TextBlock Text="Move Down" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
@@ -496,7 +496,7 @@
     </Border>
 
     <!-- B. COLLAPSED MINI DOCK RAIL (Width 38) -->
-    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,1,0" Width="38"
+    <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,1,0" Width="38"
             IsVisible="{Binding IsLeftSidebarCollapsed}">
         <Grid RowDefinitions="Auto,*,Auto" Margin="0,4">
             <!-- Top: Expand Chevron Button -->
@@ -504,9 +504,9 @@
                 <Button Classes="mini-tool-btn" Width="30" Height="30"
                         Command="{Binding ToggleLeftSidebarCommand}"
                         ToolTip.Tip="Expand Pages Sidebar (⌘B / Ctrl+B)">
-                    <materialIcons:MaterialIcon Kind="ChevronRight" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                    <materialIcons:MaterialIcon Kind="ChevronRight" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
                 </Button>
-                <Rectangle Width="22" Height="1" Fill="{StaticResource WinBorderBrush}" Margin="0,2" />
+                <Rectangle Width="22" Height="1" Fill="{DynamicResource WinBorderBrush}" Margin="0,2" />
             </StackPanel>
 
             <!-- Middle: Vertical Navigation Tabs -->
@@ -516,7 +516,7 @@
                         Command="{Binding SelectSidebarTabCommand}"
                         CommandParameter="{x:Static models:SidebarTabKind.Thumbnails}"
                         ToolTip.Tip="Open Page Thumbnails (⌘B)">
-                    <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                    <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                 </Button>
 
                 <Button Classes="mini-tool-btn" Width="30" Height="30"
@@ -524,7 +524,7 @@
                         Command="{Binding SelectSidebarTabCommand}"
                         CommandParameter="{x:Static models:SidebarTabKind.Outline}"
                         ToolTip.Tip="Open Document Outline &amp; Bookmarks">
-                    <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                    <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                 </Button>
 
                 <Button Classes="mini-tool-btn" Width="30" Height="30"
@@ -532,17 +532,17 @@
                         Command="{Binding SelectSidebarTabCommand}"
                         CommandParameter="{x:Static models:SidebarTabKind.Comments}"
                         ToolTip.Tip="Open Comments &amp; Review Annotations">
-                    <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{StaticResource WinTextBrush}" />
+                    <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                 </Button>
             </StackPanel>
 
             <!-- Bottom: Page Indicator & Add Page -->
             <StackPanel Grid.Row="2" HorizontalAlignment="Center" Spacing="4">
                 <Button Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding AddPageCommand}" ToolTip.Tip="Add New Page (⌘⇧N)">
-                    <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                    <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                 </Button>
-                <Border Background="White" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="3,2" Margin="0,2">
-                    <TextBlock Text="{Binding CurrentPageNumber}" FontSize="10" FontWeight="Bold" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" />
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="3,2" Margin="0,2">
+                    <TextBlock Text="{Binding CurrentPageNumber}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" />
                 </Border>
             </StackPanel>
         </Grid>

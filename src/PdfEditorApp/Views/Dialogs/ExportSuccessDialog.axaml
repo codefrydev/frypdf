@@ -9,8 +9,8 @@
     <Grid Background="#60000000">
         <!-- Dialog Card -->
         <Border Width="500"
-                Background="White"
-                BorderBrush="{StaticResource WinBorderBrush}"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="10"
                 BoxShadow="0 20 60 #35000000"
@@ -21,21 +21,21 @@
             <StackPanel Spacing="18">
                 <!-- Header with Success Icon -->
                 <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
-                    <Border Width="44" Height="44" Background="{StaticResource WinSuccessLightBrush}" CornerRadius="22">
-                        <materialIcons:MaterialIcon Kind="CheckCircleOutline" Width="26" Height="26" Foreground="{StaticResource WinSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Border Width="44" Height="44" Background="{DynamicResource WinSuccessLightBrush}" CornerRadius="22">
+                        <materialIcons:MaterialIcon Kind="CheckCircleOutline" Width="26" Height="26" Foreground="{DynamicResource WinSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
 
                     <StackPanel Spacing="2" VerticalAlignment="Center">
-                        <TextBlock Text="PDF Exported Successfully" FontSize="16" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" />
-                        <TextBlock Text="Your high-fidelity document is ready for distribution." FontSize="12" Foreground="{StaticResource WinMutedBrush}" />
+                        <TextBlock Text="PDF Exported Successfully" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Your high-fidelity document is ready for distribution." FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
                     </StackPanel>
                 </StackPanel>
 
                 <!-- File Location Info Card -->
-                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
+                <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
                     <Grid ColumnDefinitions="Auto,*">
                         <materialIcons:MaterialIcon Grid.Column="0" Kind="FilePdfBox" Width="22" Height="22" Foreground="#DC2626" Margin="0,0,10,0" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="{Binding LastExportedFilePath}" FontSize="11.5" Foreground="{StaticResource WinTextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding LastExportedFilePath}" FontSize="11.5" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                     </Grid>
                 </Border>
 

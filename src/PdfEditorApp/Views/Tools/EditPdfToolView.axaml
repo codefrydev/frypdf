@@ -23,14 +23,14 @@
                 </Border>
 
                 <!-- Dropzone Box -->
-                <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
                         <Border Width="64" Height="64" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="SquareEditOutline" Width="34" Height="34" Foreground="#0F6CBD" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Text="Select PDF to Open in Editor" FontSize="16" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center" />
-                            <TextBlock Text="Direct visual text editing, ink annotations, highlighting, stamp signatures, and page tools" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" />
+                            <TextBlock Text="Select PDF to Open in Editor" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Direct visual text editing, ink annotations, highlighting, stamp signatures, and page tools" FontSize="13" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                         </StackPanel>
                         <Button Command="{Binding AddFilesCommand}" Background="#0F6CBD" Foreground="White" CornerRadius="8" Padding="24,10" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -42,22 +42,22 @@
                 </Border>
 
                 <!-- Loaded Documents -->
-                <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="20" IsVisible="{Binding HasSelectedFiles}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" IsVisible="{Binding HasSelectedFiles}">
                     <StackPanel Spacing="12">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="Document Ready to Edit" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                            <TextBlock Text="Document Ready to Edit" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             <Button Command="{Binding AddFilesCommand}" Background="#EFF6FF" Foreground="#0F6CBD" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Padding="12,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand">
                                 Change File
                             </Button>
                         </Grid>
-                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14,12">
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,12">
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <Border Grid.Column="0" Width="36" Height="36" Background="#EFF6FF" CornerRadius="8" Margin="0,0,12,0">
                                     <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="13" FontWeight="Medium" Foreground="#1E293B" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 <Button Grid.Column="2" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Padding="6" Cursor="Hand">
-                                    <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="#94A3B8" />
+                                    <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" />
                                 </Button>
                             </Grid>
                         </Border>
@@ -68,12 +68,12 @@
         </ScrollViewer>
 
         <!-- RIGHT: Launch Options -->
-        <Border Grid.Column="1" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
+        <Border Grid.Column="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
             <DockPanel>
                 <Border DockPanel.Dock="Top" Margin="0,0,0,16">
                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                         <materialIcons:MaterialIcon Kind="SquareEditOutline" Width="18" Height="18" Foreground="#0F6CBD" />
-                        <TextBlock Text="Document Editor" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                        <TextBlock Text="Document Editor" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
 

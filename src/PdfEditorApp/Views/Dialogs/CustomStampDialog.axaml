@@ -14,8 +14,8 @@
     <Grid Background="#60000000">
         <!-- Dialog Card -->
         <Border Width="600"
-                Background="White"
-                BorderBrush="{StaticResource WinBorderBrush}"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="10"
                 BoxShadow="0 20 60 #35000000"
@@ -28,19 +28,19 @@
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
                     <StackPanel Grid.Column="0" Spacing="4">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border Width="30" Height="30" Background="{StaticResource WinAccentLightBrush}" CornerRadius="6">
-                                <materialIcons:MaterialIcon Kind="CertificateOutline" Width="18" Height="18" Foreground="{StaticResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Width="30" Height="30" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="6">
+                                <materialIcons:MaterialIcon Kind="CertificateOutline" Width="18" Height="18" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="Custom Stamp Studio" FontSize="17" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="Custom Stamp Studio" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                         </StackPanel>
-                        <TextBlock Text="Create customized legal, corporate, or certification stamps with live timestamp." FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                        <TextBlock Text="Create customized legal, corporate, or certification stamps with live timestamp." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
                     </StackPanel>
 
                     <Button Grid.Column="1"
                             Classes="mini-tool-btn"
                             Width="30" Height="30"
                             Command="{Binding CloseCustomStampDialogCommand}">
-                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                     </Button>
                 </Grid>
 
@@ -49,7 +49,7 @@
 
                     <!-- Custom Stamp Label -->
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Stamp Header Text" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                        <TextBlock Text="Stamp Header Text" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                         <TextBox Text="{Binding CustomStampText, Mode=TwoWay}"
                                  Height="36" FontSize="13" CornerRadius="6"
                                  Padding="10,8" PlaceholderText="e.g. CERTIFIED TRUE COPY, REVIEWED &amp; APPROVED..." />
@@ -72,7 +72,7 @@
 
                     <!-- Stamp Color Choice -->
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Border &amp; Text Color" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" />
+                        <TextBlock Text="Border &amp; Text Color" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button Width="26" Height="26" CornerRadius="13" Background="#0F6CBD" Command="{Binding PlaceCustomStampCommand}" />
                             <Button Width="26" Height="26" CornerRadius="13" Background="#16A34A" />
@@ -83,10 +83,10 @@
                     </StackPanel>
 
                     <!-- Stamp Live Preview -->
-                    <Border Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="6" HorizontalAlignment="Center">
-                            <TextBlock Text="Live Stamp Preview" FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
-                            <Border Width="240" Height="65" CornerRadius="8" BorderThickness="2" BorderBrush="#0F6CBD" Background="White" Padding="6" HorizontalAlignment="Center">
+                            <TextBlock Text="Live Stamp Preview" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                            <Border Width="240" Height="65" CornerRadius="8" BorderThickness="2" BorderBrush="#0F6CBD" Background="{DynamicResource WinPanelBrush}" Padding="6" HorizontalAlignment="Center">
                                 <StackPanel VerticalAlignment="Center" Spacing="2">
                                     <TextBlock Text="{Binding CustomStampText}" FontSize="13" FontWeight="Bold" Foreground="#0F6CBD" HorizontalAlignment="Center" />
                                     <TextBlock Text="2026-08-29 10:30 UTC" FontSize="9.5" FontWeight="Medium" Foreground="#0F6CBD" HorizontalAlignment="Center" />

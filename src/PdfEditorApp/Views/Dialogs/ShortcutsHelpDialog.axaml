@@ -10,8 +10,8 @@
         <!-- Centered Shortcuts Help Card -->
         <Border Width="820"
                 MaxHeight="620"
-                Background="White"
-                BorderBrush="#CBD5E1"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="12"
                 BoxShadow="0 24 72 #40000000"
@@ -24,8 +24,8 @@
 
                 <!-- 1. Header Bar -->
                 <Border Grid.Row="0"
-                        Background="#F8FAFC"
-                        BorderBrush="#E2E8F0"
+                        Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
                         BorderThickness="0,0,0,1"
                         Padding="20,16">
                     <Grid ColumnDefinitions="Auto,*,Auto">
@@ -41,7 +41,7 @@
                             <materialIcons:MaterialIcon Kind="KeyboardOutline"
                                                         Width="20"
                                                         Height="20"
-                                                        Foreground="{StaticResource WinAccentBrush}"
+                                                        Foreground="{DynamicResource WinAccentBrush}"
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center" />
                         </Border>
@@ -50,10 +50,10 @@
                             <TextBlock Text="Keyboard Shortcuts &amp; Gestures"
                                        FontSize="16"
                                        FontWeight="Bold"
-                                       Foreground="{StaticResource WinTextBrush}" />
+                                       Foreground="{DynamicResource WinTextBrush}" />
                             <TextBlock Text="Pro-grade desktop keybindings and mouse navigation gestures"
                                        FontSize="11.5"
-                                       Foreground="{StaticResource WinMutedBrush}" />
+                                       Foreground="{DynamicResource WinMutedBrush}" />
                         </StackPanel>
 
                         <!-- Close Button -->
@@ -63,7 +63,7 @@
                                 Height="30"
                                 Command="{Binding CloseShortcutsHelpCommand}"
                                 ToolTip.Tip="Close (Esc)">
-                            <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
                     </Grid>
                 </Border>
@@ -73,34 +73,34 @@
                     <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" Margin="0,0,0,10">
 
                         <!-- SECTION 1: FILE & PROJECT -->
-                        <Border Grid.Row="0" Grid.Column="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,8,12">
+                        <Border Grid.Row="0" Grid.Column="0" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,8,12">
                             <StackPanel Spacing="10">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="FolderOutline" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                    <TextBlock Text="FILE &amp; PROJECT" FontSize="11" FontWeight="Bold" Foreground="{StaticResource WinAccentBrush}" LetterSpacing="0.5" />
+                                    <materialIcons:MaterialIcon Kind="FolderOutline" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
+                                    <TextBlock Text="FILE &amp; PROJECT" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" LetterSpacing="0.5" />
                                 </StackPanel>
 
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Save Project Archive" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Save Project Archive" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘S / Ctrl+S" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Open Existing Project" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Open Existing Project" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘O / Ctrl+O" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="New Document / Templates" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="New Document / Templates" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘N / Ctrl+N" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Export Production PDF" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Export Production PDF" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘E / Ctrl+E" Classes="kbd-text" /></Border>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
                         <!-- SECTION 2: EDIT & CLIPBOARD -->
-                        <Border Grid.Row="0" Grid.Column="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14" Margin="8,0,0,12">
+                        <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="8,0,0,12">
                             <StackPanel Spacing="10">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <materialIcons:MaterialIcon Kind="ContentCut" Width="16" Height="16" Foreground="#8B5CF6" />
@@ -108,38 +108,38 @@
                                 </StackPanel>
 
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Undo Last Action" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Undo Last Action" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘Z / Ctrl+Z" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Redo Action" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Redo Action" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘Y / ⌘⇧Z" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Copy Selected Element" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Copy Selected Element" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘C / Ctrl+C" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Cut Selected Element" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Cut Selected Element" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘X / Ctrl+X" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Paste Element" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Paste Element" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘V / Ctrl+V" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Duplicate Element" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Duplicate Element" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘D / Ctrl+D" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Delete Selection" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Delete Selection" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌫ / Delete" Classes="kbd-text" /></Border>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
                         <!-- SECTION 3: PAGES & NAVIGATION -->
-                        <Border Grid.Row="1" Grid.Column="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,8,12">
+                        <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,8,12">
                             <StackPanel Spacing="10">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="16" Height="16" Foreground="#10B981" />
@@ -147,34 +147,34 @@
                                 </StackPanel>
 
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Next / Previous Page" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Next / Previous Page" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="PgDn / PgUp" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="First / Last Page" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="First / Last Page" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="Home / End" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Add New Blank Page" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Add New Blank Page" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘⇧N" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Duplicate Page" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Duplicate Page" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘⇧D" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Rotate Page 90° Clockwise" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Rotate Page 90° Clockwise" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘⇧R" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Move Page Up / Down" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Move Page Up / Down" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘⇧↑ / ⌘⇧↓" Classes="kbd-text" /></Border>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
                         <!-- SECTION 4: VIEW & COMMANDS -->
-                        <Border Grid.Row="1" Grid.Column="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14" Margin="8,0,0,12">
+                        <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="8,0,0,12">
                             <StackPanel Spacing="10">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <materialIcons:MaterialIcon Kind="Magnify" Width="16" Height="16" Foreground="#F59E0B" />
@@ -182,46 +182,46 @@
                                 </StackPanel>
 
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Quick Command Palette" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Quick Command Palette" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘K / Ctrl+K" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Zoom In / Zoom Out" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Zoom In / Zoom Out" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘+ / ⌘-" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Reset Zoom (100%)" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Reset Zoom (100%)" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘0 / Ctrl+0" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Toggle Pages Sidebar" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Toggle Pages Sidebar" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘B / Ctrl+B" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Toggle Ribbon Toolbar" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Toggle Ribbon Toolbar" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘F1 / Ctrl+F1" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Toggle Properties Inspector" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Toggle Properties Inspector" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘⇧P / Ctrl+Shift+P" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Fit to Width" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Fit to Width" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘1 / Ctrl+1" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Fit to Page" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Fit to Page" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘9 / Ctrl+9" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="This Shortcuts Reference" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="This Shortcuts Reference" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="F1 / ?" Classes="kbd-text" /></Border>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
                         <!-- SECTION 5: QUICK TOOL SWITCHES -->
-                        <Border Grid.Row="2" Grid.Column="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,8,0">
+                        <Border Grid.Row="2" Grid.Column="0" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,8,0">
                             <StackPanel Spacing="10">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <materialIcons:MaterialIcon Kind="ToolboxOutline" Width="16" Height="16" Foreground="#EC4899" />
@@ -229,30 +229,30 @@
                                 </StackPanel>
 
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Select Tool" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Select Tool" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="V" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Insert Text Paragraph" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Insert Text Paragraph" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="T" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Insert Rectangle Shape" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Insert Rectangle Shape" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="R" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Insert Sticky Note" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Insert Sticky Note" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="N" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Insert Highlighter Stroke" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Insert Highlighter Stroke" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="H" Classes="kbd-text" /></Border>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
                         <!-- SECTION 6: GESTURES & NUDGING -->
-                        <Border Grid.Row="2" Grid.Column="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14" Margin="8,0,0,0">
+                        <Border Grid.Row="2" Grid.Column="1" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="8,0,0,0">
                             <StackPanel Spacing="10">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <materialIcons:MaterialIcon Kind="Mouse" Width="16" Height="16" Foreground="#0EA5E9" />
@@ -260,23 +260,23 @@
                                 </StackPanel>
 
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Smooth Zoom Canvas" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Smooth Zoom Canvas" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘ + Mouse Wheel" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Pan Document Canvas" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Pan Document Canvas" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="Space + Drag / Middle Drag" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Nudge Element (1px)" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Nudge Element (1px)" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="Arrow Keys" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Nudge Element (10px)" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Nudge Element (10px)" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="Shift + Arrow Keys" Classes="kbd-text" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                    <TextBlock Grid.Column="0" Text="Bring to Front / Send to Back" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="Bring to Front / Send to Back" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Column="1" Classes="kbd-badge"><TextBlock Text="⌘] / ⌘[" Classes="kbd-text" /></Border>
                                 </Grid>
                             </StackPanel>
@@ -287,14 +287,14 @@
 
                 <!-- 3. Bottom Footer -->
                 <Border Grid.Row="2"
-                        Background="#F8FAFC"
-                        BorderBrush="#E2E8F0"
+                        Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
                         BorderThickness="0,1,0,0"
                         Padding="20,12">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="LightbulbOutline" Width="16" Height="16" Foreground="#F59E0B" />
-                            <TextBlock Text="All ⌘ shortcuts adapt automatically to Ctrl on Windows and Linux." FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="All ⌘ shortcuts adapt automatically to Ctrl on Windows and Linux." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                         </StackPanel>
 
                         <Button Grid.Column="1"

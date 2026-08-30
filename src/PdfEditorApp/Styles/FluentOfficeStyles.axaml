@@ -2,93 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-
-
-    <Styles.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="WinBgBrush" Color="#F8FAFC" />
-                    <SolidColorBrush x:Key="WinPanelBrush" Color="#FFFFFF" />
-                    <SolidColorBrush x:Key="WinBorderBrush" Color="#E2E8F0" />
-                    <SolidColorBrush x:Key="WinBorderSubtleBrush" Color="#F1F5F9" />
-                    <SolidColorBrush x:Key="WinHoverBrush" Color="#F1F5F9" />
-                    <SolidColorBrush x:Key="WinActiveBrush" Color="#E2E8F0" />
-                    <SolidColorBrush x:Key="WinTextBrush" Color="#0F172A" />
-                    <SolidColorBrush x:Key="WinMutedBrush" Color="#64748B" />
-                    <SolidColorBrush x:Key="WinSubtleBrush" Color="#94A3B8" />
-                    <SolidColorBrush x:Key="WinAccentBrush" Color="#0F6CBD" />
-                    <SolidColorBrush x:Key="WinAccentHoverBrush" Color="#0C599B" />
-                    <SolidColorBrush x:Key="WinAccentLightBrush" Color="#EFF6FF" />
-                    <SolidColorBrush x:Key="WinAccentBorderBrush" Color="#BFDBFE" />
-                    <SolidColorBrush x:Key="WinDangerBrush" Color="#DC2626" />
-                    <SolidColorBrush x:Key="WinDangerLightBrush" Color="#FEF2F2" />
-                    <SolidColorBrush x:Key="WinDangerBorderBrush" Color="#FECACA" />
-                    <SolidColorBrush x:Key="WinSuccessBrush" Color="#16A34A" />
-                    <SolidColorBrush x:Key="WinSuccessLightBrush" Color="#F0FDF4" />
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="WinBgBrush" Color="#0F172A" />
-                    <SolidColorBrush x:Key="WinPanelBrush" Color="#1E293B" />
-                    <SolidColorBrush x:Key="WinBorderBrush" Color="#334155" />
-                    <SolidColorBrush x:Key="WinBorderSubtleBrush" Color="#1E293B" />
-                    <SolidColorBrush x:Key="WinHoverBrush" Color="#334155" />
-                    <SolidColorBrush x:Key="WinActiveBrush" Color="#475569" />
-                    <SolidColorBrush x:Key="WinTextBrush" Color="#F8FAFC" />
-                    <SolidColorBrush x:Key="WinMutedBrush" Color="#94A3B8" />
-                    <SolidColorBrush x:Key="WinSubtleBrush" Color="#64748B" />
-                    <SolidColorBrush x:Key="WinAccentBrush" Color="#38BDF8" />
-                    <SolidColorBrush x:Key="WinAccentHoverBrush" Color="#0EA5E9" />
-                    <SolidColorBrush x:Key="WinAccentLightBrush" Color="#0C4A6E" />
-                    <SolidColorBrush x:Key="WinAccentBorderBrush" Color="#0284C7" />
-                    <SolidColorBrush x:Key="WinDangerBrush" Color="#EF4444" />
-                    <SolidColorBrush x:Key="WinDangerLightBrush" Color="#450A0A" />
-                    <SolidColorBrush x:Key="WinDangerBorderBrush" Color="#7F1D1D" />
-                    <SolidColorBrush x:Key="WinSuccessBrush" Color="#22C55E" />
-                    <SolidColorBrush x:Key="WinSuccessLightBrush" Color="#052E16" />
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
-
-            <Color x:Key="WinBgColor">#F8FAFC</Color>
-            <Color x:Key="WinPanelColor">#FFFFFF</Color>
-            <Color x:Key="WinBorderColor">#E2E8F0</Color>
-            <Color x:Key="WinBorderSubtleColor">#F1F5F9</Color>
-            <Color x:Key="WinHoverColor">#F1F5F9</Color>
-            <Color x:Key="WinActiveColor">#E2E8F0</Color>
-            <Color x:Key="WinTextColor">#0F172A</Color>
-            <Color x:Key="WinMutedColor">#64748B</Color>
-            <Color x:Key="WinSubtleColor">#94A3B8</Color>
-            <Color x:Key="WinAccentColor">#0F6CBD</Color>
-            <Color x:Key="WinAccentHoverColor">#0C599B</Color>
-            <Color x:Key="WinAccentLightColor">#EFF6FF</Color>
-            <Color x:Key="WinAccentBorderColor">#BFDBFE</Color>
-            <Color x:Key="WinDangerColor">#DC2626</Color>
-            <Color x:Key="WinDangerLightColor">#FEF2F2</Color>
-            <Color x:Key="WinDangerBorderColor">#FECACA</Color>
-            <Color x:Key="WinSuccessColor">#16A34A</Color>
-            <Color x:Key="WinSuccessLightColor">#F0FDF4</Color>
-
-            <SolidColorBrush x:Key="WinBgBrush" Color="{StaticResource WinBgColor}" />
-            <SolidColorBrush x:Key="WinPanelBrush" Color="{StaticResource WinPanelColor}" />
-            <SolidColorBrush x:Key="WinBorderBrush" Color="{StaticResource WinBorderColor}" />
-            <SolidColorBrush x:Key="WinBorderSubtleBrush" Color="{StaticResource WinBorderSubtleColor}" />
-            <SolidColorBrush x:Key="WinHoverBrush" Color="{StaticResource WinHoverColor}" />
-            <SolidColorBrush x:Key="WinActiveBrush" Color="{StaticResource WinActiveColor}" />
-            <SolidColorBrush x:Key="WinTextBrush" Color="{StaticResource WinTextColor}" />
-            <SolidColorBrush x:Key="WinMutedBrush" Color="{StaticResource WinMutedColor}" />
-            <SolidColorBrush x:Key="WinSubtleBrush" Color="{StaticResource WinSubtleColor}" />
-            <SolidColorBrush x:Key="WinAccentBrush" Color="{StaticResource WinAccentColor}" />
-            <SolidColorBrush x:Key="WinAccentHoverBrush" Color="{StaticResource WinAccentHoverColor}" />
-            <SolidColorBrush x:Key="WinAccentLightBrush" Color="{StaticResource WinAccentLightColor}" />
-            <SolidColorBrush x:Key="WinAccentBorderBrush" Color="{StaticResource WinAccentBorderColor}" />
-            <SolidColorBrush x:Key="WinDangerBrush" Color="{StaticResource WinDangerColor}" />
-            <SolidColorBrush x:Key="WinDangerLightBrush" Color="{StaticResource WinDangerLightColor}" />
-            <SolidColorBrush x:Key="WinDangerBorderBrush" Color="{StaticResource WinDangerBorderColor}" />
-            <SolidColorBrush x:Key="WinSuccessBrush" Color="{StaticResource WinSuccessColor}" />
-            <SolidColorBrush x:Key="WinSuccessLightBrush" Color="{StaticResource WinSuccessLightColor}" />
-        </ResourceDictionary>
-    </Styles.Resources>
-
     <!-- Global Application Typography & Controls Default Polish -->
     <Style Selector="TextBlock">
         <Setter Property="FontFamily" Value="Segoe UI, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Cantarell, sans-serif" />
@@ -97,7 +10,7 @@
     <!-- Ribbon Tab Button Style -->
     <Style Selector="Button.ribbon-tab">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource WinMutedBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="12,5" />
         <Setter Property="FontSize" Value="12.5" />
@@ -109,19 +22,19 @@
     </Style>
 
     <Style Selector="Button.ribbon-tab:pointerover">
-        <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource WinTextBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
     </Style>
 
     <Style Selector="Button.ribbon-tab.active">
-        <Setter Property="Background" Value="{StaticResource WinAccentLightBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource WinAccentBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 
     <!-- File Tab Button Style (Accent pill) -->
     <Style Selector="Button.ribbon-file-tab">
-        <Setter Property="Background" Value="{StaticResource WinAccentBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinAccentBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="12,5" />
@@ -134,12 +47,13 @@
     </Style>
 
     <Style Selector="Button.ribbon-file-tab:pointerover">
-        <Setter Property="Background" Value="{StaticResource WinAccentHoverBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinAccentHoverBrush}" />
     </Style>
 
     <!-- Ribbon Vertical Tool Button -->
     <Style Selector="Button.tool-btn">
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="4,4" />
@@ -152,18 +66,19 @@
     </Style>
 
     <Style Selector="Button.tool-btn:pointerover">
-        <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
     </Style>
 
     <Style Selector="Button.tool-btn.active">
-        <Setter Property="Background" Value="{StaticResource WinAccentLightBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinAccentBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
     </Style>
 
     <!-- Mini Tool Button (for fonts, icons, quick toolbar) -->
     <Style Selector="Button.mini-tool-btn">
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="0" />
@@ -176,20 +91,20 @@
     </Style>
 
     <Style Selector="Button.mini-tool-btn:pointerover">
-        <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
     </Style>
 
     <Style Selector="Button.mini-tool-btn.active">
-        <Setter Property="Background" Value="{StaticResource WinAccentLightBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinAccentBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
     </Style>
 
     <!-- Secondary Action Button (Icon + Label, perfect for Inspector & Footer) -->
     <Style Selector="Button.secondary-btn">
-        <Setter Property="Background" Value="{StaticResource WinPanelBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource WinTextBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="8,4" />
         <Setter Property="CornerRadius" Value="6" />
@@ -200,15 +115,15 @@
     </Style>
 
     <Style Selector="Button.secondary-btn:pointerover">
-        <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
-        <Setter Property="BorderBrush" Value="#CBD5E1" />
+        <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
     </Style>
 
     <!-- Danger Button (Delete, Remove) -->
     <Style Selector="Button.danger-btn">
-        <Setter Property="Background" Value="{StaticResource WinDangerLightBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource WinDangerBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinDangerBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinDangerLightBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinDangerBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinDangerBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="8,4" />
         <Setter Property="CornerRadius" Value="6" />
@@ -219,13 +134,13 @@
     </Style>
 
     <Style Selector="Button.danger-btn:pointerover">
-        <Setter Property="Background" Value="#FEE2E2" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinDangerBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinDangerLightBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinDangerBrush}" />
     </Style>
 
     <!-- Accent Primary Button (Save, Export) -->
     <Style Selector="Button.accent-btn">
-        <Setter Property="Background" Value="{StaticResource WinAccentBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinAccentBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="14,6" />
@@ -239,49 +154,52 @@
     </Style>
 
     <Style Selector="Button.accent-btn:pointerover">
-        <Setter Property="Background" Value="{StaticResource WinAccentHoverBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinAccentHoverBrush}" />
     </Style>
 
     <!-- Inspector Section Labels & Headers -->
     <Style Selector="TextBlock.inspector-header">
         <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{StaticResource WinMutedBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
         <Setter Property="LetterSpacing" Value="0.6" />
     </Style>
 
     <Style Selector="TextBlock.inspector-label">
         <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="Foreground" Value="{StaticResource WinMutedBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
         <Setter Property="Margin" Value="0,0,0,3" />
     </Style>
 
     <!-- Modern ComboBox, TextBox, NumericUpDown adjustments -->
     <Style Selector="ComboBox">
         <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="MinHeight" Value="28" />
         <Setter Property="Padding" Value="8,2" />
+        <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
     </Style>
 
     <Style Selector="TextBox">
         <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="MinHeight" Value="28" />
         <Setter Property="Padding" Value="8,4" />
+        <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
     </Style>
 
     <!-- Sleek Compact NumericUpDown & ButtonSpinner Styling (Adobe Pro & Studio Grade) -->
     <Style Selector="NumericUpDown">
         <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="MinHeight" Value="28" />
         <Setter Property="Height" Value="28" />
         <Setter Property="Padding" Value="6,1,2,1" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="FontSize" Value="11.5" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
     </Style>
 
     <Style Selector="NumericUpDown /template/ TextBox#PART_TextBox">
@@ -290,6 +208,7 @@
         <Setter Property="Padding" Value="4,1" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
     </Style>
 
     <Style Selector="NumericUpDown /template/ ButtonSpinner">
@@ -309,13 +228,14 @@
     </Style>
 
     <Style Selector="ButtonSpinner /template/ RepeatButton:pointerover">
-        <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
     </Style>
 
     <Style Selector="ButtonSpinner /template/ RepeatButton Path">
         <Setter Property="Width" Value="8" />
         <Setter Property="Height" Value="5" />
         <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="Fill" Value="{DynamicResource WinMutedBrush}" />
     </Style>
 
     <!-- Inspector ColorPicker Compact Styling -->
@@ -323,7 +243,7 @@
         <Setter Property="MinHeight" Value="24" />
         <Setter Property="Height" Value="24" />
         <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="Padding" Value="2" />
         <Setter Property="IsAlphaEnabled" Value="True" />
         <Setter Property="IsHexInputVisible" Value="True" />
@@ -346,8 +266,8 @@
 
     <!-- Input Prefix Badge (e.g., [X], [Y], [W], [H], [∠]) -->
     <Style Selector="Border.input-badge">
-        <Setter Property="Background" Value="{StaticResource WinHoverBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="BorderThickness" Value="1,1,0,1" />
         <Setter Property="CornerRadius" Value="5,0,0,5" />
         <Setter Property="Width" Value="24" />
@@ -357,15 +277,15 @@
     <Style Selector="TextBlock.input-badge-text">
         <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{StaticResource WinMutedBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
     <!-- Floating Glass HUD Bar -->
     <Style Selector="Border.glass-hud">
-        <Setter Property="Background" Value="#F8FAFC" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="BoxShadow" Value="0 8 20 #20000000" />
@@ -374,8 +294,8 @@
 
     <!-- Keyboard Key Cap / Badge Style -->
     <Style Selector="Border.kbd-badge">
-        <Setter Property="Background" Value="#F1F5F9" />
-        <Setter Property="BorderBrush" Value="#CBD5E1" />
+        <Setter Property="Background" Value="{DynamicResource WinInputBgBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4" />
         <Setter Property="Padding" Value="5,1.5" />
@@ -385,14 +305,14 @@
     <Style Selector="TextBlock.kbd-text">
         <Setter Property="FontSize" Value="10" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="#475569" />
+        <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
         <Setter Property="FontFamily" Value="Consolas, -apple-system, monospace" />
     </Style>
 
     <!-- Toast Notification Banner -->
     <Style Selector="Border.toast-banner">
-        <Setter Property="Background" Value="#1E293B" />
-        <Setter Property="BorderBrush" Value="#334155" />
+        <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Padding" Value="14,9" />
@@ -401,8 +321,8 @@
 
     <!-- Context Menu Item Styling -->
     <Style Selector="ContextMenu">
-        <Setter Property="Background" Value="White" />
-        <Setter Property="BorderBrush" Value="#E2E8F0" />
+        <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Padding" Value="4" />
@@ -412,12 +332,13 @@
         <Setter Property="CornerRadius" Value="5" />
         <Setter Property="Padding" Value="8,5" />
         <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
     </Style>
 
     <!-- Template Gallery Interactive Card Style -->
     <Style Selector="Button.template-card">
-        <Setter Property="Background" Value="White" />
-        <Setter Property="BorderBrush" Value="#E2E8F0" />
+        <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="BorderThickness" Value="1.5" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="Padding" Value="0" />
@@ -433,15 +354,15 @@
     </Style>
 
     <Style Selector="Button.template-card:pointerover">
-        <Setter Property="BorderBrush" Value="#0F6CBD" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
         <Setter Property="RenderTransform" Value="scale(1.015)" />
     </Style>
 
     <!-- Category Filter Chip Style -->
     <Style Selector="Button.category-filter-chip">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="#64748B" />
-        <Setter Property="BorderBrush" Value="#E2E8F0" />
+        <Setter Property="Background" Value="{DynamicResource WinInputBgBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="16" />
         <Setter Property="Padding" Value="12,4.5" />
@@ -459,15 +380,15 @@
     </Style>
 
     <Style Selector="Button.category-filter-chip:pointerover">
-        <Setter Property="Background" Value="#F1F5F9" />
-        <Setter Property="Foreground" Value="#0F172A" />
-        <Setter Property="BorderBrush" Value="#CBD5E1" />
+        <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
     </Style>
 
     <Style Selector="Button.category-filter-chip.active">
-        <Setter Property="Background" Value="#EFF6FF" />
-        <Setter Property="Foreground" Value="#0F6CBD" />
-        <Setter Property="BorderBrush" Value="#BFDBFE" />
+        <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 

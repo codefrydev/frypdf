@@ -64,26 +64,26 @@
                 </Border>
 
                 <!-- Processing Card -->
-                <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="20,16" IsVisible="{Binding IsRunning}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20,16" IsVisible="{Binding IsRunning}">
                     <StackPanel Spacing="12">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="14" FontWeight="Bold" Foreground="#CA8A04" VerticalAlignment="Center" />
                         </Grid>
-                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#CA8A04" Background="#F1F5F9" />
+                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#CA8A04" Background="{DynamicResource WinHoverBrush}" />
                     </StackPanel>
                 </Border>
 
                 <!-- URL & Raw HTML Editor Card -->
-                <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 2 6 #05000000">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 2 6 #05000000">
                     <StackPanel Spacing="14">
                         <Grid ColumnDefinitions="Auto,*">
                             <Border Grid.Column="0" Width="36" Height="36" Background="#FEFCE8" CornerRadius="8" Margin="0,0,10,0">
                                 <materialIcons:MaterialIcon Kind="LanguageHtml5" Width="22" Height="22" Foreground="#CA8A04" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Webpage URL or HTML Content" FontSize="14" FontWeight="Bold" Foreground="#0F172A" />
-                                <TextBlock Text="Enter a web URL (e.g. https://example.com) or paste HTML code" FontSize="11.5" Foreground="#64748B" />
+                                <TextBlock Text="Webpage URL or HTML Content" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                <TextBlock Text="Enter a web URL (e.g. https://example.com) or paste HTML code" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
                             </StackPanel>
                         </Grid>
 
@@ -102,12 +102,12 @@
         </ScrollViewer>
 
         <!-- RIGHT: Page Settings & Options -->
-        <Border Grid.Column="1" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
+        <Border Grid.Column="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
             <DockPanel>
                 <Border DockPanel.Dock="Top" Margin="0,0,0,16">
                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                         <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#CA8A04" />
-                        <TextBlock Text="Page Setup &amp; Options" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                        <TextBlock Text="Page Setup &amp; Options" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
 
@@ -122,21 +122,21 @@
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Spacing="14">
-                        <TextBlock Text="Paper Format" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                        <TextBlock Text="Paper Format" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <RadioButton Content="A4" IsChecked="{Binding Format, Converter={StaticResource EqualityConverter}, ConverterParameter=A4}" />
                             <RadioButton Content="Letter" IsChecked="{Binding Format, Converter={StaticResource EqualityConverter}, ConverterParameter=Letter}" />
                             <RadioButton Content="A3" IsChecked="{Binding Format, Converter={StaticResource EqualityConverter}, ConverterParameter=A3}" />
                         </StackPanel>
 
-                        <TextBlock Text="Orientation" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                        <TextBlock Text="Orientation" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <RadioButton Content="Portrait" IsChecked="{Binding Orientation, Converter={StaticResource EqualityConverter}, ConverterParameter=Portrait}" />
                             <RadioButton Content="Landscape" IsChecked="{Binding Orientation, Converter={StaticResource EqualityConverter}, ConverterParameter=Landscape}" />
                         </StackPanel>
 
                         <StackPanel Spacing="4">
-                            <TextBlock Text="Margin (Points)" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                            <TextBlock Text="Margin (Points)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                             <NumericUpDown Value="{Binding MarginPoints}" Minimum="0" Maximum="100" />
                         </StackPanel>
 

@@ -368,6 +368,8 @@
         <dialogs:CompareDocumentsDialog IsVisible="{Binding IsCompareDialogOpen}" />
         <dialogs:MathEquationStudioDialog IsVisible="{Binding IsMathStudioOpen}" />
         <dialogs:AboutDialog IsVisible="{Binding IsAboutDialogOpen}" />
+        <dialogs:PdfToolRunnerDialog DataContext="{Binding ToolRunner}" IsVisible="{Binding IsOpen}" />
+        <dialogs:WorkflowBuilderDialog DataContext="{Binding WorkflowBuilder}" IsVisible="{Binding IsOpen}" />
     </Grid>
 
 </Window>

@@ -1,0 +1,307 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:models="using:PdfEditorApp.Models"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Dialogs.WorkflowBuilderDialog"
+             x:DataType="vm:WorkflowBuilderViewModel">
+
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+    </UserControl.Resources>
+
+    <!-- Modal Backdrop -->
+    <Grid Background="#70000000" IsVisible="{Binding IsOpen}">
+        <Border Width="920"
+                Height="680"
+                Background="#FFFFFF"
+                BorderBrush="#CBD5E1"
+                BorderThickness="1"
+                CornerRadius="14"
+                BoxShadow="0 20 40 #40000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                ClipToBounds="True">
+
+            <Grid RowDefinitions="Auto,*,Auto">
+
+                <!-- 1. Header Bar -->
+                <Border Grid.Row="0"
+                        Background="#FFF7ED"
+                        BorderBrush="#FFEDD5"
+                        BorderThickness="0,0,0,1"
+                        Padding="20,16">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <Border Width="40" Height="40" Background="#FFEDD5" CornerRadius="10">
+                                <materialIcons:MaterialIcon Kind="LightningBoltOutline" Width="22" Height="22" Foreground="#EA580C" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Spacing="2" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="Automated Workflow Studio" FontSize="16" FontWeight="Bold" Foreground="#9A3412" />
+                                    <Border Background="#EA580C" CornerRadius="4" Padding="6,1">
+                                        <TextBlock Text="BATCH PIPELINE" FontSize="9.5" FontWeight="Bold" Foreground="White" />
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="Build multi-step automated processing pipelines and run batch executions across document sets." FontSize="12" Foreground="#C2410C" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <Button Command="{Binding CloseCommand}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="6"
+                                    Cursor="Hand"
+                                    ToolTip.Tip="Close Studio">
+                                <materialIcons:MaterialIcon Kind="Close" Width="18" Height="18" Foreground="#9A3412" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- 2. Main Two-Column Layout -->
+                <Grid Grid.Row="1" ColumnDefinitions="320,*">
+
+                    <!-- Left Column: Pipeline Steps List -->
+                    <Border Grid.Column="0"
+                            Background="#F8FAFC"
+                            BorderBrush="#E2E8F0"
+                            BorderThickness="0,0,1,0"
+                            Padding="16">
+                        <Grid RowDefinitions="Auto,*,Auto">
+                            <!-- Presets Selector -->
+                            <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,14">
+                                <TextBlock Text="Workflow Preset" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                                <ComboBox ItemsSource="{Binding PresetWorkflows}"
+                                          SelectedItem="{Binding CurrentWorkflow, Mode=OneWay}"
+                                          HorizontalAlignment="Stretch">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate DataType="models:WorkflowDefinition">
+                                            <TextBlock Text="{Binding Name}" FontSize="12" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Step Items Sequence -->
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Pipeline Execution Steps" FontSize="11.5" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,4" />
+
+                                    <ItemsControl ItemsSource="{Binding Steps}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="models:WorkflowStepDefinition">
+                                                <Border Background="#FFFFFF"
+                                                        BorderBrush="#CBD5E1"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8"
+                                                        Padding="10,8"
+                                                        Margin="0,0,0,6">
+                                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsEnabled}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding StepName}" FontSize="12" FontWeight="SemiBold" Foreground="#1E293B" />
+                                                            <TextBlock Text="{Binding StepDescription}" FontSize="10.5" Foreground="#64748B" TextTrimming="CharacterEllipsis" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                                            <Button Command="{Binding $parent[UserControl].((vm:WorkflowBuilderViewModel)DataContext).MoveStepUpCommand}"
+                                                                    CommandParameter="{Binding}"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0"
+                                                                    Padding="3"
+                                                                    Cursor="Hand">
+                                                                <materialIcons:MaterialIcon Kind="ChevronUp" Width="14" Height="14" Foreground="#64748B" />
+                                                            </Button>
+                                                            <Button Command="{Binding $parent[UserControl].((vm:WorkflowBuilderViewModel)DataContext).MoveStepDownCommand}"
+                                                                    CommandParameter="{Binding}"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0"
+                                                                    Padding="3"
+                                                                    Cursor="Hand">
+                                                                <materialIcons:MaterialIcon Kind="ChevronDown" Width="14" Height="14" Foreground="#64748B" />
+                                                            </Button>
+                                                            <Button Command="{Binding $parent[UserControl].((vm:WorkflowBuilderViewModel)DataContext).RemoveStepCommand}"
+                                                                    CommandParameter="{Binding}"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0"
+                                                                    Padding="3"
+                                                                    Cursor="Hand">
+                                                                <materialIcons:MaterialIcon Kind="DeleteOutline" Width="14" Height="14" Foreground="#EF4444" />
+                                                            </Button>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+
+                    <!-- Right Column: Add Tools Palette & Input Files -->
+                    <ScrollViewer Grid.Column="1" Padding="20" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="18">
+
+                            <!-- Status / Messages -->
+                            <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="8" Padding="12,8" IsVisible="{Binding HasError}">
+                                <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="#991B1B" />
+                            </Border>
+
+                            <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="8" Padding="14,10" IsVisible="{Binding IsComplete}">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <materialIcons:MaterialIcon Kind="CheckCircleOutline" Width="20" Height="20" Foreground="#16A34A" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding ResultSummary}" FontSize="12" Foreground="#166534" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Add Steps Tool Palette -->
+                            <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="16">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Add Step to Pipeline" FontSize="13" FontWeight="Bold" Foreground="#1E293B" />
+                                    <ItemsControl ItemsSource="{Binding AvailableTools}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="models:PdfToolDefinition">
+                                                <Button Command="{Binding $parent[UserControl].((vm:WorkflowBuilderViewModel)DataContext).AddStepCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="#F8FAFC"
+                                                        BorderBrush="#E2E8F0"
+                                                        BorderThickness="1"
+                                                        CornerRadius="6"
+                                                        Padding="10,6"
+                                                        Margin="0,0,8,8"
+                                                        Cursor="Hand">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <materialIcons:MaterialIcon Kind="{Binding IconKind}" Width="14" Height="14" Foreground="{Binding IconColorHex, Converter={StaticResource HexToBrushConverter}}" />
+                                                        <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="Medium" Foreground="#1E293B" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Input Files Batch Section -->
+                            <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="16">
+                                <StackPanel Spacing="12">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="Input Batch Files" FontSize="13" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" />
+                                        <Button Grid.Column="1"
+                                                Command="{Binding AddInputFilesCommand}"
+                                                Background="#0F6CBD"
+                                                Foreground="White"
+                                                CornerRadius="6"
+                                                Padding="12,5"
+                                                FontSize="11.5"
+                                                FontWeight="SemiBold"
+                                                Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" />
+                                                <TextBlock Text="Add PDF Files" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- Files List -->
+                                    <ItemsControl ItemsSource="{Binding InputFiles}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="x:String">
+                                                <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="0,0,0,4">
+                                                    <Grid ColumnDefinitions="*,Auto">
+                                                        <TextBlock Grid.Column="0" Text="{Binding}" FontSize="11.5" Foreground="#1E293B" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                        <Button Grid.Column="1"
+                                                                Command="{Binding $parent[UserControl].((vm:WorkflowBuilderViewModel)DataContext).RemoveInputFileCommand}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="Transparent"
+                                                                BorderThickness="0"
+                                                                Padding="3"
+                                                                Cursor="Hand">
+                                                            <materialIcons:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="#94A3B8" />
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Pipeline Execution Progress -->
+                            <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14,10" IsVisible="{Binding IsRunning}">
+                                <StackPanel Spacing="8">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold" Foreground="#1E293B" />
+                                        <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="12" FontWeight="Bold" Foreground="#EA580C" />
+                                    </Grid>
+                                    <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="6" CornerRadius="3" Foreground="#EA580C" />
+                                </StackPanel>
+                            </Border>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <!-- 3. Bottom Action Bar -->
+                <Border Grid.Row="2"
+                        Background="#F8FAFC"
+                        BorderBrush="#E2E8F0"
+                        BorderThickness="0,1,0,0"
+                        Padding="20,14">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding InputFiles.Count, StringFormat='{}{0} input files queued'}" FontSize="12" Foreground="#64748B" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                            <Button Command="{Binding CancelWorkflowCommand}"
+                                    Background="#F1F5F9"
+                                    Foreground="#64748B"
+                                    CornerRadius="6"
+                                    Padding="14,8"
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Cursor="Hand"
+                                    IsVisible="{Binding IsRunning}">
+                                Cancel
+                            </Button>
+                            <Button Command="{Binding CloseCommand}"
+                                    Background="#F1F5F9"
+                                    Foreground="#64748B"
+                                    CornerRadius="6"
+                                    Padding="14,8"
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Cursor="Hand"
+                                    IsVisible="{Binding !IsRunning}">
+                                Close
+                            </Button>
+                            <Button Command="{Binding RunWorkflowCommand}"
+                                    Background="#EA580C"
+                                    Foreground="White"
+                                    CornerRadius="6"
+                                    Padding="18,8"
+                                    FontSize="12.5"
+                                    FontWeight="Bold"
+                                    Cursor="Hand"
+                                    IsEnabled="{Binding !IsRunning}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="Play" Width="16" Height="16" />
+                                    <TextBlock Text="Run Pipeline" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

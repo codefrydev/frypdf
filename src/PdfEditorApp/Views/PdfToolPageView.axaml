@@ -1,0 +1,648 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:models="using:PdfEditorApp.Models"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.PdfToolPageView"
+             x:DataType="vm:PdfToolRunnerViewModel"
+             Background="#F8FAFC">
+
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Back Button Hover Style -->
+        <Style Selector="Button.back-btn">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Foreground" Value="#475569" />
+            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,7" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.back-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#EFF6FF" />
+            <Setter Property="BorderBrush" Value="#3B82F6" />
+            <Setter Property="Foreground" Value="#1D4ED8" />
+        </Style>
+
+        <!-- Dropzone Interactive Box -->
+        <Style Selector="Border.dropzone-box">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.2" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.dropzone-box:pointerover">
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="BorderBrush" Value="#3B82F6" />
+            <Setter Property="BoxShadow" Value="0 8 20 #120F6CBD" />
+        </Style>
+
+        <!-- Execute Action Button -->
+        <Style Selector="Button.execute-btn">
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="24,14" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.execute-btn:pointerover">
+            <Setter Property="RenderTransform" Value="scale(1.01)" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- 1. Top Navigation & Header Banner -->
+        <Border Grid.Row="0"
+                Background="#FFFFFF"
+                BorderBrush="#E2E8F0"
+                BorderThickness="0,0,0,1"
+                Padding="28,18">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <!-- Left: Back Button & Tool Identification -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                    <Button Classes="back-btn" Command="{Binding GoBackCommand}" ToolTip.Tip="Back to All Tools (Home)">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="ArrowLeft" Width="16" Height="16" Foreground="#3B82F6" />
+                            <TextBlock Text="Back to Tools" FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Rectangle Width="1" Height="28" Fill="#E2E8F0" />
+
+                    <!-- Tool Large Icon Badge -->
+                    <Border Width="48" Height="48"
+                            Background="{Binding Tool.BackgroundAccentHex, Converter={StaticResource HexToBrushConverter}}"
+                            CornerRadius="12"
+                            BoxShadow="0 2 8 #10000000"
+                            VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="{Binding Tool.IconKind}"
+                                                    Width="26" Height="26"
+                                                    Foreground="{Binding Tool.IconColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center" />
+                    </Border>
+
+                    <!-- Tool Title & Description -->
+                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Tool.Name}"
+                                       FontSize="18"
+                                       FontWeight="Bold"
+                                       Foreground="#0F172A" />
+                            <Border Background="#F1F5F9" CornerRadius="6" Padding="8,2" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Tool.CategoryDisplayName}" FontSize="11" FontWeight="Medium" Foreground="#64748B" />
+                            </Border>
+                            <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Padding="6,1" IsVisible="{Binding Tool.IsNew}">
+                                <TextBlock Text="NEW" FontSize="10" FontWeight="Bold" Foreground="#0F6CBD" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Tool.Description}"
+                                   FontSize="12.5"
+                                   Foreground="#64748B"
+                                   MaxWidth="650" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Right: Quick Info / Status Pill -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="ShieldCheckOutline" Width="15" Height="15" Foreground="#16A34A" />
+                            <TextBlock Text="Local &amp; Secure · 100% Offline" FontSize="11.5" FontWeight="Medium" Foreground="#334155" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 2. Two-Column Workspace Layout -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,380" Margin="28,24,28,28">
+
+            <!-- LEFT COLUMN: Files Workspace, Drag & Drop, Progress, Completion -->
+            <ScrollViewer Grid.Column="0" Margin="0,0,20,0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="20">
+
+                    <!-- Error Alert Banner -->
+                    <Border Background="#FEF2F2"
+                            BorderBrush="#FCA5A5"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="16,12"
+                            IsVisible="{Binding HasError}">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="22" Height="22" Foreground="#DC2626" Margin="0,0,12,0" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Operation Failed" FontSize="13" FontWeight="Bold" Foreground="#991B1B" />
+                                <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="#B91C1C" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Success State Banner -->
+                    <Border Background="#F0FDF4"
+                            BorderBrush="#86EFAC"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="20,18"
+                            BoxShadow="0 4 12 #1016A34A"
+                            IsVisible="{Binding IsComplete}">
+                        <StackPanel Spacing="14">
+                            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                <Border Width="40" Height="40" Background="#DCFCE7" CornerRadius="10">
+                                    <materialIcons:MaterialIcon Kind="CheckCircle" Width="24" Height="24" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="Completed Successfully!" FontSize="15" FontWeight="Bold" Foreground="#166534" />
+                                    <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="12.5" Foreground="#15803D" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Output Action Buttons -->
+                            <WrapPanel Orientation="Horizontal" Margin="52,0,0,0">
+                                <Button Command="{Binding OpenOutputFileCommand}"
+                                        Background="#16A34A"
+                                        Foreground="White"
+                                        CornerRadius="8"
+                                        Padding="14,8"
+                                        FontSize="12.5"
+                                        FontWeight="SemiBold"
+                                        Cursor="Hand"
+                                        Margin="0,0,8,6">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="15" Height="15" />
+                                        <TextBlock Text="Open File" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding OpenOutputFolderCommand}"
+                                        Background="#DCFCE7"
+                                        Foreground="#166534"
+                                        BorderBrush="#86EFAC"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="14,8"
+                                        FontSize="12.5"
+                                        FontWeight="SemiBold"
+                                        Cursor="Hand"
+                                        Margin="0,0,8,6">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
+                                        <TextBlock Text="Show in Folder" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding OpenInEditorCommand}"
+                                        Background="#EFF6FF"
+                                        Foreground="#0F6CBD"
+                                        BorderBrush="#BFDBFE"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="14,8"
+                                        FontSize="12.5"
+                                        FontWeight="SemiBold"
+                                        Cursor="Hand"
+                                        Margin="0,0,8,6">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <materialIcons:MaterialIcon Kind="SquareEditOutline" Width="15" Height="15" />
+                                        <TextBlock Text="Edit in FryPDF" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Processing Progress Card -->
+                    <Border Background="#FFFFFF"
+                            BorderBrush="#CBD5E1"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="20,16"
+                            BoxShadow="0 4 12 #08000000"
+                            IsVisible="{Binding IsRunning}">
+                        <StackPanel Spacing="12">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="CogSyncOutline" Width="20" Height="20" Foreground="#0F6CBD" />
+                                    <TextBlock Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="14" FontWeight="Bold" Foreground="#0F6CBD" VerticalAlignment="Center" />
+                            </Grid>
+                            <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#0F6CBD" Background="#F1F5F9" />
+                            <Button Command="{Binding CancelExecutionCommand}"
+                                    HorizontalAlignment="Right"
+                                    Background="#F1F5F9"
+                                    Foreground="#64748B"
+                                    CornerRadius="6"
+                                    Padding="12,5"
+                                    FontSize="11.5"
+                                    Cursor="Hand">
+                                Cancel Operation
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Large Interactive Drag & Drop Zone -->
+                    <Border Classes="dropzone-box"
+                            Padding="36,44"
+                            IsVisible="{Binding !HasSelectedFiles}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                            <Border Width="64" Height="64"
+                                    Background="#EFF6FF"
+                                    BorderBrush="#BFDBFE"
+                                    BorderThickness="1"
+                                    CornerRadius="16"
+                                    HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="CloudUploadOutline" Width="34" Height="34" Foreground="#3B82F6" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+
+                            <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                <TextBlock Text="Drag and drop your files here" FontSize="16" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center" />
+                                <TextBlock Text="or click below to browse from your computer" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" />
+                            </StackPanel>
+
+                            <Button Command="{Binding AddFilesCommand}"
+                                    Background="#0F6CBD"
+                                    Foreground="White"
+                                    CornerRadius="8"
+                                    Padding="24,10"
+                                    FontSize="13.5"
+                                    FontWeight="SemiBold"
+                                    HorizontalAlignment="Center"
+                                    Cursor="Hand">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
+                                    <TextBlock Text="Select Document Files" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <TextBlock Text="{Binding Tool.AcceptedFileExtensions, StringFormat='Supported formats: {0}'}" FontSize="11.5" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Selected Files Management List -->
+                    <Border Background="#FFFFFF"
+                            BorderBrush="#E2E8F0"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="20"
+                            BoxShadow="0 2 6 #05000000"
+                            IsVisible="{Binding HasSelectedFiles}">
+                        <StackPanel Spacing="14">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="18" Height="18" Foreground="#0F6CBD" />
+                                    <TextBlock Text="Selected Documents" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                                    <Border Background="#EFF6FF" CornerRadius="12" Padding="8,2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding SelectedFiles.Count, StringFormat='{}{0} files'}" FontSize="11" FontWeight="Bold" Foreground="#0F6CBD" />
+                                    </Border>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                    <Button Command="{Binding AddFilesCommand}"
+                                            Background="#EFF6FF"
+                                            Foreground="#0F6CBD"
+                                            BorderBrush="#BFDBFE"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="12,6"
+                                            FontSize="12"
+                                            FontWeight="SemiBold"
+                                            Cursor="Hand">
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" />
+                                            <TextBlock Text="Add More" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Command="{Binding ClearFilesCommand}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Foreground="#EF4444"
+                                            FontSize="12"
+                                            Padding="8,6"
+                                            Cursor="Hand">
+                                        Clear All
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Items List -->
+                            <ItemsControl ItemsSource="{Binding SelectedFiles}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="x:String">
+                                        <Border Background="#F8FAFC"
+                                                BorderBrush="#E2E8F0"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="12,10"
+                                                Margin="0,0,0,8">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <Border Grid.Column="0" Width="32" Height="32" Background="#EFF6FF" CornerRadius="6" Margin="0,0,12,0">
+                                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="#EF4444" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Grid.Column="1" Text="{Binding}" FontSize="12.5" FontWeight="Medium" Foreground="#1E293B" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                <Button Grid.Column="2"
+                                                        Command="{Binding $parent[UserControl].((vm:PdfToolRunnerViewModel)DataContext).RemoveFileCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Padding="6"
+                                                        Cursor="Hand"
+                                                        ToolTip.Tip="Remove File">
+                                                    <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="#94A3B8" />
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- RIGHT COLUMN: Options & Execution Controls -->
+            <Border Grid.Column="1"
+                    Background="#FFFFFF"
+                    BorderBrush="#E2E8F0"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="22"
+                    BoxShadow="0 4 12 #08000000">
+                <DockPanel>
+
+                    <!-- Header -->
+                    <Border DockPanel.Dock="Top" Margin="0,0,0,16">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#0F6CBD" />
+                            <TextBlock Text="Tool Configuration" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Execute Button at Bottom -->
+                    <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0" Spacing="10">
+                        <Button Classes="execute-btn"
+                                Command="{Binding ExecuteToolCommand}"
+                                Background="{Binding Tool.IconColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                IsEnabled="{Binding !IsRunning}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="LightningBolt" Width="18" Height="18" />
+                                <TextBlock Text="{Binding Tool.Name, StringFormat='Execute {0}'}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Text="Press Enter to execute immediately" FontSize="11" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Scrollable Specific Configuration Options -->
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="16">
+
+                            <!-- Merge Options -->
+                            <StackPanel Spacing="8" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=MergePdf}">
+                                <TextBlock Text="Merge Settings" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <TextBlock Text="All selected PDF files will be merged in the exact order shown on the left." FontSize="12" Foreground="#64748B" TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <!-- Compression Options -->
+                            <StackPanel Spacing="10" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=CompressPdf}">
+                                <TextBlock Text="Compression Preset Level" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <StackPanel Spacing="6">
+                                    <RadioButton Content="Maximum Quality (Light)" IsChecked="{Binding CompressionLevel, Converter={StaticResource EqualityConverter}, ConverterParameter=MaximumQuality}" />
+                                    <RadioButton Content="Balanced (Recommended)" IsChecked="{Binding CompressionLevel, Converter={StaticResource EqualityConverter}, ConverterParameter=Balanced}" />
+                                    <RadioButton Content="Small Size (Aggressive)" IsChecked="{Binding CompressionLevel, Converter={StaticResource EqualityConverter}, ConverterParameter=SmallSize}" />
+                                    <RadioButton Content="Maximum Compression" IsChecked="{Binding CompressionLevel, Converter={StaticResource EqualityConverter}, ConverterParameter=MaximumCompression}" />
+                                </StackPanel>
+                                <CheckBox Content="Remove document metadata" IsChecked="{Binding CompressRemoveMetadata}" FontSize="12" Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <!-- Watermark Options -->
+                            <StackPanel Spacing="12" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=Watermark}">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Watermark Text" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                    <TextBox Text="{Binding WatermarkText}" FontSize="12" />
+                                </StackPanel>
+                                <Grid ColumnDefinitions="*,*">
+                                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                                        <TextBlock Text="Opacity (0.1 - 1.0)" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                                        <NumericUpDown Value="{Binding WatermarkOpacity}" Minimum="0.05" Maximum="1.0" Increment="0.05" FormatString="0.00" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
+                                        <TextBlock Text="Rotation (°)" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                                        <NumericUpDown Value="{Binding WatermarkRotation}" Minimum="-180" Maximum="180" Increment="15" />
+                                    </StackPanel>
+                                </Grid>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Color Hex" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                                    <TextBox Text="{Binding WatermarkColorHex}" FontSize="12" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Protect PDF Password Options -->
+                            <StackPanel Spacing="12" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=ProtectPdf}">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="User Open Password" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                    <TextBox Text="{Binding UserPassword}" PasswordChar="•" FontSize="12" PlaceholderText="Required to open..." />
+                                </StackPanel>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Permissions / Owner Password" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                    <TextBox Text="{Binding OwnerPassword}" PasswordChar="•" FontSize="12" PlaceholderText="Required to modify..." />
+                                </StackPanel>
+                                <TextBlock Text="Permissions" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="0,4,0,0" />
+                                <StackPanel Spacing="4">
+                                    <CheckBox Content="Allow Printing" IsChecked="{Binding AllowPrinting}" FontSize="12" />
+                                    <CheckBox Content="Allow Copying Text/Graphics" IsChecked="{Binding AllowCopying}" FontSize="12" />
+                                    <CheckBox Content="Allow Modifying Content" IsChecked="{Binding AllowModifying}" FontSize="12" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Unlock PDF Password Options -->
+                            <StackPanel Spacing="6" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=UnlockPdf}">
+                                <TextBlock Text="Enter Document Password" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <TextBox Text="{Binding UserPassword}" PasswordChar="•" FontSize="12" PlaceholderText="Enter password to unlock..." />
+                            </StackPanel>
+
+                            <!-- Split PDF Options -->
+                            <StackPanel Spacing="12" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=SplitPdf}">
+                                <TextBlock Text="Split Strategy" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <StackPanel Spacing="6">
+                                    <RadioButton Content="Split Every N Pages" IsChecked="{Binding SplitMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SplitEveryNPages}" />
+                                    <RadioButton Content="Split by Page Ranges" IsChecked="{Binding SplitMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SplitByPageRanges}" />
+                                    <RadioButton Content="Odd &amp; Even Pages Split" IsChecked="{Binding SplitOddEven}" />
+                                </StackPanel>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Range Expression (e.g. 1-3, 5, 7-10)" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                                    <TextBox Text="{Binding SplitRangeExpression}" FontSize="12" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Rotate PDF Options -->
+                            <StackPanel Spacing="10" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=RotatePdf}">
+                                <TextBlock Text="Rotation Angle" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <RadioButton Content="90° CW" IsChecked="{Binding RotateDegrees, Converter={StaticResource EqualityConverter}, ConverterParameter=90}" />
+                                    <RadioButton Content="180°" IsChecked="{Binding RotateDegrees, Converter={StaticResource EqualityConverter}, ConverterParameter=180}" />
+                                    <RadioButton Content="270° CCW" IsChecked="{Binding RotateDegrees, Converter={StaticResource EqualityConverter}, ConverterParameter=270}" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Page Numbers Options -->
+                            <StackPanel Spacing="10" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=PageNumbers}">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Numbering Template" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                    <TextBox Text="{Binding PageNumberTemplate}" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Starting Number" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" />
+                                    <NumericUpDown Value="{Binding PageNumberStart}" Minimum="1" Maximum="99999" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- OCR PDF Options -->
+                            <StackPanel Spacing="8" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=OcrPdf}">
+                                <TextBlock Text="OCR Language" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <TextBox Text="{Binding OcrLanguage}" FontSize="12" />
+                                <CheckBox Content="Create Searchable Transparent PDF" IsChecked="{Binding OcrSearchablePdf}" FontSize="12" />
+                            </StackPanel>
+
+                            <!-- Scan to PDF Options -->
+                            <StackPanel Spacing="6" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=ScanToPdf}">
+                                <TextBlock Text="Scan Enhancement" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <CheckBox Content="Auto Deskew Alignment" IsChecked="{Binding ScanAutoDeskew}" FontSize="12" />
+                                <CheckBox Content="Enhance Text Contrast" IsChecked="{Binding ScanEnhanceContrast}" FontSize="12" />
+                                <CheckBox Content="Whiten &amp; Clean Background" IsChecked="{Binding ScanWhitenBackground}" FontSize="12" />
+                            </StackPanel>
+
+                            <!-- AI Summarizer Options -->
+                            <StackPanel Spacing="10" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=AiSummarizer}">
+                                <TextBlock Text="AI Summary Options" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <CheckBox Content="Include Executive Summary" IsChecked="{Binding AiIncludeExecutive}" FontSize="12" />
+                                <CheckBox Content="Include Action Items Checklist" IsChecked="{Binding AiIncludeActions}" FontSize="12" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="Max Key Points:" FontSize="12" Foreground="#475569" VerticalAlignment="Center" />
+                                    <NumericUpDown Value="{Binding AiMaxBullets}" Minimum="3" Maximum="20" Width="100" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Translation Options -->
+                            <StackPanel Spacing="6" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=TranslatePdf}">
+                                <TextBlock Text="Target Language" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <TextBox Text="{Binding TargetLanguage}" FontSize="12" PlaceholderText="Spanish, French, German..." />
+                            </StackPanel>
+
+                            <!-- HTML to PDF Options -->
+                            <StackPanel Spacing="6" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=HtmlToPdf}">
+                                <TextBlock Text="URL or Raw HTML" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <TextBox Text="{Binding HtmlInputTextOrUrl}" FontSize="12" PlaceholderText="https://example.com" />
+                            </StackPanel>
+
+                            <!-- Image Export Options (PDF to JPG) -->
+                            <StackPanel Spacing="8" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=PdfToJpg}">
+                                <TextBlock Text="Export Format &amp; Resolution" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <RadioButton Content="JPG" IsChecked="{Binding ImageExportFormat, Converter={StaticResource EqualityConverter}, ConverterParameter=jpg}" />
+                                    <RadioButton Content="PNG" IsChecked="{Binding ImageExportFormat, Converter={StaticResource EqualityConverter}, ConverterParameter=png}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="DPI Resolution:" FontSize="12" Foreground="#475569" VerticalAlignment="Center" />
+                                    <NumericUpDown Value="{Binding ImageDpi}" Minimum="72" Maximum="600" Increment="50" Width="120" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- JPG to PDF Options -->
+                            <StackPanel Spacing="8" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=JpgToPdf}">
+                                <TextBlock Text="Image Layout" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <CheckBox Content="Fit Images to Standard Page" IsChecked="{Binding ImageFitToPage}" FontSize="12" />
+                            </StackPanel>
+
+                            <!-- Crop Options -->
+                            <StackPanel Spacing="10" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=CropPdf}">
+                                <TextBlock Text="Crop Margins (Points)" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <Grid ColumnDefinitions="*,*">
+                                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,4,0">
+                                        <TextBlock Text="Top" FontSize="11" Foreground="#64748B" />
+                                        <NumericUpDown Value="{Binding CropMarginTop}" Minimum="0" Maximum="200" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4" Margin="4,0,0,0">
+                                        <TextBlock Text="Bottom" FontSize="11" Foreground="#64748B" />
+                                        <NumericUpDown Value="{Binding CropMarginBottom}" Minimum="0" Maximum="200" />
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,*">
+                                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,4,0">
+                                        <TextBlock Text="Left" FontSize="11" Foreground="#64748B" />
+                                        <NumericUpDown Value="{Binding CropMarginLeft}" Minimum="0" Maximum="200" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4" Margin="4,0,0,0">
+                                        <TextBlock Text="Right" FontSize="11" Foreground="#64748B" />
+                                        <NumericUpDown Value="{Binding CropMarginRight}" Minimum="0" Maximum="200" />
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Redact Options -->
+                            <StackPanel Spacing="8" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=RedactPdf}">
+                                <TextBlock Text="Search Pattern to Redact" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <TextBox Text="{Binding RedactSearchPattern}" FontSize="12" />
+                                <CheckBox Content="Match Case" IsChecked="{Binding RedactCaseSensitive}" FontSize="12" />
+                                <CheckBox Content="Permanent Content Sanitization" IsChecked="{Binding RedactPermanentScrub}" FontSize="12" />
+                            </StackPanel>
+
+                            <!-- Forms Options -->
+                            <StackPanel Spacing="8" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=PdfForms}">
+                                <TextBlock Text="Form Processing" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <CheckBox Content="Flatten Interactive Fields" IsChecked="{Binding FormFlattenFields}" FontSize="12" />
+                                <CheckBox Content="Export Field Values to JSON" IsChecked="{Binding FormExportJson}" FontSize="12" />
+                            </StackPanel>
+
+                            <!-- Markdown Options -->
+                            <StackPanel Spacing="8" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=PdfToMarkdown}">
+                                <TextBlock Text="Markdown Extraction" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                <CheckBox Content="Reconstruct Markdown Tables" IsChecked="{Binding MarkdownIncludeTables}" FontSize="12" />
+                                <CheckBox Content="Extract Images to Assets Folder" IsChecked="{Binding MarkdownExtractImages}" FontSize="12" />
+                            </StackPanel>
+
+                            <!-- Default processing notice -->
+                            <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="16" Height="16" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                    <TextBlock Text="Non-destructive processing. Original files remain untouched." FontSize="11.5" Foreground="#64748B" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                </DockPanel>
+            </Border>
+
+        </Grid>
+    </Grid>
+</UserControl>

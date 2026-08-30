@@ -25,9 +25,16 @@ public partial class MainViewModel : ViewModelBase
     private readonly ISmartPlacementService _placementService;
     private readonly IRecentDocumentsService _recentService;
     private readonly IPageOrganizerService _pageOrganizerService;
+    private readonly IPdfDocumentOperationsService _pdfOperationsService;
+    private readonly PdfEditorApp.Services.Tools.IPdfToolRegistry _toolRegistry;
 
     public ISmartPlacementService SmartPlacement => _placementService;
     public IPageOrganizerService PageOrganizer => _pageOrganizerService;
+    public IPdfDocumentOperationsService PdfOperations => _pdfOperationsService;
+
+    // PDF Tool Studio Subsystems
+    public PdfToolRunnerViewModel ToolRunner { get; }
+    public WorkflowBuilderViewModel WorkflowBuilder { get; }
 
     // --- HOME / EDITOR VIEW-SWITCHING ---
 
@@ -348,7 +355,17 @@ public partial class MainViewModel : ViewModelBase
 
     // --- CONSTRUCTORS ---
 
-    public MainViewModel() : this(new PdfExportService(), new TemplateService(), new ProjectPersistenceService(), new DocumentAuditService(), new SignatureService(), new SmartPlacementService(), new RecentDocumentsService(), new PageOrganizerService())
+    public MainViewModel() : this(
+        new PdfExportService(),
+        new TemplateService(),
+        new ProjectPersistenceService(),
+        new DocumentAuditService(),
+        new SignatureService(),
+        new SmartPlacementService(),
+        new RecentDocumentsService(),
+        new PageOrganizerService(),
+        null,
+        null)
     {
     }
 
@@ -360,7 +377,9 @@ public partial class MainViewModel : ViewModelBase
         ISignatureService? signatureService = null,
         ISmartPlacementService? placementService = null,
         IRecentDocumentsService? recentService = null,
-        IPageOrganizerService? pageOrganizerService = null)
+        IPageOrganizerService? pageOrganizerService = null,
+        IPdfDocumentOperationsService? pdfOperationsService = null,
+        PdfEditorApp.Services.Tools.IPdfToolRegistry? toolRegistry = null)
     {
         _exportService = exportService;
         _templateService = templateService;
@@ -371,14 +390,35 @@ public partial class MainViewModel : ViewModelBase
         _recentService = recentService ?? new RecentDocumentsService();
         _pageOrganizerService = pageOrganizerService ?? new PageOrganizerService();
 
+        _toolRegistry = toolRegistry ?? new PdfEditorApp.Services.Tools.PdfToolRegistry();
+
+        var pageService = new PdfEditorApp.Services.Tools.PdfPageService();
+        var optService = new PdfEditorApp.Services.Tools.PdfOptimizationService();
+        var secService = new PdfEditorApp.Services.Tools.PdfSecurityService();
+        var convService = new PdfEditorApp.Services.Tools.PdfConversionService();
+        var ocrService = new PdfEditorApp.Services.Tools.PdfOcrService();
+        var formService = new PdfEditorApp.Services.Tools.PdfFormService();
+        var aiService = new PdfEditorApp.Services.Tools.AiDocumentService();
+        var transService = new PdfEditorApp.Services.Tools.DocumentTranslationService();
+        var workflowEngine = new PdfEditorApp.Services.Tools.PdfWorkflowEngine(pageService, optService, secService, convService, ocrService);
+
+        _pdfOperationsService = pdfOperationsService ?? new PdfDocumentOperationsService(
+            _toolRegistry, pageService, optService, secService, convService, ocrService, formService, aiService, transService, workflowEngine);
+
+        ToolRunner = new PdfToolRunnerViewModel(_pdfOperationsService);
+        ToolRunner.OpenInEditorRequested += (path) => OpenEditorWithFile(path);
+        WorkflowBuilder = new WorkflowBuilderViewModel(workflowEngine, _toolRegistry);
+
         // Connect undo/redo service to inspector
         Inspector.UndoRedo = UndoRedo;
 
         // Set up Home page and wire its navigation events
-        Home = new HomeViewModel(_recentService);
+        Home = new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner);
         Home.OpenTemplateRequested += OpenEditorWithTemplate;
         Home.OpenFileRequested += () => _ = OpenProjectAndEnterEditorAsync();
         Home.OpenRecentRequested += OpenEditorWithFile;
+        Home.OpenToolRequested += OpenTool;
+        Home.OpenWorkflowBuilderRequested += OpenWorkflowStudio;
 
         // Synchronize inspector when selection changes
         Inspector.PropertyChanged += (s, e) =>
@@ -395,6 +435,24 @@ public partial class MainViewModel : ViewModelBase
         // Initialize default document model
         var defaultDoc = _templateService.CreateAnnualReportTemplate();
         LoadFromDocumentModel(defaultDoc);
+    }
+
+    [RelayCommand]
+    public void OpenTool(PdfToolId toolId)
+    {
+        var toolDef = _toolRegistry.GetTool(toolId);
+        if (toolDef != null)
+        {
+            ToolRunner.StorageProvider = StorageProvider;
+            ToolRunner.SetupForTool(toolDef);
+        }
+    }
+
+    [RelayCommand]
+    public void OpenWorkflowStudio()
+    {
+        WorkflowBuilder.StorageProvider = StorageProvider;
+        WorkflowBuilder.Open();
     }
 
     // --- HOME / EDITOR NAVIGATION ---

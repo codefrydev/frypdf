@@ -50,8 +50,23 @@ public partial class App : Application
         services.AddSingleton<IPageOrganizerService, PageOrganizerService>();
         services.AddTransient<IUndoRedoService, UndoRedoService>();
 
+        // PDF Tools Platform Services
+        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfToolRegistry, PdfEditorApp.Services.Tools.PdfToolRegistry>();
+        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfPageService, PdfEditorApp.Services.Tools.PdfPageService>();
+        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfOptimizationService, PdfEditorApp.Services.Tools.PdfOptimizationService>();
+        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfSecurityService, PdfEditorApp.Services.Tools.PdfSecurityService>();
+        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfConversionService, PdfEditorApp.Services.Tools.PdfConversionService>();
+        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfOcrService, PdfEditorApp.Services.Tools.PdfOcrService>();
+        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfFormService, PdfEditorApp.Services.Tools.PdfFormService>();
+        services.AddSingleton<PdfEditorApp.Services.Tools.IAiDocumentService, PdfEditorApp.Services.Tools.AiDocumentService>();
+        services.AddSingleton<PdfEditorApp.Services.Tools.IDocumentTranslationService, PdfEditorApp.Services.Tools.DocumentTranslationService>();
+        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfWorkflowEngine, PdfEditorApp.Services.Tools.PdfWorkflowEngine>();
+        services.AddSingleton<IPdfDocumentOperationsService, PdfDocumentOperationsService>();
+
         // ViewModels
         services.AddTransient<InspectorViewModel>();
+        services.AddTransient<PdfToolRunnerViewModel>();
+        services.AddTransient<WorkflowBuilderViewModel>();
         services.AddTransient<HomeViewModel>();
         services.AddTransient<MainViewModel>();
     }

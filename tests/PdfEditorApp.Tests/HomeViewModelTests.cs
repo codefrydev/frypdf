@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
+using PdfEditorApp.Services.Tools;
 using PdfEditorApp.ViewModels;
 using Xunit;
 
@@ -61,8 +62,8 @@ public class HomeViewModelTests
         vm.ToggleTemplateGalleryCommand.Execute(null);
         Assert.False(vm.IsTemplateGalleryExpanded);
 
-        // Act & Assert 3: Direct expand and collapse commands
-        vm.ExpandTemplateGalleryCommand.Execute(null);
+        // Act & Assert 3: Direct collapse command
+        vm.ToggleTemplateGalleryCommand.Execute(null); // expand first
         Assert.True(vm.IsTemplateGalleryExpanded);
 
         vm.CollapseTemplateGalleryCommand.Execute(null);
@@ -125,23 +126,23 @@ public class HomeViewModelTests
         var vm = new HomeViewModel();
 
         // Act: Search for "quantum"
-        vm.TemplateSearchQuery = "quantum";
+        vm.SearchQuery = "quantum";
 
         // Assert
         Assert.Contains(vm.FilteredTemplates, t => t.Id == "physicsresearch");
         Assert.DoesNotContain(vm.FilteredTemplates, t => t.Id == "annualreport");
 
         // Act 2: Search for "hodge"
-        vm.TemplateSearchQuery = "hodge";
+        vm.SearchQuery = "hodge";
         Assert.Contains(vm.FilteredTemplates, t => t.Id == "mathresearch");
 
         // Act 3: Search for "mediterranean"
-        vm.TemplateSearchQuery = "mediterranean";
+        vm.SearchQuery = "mediterranean";
         Assert.Contains(vm.FilteredTemplates, t => t.Id == "historyresearch");
 
         // Clear search
         vm.ClearTemplateSearchCommand.Execute(null);
-        Assert.Equal("", vm.TemplateSearchQuery);
+        Assert.Equal("", vm.SearchQuery);
         Assert.Equal(vm.AllTemplates.Count, vm.FilteredTemplates.Count);
     }
 
@@ -152,7 +153,7 @@ public class HomeViewModelTests
         var vm = new HomeViewModel();
 
         // Act
-        vm.TemplateSearchQuery = "NonExistentZebraTemplate12345";
+        vm.SearchQuery = "NonExistentZebraTemplate12345";
 
         // Assert
         Assert.Equal(0, vm.MatchingTemplatesCount);
@@ -182,7 +183,7 @@ public class HomeViewModelTests
         mockRecent.Add(new RecentDocumentItem { Title = "Doc1.pdf", FilePath = "/path/Doc1.pdf" });
         mockRecent.Add(new RecentDocumentItem { Title = "Doc2.frypdf", FilePath = "/path/Doc2.frypdf" });
 
-        var vm = new HomeViewModel(mockRecent);
+        var vm = new HomeViewModel(mockRecent, new TemplateService(), new ProjectPersistenceService(), new PdfToolRegistry());
 
         // Assert
         Assert.True(vm.HasRecentDocuments);

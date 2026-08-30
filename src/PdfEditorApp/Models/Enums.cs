@@ -412,4 +412,19 @@ public enum SidebarTabKind
     Comments
 }
 
+public enum HomeNavSection
+{
+    Home,
+    NewDocument,
+    AllTools,
+    OrganizeAndPage,
+    OptimizeAndSecurity,
+    ConvertFromPdf,
+    ConvertToPdf,
+    EditAndForms,
+    AiAndAutomation,
+    Starred,
+    Trash
+}
+
 

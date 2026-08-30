@@ -1,0 +1,281 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.PdfToolsStudioView"
+             x:DataType="vm:HomeViewModel">
+
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Category Filter Pill Styles -->
+        <Style Selector="Button.home-filter-pill">
+            <Setter Property="Background" Value="#F1F5F9" />
+            <Setter Property="Foreground" Value="#64748B" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="Padding" Value="14,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.2" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.2" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.home-filter-pill:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#E2E8F0" />
+            <Setter Property="Foreground" Value="#0F172A" />
+        </Style>
+        <Style Selector="Button.home-filter-pill.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="#EFF6FF" />
+            <Setter Property="BorderBrush" Value="#BFDBFE" />
+            <Setter Property="Foreground" Value="#0F6CBD" />
+        </Style>
+        <Style Selector="Button.home-filter-pill.active">
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <!-- PDF Tool Card Lift & Glow Animation -->
+        <Style Selector="Border.pdf-tool-box">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="BoxShadow" Value="0 2 6 #08000000" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.pdf-tool-btn:pointerover Border.pdf-tool-box">
+            <Setter Property="RenderTransform" Value="translateY(-3px)" />
+            <Setter Property="BoxShadow" Value="0 8 20 #150F6CBD" />
+            <Setter Property="BorderBrush" Value="#0F6CBD" />
+        </Style>
+
+        <!-- Workflow Banner Box -->
+        <Style Selector="Border.workflow-banner-box">
+            <Setter Property="Background" Value="#FFF7ED" />
+            <Setter Property="BorderBrush" Value="#FED7AA" />
+            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BoxShadow" Value="0 4 12 #10EA580C" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.workflow-banner-btn:pointerover Border.workflow-banner-box">
+            <Setter Property="RenderTransform" Value="translateY(-3px)" />
+            <Setter Property="BoxShadow" Value="0 10 24 #25EA580C" />
+            <Setter Property="BorderBrush" Value="#EA580C" />
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel Margin="32,24,32,32">
+
+        <!-- Section Header with Title, Category Filter Pills, and Count -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,20" VerticalAlignment="Center">
+            <!-- Left: Title & Subtitle -->
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="PDF Tools Studio"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="#0F172A" />
+                    <Border Background="#EFF6FF" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
+                        <TextBlock Text="32 TOOLS" FontSize="10" FontWeight="Bold" Foreground="#0F6CBD" />
+                    </Border>
+                </StackPanel>
+                <TextBlock Text="Professional tools for conversion, editing, security &amp; automation"
+                           FontSize="12"
+                           Foreground="#64748B" />
+            </StackPanel>
+
+            <!-- Center: Category Filter Pills -->
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="6"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="12,0">
+                <Button Classes="home-filter-pill"
+                        Classes.active="{Binding SelectedToolCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=All}"
+                        Command="{Binding SetToolCategoryCommand}"
+                        CommandParameter="All">
+                    All
+                </Button>
+                <Button Classes="home-filter-pill"
+                        Classes.active="{Binding SelectedToolCategory, Converter={StaticResource EqualityConverter}, ConverterParameter='Organize &amp; Page'}"
+                        Command="{Binding SetToolCategoryCommand}"
+                        CommandParameter="Organize &amp; Page">
+                    Organize &amp; Page
+                </Button>
+                <Button Classes="home-filter-pill"
+                        Classes.active="{Binding SelectedToolCategory, Converter={StaticResource EqualityConverter}, ConverterParameter='Optimize &amp; Security'}"
+                        Command="{Binding SetToolCategoryCommand}"
+                        CommandParameter="Optimize &amp; Security">
+                    Optimize &amp; Security
+                </Button>
+                <Button Classes="home-filter-pill"
+                        Classes.active="{Binding SelectedToolCategory, Converter={StaticResource EqualityConverter}, ConverterParameter='Convert from PDF'}"
+                        Command="{Binding SetToolCategoryCommand}"
+                        CommandParameter="Convert from PDF">
+                    Convert from PDF
+                </Button>
+                <Button Classes="home-filter-pill"
+                        Classes.active="{Binding SelectedToolCategory, Converter={StaticResource EqualityConverter}, ConverterParameter='Convert to PDF'}"
+                        Command="{Binding SetToolCategoryCommand}"
+                        CommandParameter="Convert to PDF">
+                    Convert to PDF
+                </Button>
+                <Button Classes="home-filter-pill"
+                        Classes.active="{Binding SelectedToolCategory, Converter={StaticResource EqualityConverter}, ConverterParameter='Edit &amp; Forms'}"
+                        Command="{Binding SetToolCategoryCommand}"
+                        CommandParameter="Edit &amp; Forms">
+                    Edit &amp; Forms
+                </Button>
+                <Button Classes="home-filter-pill"
+                        Classes.active="{Binding SelectedToolCategory, Converter={StaticResource EqualityConverter}, ConverterParameter='AI &amp; Automation'}"
+                        Command="{Binding SetToolCategoryCommand}"
+                        CommandParameter="AI &amp; Automation">
+                    AI &amp; Automation
+                </Button>
+            </StackPanel>
+
+            <!-- Right: Open Workflow Studio Button -->
+            <Button Grid.Column="2"
+                    Command="{Binding OpenWorkflowBuilderCommand}"
+                    Background="#FFF7ED"
+                    BorderBrush="#FFEDD5"
+                    BorderThickness="1"
+                    Foreground="#EA580C"
+                    CornerRadius="8"
+                    Padding="12,7"
+                    Cursor="Hand"
+                    ToolTip.Tip="Open Automated Workflow Pipeline Builder">
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <materialIcons:MaterialIcon Kind="LightningBoltOutline" Width="16" Height="16" Foreground="#EA580C" />
+                    <TextBlock Text="Batch Pipelines" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!-- Create a Workflow Banner Card (Top Callout) -->
+        <Button Classes="workflow-banner-btn"
+                Command="{Binding OpenWorkflowBuilderCommand}"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="0"
+                Margin="0,0,0,16"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                Cursor="Hand"
+                IsVisible="{Binding WorkflowBannerCard, Converter={StaticResource NullToBooleanConverter}}">
+            <Border Classes="workflow-banner-box" Padding="18,14">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Border Grid.Column="0" Width="44" Height="44" Background="#FFEDD5" CornerRadius="10" Margin="0,0,14,0">
+                        <materialIcons:MaterialIcon Kind="LightningBoltOutline" Width="24" Height="24" Foreground="#EA580C" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Create a workflow" FontSize="15" FontWeight="Bold" Foreground="#9A3412" />
+                            <Border Background="#EA580C" CornerRadius="4" Padding="6,1">
+                                <TextBlock Text="AUTOMATE" FontSize="9.5" FontWeight="Bold" Foreground="White" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="Combine multiple tools into an automated batch processing pipeline for recurring document workflows." FontSize="12" Foreground="#C2410C" />
+                    </StackPanel>
+                    <Border Grid.Column="2" Background="#EA580C" CornerRadius="6" Padding="12,6" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="Open Builder" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
+                            <materialIcons:MaterialIcon Kind="ArrowRight" Width="14" Height="14" Foreground="White" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Button>
+
+        <!-- 32 Tools 4-Column Responsive Grid -->
+        <ItemsControl ItemsSource="{Binding FilteredTools}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="4" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:PdfToolCardViewModel">
+                    <Button Classes="pdf-tool-btn"
+                            Command="{Binding SelectToolCommand}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="0"
+                            Margin="0,0,12,12"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Cursor="Hand">
+                        <Border Classes="pdf-tool-box" Padding="14,12" MinHeight="76">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <!-- Icon Badge -->
+                                <Border Grid.Column="0"
+                                        Width="36" Height="36"
+                                        Background="{Binding BackgroundAccentHex, Converter={StaticResource HexToBrushConverter}}"
+                                        CornerRadius="8"
+                                        Margin="0,0,12,0"
+                                        VerticalAlignment="Top">
+                                    <materialIcons:MaterialIcon Kind="{Binding IconKind}"
+                                                                Width="20" Height="20"
+                                                                Foreground="{Binding IconColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center" />
+                                </Border>
+
+                                <!-- Details -->
+                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                    <Grid ColumnDefinitions="*,Auto,Auto">
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="13" FontWeight="Bold" Foreground="#0F172A" TextTrimming="CharacterEllipsis" />
+                                        <Border Grid.Column="1" Background="#EFF6FF" CornerRadius="3" Padding="4,1" Margin="4,0,0,0" IsVisible="{Binding IsNew}">
+                                            <TextBlock Text="NEW" FontSize="8.5" FontWeight="Bold" Foreground="#0F6CBD" />
+                                        </Border>
+                                        <Button Grid.Column="2"
+                                                Command="{Binding ToggleStarCommand}"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Padding="3"
+                                                Margin="4,0,0,0"
+                                                Cursor="Hand"
+                                                ToolTip.Tip="Pin to Starred Tools">
+                                            <Panel>
+                                                <materialIcons:MaterialIcon Kind="Star" IsVisible="{Binding IsStarred}" Width="14" Height="14" Foreground="#EAB308" />
+                                                <materialIcons:MaterialIcon Kind="StarOutline" IsVisible="{Binding !IsStarred}" Width="14" Height="14" Foreground="#CBD5E1" />
+                                            </Panel>
+                                        </Button>
+                                    </Grid>
+                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#64748B" MaxLines="2" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+    </StackPanel>
+</UserControl>

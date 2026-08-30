@@ -1,0 +1,133 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.StarredToolsPageView"
+             x:DataType="vm:HomeViewModel">
+
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- PDF Tool Card Lift & Glow Animation -->
+        <Style Selector="Border.pdf-tool-box">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="BoxShadow" Value="0 2 6 #08000000" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.pdf-tool-btn:pointerover Border.pdf-tool-box">
+            <Setter Property="RenderTransform" Value="translateY(-3px)" />
+            <Setter Property="BoxShadow" Value="0 8 20 #150F6CBD" />
+            <Setter Property="BorderBrush" Value="#0F6CBD" />
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel Margin="32,24,32,32">
+
+        <!-- Header -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,20" VerticalAlignment="Center">
+            <StackPanel Grid.Column="0" Spacing="2">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <materialIcons:MaterialIcon Kind="Star" Width="20" Height="20" Foreground="#EAB308" VerticalAlignment="Center" />
+                    <TextBlock Text="Starred PDF Tools" FontSize="18" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                    <Border Background="#FEF08A" CornerRadius="4" Padding="6,1" VerticalAlignment="Center" IsVisible="{Binding StarredTools.Count}">
+                        <TextBlock Text="{Binding StarredTools.Count, StringFormat='{}{0} PINNED'}" FontSize="10" FontWeight="Bold" Foreground="#854D0E" />
+                    </Border>
+                </StackPanel>
+                <TextBlock Text="Quick access to your most frequently used document tools" FontSize="12" Foreground="#64748B" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Empty State for Starred -->
+        <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="40" HorizontalAlignment="Stretch" IsVisible="{Binding !StarredTools.Count}">
+            <StackPanel HorizontalAlignment="Center" Spacing="12">
+                <materialIcons:MaterialIcon Kind="StarOutline" Width="44" Height="44" Foreground="#CBD5E1" HorizontalAlignment="Center" />
+                <TextBlock Text="No Starred Tools Yet" FontSize="16" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center" />
+                <TextBlock Text="Click the star icon on any tool card in All Tools to pin your favorite tools here." FontSize="13" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                <Button Command="{Binding SelectNavSectionCommand}"
+                        CommandParameter="AllTools"
+                        Background="#EFF6FF"
+                        Foreground="#0F6CBD"
+                        CornerRadius="8"
+                        Padding="16,8"
+                        FontSize="12.5"
+                        FontWeight="SemiBold"
+                        Cursor="Hand"
+                        HorizontalAlignment="Center"
+                        Margin="0,6,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <TextBlock Text="Browse All 32 Tools" VerticalAlignment="Center" />
+                        <materialIcons:MaterialIcon Kind="ArrowRight" Width="14" Height="14" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Starred Tools Grid -->
+        <ItemsControl ItemsSource="{Binding StarredTools}" IsVisible="{Binding StarredTools.Count}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="4" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:PdfToolCardViewModel">
+                    <Button Classes="pdf-tool-btn"
+                            Command="{Binding SelectToolCommand}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="0"
+                            Margin="0,0,12,12"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Cursor="Hand">
+                        <Border Classes="pdf-tool-box" Padding="14,12" MinHeight="76">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <Border Grid.Column="0"
+                                        Width="36" Height="36"
+                                        Background="{Binding BackgroundAccentHex, Converter={StaticResource HexToBrushConverter}}"
+                                        CornerRadius="8"
+                                        Margin="0,0,12,0"
+                                        VerticalAlignment="Top">
+                                    <materialIcons:MaterialIcon Kind="{Binding IconKind}"
+                                                                Width="20" Height="20"
+                                                                Foreground="{Binding IconColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                    <Grid ColumnDefinitions="*,Auto,Auto">
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="13" FontWeight="Bold" Foreground="#0F172A" TextTrimming="CharacterEllipsis" />
+                                        <Button Grid.Column="2"
+                                                Command="{Binding ToggleStarCommand}"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Padding="3"
+                                                Margin="4,0,0,0"
+                                                Cursor="Hand"
+                                                ToolTip.Tip="Unpin from Starred">
+                                            <materialIcons:MaterialIcon Kind="Star" Width="14" Height="14" Foreground="#EAB308" />
+                                        </Button>
+                                    </Grid>
+                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#64748B" MaxLines="2" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+    </StackPanel>
+</UserControl>

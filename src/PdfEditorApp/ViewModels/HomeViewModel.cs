@@ -91,6 +91,9 @@ public partial class HomeViewModel : ViewModelBase
     public bool IsStarredSection => SelectedNavSection == HomeNavSection.Starred;
     public bool IsTrashSection => SelectedNavSection == HomeNavSection.Trash;
     public bool IsLicensingSection => SelectedNavSection == HomeNavSection.Licensing;
+    public bool IsFontPackagesSection => SelectedNavSection == HomeNavSection.FontPackages;
+
+    public FontManagerViewModel FontManager { get; } = new();
 
     public int MatchingToolsCount => FilteredTools.Count;
     public bool HasNoMatchingTools => FilteredTools.Count == 0;
@@ -336,6 +339,7 @@ public partial class HomeViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsStarredSection));
         OnPropertyChanged(nameof(IsTrashSection));
         OnPropertyChanged(nameof(IsLicensingSection));
+        OnPropertyChanged(nameof(IsFontPackagesSection));
     }
 
     private void UpdateFilteredTools()

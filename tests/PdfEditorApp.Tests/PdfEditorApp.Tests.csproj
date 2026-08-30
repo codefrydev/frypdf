@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\PdfEditorApp.Core\PdfEditorApp.Core.csproj" />
     <ProjectReference Include="..\..\src\PdfEditorApp\PdfEditorApp.csproj" />
   </ItemGroup>
 

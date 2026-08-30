@@ -1,0 +1,408 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.FontManagerPageView"
+             x:DataType="vm:FontManagerViewModel">
+
+    <UserControl.Resources>
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:BooleanToStringConverter x:Key="BooleanToStringConverter" />
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Category Filter Pill Style -->
+        <Style Selector="Button.category-filter-btn">
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="Padding" Value="14,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.category-filter-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+        </Style>
+        <Style Selector="Button.category-filter-btn.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+        </Style>
+        <Style Selector="Button.category-filter-btn.active">
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <!-- Font Pack Card Style -->
+        <Style Selector="Border.font-pack-card">
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BoxShadow" Value="0 2 8 #08000000" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.font-pack-card:pointerover">
+            <Setter Property="RenderTransform" Value="translateY(-2px)" />
+            <Setter Property="BoxShadow" Value="0 6 16 #120F6CBD" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="32,24,32,32" Spacing="20">
+
+            <!-- ========================================================= -->
+            <!-- 1. HERO BANNER & STATS CARD                               -->
+            <!-- ========================================================= -->
+            <Border Background="{DynamicResource WinPanelBrush}"
+                    BorderBrush="{DynamicResource WinBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="16"
+                    Padding="28,24"
+                    BoxShadow="0 2 12 #0A000000">
+                <Grid RowDefinitions="Auto,Auto">
+
+                    <!-- Top Title + Action Buttons -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="Translate" Width="22" Height="22" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Language &amp; Font Packages" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="Download world fonts on demand. Keeps FryPDF ultra-lightweight while guaranteeing flawless rendering for international documents."
+                                       FontSize="12.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxWidth="680" />
+                        </StackPanel>
+
+                        <!-- Top Action Buttons -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Button Command="{Binding OpenFontFolderCommand}"
+                                    Background="{DynamicResource WinInputBgBrush}"
+                                    BorderBrush="{DynamicResource WinBorderBrush}"
+                                    BorderThickness="1"
+                                    Foreground="{DynamicResource WinTextBrush}"
+                                    CornerRadius="8"
+                                    Padding="12,8"
+                                    Cursor="Hand"
+                                    ToolTip.Tip="Open local fonts folder on your computer">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
+                                    <TextBlock Text="Open Font Folder" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding ClearAllCacheCommand}"
+                                    Background="{DynamicResource WinInputBgBrush}"
+                                    BorderBrush="{DynamicResource WinBorderBrush}"
+                                    BorderThickness="1"
+                                    Foreground="#EF4444"
+                                    CornerRadius="8"
+                                    Padding="12,8"
+                                    Cursor="Hand"
+                                    ToolTip.Tip="Clear all downloaded fonts to free up disk space">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="15" Height="15" Foreground="#EF4444" />
+                                    <TextBlock Text="Clear Cache" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding DownloadAllCommand}"
+                                    Background="{DynamicResource WinAccentBrush}"
+                                    Foreground="White"
+                                    CornerRadius="8"
+                                    Padding="14,8"
+                                    Cursor="Hand"
+                                    IsEnabled="{Binding !IsDownloadingAll}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="DownloadMultiple" Width="15" Height="15" />
+                                    <TextBlock Text="Download All" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Bottom Quick Stats Row -->
+                    <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="12">
+                        <!-- Stat 1: Installed Packs -->
+                        <Border Grid.Column="0" Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="CheckCircleOutline" Width="16" Height="16" Foreground="#10B981" VerticalAlignment="Center" />
+                                <StackPanel Spacing="1">
+                                    <TextBlock Text="Installed Packages" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" />
+                                    <TextBlock Text="{Binding InstalledCount, StringFormat='{}{0} / 10 Active'}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Stat 2: Local Cache Size -->
+                        <Border Grid.Column="1" Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="Harddisk" Width="16" Height="16" Foreground="#6366F1" VerticalAlignment="Center" />
+                                <StackPanel Spacing="1">
+                                    <TextBlock Text="Local Storage Used" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" />
+                                    <TextBlock Text="{Binding TotalCacheSizeFormatted}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Stat 3: App Base Status -->
+                        <Border Grid.Column="2" Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="Feather" Width="16" Height="16" Foreground="#F59E0B" VerticalAlignment="Center" />
+                                <StackPanel Spacing="1">
+                                    <TextBlock Text="Core App Footprint" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" />
+                                    <TextBlock Text="Ultra-Lightweight (~6 MB)" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Global Status Message (if any) -->
+                        <TextBlock Grid.Column="3"
+                                   Text="{Binding GlobalStatusMessage}"
+                                   FontSize="12"
+                                   FontWeight="Medium"
+                                   Foreground="{DynamicResource WinAccentBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Right"
+                                   TextTrimming="CharacterEllipsis" />
+                    </Grid>
+
+                </Grid>
+            </Border>
+
+            <!-- ========================================================= -->
+            <!-- 2. SEARCH & CATEGORY FILTER TABS                          -->
+            <!-- ========================================================= -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+
+                <!-- Search Input -->
+                <Border Grid.Column="0"
+                        Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="20"
+                        Padding="12,0"
+                        Width="280"
+                        Height="36">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="15" Height="15" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding SearchQuery}"
+                                 PlaceholderText="Search languages or fonts..."
+                                 FontSize="12"
+                                 Foreground="{DynamicResource WinTextBrush}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- Category Filter Pills -->
+                <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <Button Classes="category-filter-btn"
+                                Classes.active="{Binding SelectedCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=All}"
+                                Command="{Binding SelectCategoryCommand}" CommandParameter="All" Content="All Packs" />
+                        <Button Classes="category-filter-btn"
+                                Classes.active="{Binding SelectedCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=EastAsia}"
+                                Command="{Binding SelectCategoryCommand}" CommandParameter="EastAsia" Content="🇨🇳 🇯🇵 🇰🇷 East Asia (CJK)" />
+                        <Button Classes="category-filter-btn"
+                                Classes.active="{Binding SelectedCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=SouthAsia}"
+                                Command="{Binding SelectCategoryCommand}" CommandParameter="SouthAsia" Content="🇮🇳 Indic Scripts" />
+                        <Button Classes="category-filter-btn"
+                                Classes.active="{Binding SelectedCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=MiddleEast}"
+                                Command="{Binding SelectCategoryCommand}" CommandParameter="MiddleEast" Content="🇸🇦 🇮🇱 Middle East &amp; RTL" />
+                        <Button Classes="category-filter-btn"
+                                Classes.active="{Binding SelectedCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=SoutheastAsia}"
+                                Command="{Binding SelectCategoryCommand}" CommandParameter="SoutheastAsia" Content="🇹🇭 Southeast Asia" />
+                        <Button Classes="category-filter-btn"
+                                Classes.active="{Binding SelectedCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=EuropeAndEurasia}"
+                                Command="{Binding SelectCategoryCommand}" CommandParameter="EuropeAndEurasia" Content="🌍 Eurasia &amp; Cyrillic" />
+                        <Button Classes="category-filter-btn"
+                                Classes.active="{Binding SelectedCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=DesignAndTypography}"
+                                Command="{Binding SelectCategoryCommand}" CommandParameter="DesignAndTypography" Content="🎨 Creative &amp; Display" />
+                        <Button Classes="category-filter-btn"
+                                Classes.active="{Binding SelectedCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Installed}"
+                                Command="{Binding SelectCategoryCommand}" CommandParameter="Installed" Content="✓ Installed Only" />
+                    </StackPanel>
+                </ScrollViewer>
+
+            </Grid>
+
+            <!-- ========================================================= -->
+            <!-- 3. FONT PACKAGES GRID                                     -->
+            <!-- ========================================================= -->
+            <ItemsControl ItemsSource="{Binding FilteredPackages}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:FontPackageItemViewModel">
+                        <Border Classes="font-pack-card"
+                                Width="360"
+                                Margin="0,0,16,16"
+                                Padding="18">
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
+
+                                <!-- Row 0: Header with Flag Emoji, Name, Native Name & Status Pill -->
+                                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                    <!-- Flag Icon Container -->
+                                    <Border Grid.Column="0" Width="38" Height="38" Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8">
+                                        <TextBlock Text="{Binding FlagEmoji}" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+
+                                    <!-- Name & Native Name -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                        <TextBlock Text="{Binding NativeName}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                                    </StackPanel>
+
+                                    <!-- Status Pill -->
+                                    <Border Grid.Column="2"
+                                            Background="{Binding IsInstalled, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='#DCFCE7|#F1F5F9'}"
+                                            BorderBrush="{Binding IsInstalled, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='#86EFAC|#E2E8F0'}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="8,3"
+                                            VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <materialIcons:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="#16A34A" IsVisible="{Binding IsInstalled}" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding IsInstalled, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Installed|Available'}"
+                                                       FontSize="10.5"
+                                                       FontWeight="Bold"
+                                                       Foreground="{Binding IsInstalled, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='#16A34A|#64748B'}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Row 1: Description -->
+                                <TextBlock Grid.Row="1"
+                                           Text="{Binding Description}"
+                                           FontSize="11.5"
+                                           Foreground="{DynamicResource WinMutedBrush}"
+                                           TextWrapping="Wrap"
+                                           MaxLines="2" />
+
+                                <!-- Row 2: Native Script Sample Preview Box -->
+                                <Border Grid.Row="2"
+                                        Background="{DynamicResource WinInputBgBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Padding="10,8">
+                                    <TextBlock Text="{Binding SampleText}"
+                                               FontSize="12.5"
+                                               Foreground="{DynamicResource WinTextBrush}"
+                                               TextTrimming="CharacterEllipsis" />
+                                </Border>
+
+                                <!-- Row 3: Included Font Family Tags & Size -->
+                                <Grid Grid.Row="3" ColumnDefinitions="*,Auto">
+                                    <!-- Included Fonts List -->
+                                    <ItemsControl Grid.Column="0" ItemsSource="{Binding IncludedFontFamilies}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5,2">
+                                                    <TextBlock Text="{Binding}" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- Size Tag -->
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding FormattedSize}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource WinSubtleBrush}"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+
+                                <!-- Row 4: Download / Delete Action Buttons & Progress -->
+                                <Grid Grid.Row="4">
+                                    <!-- When NOT downloading -->
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" IsVisible="{Binding !IsDownloading}">
+                                        <!-- Download Button -->
+                                        <Button Grid.Column="0"
+                                                Command="{Binding DownloadCommand}"
+                                                Background="{Binding IsInstalled, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='#F8FAFC|#0F6CBD'}"
+                                                Foreground="{Binding IsInstalled, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='#475569|#FFFFFF'}"
+                                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                                BorderThickness="{Binding IsInstalled, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='1|0'}"
+                                                CornerRadius="7"
+                                                Padding="0,7"
+                                                HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Center"
+                                                Cursor="Hand"
+                                                IsEnabled="{Binding !IsInstalled}">
+                                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="Check" Width="14" Height="14" Foreground="#16A34A" IsVisible="{Binding IsInstalled}" />
+                                                <materialIcons:MaterialIcon Kind="Download" Width="14" Height="14" IsVisible="{Binding !IsInstalled}" />
+                                                <TextBlock Text="{Binding IsInstalled, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Installed &amp; Active|Download Pack'}"
+                                                           FontSize="11.5"
+                                                           FontWeight="SemiBold"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+
+                                        <!-- Delete / Uninstall Button (only visible when installed) -->
+                                        <Button Grid.Column="1"
+                                                Command="{Binding DeleteCommand}"
+                                                IsVisible="{Binding IsInstalled}"
+                                                Background="Transparent"
+                                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                                BorderThickness="1"
+                                                Foreground="#EF4444"
+                                                CornerRadius="7"
+                                                Padding="8,7"
+                                                Cursor="Hand"
+                                                ToolTip.Tip="Remove downloaded font files to save disk space">
+                                            <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="14" Height="14" Foreground="#EF4444" />
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- When Downloading (Progress Bar & Status) -->
+                                    <StackPanel Spacing="4" IsVisible="{Binding IsDownloading}">
+                                        <ProgressBar Value="{Binding DownloadProgress}" Minimum="0" Maximum="1" Height="6" CornerRadius="3" Foreground="{DynamicResource WinAccentBrush}" Background="{DynamicResource WinHoverBrush}" />
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" Text="{Binding StatusText}" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Grid.Column="1" Text="{Binding ProgressText}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Grid>
+
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

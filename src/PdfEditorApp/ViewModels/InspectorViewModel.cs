@@ -226,39 +226,110 @@ public partial class InspectorViewModel : ViewModelBase
 
     public ObservableCollection<string> AvailableFontFamilies { get; } = new()
     {
-        "Roboto",
+        // ── Sans-Serif (Modern) ─────────────────────────────────────────────
         "Inter",
+        "Roboto",
         "Open Sans",
+        "Lato",
+        "Poppins",
+        "Nunito",
+        "Raleway",
         "Montserrat",
         "Source Sans 3",
+        "Ubuntu",
+        "Cabin",
+        "Josefin Sans",
+        "Titillium Web",
+        "Exo 2",
+        "Noto Sans",
+        "Oswald",
+
+        // ── Sans-Serif (System) ─────────────────────────────────────────────
         "Arial",
-        "Helvetica",
         "Verdana",
-        "Trebuchet MS",
         "Segoe UI",
+        "Helvetica",
+        "Trebuchet MS",
+
+        // ── Serif ───────────────────────────────────────────────────────────
         "Playfair Display",
         "Merriweather",
         "Lora",
+        "PT Serif",
+        "Noto Serif",
+        "Crimson Text",
+        "Libre Baskerville",
+        "Libre Franklin",
+        "Cinzel",
         "Times New Roman",
         "Georgia",
-        "Cinzel",
         "Palatino",
+
+        // ── Monospace ───────────────────────────────────────────────────────
         "Fira Code",
         "Roboto Mono",
         "Courier New",
-        "Menlo",
         "Consolas",
-        "Comic Neue",
-        "Dancing Script",
+        "Menlo",
+
+        // ── Display & Decorative ────────────────────────────────────────────
+        "Bebas Neue",
+        "Orbitron",
+        "Lobster",
         "Pacifico",
+        "Impact",
+
+        // ── Handwriting & Script ────────────────────────────────────────────
+        "Dancing Script",
         "Caveat",
         "Great Vibes",
-        "Lobster",
-        "Bebas Neue",
-        "Oswald",
-        "Orbitron",
-        "Impact",
-        "Comic Sans MS"
+        "Comic Neue",
+
+        // ── Indian Scripts ──────────────────────────────────────────────────
+        "Noto Sans Devanagari",
+        "Tiro Devanagari Hindi",
+        "Noto Sans Tamil",
+        "Noto Sans Telugu",
+        "Noto Sans Bengali",
+        "Noto Sans Gujarati",
+        "Noto Sans Kannada",
+        "Noto Sans Malayalam",
+        "Noto Sans Sinhala",
+
+        // ── CJK — Chinese ───────────────────────────────────────────────────
+        "Noto Sans SC",           // Simplified Chinese
+        "Noto Sans TC",           // Traditional Chinese
+
+        // ── CJK — Japanese ──────────────────────────────────────────────────
+        "Noto Sans JP",
+        "Noto Serif JP",
+
+        // ── CJK — Korean ────────────────────────────────────────────────────
+        "Noto Sans KR",
+        "Nanum Gothic",
+
+        // ── Southeast Asian ──────────────────────────────────────────────────
+        "Noto Sans Thai",
+        "Sarabun",
+        "Noto Sans Myanmar",
+        "Noto Sans Khmer",
+        "Noto Sans Lao",
+        "Be Vietnam Pro",
+
+        // ── Middle Eastern / RTL ─────────────────────────────────────────────
+        "Noto Sans Arabic",
+        "Vazirmatn",
+        "Noto Nastaliq Urdu",
+        "Noto Sans Hebrew",
+        "Heebo",
+
+        // ── Eurasian ─────────────────────────────────────────────────────────
+        "Golos Text",
+        "Russo One",
+        "GFS Neohellenic",
+        "Noto Sans Georgian",
+        "Noto Sans Armenian",
+        "Noto Sans Ethiopic",
     };
 
     public ObservableCollection<double> AvailableFontSizes { get; } = new()

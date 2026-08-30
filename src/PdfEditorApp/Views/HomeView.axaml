@@ -242,7 +242,21 @@
                             </Grid>
                         </Button>
 
-                        <!-- 11. Trash / Temp Cleaner -->
+                        <!-- 11. Font & Language Packs (On-Demand) -->
+                        <Button Classes="nav-tab-btn"
+                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=FontPackages}"
+                                Command="{Binding SelectNavSectionCommand}"
+                                CommandParameter="FontPackages">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <materialIcons:MaterialIcon Grid.Column="0" Kind="Translate" Width="18" Height="18" Foreground="#0284C7" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="Language &amp; Fonts" VerticalAlignment="Center" />
+                                <Border Grid.Column="2" Background="#E0F2FE" CornerRadius="4" Padding="5,1">
+                                    <TextBlock Text="10" FontSize="9.5" FontWeight="Bold" Foreground="#0284C7" />
+                                </Border>
+                            </Grid>
+                        </Button>
+
+                        <!-- 12. Trash / Temp Cleaner -->
                         <Button Classes="nav-tab-btn"
                                 Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Trash}"
                                 Command="{Binding SelectNavSectionCommand}"
@@ -443,6 +457,11 @@
 
                         <!-- Page 7: Open Source Licenses & Third-Party Tools -->
                         <views:LicensingPageView IsVisible="{Binding IsLicensingSection}" />
+
+                        <!-- Page 8: On-Demand Font & Language Packages Studio -->
+                        <Panel IsVisible="{Binding IsFontPackagesSection}">
+                            <views:FontManagerPageView DataContext="{Binding FontManager}" />
+                        </Panel>
                     </Panel>
                 </ScrollViewer>
 

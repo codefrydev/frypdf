@@ -426,7 +426,8 @@ public enum HomeNavSection
     AiAndAutomation,
     Starred,
     Trash,
-    Licensing
+    Licensing,
+    FontPackages
 }
 
 public enum PdfReaderTheme

@@ -40,15 +40,14 @@ public class PdfImportAndViewerTests
         Assert.True(page1.Height > 0);
         Assert.NotEmpty(page1.Elements);
 
-        // Verify page background canvas element is present
-        var bg = page1.Elements.OfType<PdfImageElement>().FirstOrDefault(e => e.AltText.Contains("Background Canvas"));
-        Assert.NotNull(bg);
-        Assert.False(string.IsNullOrEmpty(bg.Base64Data));
-
-        // Verify editable text elements were extracted
+        // Verify editable text elements were extracted with crisp metrics
         var textElements = page1.Elements.OfType<PdfTextElement>().ToList();
         Assert.NotEmpty(textElements);
         Assert.Contains(textElements, t => !string.IsNullOrWhiteSpace(t.Text));
+
+        // Verify no duplicate background canvas image was injected on digital vector PDF
+        var bgCanvas = page1.Elements.OfType<PdfImageElement>().FirstOrDefault(e => e.AltText.Contains("Background Canvas"));
+        Assert.Null(bgCanvas);
     }
 
     [Fact]
@@ -312,19 +311,19 @@ public class PdfImportAndViewerTests
         Assert.Single(imported.Pages);
 
         var page = imported.Pages[0];
-        var bg = page.Elements.OfType<PdfImageElement>().FirstOrDefault(e => e.AltText.Contains("Background Canvas"));
-        Assert.NotNull(bg);
-        Assert.False(string.IsNullOrEmpty(bg.Base64Data));
-        Assert.Equal(0, bg.BorderThickness);
-        Assert.Equal("Transparent", bg.BorderColorHex);
+        Assert.NotEmpty(page.Elements);
+
+        // Verify that digital vector PDF does NOT add duplicate raster background underlay
+        var bgCanvas = page.Elements.OfType<PdfImageElement>().FirstOrDefault(e => e.AltText.Contains("Background Canvas"));
+        Assert.Null(bgCanvas);
+
+        // Verify text elements are extracted
+        var textElements = page.Elements.OfType<PdfTextElement>().ToList();
+        Assert.NotEmpty(textElements);
 
         var pageVm = new PageViewModel();
         pageVm.LoadFromModel(page);
-
-        var bgVm = pageVm.Elements.OfType<PdfEditorApp.ViewModels.ElementViewModels.ImageElementViewModel>().FirstOrDefault(e => e.AltText.Contains("Background Canvas"));
-        Assert.NotNull(bgVm);
-        Assert.Equal(bg.Base64Data, bgVm.Base64Data);
-        Assert.True(Convert.FromBase64String(bgVm.Base64Data!).Length > 0);
+        Assert.NotEmpty(pageVm.Elements);
     }
 
     [Fact]

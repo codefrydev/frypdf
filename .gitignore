@@ -81,3 +81,5 @@ Icon
 !Assets/**/*.pdf
 *.pdfproj
 !Templates/**/*.pdfproj
+*sample1.pdf*
+*sample2.pdf*

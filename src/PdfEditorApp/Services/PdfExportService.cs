@@ -25,6 +25,26 @@ public class PdfExportService : IPdfExportService
     {
         try
         {
+            // 1. User on-demand font cache directory
+            string userFontDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FryPDF", "Fonts");
+            if (Directory.Exists(userFontDir))
+            {
+                foreach (var fontFile in Directory.GetFiles(userFontDir, "*.*"))
+                {
+                    string ext = Path.GetExtension(fontFile).ToLowerInvariant();
+                    if (ext == ".ttf" || ext == ".otf")
+                    {
+                        try
+                        {
+                            using var stream = File.OpenRead(fontFile);
+                            QuestPDF.Drawing.FontManager.RegisterFont(stream);
+                        }
+                        catch { }
+                    }
+                }
+            }
+
+            // 2. Application bundled fonts
             string[] searchPaths =
             {
                 Path.Combine(AppContext.BaseDirectory, "Assets", "Fonts"),

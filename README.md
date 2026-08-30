@@ -10,14 +10,14 @@
 [![Avalonia UI](https://img.shields.io/badge/Avalonia-12.1-7029E6?style=flat-square&logo=avalonia&logoColor=white)](https://avaloniaui.net/)
 [![QuestPDF](https://img.shields.io/badge/QuestPDF-2026.8-FF4500?style=flat-square)](https://www.questpdf.com/)
 [![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Windows%20%7C%20Linux-4B5563?style=flat-square)](https://github.com)
-[![Tests](https://img.shields.io/badge/Tests-50%20Passed-10B981?style=flat-square)](tests/PdfEditorApp.Tests)
+[![Tests](https://img.shields.io/badge/Tests-301%20Passed-10B981?style=flat-square)](tests/PdfEditorApp.Tests)
 
 </div>
 
 ---
 
-## ✨ Features
-
+- 📖 **Universal PDF File Editing**: Open and deconstruct real-world `.pdf` files into fully editable visual canvas objects (grouped text, fonts, colors, embedded images, and AcroForms) with zero deserialization errors.
+- 👁️ **Dedicated Modern PDF Viewer**: Ultra-fast continuous and single-page viewing powered by Skia rendering, thumbnails sidebar, document outline/bookmarks tree, live text search with match jumping, and interactive annotations (highlighter, sticky notes, approval stamps).
 - 🎨 **Visual Document Canvas**: Fluid zoom (25%–500%), page margins, smart snap-to-grid, viewport-centered smart placement, multi-element alignment, and layering.
 - 📝 **Interactive AcroForms**: Text fields, checkboxes, radio buttons, dropdowns, combo boxes, and signature boxes with real-time formula recalculation and validation.
 - 🖋️ **Signature Studio**: Type-to-sign with 4 cursive calligraphy styles or draw custom vector signatures with smooth bezier curves.
@@ -28,7 +28,7 @@
 - 🔍 **Preflight & Accessibility Audit**: Built-in document health scanner checking for low contrast, missing alt text, unflattened form fields, and security vulnerabilities.
 - ⚖️ **Document Diff & Comparison**: Side-by-side revision analyzer highlighting added, removed, and modified elements between project versions.
 - 📄 **Template Gallery & Community Registry**: Built-in templates for Executive Resumes, Annual Reports, Invoices, Certificates, and Academic Papers.
-- 💾 **Lossless Persistence**: Native `.frypdf` JSON-based project save/load format.
+- 💾 **Dual-Format Persistence**: Native `.frypdf` JSON-based project files & standard binary `.pdf` documents.
 
 ---
 

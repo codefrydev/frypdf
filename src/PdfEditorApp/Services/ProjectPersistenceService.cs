@@ -24,9 +24,11 @@ public class ProjectPersistenceService : IProjectPersistenceService
 {
     private readonly JsonSerializerOptions _options;
     private readonly string _autoSaveDirectory;
+    private readonly IPdfImportService _importService;
 
-    public ProjectPersistenceService()
+    public ProjectPersistenceService(IPdfImportService? importService = null)
     {
+        _importService = importService ?? new PdfImportService();
         _options = new JsonSerializerOptions
         {
             WriteIndented = true,
@@ -74,6 +76,35 @@ public class ProjectPersistenceService : IProjectPersistenceService
     public async Task<PdfDocumentModel?> LoadProjectAsync(string filePath)
     {
         if (!File.Exists(filePath)) return null;
+
+        // 1. Check if file is binary PDF (by extension or PDF magic header %PDF-)
+        bool isPdf = false;
+        string ext = Path.GetExtension(filePath).ToLowerInvariant();
+        if (ext == ".pdf")
+        {
+            isPdf = true;
+        }
+        else
+        {
+            try
+            {
+                using var fs = File.OpenRead(filePath);
+                byte[] header = new byte[5];
+                int read = await fs.ReadAsync(header, 0, 5);
+                if (read >= 4 && header[0] == '%' && header[1] == 'P' && header[2] == 'D' && header[3] == 'F')
+                {
+                    isPdf = true;
+                }
+            }
+            catch { }
+        }
+
+        if (isPdf)
+        {
+            return await _importService.ImportPdfAsync(filePath);
+        }
+
+        // 2. Load as JSON FryPDF project
         var json = await File.ReadAllTextAsync(filePath);
         return JsonSerializer.Deserialize<PdfDocumentModel>(json, _options);
     }

@@ -300,3 +300,26 @@ public class BooleanToStringConverter : IValueConverter
     }
 }
 
+public class MultiplyConverter : IMultiValueConverter
+{
+    public static readonly MultiplyConverter Instance = new();
+
+    public object? Convert(System.Collections.Generic.IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (values != null && values.Count >= 2 && values[0] != null && values[1] != null)
+        {
+            try
+            {
+                double v1 = System.Convert.ToDouble(values[0], CultureInfo.InvariantCulture);
+                double v2 = System.Convert.ToDouble(values[1], CultureInfo.InvariantCulture);
+                return v1 * v2;
+            }
+            catch
+            {
+                return 0.0;
+            }
+        }
+        return 0.0;
+    }
+}
+

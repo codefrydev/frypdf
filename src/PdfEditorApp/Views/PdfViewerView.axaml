@@ -1,0 +1,641 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+             x:Class="PdfEditorApp.Views.PdfViewerView"
+             x:DataType="vm:PdfViewerViewModel"
+             Background="{StaticResource WinBgBrush}">
+
+    <UserControl.Resources>
+        <converters:ZoomPercentageConverter x:Key="ZoomPercentageConverter" />
+        <converters:EqualityToBooleanConverter x:Key="EqualityToBooleanConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+        <converters:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
+        <converters:MultiplyConverter x:Key="MultiplyConverter" />
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- 1. TOP VIEWER TOOLBAR -->
+        <Border Grid.Row="0"
+                Background="White"
+                Height="48"
+                BorderBrush="{StaticResource WinBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="12,0">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <!-- Left Section: Home Button, Document Title & Badges -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Classes="mini-tool-btn"
+                            Width="32" Height="32"
+                            Command="{Binding BackToHomeCommand}"
+                            ToolTip.Tip="Back to Home Dashboard">
+                        <materialIcons:MaterialIcon Kind="ArrowLeft" Width="18" Height="18" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+
+                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+
+                    <!-- PDF File Icon & Title -->
+                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="22" Height="22" Foreground="#EF4444" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding DocumentTitle}"
+                               FontSize="13.5"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource WinTextBrush}"
+                               VerticalAlignment="Center"
+                               MaxWidth="260"
+                               TextTrimming="CharacterEllipsis" />
+
+                    <!-- Pages Count Pill -->
+                    <Border Background="#F1F5F9" CornerRadius="5" Padding="6,2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding TotalPagesCount, StringFormat='{}{0} Pages'}"
+                                   FontSize="11" FontWeight="Medium" Foreground="{StaticResource WinMutedBrush}" />
+                    </Border>
+                </StackPanel>
+
+                <!-- Center Section: Page Navigation & Zoom Controls -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                    <!-- Page Navigation Group -->
+                    <Border Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="3,2">
+                        <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                            <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FirstPageCommand}" ToolTip.Tip="First Page (Home)">
+                                <materialIcons:MaterialIcon Kind="PageFirst" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+                            <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding PreviousPageCommand}" ToolTip.Tip="Previous Page (PageUp / ⌥←)">
+                                <materialIcons:MaterialIcon Kind="ChevronLeft" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+
+                            <!-- Page Input Box -->
+                            <TextBlock Text="{Binding PageNavigationDisplay}"
+                                       FontSize="11.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource WinTextBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="6,0" />
+
+                            <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding NextPageCommand}" ToolTip.Tip="Next Page (PageDown / ⌥→)">
+                                <materialIcons:MaterialIcon Kind="ChevronRight" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+                            <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding LastPageCommand}" ToolTip.Tip="Last Page (End)">
+                                <materialIcons:MaterialIcon Kind="PageLast" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="4,0" />
+
+                    <!-- Zoom Controls Group -->
+                    <Border Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="3,2">
+                        <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                            <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToWidthCommand}" ToolTip.Tip="Fit to Width (⌘1)">
+                                <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+                            <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToPageCommand}" ToolTip.Tip="Fit to Page (⌘9)">
+                                <materialIcons:MaterialIcon Kind="FitToScreenOutline" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+
+                            <Rectangle Width="1" Height="14" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+
+                            <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom Out (⌘-)">
+                                <materialIcons:MaterialIcon Kind="Minus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+
+                            <Slider Width="90"
+                                    Minimum="0.25"
+                                    Maximum="3.0"
+                                    Value="{Binding ZoomLevel, Mode=TwoWay}"
+                                    SmallChange="0.05"
+                                    LargeChange="0.25"
+                                    VerticalAlignment="Center" />
+
+                            <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom In (⌘+)">
+                                <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+
+                            <!-- Zoom Percentage Indicator -->
+                            <Button Background="White"
+                                    BorderBrush="{StaticResource WinBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="5,1"
+                                    Command="{Binding ResetZoomCommand}"
+                                    ToolTip.Tip="Reset 100% Zoom (⌘0)">
+                                <TextBlock Text="{Binding ZoomPercentageText}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" Width="36" TextAlignment="Center" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="4,0" />
+
+                    <!-- Page Rotation Group -->
+                    <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding RotateCounterClockwiseCommand}" ToolTip.Tip="Rotate 90° CCW">
+                        <materialIcons:MaterialIcon Kind="RotateLeft" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+                    <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding RotateClockwiseCommand}" ToolTip.Tip="Rotate 90° CW">
+                        <materialIcons:MaterialIcon Kind="RotateRight" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+                </StackPanel>
+
+                <!-- Right Section: Studio Edit Button, Search, Markup & Actions -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+
+                    <!-- Search Trigger Button -->
+                    <Button Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding ToggleSearchBarCommand}"
+                            ToolTip.Tip="Find Text in Document (⌘F / Ctrl+F)">
+                        <materialIcons:MaterialIcon Kind="Magnify" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+
+                    <!-- Add Highlight Markup -->
+                    <Button Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding AddHighlightAnnotationCommand}"
+                            ToolTip.Tip="Highlight Page Region">
+                        <materialIcons:MaterialIcon Kind="FormatColorHighlight" Width="16" Height="16" Foreground="#CA8A04" />
+                    </Button>
+
+                    <!-- Add Sticky Note Markup -->
+                    <Button Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding OpenAddNoteDialogCommand}"
+                            ToolTip.Tip="Add Sticky Note Annotation">
+                        <materialIcons:MaterialIcon Kind="NotePlusOutline" Width="16" Height="16" Foreground="#0284C7" />
+                    </Button>
+
+                    <!-- Add Stamp Markup -->
+                    <Button Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding AddStampCommand}"
+                            CommandParameter="APPROVED"
+                            ToolTip.Tip="Apply 'APPROVED' Stamp">
+                        <materialIcons:MaterialIcon Kind="CheckDecagramOutline" Width="16" Height="16" Foreground="#16A34A" />
+                    </Button>
+
+                    <!-- Copy Page Text -->
+                    <Button Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding CopyPageTextCommand}"
+                            ToolTip.Tip="Copy Page Text to Clipboard">
+                        <materialIcons:MaterialIcon Kind="ContentCopy" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+
+                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+
+                    <!-- Save Copy As Button -->
+                    <Button Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding SaveAsCommand}"
+                            ToolTip.Tip="Save Document Copy As...">
+                        <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+
+                    <!-- EDIT IN FRYPDF STUDIO PRIMARY BUTTON -->
+                    <Button Background="#0F6CBD"
+                            Foreground="White"
+                            CornerRadius="6"
+                            Padding="12,6"
+                            FontWeight="SemiBold"
+                            FontSize="12"
+                            Command="{Binding EditInStudioCommand}"
+                            ToolTip.Tip="Open this PDF in the full FryPDF Editor Canvas to edit text, fonts, shapes, and images">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="DrawPen" Width="15" Height="15" Foreground="White" />
+                            <TextBlock Text="Edit in FryPDF" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Rectangle Width="1" Height="18" Fill="{StaticResource WinBorderBrush}" Margin="2,0" />
+
+                    <!-- Sidebar Toggle Button -->
+                    <Button Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding ToggleSidebarCommand}"
+                            ToolTip.Tip="Toggle Navigation Sidebar (⌘B)">
+                        <materialIcons:MaterialIcon Kind="DockLeft" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                    </Button>
+                </StackPanel>
+
+            </Grid>
+        </Border>
+
+        <!-- 2. MAIN WORKSPACE (LEFT SIDEBAR + CENTER DOCUMENT CANVAS) -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+
+            <!-- LEFT NAVIGATION & INSPECTION SIDEBAR -->
+            <Border Grid.Column="0"
+                    Width="280"
+                    Background="White"
+                    BorderBrush="{StaticResource WinBorderBrush}"
+                    BorderThickness="0,0,1,0"
+                    IsVisible="{Binding IsSidebarOpen}">
+                <Grid RowDefinitions="Auto,*">
+
+                    <!-- Sidebar Tab Switcher -->
+                    <Border Grid.Row="0" Background="#F8FAFC" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="6,6">
+                        <UniformGrid Columns="5">
+                            <!-- Thumbnails Tab -->
+                            <Button Classes="mini-tool-btn"
+                                    Height="32"
+                                    Command="{Binding SelectSidebarTabCommand}"
+                                    CommandParameter="Thumbnails"
+                                    ToolTip.Tip="Page Thumbnails">
+                                <materialIcons:MaterialIcon Kind="ViewGridOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+
+                            <!-- Bookmarks / Outline Tab -->
+                            <Button Classes="mini-tool-btn"
+                                    Height="32"
+                                    Command="{Binding SelectSidebarTabCommand}"
+                                    CommandParameter="Bookmarks"
+                                    ToolTip.Tip="Bookmarks &amp; Outline">
+                                <materialIcons:MaterialIcon Kind="BookmarkOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+
+                            <!-- Annotations Tab -->
+                            <Button Classes="mini-tool-btn"
+                                    Height="32"
+                                    Command="{Binding SelectSidebarTabCommand}"
+                                    CommandParameter="Annotations"
+                                    ToolTip.Tip="Document Annotations &amp; Comments">
+                                <materialIcons:MaterialIcon Kind="CommentTextOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+
+                            <!-- Metadata Info Tab -->
+                            <Button Classes="mini-tool-btn"
+                                    Height="32"
+                                    Command="{Binding SelectSidebarTabCommand}"
+                                    CommandParameter="Info"
+                                    ToolTip.Tip="Document Properties &amp; Metadata">
+                                <materialIcons:MaterialIcon Kind="InformationOutline" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+
+                            <!-- Search Tab -->
+                            <Button Classes="mini-tool-btn"
+                                    Height="32"
+                                    Command="{Binding SelectSidebarTabCommand}"
+                                    CommandParameter="Search"
+                                    ToolTip.Tip="Search Results">
+                                <materialIcons:MaterialIcon Kind="Magnify" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                            </Button>
+                        </UniformGrid>
+                    </Border>
+
+                    <!-- Tab 1: Thumbnails List -->
+                    <ScrollViewer Grid.Row="1"
+                                  IsVisible="{Binding SelectedSidebarTab, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter=Thumbnails}"
+                                  Padding="10">
+                        <ItemsControl ItemsSource="{Binding Pages}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:PdfViewerPageItem">
+                                    <Button Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="0"
+                                            Margin="0,0,0,12"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).SelectPageCommand}"
+                                            CommandParameter="{Binding}">
+                                        <Border CornerRadius="8"
+                                                BorderThickness="{Binding IsSelected, Converter={x:Static converters:BooleanToThicknessConverter.Instance}, ConverterParameter='2|1'}"
+                                                BorderBrush="{Binding IsSelected, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#E2E8F0'}"
+                                                Background="{Binding IsSelected, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
+                                                Padding="8"
+                                                BoxShadow="0 1 3 #15000000">
+                                            <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                                <!-- Rendered Page Thumbnail Preview -->
+                                                <Border CornerRadius="4" ClipToBounds="True" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
+                                                        Width="180" Height="240" HorizontalAlignment="Center">
+                                                    <Image Source="{Binding Bitmap}"
+                                                           Stretch="Uniform"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                                </Border>
+
+                                                <!-- Page Label & Dimensions -->
+                                                <Grid ColumnDefinitions="*,Auto" Width="180">
+                                                    <TextBlock Grid.Column="0" Text="{Binding PageLabel}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding DimensionsText}" FontSize="10" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Tab 2: Bookmarks / Outline Tree -->
+                    <ScrollViewer Grid.Row="1"
+                                  IsVisible="{Binding SelectedSidebarTab, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter=Bookmarks}"
+                                  Padding="12">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Document Outline" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" />
+
+                            <TextBlock Text="No outline bookmarks in this PDF document."
+                                       FontSize="11.5" Foreground="{StaticResource WinMutedBrush}"
+                                       IsVisible="{Binding !HasBookmarks}"
+                                       Margin="0,10" />
+
+                            <ItemsControl ItemsSource="{Binding Bookmarks}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PdfViewerBookmarkItem">
+                                        <Button Classes="mini-tool-btn"
+                                                HorizontalAlignment="Stretch"
+                                                Padding="8,6"
+                                                Margin="0,2"
+                                                Command="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).JumpToBookmarkCommand}"
+                                                CommandParameter="{Binding}">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <materialIcons:MaterialIcon Grid.Column="0" Kind="BookmarkOutline" Width="14" Height="14" Foreground="#0F6CBD" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="11.5" Foreground="{StaticResource WinTextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                <Border Grid.Column="2" Background="#F1F5F9" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding PageNumber, StringFormat='{}p.{0}'}" FontSize="10" Foreground="{StaticResource WinMutedBrush}" />
+                                                </Border>
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Tab 3: Annotations & Comments List -->
+                    <ScrollViewer Grid.Row="1"
+                                  IsVisible="{Binding SelectedSidebarTab, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter=Annotations}"
+                                  Padding="12">
+                        <StackPanel Spacing="10">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Annotations" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Classes="mini-tool-btn" Command="{Binding OpenAddNoteDialogCommand}" ToolTip.Tip="Add Sticky Note">
+                                    <materialIcons:MaterialIcon Kind="Plus" Width="16" Height="16" Foreground="#0F6CBD" />
+                                </Button>
+                            </Grid>
+
+                            <TextBlock Text="No annotations yet. Use the markup tools above to highlight, stamp, or add notes."
+                                       FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" TextWrapping="Wrap"
+                                       IsVisible="{Binding !HasAnnotations}"
+                                       Margin="0,10" />
+
+                            <ItemsControl ItemsSource="{Binding Annotations}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PdfViewerAnnotationItem">
+                                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                                            <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+                                                <materialIcons:MaterialIcon Grid.Column="0" Kind="{Binding IconKind}" Width="16" Height="16" Foreground="#0F6CBD" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                <StackPanel Grid.Column="1" Spacing="2">
+                                                    <TextBlock Text="{Binding Type}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" />
+                                                    <TextBlock Text="{Binding TimeFormatted}" FontSize="10" Foreground="{StaticResource WinMutedBrush}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2" Classes="mini-tool-btn" Width="22" Height="22"
+                                                        Command="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).DeleteAnnotationCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        ToolTip.Tip="Delete Annotation">
+                                                    <materialIcons:MaterialIcon Kind="Close" Width="13" Height="13" Foreground="{StaticResource WinMutedBrush}" />
+                                                </Button>
+
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                                                           Text="{Binding Content}" FontSize="11" Foreground="{StaticResource WinTextBrush}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Tab 4: Metadata Properties Info -->
+                    <ScrollViewer Grid.Row="1"
+                                  IsVisible="{Binding SelectedSidebarTab, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter=Info}"
+                                  Padding="12">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Document Properties" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" />
+
+                            <ItemsControl ItemsSource="{Binding MetadataItems}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PdfViewerMetadataItem">
+                                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="0,0,0,6">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <materialIcons:MaterialIcon Grid.Column="0" Kind="{Binding IconKind}" Width="15" Height="15" Foreground="{StaticResource WinMutedBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                <StackPanel Grid.Column="1" Spacing="1">
+                                                    <TextBlock Text="{Binding Label}" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinMutedBrush}" />
+                                                    <TextBlock Text="{Binding Value}" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Tab 5: Search Results -->
+                    <ScrollViewer Grid.Row="1"
+                                  IsVisible="{Binding SelectedSidebarTab, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter=Search}"
+                                  Padding="12">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Search Results" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" />
+                            <TextBlock Text="{Binding SearchStatusText}" FontSize="11" Foreground="{StaticResource WinMutedBrush}" />
+
+                            <ItemsControl ItemsSource="{Binding SearchResults}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PdfViewerSearchMatch">
+                                        <Button Classes="mini-tool-btn"
+                                                HorizontalAlignment="Stretch"
+                                                Padding="8"
+                                                Margin="0,0,0,6"
+                                                Command="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).JumpToMatchCommand}"
+                                                CommandParameter="{Binding}">
+                                            <StackPanel Spacing="3" HorizontalAlignment="Left">
+                                                <Border Background="#EFF6FF" CornerRadius="4" Padding="5,1" HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding PageNumber, StringFormat='{}Page {0}'}" FontSize="10" FontWeight="Bold" Foreground="#0F6CBD" />
+                                                </Border>
+                                                <TextBlock Text="{Binding Snippet}" FontSize="11" Foreground="{StaticResource WinTextBrush}" TextWrapping="Wrap" TextAlignment="Left" />
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                </Grid>
+            </Border>
+
+            <!-- CENTER DOCUMENT VIEWPORT -->
+            <Grid Grid.Column="1">
+
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto"
+                              Padding="30">
+                    <ItemsControl ItemsSource="{Binding Pages}"
+                                  HorizontalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="24" HorizontalAlignment="Center" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PdfViewerPageItem">
+                                <StackPanel HorizontalAlignment="Center" Spacing="6">
+                                    <!-- Rendered PDF Page Canvas -->
+                                    <Border Background="White"
+                                            CornerRadius="4"
+                                            BoxShadow="0 4 16 #20000000"
+                                            BorderBrush="#CBD5E1"
+                                            BorderThickness="1"
+                                            ClipToBounds="True">
+                                        <Border.Width>
+                                            <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                <Binding Path="WidthPoints" />
+                                                <Binding Path="$parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel" />
+                                            </MultiBinding>
+                                        </Border.Width>
+                                        <Border.Height>
+                                            <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                <Binding Path="HeightPoints" />
+                                                <Binding Path="$parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel" />
+                                            </MultiBinding>
+                                        </Border.Height>
+
+                                        <Panel>
+                                            <!-- Rendered Page Image Stream -->
+                                            <Image Source="{Binding Bitmap}"
+                                                   Stretch="UniformToFill"
+                                                   RenderTransformOrigin="0.5,0.5">
+                                                <Image.RenderTransform>
+                                                    <RotateTransform Angle="{Binding RotationAngle}" />
+                                                </Image.RenderTransform>
+                                            </Image>
+
+                                            <!-- Fallback when loading / empty -->
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
+                                                        IsVisible="{Binding Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
+                                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
+                                                <TextBlock Text="{Binding PageLabel}" FontSize="12" Foreground="{StaticResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            </StackPanel>
+                                        </Panel>
+                                    </Border>
+
+                                    <!-- Page Number Footnote Indicator -->
+                                    <TextBlock Text="{Binding PageLabel}"
+                                               FontSize="11"
+                                               FontWeight="Medium"
+                                               Foreground="{StaticResource WinMutedBrush}"
+                                               HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- FLOATING IN-VIEWER SEARCH BAR OVERLAY -->
+                <Border Background="White"
+                        BorderBrush="{StaticResource WinBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        BoxShadow="0 4 16 #25000000"
+                        Padding="8,6"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="0,16,24,0"
+                        IsVisible="{Binding IsSearchBarVisible}">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="Magnify" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" VerticalAlignment="Center" />
+
+                        <TextBox Text="{Binding SearchQuery, Mode=TwoWay}"
+                                 PlaceholderText="Find in PDF..."
+                                 Width="180"
+                                 Height="28"
+                                 FontSize="11.5"
+                                 Padding="6,3"
+                                 VerticalAlignment="Center" />
+
+                        <TextBlock Text="{Binding SearchStatusText}"
+                                   FontSize="10.5"
+                                   Foreground="{StaticResource WinMutedBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="2,0" />
+
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding PreviousMatchCommand}" ToolTip.Tip="Previous Match (Shift+F3)">
+                            <materialIcons:MaterialIcon Kind="ChevronUp" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding NextMatchCommand}" ToolTip.Tip="Next Match (F3 / Enter)">
+                            <materialIcons:MaterialIcon Kind="ChevronDown" Width="16" Height="16" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding ToggleSearchBarCommand}" ToolTip.Tip="Close Search">
+                            <materialIcons:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="{StaticResource WinMutedBrush}" />
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- ADD STICKY NOTE MODAL DIALOG -->
+                <Border Background="#80000000"
+                        IsVisible="{Binding IsAddNoteOpen}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch">
+                    <Border Width="380"
+                            Background="White"
+                            CornerRadius="10"
+                            BoxShadow="0 8 24 #30000000"
+                            Padding="20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                        <StackPanel Spacing="14">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                    <materialIcons:MaterialIcon Kind="NoteTextOutline" Width="20" Height="20" Foreground="#0284C7" VerticalAlignment="Center" />
+                                    <TextBlock Text="Add Sticky Note Annotation" FontSize="14" FontWeight="Bold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Classes="mini-tool-btn" Command="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).OpenAddNoteDialogCommand}">
+                                    <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" />
+                                </Button>
+                            </Grid>
+
+                            <TextBox Text="{Binding NewNoteText, Mode=TwoWay}"
+                                     PlaceholderText="Type your annotation, comment or review note here..."
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     Height="90"
+                                     FontSize="12" />
+
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                <Button Content="Cancel" Padding="12,6" Command="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).OpenAddNoteDialogCommand}" />
+                                <Button Content="Add Note" Background="#0F6CBD" Foreground="White" Padding="14,6" FontWeight="SemiBold" Command="{Binding ConfirmAddNoteCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Border>
+
+            </Grid>
+
+        </Grid>
+
+        <!-- 3. BOTTOM STATUS BAR -->
+        <Border Grid.Row="2"
+                Background="{StaticResource WinBgBrush}"
+                Height="28"
+                BorderBrush="{StaticResource WinBorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="12,0">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Ellipse Width="6" Height="6" Fill="#10B981" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="10.5" Foreground="{StaticResource WinMutedBrush}" FontWeight="Medium" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding PageNavigationDisplay}" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                    <Rectangle Width="1" Height="12" Fill="{StaticResource WinBorderBrush}" />
+                    <TextBlock Text="{Binding ZoomPercentageText}" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+    </Grid>
+
+</UserControl>

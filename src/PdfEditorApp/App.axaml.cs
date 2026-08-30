@@ -40,6 +40,7 @@ public partial class App : Application
     {
         // Core Services
         services.AddSingleton<IPdfExportService, PdfExportService>();
+        services.AddSingleton<IPdfImportService, PdfImportService>();
         services.AddSingleton<IProjectPersistenceService, ProjectPersistenceService>();
         services.AddSingleton<ITemplateService, TemplateService>();
         services.AddSingleton<IDocumentAuditService, DocumentAuditService>();

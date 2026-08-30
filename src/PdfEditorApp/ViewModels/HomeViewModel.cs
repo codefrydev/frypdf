@@ -32,6 +32,7 @@ public partial class HomeViewModel : ViewModelBase
     public event Action? OpenFileRequested;
     public event Action<string>? OpenRecentRequested;      // file path
     public event Action<string>? OpenInEditorRequested;    // file path
+    public event Action<string>? OpenInViewerRequested;    // file path
     public event Action<PdfToolId>? OpenToolRequested;
     public event Action? OpenWorkflowBuilderRequested;
 
@@ -488,6 +489,7 @@ public partial class HomeViewModel : ViewModelBase
                 {
                     ActiveToolViewModel.BackRequested -= BackToTools;
                     ActiveToolViewModel.OpenInEditorRequested -= OnToolOpenInEditorRequested;
+                    ActiveToolViewModel.OpenInViewerRequested -= OnToolOpenInViewerRequested;
                 }
 
                 ActiveToolViewModel = _toolViewModelFactory.Create(toolId);
@@ -495,6 +497,7 @@ public partial class HomeViewModel : ViewModelBase
                 ActiveToolViewModel.IsToolStarred = card.IsStarred;
                 ActiveToolViewModel.BackRequested += BackToTools;
                 ActiveToolViewModel.OpenInEditorRequested += OnToolOpenInEditorRequested;
+                ActiveToolViewModel.OpenInViewerRequested += OnToolOpenInViewerRequested;
                 ActiveToolViewModel.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(PdfToolViewModelBase.IsToolStarred) && ActiveToolCard != null && ActiveToolViewModel != null)
@@ -522,6 +525,11 @@ public partial class HomeViewModel : ViewModelBase
         OpenInEditorRequested?.Invoke(filePath);
     }
 
+    private void OnToolOpenInViewerRequested(string filePath)
+    {
+        OpenInViewerRequested?.Invoke(filePath);
+    }
+
     [RelayCommand]
     public void BackToTools()
     {
@@ -531,6 +539,7 @@ public partial class HomeViewModel : ViewModelBase
         {
             ActiveToolViewModel.BackRequested -= BackToTools;
             ActiveToolViewModel.OpenInEditorRequested -= OnToolOpenInEditorRequested;
+            ActiveToolViewModel.OpenInViewerRequested -= OnToolOpenInViewerRequested;
             ActiveToolViewModel = null;
         }
     }
@@ -598,6 +607,19 @@ public partial class HomeViewModel : ViewModelBase
     public void OpenRecent(string filePath)
     {
         OpenRecentRequested?.Invoke(filePath);
+    }
+
+    [RelayCommand]
+    public void OpenInViewer(string? filePath)
+    {
+        if (!string.IsNullOrEmpty(filePath))
+        {
+            OpenInViewerRequested?.Invoke(filePath);
+        }
+        else
+        {
+            OpenFileRequested?.Invoke();
+        }
     }
 
     [RelayCommand]

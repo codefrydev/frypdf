@@ -105,6 +105,10 @@
         <views:HomeView IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).IsHomePageVisible}"
                         DataContext="{Binding Home}" />
 
+        <!-- ===== PDF VIEWER SHELL ===== -->
+        <views:PdfViewerView IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).IsPdfViewerVisible}"
+                             DataContext="{Binding PdfViewer}" />
+
         <!-- ===== EDITOR SHELL (shown after entering a document) ===== -->
         <Grid IsVisible="{Binding IsEditorVisible}"
               RowDefinitions="Auto,Auto,*,Auto">

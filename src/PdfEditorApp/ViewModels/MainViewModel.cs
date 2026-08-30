@@ -35,14 +35,18 @@ public partial class MainViewModel : ViewModelBase
     // PDF Tool Studio Subsystems
     public PdfToolRunnerViewModel ToolRunner { get; }
     public WorkflowBuilderViewModel WorkflowBuilder { get; }
+    public PdfViewerViewModel PdfViewer { get; } = new();
 
-    // --- HOME / EDITOR VIEW-SWITCHING ---
+    // --- HOME / EDITOR / VIEWER VIEW-SWITCHING ---
 
     [ObservableProperty]
     private bool _isHomePageVisible = true;
 
     [ObservableProperty]
     private bool _isEditorVisible = false;
+
+    [ObservableProperty]
+    private bool _isPdfViewerVisible = false;
 
     /// <summary>ViewModel for the Home / Start Screen.</summary>
     public HomeViewModel Home { get; }
@@ -409,10 +413,17 @@ public partial class MainViewModel : ViewModelBase
 
         ToolRunner = new PdfToolRunnerViewModel(_pdfOperationsService);
         ToolRunner.OpenInEditorRequested += (path) => OpenEditorWithFile(path);
+        ToolRunner.OpenInViewerRequested += (path) => OpenInViewer(path);
         WorkflowBuilder = new WorkflowBuilderViewModel(workflowEngine, _toolRegistry);
 
         // Connect undo/redo service to inspector
         Inspector.UndoRedo = UndoRedo;
+
+        // Wire PDF Viewer subsystem
+        PdfViewer.EditInStudioRequested += (path) => OpenEditorWithFile(path);
+        PdfViewer.BackToHomeRequested += NavigateToHome;
+        PdfViewer.RunToolRequested += (toolId, path) => OpenToolWithInitialFile(toolId, path);
+        PdfViewer.ShowToastRequested += (msg) => ShowToast(msg);
 
         // Set up Home page and wire its navigation events
         Home = new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, toolViewModelFactory);
@@ -420,6 +431,7 @@ public partial class MainViewModel : ViewModelBase
         Home.OpenFileRequested += () => _ = OpenProjectAndEnterEditorAsync();
         Home.OpenRecentRequested += OpenEditorWithFile;
         Home.OpenInEditorRequested += OpenEditorWithFile;
+        Home.OpenInViewerRequested += (path) => OpenInViewer(path);
         Home.OpenToolRequested += OpenTool;
         Home.OpenWorkflowBuilderRequested += OpenWorkflowStudio;
 
@@ -451,6 +463,16 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    public void OpenToolWithInitialFile(PdfToolId toolId, string initialFilePath)
+    {
+        var toolDef = _toolRegistry.GetTool(toolId);
+        if (toolDef != null)
+        {
+            ToolRunner.StorageProvider = StorageProvider;
+            ToolRunner.SetupForTool(toolDef, initialFilePath);
+        }
+    }
+
     [RelayCommand]
     public void OpenWorkflowStudio()
     {
@@ -458,7 +480,7 @@ public partial class MainViewModel : ViewModelBase
         WorkflowBuilder.Open();
     }
 
-    // --- HOME / EDITOR NAVIGATION ---
+    // --- HOME / EDITOR / VIEWER NAVIGATION ---
 
     /// <summary>Switches to the editor and loads the requested template.</summary>
     public void OpenEditorWithTemplate(string? templateName)
@@ -469,6 +491,7 @@ public partial class MainViewModel : ViewModelBase
 
         LoadFromDocumentModel(model);
         IsHomePageVisible = false;
+        IsPdfViewerVisible = false;
         IsEditorVisible = true;
         ShowToast($"Created new document from {templateName ?? "Blank"} template", "FilePlusOutline");
     }
@@ -496,6 +519,7 @@ public partial class MainViewModel : ViewModelBase
                 });
                 Home.RefreshRecent();
                 IsHomePageVisible = false;
+                IsPdfViewerVisible = false;
                 IsEditorVisible = true;
                 ShowToast($"Opened: {Path.GetFileName(path)}", "FolderOpenOutline");
             }
@@ -503,6 +527,37 @@ public partial class MainViewModel : ViewModelBase
         catch (Exception ex)
         {
             ShowToast($"Could not open file: {ex.Message}", "AlertCircleOutline");
+        }
+    }
+
+    /// <summary>Opens any PDF in the dedicated PDF Viewer subsystem.</summary>
+    public void OpenInViewer(string path)
+    {
+        _ = OpenInViewerAsync(path);
+    }
+
+    /// <summary>Asynchronously opens a PDF document in the viewer.</summary>
+    public async Task OpenInViewerAsync(string path)
+    {
+        try
+        {
+            PdfViewer.StorageProvider = StorageProvider;
+            await PdfViewer.LoadDocumentAsync(path);
+            _recentService.Add(new RecentDocumentItem
+            {
+                FilePath = path,
+                Title = Path.GetFileName(path),
+                LastOpened = DateTime.UtcNow
+            });
+            Home.RefreshRecent();
+            IsHomePageVisible = false;
+            IsEditorVisible = false;
+            IsPdfViewerVisible = true;
+            ShowToast($"Viewing: {Path.GetFileName(path)}", "FilePdfBox");
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Could not open in Viewer: {ex.Message}", "AlertCircleOutline");
         }
     }
 
@@ -514,11 +569,19 @@ public partial class MainViewModel : ViewModelBase
             {
                 var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
-                    Title = "Open FryPDF Project",
+                    Title = "Open PDF Document or FryPDF Project",
                     AllowMultiple = false,
                     FileTypeFilter = new[]
                     {
-                        new FilePickerFileType("FryPDF Project (*.frypdf, *.pdfproj, *.json)")
+                        new FilePickerFileType("All Supported Documents (*.pdf, *.frypdf, *.pdfproj, *.json)")
+                        {
+                            Patterns = new[] { "*.pdf", "*.frypdf", "*.pdfproj", "*.json" }
+                        },
+                        new FilePickerFileType("PDF Documents (*.pdf)")
+                        {
+                            Patterns = new[] { "*.pdf" }
+                        },
+                        new FilePickerFileType("FryPDF Projects (*.frypdf, *.pdfproj, *.json)")
                         {
                             Patterns = new[] { "*.frypdf", "*.pdfproj", "*.json" }
                         }
@@ -527,7 +590,8 @@ public partial class MainViewModel : ViewModelBase
 
                 if (files.Count > 0)
                 {
-                    OpenEditorWithFile(files[0].Path.LocalPath);
+                    string chosenPath = files[0].Path.LocalPath;
+                    OpenEditorWithFile(chosenPath);
                 }
             }
         }
@@ -537,12 +601,13 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Returns to the Home page from the editor.</summary>
+    /// <summary>Returns to the Home page from the editor or viewer.</summary>
     [RelayCommand]
     public void NavigateToHome()
     {
         Home.RefreshRecent();
         IsEditorVisible = false;
+        IsPdfViewerVisible = false;
         IsHomePageVisible = true;
     }
 

@@ -105,6 +105,7 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
     // Events
     public event Action? BackRequested;
     public event Action<string>? OpenInEditorRequested;
+    public event Action<string>? OpenInViewerRequested;
 
     protected PdfToolViewModelBase(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
     {
@@ -128,6 +129,26 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
         else if (HasSelectedFiles && File.Exists(PrimaryInputFile))
         {
             OpenInEditorRequested?.Invoke(PrimaryInputFile);
+        }
+    }
+
+    [RelayCommand]
+    public void OpenInViewer()
+    {
+        string targetPath = !string.IsNullOrEmpty(LastOutputFilePath) && File.Exists(LastOutputFilePath)
+            ? LastOutputFilePath
+            : (HasSelectedFiles && File.Exists(PrimaryInputFile) ? PrimaryInputFile : string.Empty);
+
+        if (!string.IsNullOrEmpty(targetPath))
+        {
+            if (OpenInViewerRequested != null)
+            {
+                OpenInViewerRequested.Invoke(targetPath);
+            }
+            else
+            {
+                OpenOutputFile();
+            }
         }
     }
 

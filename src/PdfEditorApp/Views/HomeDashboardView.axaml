@@ -92,8 +92,8 @@
                     </Button>
                 </Grid>
 
-                <!-- 4 Primary Quick Action Cards Row -->
-                <UniformGrid Grid.Row="1" Columns="4">
+                <!-- 5 Primary Quick Action Cards Row -->
+                <UniformGrid Grid.Row="1" Columns="5">
                     <!-- Card 1: Start New Document -->
                     <Button Command="{Binding SelectNavSectionCommand}"
                             CommandParameter="NewDocument"
@@ -101,85 +101,107 @@
                             BorderBrush="#BBF7D0"
                             BorderThickness="1"
                             CornerRadius="12"
-                            Padding="16,14"
-                            Margin="0,0,10,0"
+                            Padding="14,14"
+                            Margin="0,0,8,0"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
                             Cursor="Hand">
                         <Grid ColumnDefinitions="Auto,*">
-                            <Border Grid.Column="0" Width="38" Height="38" Background="#DCFCE7" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="FileDocumentPlusOutline" Width="20" Height="20" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="36" Height="36" Background="#DCFCE7" CornerRadius="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FileDocumentPlusOutline" Width="18" Height="18" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="New Document" FontSize="13" FontWeight="Bold" Foreground="#15803D" />
-                                <TextBlock Text="Blank or 19 templates" FontSize="11" Foreground="#166534" />
+                                <TextBlock Text="New Document" FontSize="12.5" FontWeight="Bold" Foreground="#15803D" />
+                                <TextBlock Text="Blank or 19 templates" FontSize="10.5" Foreground="#166534" />
                             </StackPanel>
                         </Grid>
                     </Button>
 
-                    <!-- Card 2: Open File -->
+                    <!-- Card 2: Open in Editor -->
                     <Button Command="{Binding OpenFileCommand}"
                             Background="#EFF6FF"
                             BorderBrush="#BFDBFE"
                             BorderThickness="1"
                             CornerRadius="12"
-                            Padding="16,14"
-                            Margin="0,0,10,0"
+                            Padding="14,14"
+                            Margin="0,0,8,0"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
                             Cursor="Hand">
                         <Grid ColumnDefinitions="Auto,*">
-                            <Border Grid.Column="0" Width="38" Height="38" Background="#DBEAFE" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="20" Height="20" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="36" Height="36" Background="#DBEAFE" CornerRadius="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="DrawPen" Width="18" Height="18" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Open File" FontSize="13" FontWeight="Bold" Foreground="#0369A1" />
-                                <TextBlock Text="PDF or .frypdf project" FontSize="11" Foreground="#075985" />
+                                <TextBlock Text="Edit PDF" FontSize="12.5" FontWeight="Bold" Foreground="#0369A1" />
+                                <TextBlock Text="Open &amp; edit any PDF" FontSize="10.5" Foreground="#075985" />
                             </StackPanel>
                         </Grid>
                     </Button>
 
-                    <!-- Card 3: All 32 Tools -->
+                    <!-- Card 3: Open in PDF Viewer -->
+                    <Button Command="{Binding OpenInViewerCommand}"
+                            Background="#FAF5FF"
+                            BorderBrush="#E9D5FF"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="14,14"
+                            Margin="0,0,8,0"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Cursor="Hand">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Grid.Column="0" Width="36" Height="36" Background="#F3E8FF" CornerRadius="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="18" Height="18" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="PDF Viewer" FontSize="12.5" FontWeight="Bold" Foreground="#7E22CE" />
+                                <TextBlock Text="High-res viewing &amp; search" FontSize="10.5" Foreground="#6B21A8" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+
+                    <!-- Card 4: All 32 Tools -->
                     <Button Command="{Binding SelectNavSectionCommand}"
                             CommandParameter="AllTools"
                             Background="#EEF2FF"
                             BorderBrush="#C7D2FE"
                             BorderThickness="1"
                             CornerRadius="12"
-                            Padding="16,14"
-                            Margin="0,0,10,0"
+                            Padding="14,14"
+                            Margin="0,0,8,0"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
                             Cursor="Hand">
                         <Grid ColumnDefinitions="Auto,*">
-                            <Border Grid.Column="0" Width="38" Height="38" Background="#E0E7FF" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="ViewGridOutline" Width="20" Height="20" Foreground="#4F46E5" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="36" Height="36" Background="#E0E7FF" CornerRadius="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="ViewGridOutline" Width="18" Height="18" Foreground="#4F46E5" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="All 32 Tools" FontSize="13" FontWeight="Bold" Foreground="#4338CA" />
-                                <TextBlock Text="Convert, Edit, Security" FontSize="11" Foreground="#3730A3" />
+                                <TextBlock Text="All 32 Tools" FontSize="12.5" FontWeight="Bold" Foreground="#4338CA" />
+                                <TextBlock Text="Convert, OCR, Security" FontSize="10.5" Foreground="#3730A3" />
                             </StackPanel>
                         </Grid>
                     </Button>
 
-                    <!-- Card 4: Automate Workflows -->
+                    <!-- Card 5: Automate Workflows -->
                     <Button Command="{Binding OpenWorkflowBuilderCommand}"
                             Background="#FFF7ED"
                             BorderBrush="#FED7AA"
                             BorderThickness="1"
                             CornerRadius="12"
-                            Padding="16,14"
+                            Padding="14,14"
                             Margin="0,0,0,0"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
                             Cursor="Hand">
                         <Grid ColumnDefinitions="Auto,*">
-                            <Border Grid.Column="0" Width="38" Height="38" Background="#FFEDD5" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="LightningBoltOutline" Width="20" Height="20" Foreground="#EA580C" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="36" Height="36" Background="#FFEDD5" CornerRadius="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="LightningBoltOutline" Width="18" Height="18" Foreground="#EA580C" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Batch Pipelines" FontSize="13" FontWeight="Bold" Foreground="#C2410C" />
-                                <TextBlock Text="Automated workflows" FontSize="11" Foreground="#9A3412" />
+                                <TextBlock Text="Batch Pipelines" FontSize="12.5" FontWeight="Bold" Foreground="#C2410C" />
+                                <TextBlock Text="Automated workflows" FontSize="10.5" Foreground="#9A3412" />
                             </StackPanel>
                         </Grid>
                     </Button>

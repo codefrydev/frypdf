@@ -19,6 +19,18 @@ public class PdfEngineTests
     private readonly IProjectPersistenceService _persistenceService = new ProjectPersistenceService();
 
     [Fact]
+    public void PdfPigSkiaRenderer_RendersPdfPagesToPngStreamsSuccessfully()
+    {
+        var model = _templateService.CreateInvoiceTemplate();
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(model);
+        using var doc = UglyToad.PdfPig.PdfDocument.Open(pdfBytes);
+        UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.AddSkiaPageFactory(doc);
+        using var pngStream = UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.GetPageAsPng(doc, 1, 2.0f, 90);
+        Assert.NotNull(pngStream);
+        Assert.True(pngStream.Length > 0);
+    }
+
+    [Fact]
     public void GenerateAnnualReport_ProducesValidPdfBytes()
     {
         var model = _templateService.CreateAnnualReportTemplate();

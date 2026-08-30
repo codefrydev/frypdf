@@ -207,6 +207,7 @@
                                                        Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                        TextAlignment="{Binding Alignment, Converter={StaticResource TextAlignmentConverter}}"
                                                        TextWrapping="Wrap"
+                                                       VerticalAlignment="Top"
                                                        IsVisible="{Binding !IsInEditMode}"
                                                        DoubleTapped="OnTextElementDoubleTapped" />
                                         </Border>
@@ -220,6 +221,7 @@
                                                  Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                  AcceptsReturn="True"
                                                  TextWrapping="Wrap"
+                                                 Padding="{Binding Padding, Converter={StaticResource DoubleToThickness}}"
                                                  IsVisible="{Binding IsInEditMode}"
                                                  LostFocus="OnTextBoxLostFocus" />
 

@@ -363,6 +363,26 @@ public partial class InspectorViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void AutoFitTextHeight()
+    {
+        if (TextElement != null)
+        {
+            var el = TextElement;
+            double oldH = el.Height;
+            double newH = el.CalculateRequiredHeight();
+            if (Math.Abs(newH - oldH) > 0.5)
+            {
+                el.Height = newH;
+                UndoRedo?.RecordAction(
+                    "Auto-Fit Text Height",
+                    () => el.Height = oldH,
+                    () => el.Height = newH
+                );
+            }
+        }
+    }
+
+    [RelayCommand]
     public void DeleteSelectedElement()
     {
         if (SelectedPage == null) return;

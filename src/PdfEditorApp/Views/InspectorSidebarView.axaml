@@ -198,11 +198,19 @@
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding TextElement, Converter={StaticResource NullToBooleanConverter}}">
                         <StackPanel Spacing="10">
-                            <!-- Card Title -->
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <materialIcons:MaterialIcon Kind="FormatFont" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
-                                <TextBlock Text="Typography &amp; Text" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
-                            </StackPanel>
+                            <!-- Card Title & Auto-Fit Action -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="FormatFont" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                    <TextBlock Text="Typography &amp; Text" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Classes="secondary-btn" Height="24" Padding="6,2" Command="{Binding AutoFitTextHeightCommand}" ToolTip.Tip="Automatically resize height to perfectly fit text content without clipping">
+                                    <StackPanel Orientation="Horizontal" Spacing="3">
+                                        <materialIcons:MaterialIcon Kind="ArrowExpandVertical" Width="12" Height="12" Foreground="{StaticResource WinAccentBrush}" />
+                                        <TextBlock Text="Auto-Fit" FontSize="10" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
 
                             <!-- In-Inspector Text Editor -->
                             <StackPanel Spacing="3">
@@ -304,18 +312,24 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <!-- Tracking & Line Spacing -->
-                            <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                            <!-- Tracking, Line Spacing & Padding -->
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
                                 <StackPanel Grid.Column="0" Spacing="3">
-                                    <TextBlock Text="Letter Spacing" Classes="inspector-label" />
+                                    <TextBlock Text="Tracking" Classes="inspector-label" />
                                     <NumericUpDown Value="{Binding TextElement.CharacterSpacing, Mode=TwoWay}"
                                                    Minimum="-2" Maximum="10" Increment="0.5" FormatString="0.0"
                                                    HorizontalAlignment="Stretch" Height="28" FontSize="11.5" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Spacing="3">
-                                    <TextBlock Text="Line Spacing" Classes="inspector-label" />
+                                    <TextBlock Text="Line Height" Classes="inspector-label" />
                                     <NumericUpDown Value="{Binding TextElement.LineHeight, Mode=TwoWay}"
                                                    Minimum="0.8" Maximum="3.0" Increment="0.1" FormatString="0.0"
+                                                   HorizontalAlignment="Stretch" Height="28" FontSize="11.5" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Spacing="3">
+                                    <TextBlock Text="Padding" Classes="inspector-label" />
+                                    <NumericUpDown Value="{Binding TextElement.Padding, Mode=TwoWay}"
+                                                   Minimum="0" Maximum="64" Increment="1" FormatString="0"
                                                    HorizontalAlignment="Stretch" Height="28" FontSize="11.5" />
                                 </StackPanel>
                             </Grid>

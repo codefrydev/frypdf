@@ -42,9 +42,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 35,
+                    Y = 32,
                     Width = 690,
-                    Height = 16,
+                    Height = 18,
                     Text = "PHYSICAL REVIEW LETTERS 136, 140401 (2026) • DOI: 10.1103/PhysRevLett.136.140401",
                     FontSize = 8.5,
                     FontFamily = "Times New Roman",
@@ -65,9 +65,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 62,
+                    Y = 58,
                     Width = 690,
-                    Height = 44,
+                    Height = 48,
                     Text = "Cavity Quantum Electrodynamics and Non-Equilibrium Phase Transitions in Superconducting Qubits",
                     FontSize = 17,
                     FontFamily = "Times New Roman",
@@ -80,9 +80,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 110,
+                    Y = 108,
                     Width = 690,
-                    Height = 28,
+                    Height = 34,
                     Text = "Alexander Bohr¹,   Evelyn Chen²,   and   Julian Thorne¹\n¹Quantum Photonics Laboratory, Department of Physics, Harvard University\n²Center for Quantum Information, Massachusetts Institute of Technology",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
@@ -96,7 +96,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                     X = 75,
                     Y = 145,
                     Width = 650,
-                    Height = 100,
+                    Height = 104,
                     CornerRadius = 4,
                     FillColorHex = "#ECFEFF",
                     StrokeColorHex = "#A5F3FC",
@@ -105,9 +105,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 90,
-                    Y = 152,
+                    Y = 150,
                     Width = 620,
-                    Height = 64,
+                    Height = 68,
                     Text = "Abstract— We report the experimental observation of a non-equilibrium superradiant phase transition in an array of 64 transmon qubits coupled to a high-Q 3D microwave cavity. In the ultra-strong coupling regime (g/ω_c ≈ 0.18), we measure a critical threshold in the cavity transmission spectrum, observing a 12.4 dB photon squeezing and extended ensemble dephasing times T₂* exceeding 180 μs.",
                     FontSize = 9,
                     FontFamily = "Times New Roman",
@@ -119,9 +119,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 90,
-                    Y = 220,
+                    Y = 222,
                     Width = 620,
-                    Height = 18,
+                    Height = 22,
                     Text = "PACS Numbers— 03.67.Lx (Quantum computation), 42.50.Pq (Cavity QED), 85.25.Cp (Josephson devices).",
                     FontSize = 8.5,
                     FontFamily = "Times New Roman",
@@ -146,9 +146,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 264,
+                    Y = 262,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "I. INTRODUCTION & EXPERIMENTAL SETUP",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -158,7 +158,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 284,
+                    Y = 286,
                     Width = 330,
                     Height = 110,
                     Text = "Circuit quantum electrodynamics (cQED) provides a macroscopic testbed for exploring light-matter interactions at the single-photon level [1, 2]. By embedding superconducting Josephson junction transmon qubits inside an aluminum 3D resonant cavity cooled to 12 mK in a dilution refrigerator, we suppress ambient thermal noise and achieve ultra-long photon coherence.",
@@ -172,9 +172,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 400,
+                    Y = 402,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "II. TAVIS-CUMMINGS HAMILTONIAN",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -184,7 +184,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 420,
+                    Y = 426,
                     Width = 330,
                     Height = 45,
                     Text = "The coherent dynamics of N identical two-level transmons coupled to a single cavity mode is described by the Dicke Hamiltonian:",
@@ -199,7 +199,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfShapeElement
                 {
                     X = 55,
-                    Y = 470,
+                    Y = 475,
                     Width = 330,
                     Height = 42,
                     CornerRadius = 3,
@@ -210,7 +210,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 65,
-                    Y = 478,
+                    Y = 482,
                     Width = 310,
                     Height = 28,
                     Text = "Ĥ = ℏω_c â† â + ½ ℏω_q ∑ σ_z^(j) + ℏg/√N ∑ (â† σ_-^(j) + â σ_+^(j))   (1)",
@@ -224,9 +224,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 520,
+                    Y = 524,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "III. LINDBLAD MASTER EQUATION",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -236,7 +236,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 540,
+                    Y = 548,
                     Width = 330,
                     Height = 135,
                     Text = "Open-system quantum dissipation is treated via the Lindblad generator:\n\n∂_t ρ̂ = -i/ℏ [Ĥ, ρ̂] + κ 𝒟[â]ρ̂ + γ ∑ 𝒟[σ_-^(j)]ρ̂ + γ_φ ∑ 𝒟[σ_z^(j)]ρ̂,\n\nwhere 𝒟[L̂]ρ̂ = L̂ρ̂L̂† - ½ {L̂†L̂, ρ̂}. Here κ = 2π × 42 kHz represents the cavity photon leakage rate, γ = 2π × 8.5 kHz is the spontaneous qubit decay rate, and γ_φ is the pure dephasing rate.",
@@ -250,9 +250,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 688,
+                    Y = 690,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "IV. DECOHERENCE SUPPRESSION",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -262,7 +262,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 708,
+                    Y = 714,
                     Width = 330,
                     Height = 140,
                     Text = "By tuning the qubit array frequency to the cavity anti-node (ω_q = 6.482 GHz), we observe cooperative subradiant states that effectively shield the quantum ensemble from local 1/f charge and flux noise fluctuations. This yields an order-of-magnitude enhancement in ensemble quantum state lifetime.",
@@ -279,9 +279,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 264,
+                    Y = 262,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "V. SPECTROSCOPY & EXPERIMENTAL DATA",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -291,9 +291,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 284,
+                    Y = 286,
                     Width = 330,
-                    Height = 60,
+                    Height = 58,
                     Text = "Table I summarizes the calibrated experimental parameters across 4 sub-modules of the 64-qubit quantum processor measured at a base temperature T = 12.5 mK.",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
@@ -328,7 +328,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                     X = 415,
                     Y = 502,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "VI. QUANTUM PHASE TRANSITION OBSERVATION",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -338,7 +338,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 522,
+                    Y = 526,
                     Width = 330,
                     Height = 115,
                     Text = "As the drive photon amplitude exceeds the critical threshold η_c = √(κγ)/2g, we detect macroscopic photon occupation within the cavity accompanied by spontaneous symmetry breaking of the collective spin polarization vector ⟨J_x⟩ ≠ 0 [3, 4].",
@@ -354,7 +354,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                     X = 415,
                     Y = 648,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "VII. TIME-RESOLVED PHOTON CORRELATIONS",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -364,7 +364,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 668,
+                    Y = 672,
                     Width = 330,
                     Height = 145,
                     Text = "Second-order correlation measurements g^(2)(τ) = ⟨â†(t) â†(t+τ) â(t+τ) â(t)⟩ / ⟨â† â⟩² demonstrate strong non-classical antibunching (g^(2)(0) = 0.08 ± 0.02) below the threshold, transitioning smoothly into super-Poissonian photon bunching at criticality.",
@@ -396,9 +396,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 35,
+                    Y = 32,
                     Width = 690,
-                    Height = 16,
+                    Height = 18,
                     Text = "BOHR, CHEN, AND THORNE: CAVITY QED IN SUPERCONDUCTING QUBITS",
                     FontSize = 8.5,
                     FontFamily = "Times New Roman",
@@ -421,9 +421,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 65,
+                    Y = 62,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "VIII. WIGNER TOMOGRAPHY & SQUEEZING",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -433,7 +433,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 85,
+                    Y = 86,
                     Width = 330,
                     Height = 120,
                     Text = "Full quantum state tomography of the cavity mode reveals pronounced negativity in the reconstructed Wigner quasi-probability distribution W(α). Quadrature variance satisfies (ΔX_θ)² = e^{-2r} with squeeze parameter r = 1.43, demonstrating non-Gaussian quantum resource generation in macroscopic circuits [5].",
@@ -447,9 +447,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 215,
+                    Y = 212,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "IX. FAULT-TOLERANT QUANTUM COMPUTING",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -459,7 +459,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 235,
+                    Y = 236,
                     Width = 330,
                     Height = 130,
                     Text = "The collective protection against single-qubit relaxation opens direct pathways for bosonic quantum error correction codes, specifically Gottesman-Kitaev-Preskill (GKP) grid states and cat-qubit parity measurements. With average gate fidelities ℱ_gate > 99.82%, the architecture satisfies the fault-tolerance threshold.",
@@ -473,9 +473,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 375,
+                    Y = 372,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "X. CONCLUDING REMARKS",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -485,7 +485,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 395,
+                    Y = 396,
                     Width = 330,
                     Height = 90,
                     Text = "In conclusion, we achieved ultra-strong collective light-matter coupling in multi-transmon systems. This platform provides an ideal simulator for non-equilibrium quantum criticality and high-fidelity quantum transducers.",
@@ -500,9 +500,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 495,
+                    Y = 494,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "AUTHOR BIOGRAPHIES",
                     FontSize = 10.5,
                     FontFamily = "Times New Roman",
@@ -577,9 +577,9 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 65,
+                    Y = 62,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "REFERENCES",
                     FontSize = 10.5,
                     FontFamily = "Times New Roman",

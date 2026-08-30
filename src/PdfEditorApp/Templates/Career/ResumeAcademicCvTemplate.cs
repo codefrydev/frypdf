@@ -55,7 +55,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 45,
                     Width = 520,
-                    Height = 32,
+                    Height = 34,
                     Text = "MARCUS A. AURELIUS, Ph.D.",
                     FontSize = 24,
                     FontFamily = "Times New Roman",
@@ -69,7 +69,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 78,
                     Width = 520,
-                    Height = 40,
+                    Height = 44,
                     Text = "Associate Professor of Applied Mathematics & Computational Neuroscience\nInstitute for Advanced Theoretical Studies • Oxford University\nEmail: m.aurelius@stats.ox.ac.uk • Web: oxford.ac.uk/people/m-aurelius",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
@@ -107,7 +107,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 135,
                     Width = 690,
-                    Height = 18,
+                    Height = 20,
                     Text = "PRIMARY RESEARCH FIELDS",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -119,7 +119,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 155,
                     Width = 690,
-                    Height = 30,
+                    Height = 34,
                     Text = "Topological Data Analysis, Neural Differential Equations, High-Dimensional Stochastic Dynamical Systems, Geometric Deep Learning, and Spectral Graph Theory on Cortical Manifolds.",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
@@ -134,7 +134,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 190,
                     Width = 690,
-                    Height = 18,
+                    Height = 20,
                     Text = "ACADEMIC APPOINTMENTS & POSITIONS",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -155,7 +155,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 214,
                     Width = 690,
-                    Height = 65,
+                    Height = 68,
                     Text = "• Associate Professor (Tenured) — Mathematical Institute, Oxford University (2022 – Present)\n• Assistant Professor of Applied Mathematics — Stanford University (2018 – 2022)\n• Postdoctoral Research Fellow — Center for Brain Science, Harvard University (2015 – 2018)\n• Visiting Scholar — Max Planck Institute for Mathematics in the Sciences, Leipzig (2017)",
                     FontSize = 9,
                     FontFamily = "Times New Roman",
@@ -169,7 +169,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 285,
                     Width = 690,
-                    Height = 18,
+                    Height = 20,
                     Text = "EDUCATION & DEGREES CONFERRED",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -190,7 +190,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 309,
                     Width = 690,
-                    Height = 55,
+                    Height = 58,
                     Text = "• Ph.D. in Applied Mathematics — Harvard University (2011 – 2015)\n   Dissertation: Spectral Geometry and Persistent Homology on Cortical Surfaces. Advisor: Prof. Shing-Tung Yau.\n• M.Sc. in Theoretical Physics — Cambridge University (Part III of Mathematical Tripos, Distinction, 2010 – 2011)\n• B.Sc. in Mathematics & Physics — MIT (Summa Cum Laude, GPA 4.00/4.00, 2006 – 2010)",
                     FontSize = 9,
                     FontFamily = "Times New Roman",
@@ -204,7 +204,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 370,
                     Width = 690,
-                    Height = 18,
+                    Height = 20,
                     Text = "MAJOR FUNDED RESEARCH GRANTS ($4.2M TOTAL AWARDS)",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -247,7 +247,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 520,
                     Width = 690,
-                    Height = 18,
+                    Height = 20,
                     Text = "SELECTED PEER-REVIEWED PUBLICATIONS (OVER 45 PEER-REVIEWED PAPERS, h-index: 28)",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -311,7 +311,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 48,
                     Width = 690,
-                    Height = 18,
+                    Height = 20,
                     Text = "ADDITIONAL PEER-REVIEWED ARTICLES & MONOGRAPHS",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -321,7 +321,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                 new PdfDividerElement
                 {
                     X = 55,
-                    Y = 68,
+                    Y = 70,
                     Width = 690,
                     Height = 1,
                     Thickness = 1,
@@ -330,7 +330,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 74,
+                    Y = 76,
                     Width = 690,
                     Height = 150,
                     Text = "6. Aurelius, M. A., & Sterling, C. (2020). \"Discrete Bochner Laplacians and Curvature Bounds on Cell Complexes.\" SIAM Journal on Applied Mathematics, 80(3), pp. 1120–1145. DOI: 10.1137/19M1284102.\n7. Aurelius, M. A., & Tanaka, H. (2019). \"Diffusion Geometry on Non-Compact Symmetric Spaces.\" Journal of Machine Learning Research (JMLR), 20(84), pp. 1–38.\n8. Aurelius, M. A. (2018). \"Spectral Geometry of Cortical Folding Patterns.\" Cambridge University Press Research Monograph Series in Mathematical Biology, Vol. 14, 280 pages. ISBN 978-1-108-49210-4.\n9. Thorne, J., & Aurelius, M. A. (2017). \"Persistent Homology of Neural Population Codes.\" Physical Review E, 96(4), 042412. DOI: 10.1103/PhysRevE.96.042412.",
@@ -346,7 +346,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 232,
                     Width = 690,
-                    Height = 18,
+                    Height = 20,
                     Text = "INVITED KEYNOTES & PLENARY ADDRESSES",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -356,7 +356,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                 new PdfDividerElement
                 {
                     X = 55,
-                    Y = 252,
+                    Y = 254,
                     Width = 690,
                     Height = 1,
                     Thickness = 1,
@@ -365,7 +365,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 258,
+                    Y = 260,
                     Width = 690,
                     Height = 65,
                     Text = "• Plenary Speaker, International Congress of Mathematicians (ICM 2026, Section on Applied Topology, Helsinki)\n• Invited Keynote, NeurIPS 2024 Workshop on Differential Geometry in Deep Learning (Vancouver, BC)\n• Euler Lecturer, Zurich Mathematics Colloquium, ETH Zurich (2023)\n• Courant Institute Annual Distinguished Lecture in Applied Mathematics, NYU (2022)\n• Invited Plenary, SIAM Conference on Mathematics of Data Science (MDS 2020)",
@@ -381,7 +381,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 330,
                     Width = 330,
-                    Height = 18,
+                    Height = 20,
                     Text = "PH.D. STUDENTS & POSTDOCS SUPERVISED",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -391,7 +391,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                 new PdfDividerElement
                 {
                     X = 55,
-                    Y = 350,
+                    Y = 352,
                     Width = 330,
                     Height = 1,
                     Thickness = 1,
@@ -400,7 +400,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 356,
+                    Y = 358,
                     Width = 330,
                     Height = 90,
                     Text = "• Dr. Clara Sterling (Ph.D. 2023, now Assistant Professor at Cambridge)\n• Dr. Julian Thorne (Ph.D. 2024, Postdoc at MIT Mathematics)\n• Dr. Hiroshi Tanaka (Postdoc 2021–2024, now Faculty at Tokyo Univ)\n• Currently advising 4 Ph.D. students and 2 postdoctoral fellows.",
@@ -416,7 +416,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 415,
                     Y = 330,
                     Width = 330,
-                    Height = 18,
+                    Height = 20,
                     Text = "EDITORIAL BOARDS & SERVICE",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -426,7 +426,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                 new PdfDividerElement
                 {
                     X = 415,
-                    Y = 350,
+                    Y = 352,
                     Width = 330,
                     Height = 1,
                     Thickness = 1,
@@ -435,7 +435,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 356,
+                    Y = 358,
                     Width = 330,
                     Height = 90,
                     Text = "• Associate Editor, SIAM Journal on Applied Mathematics (2021–Present)\n• Action Editor, Journal of Machine Learning Research (JMLR)\n• Program Chair, Computational Topology & Geometry 2025\n• NSF & ERC Panel Reviewer (Mathematics & Computing)",
@@ -451,7 +451,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     X = 55,
                     Y = 455,
                     Width = 690,
-                    Height = 18,
+                    Height = 20,
                     Text = "UNIVERSITY TEACHING & CURRICULUM DEVELOPMENT",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -461,7 +461,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                 new PdfDividerElement
                 {
                     X = 55,
-                    Y = 475,
+                    Y = 477,
                     Width = 690,
                     Height = 1,
                     Thickness = 1,
@@ -470,7 +470,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 481,
+                    Y = 483,
                     Width = 690,
                     Height = 65,
                     Text = "• MATH 842: High-Dimensional Stochastic Differential Equations (Oxford, Graduate Level, 2022–2026)\n• MATH 510: Computational Topology and Persistent Homology (Stanford / Oxford, 2019–2025)\n• Recipient of Oxford University Outstanding Graduate Teaching Award (2024)",

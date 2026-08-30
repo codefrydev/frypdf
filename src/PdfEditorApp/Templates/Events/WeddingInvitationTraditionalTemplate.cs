@@ -107,7 +107,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             X = 50,
             Y = 190,
             Width = 500,
-            Height = 22,
+            Height = 24,
             ZIndex = 7
         });
 
@@ -123,7 +123,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             X = 50,
             Y = 220,
             Width = 500,
-            Height = 44,
+            Height = 46,
             ZIndex = 7
         });
 
@@ -140,7 +140,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             X = 50,
             Y = 270,
             Width = 220,
-            Height = 52,
+            Height = 56,
             ZIndex = 8
         });
 
@@ -154,9 +154,9 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             TextColorHex = "#451A03",
             Alignment = TextAlignmentMode.Center,
             X = 35,
-            Y = 325,
+            Y = 328,
             Width = 250,
-            Height = 55,
+            Height = 58,
             ZIndex = 8
         });
 
@@ -188,7 +188,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             X = 330,
             Y = 270,
             Width = 220,
-            Height = 52,
+            Height = 56,
             ZIndex = 8
         });
 
@@ -202,9 +202,9 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             TextColorHex = "#451A03",
             Alignment = TextAlignmentMode.Center,
             X = 315,
-            Y = 325,
+            Y = 328,
             Width = 250,
-            Height = 55,
+            Height = 58,
             ZIndex = 8
         });
 
@@ -233,7 +233,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             X = 40,
             Y = 420,
             Width = 240,
-            Height = 22,
+            Height = 24,
             ZIndex = 8
         });
 
@@ -248,7 +248,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             X = 40,
             Y = 445,
             Width = 240,
-            Height = 36,
+            Height = 40,
             ZIndex = 8
         });
 
@@ -261,9 +261,9 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             TextColorHex = "#522504",
             Alignment = TextAlignmentMode.Center,
             X = 40,
-            Y = 485,
+            Y = 488,
             Width = 240,
-            Height = 48,
+            Height = 52,
             ZIndex = 8
         });
 
@@ -292,7 +292,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             X = 320,
             Y = 420,
             Width = 240,
-            Height = 22,
+            Height = 24,
             ZIndex = 8
         });
 
@@ -307,7 +307,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             X = 320,
             Y = 445,
             Width = 240,
-            Height = 36,
+            Height = 40,
             ZIndex = 8
         });
 
@@ -320,9 +320,9 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             TextColorHex = "#522504",
             Alignment = TextAlignmentMode.Center,
             X = 320,
-            Y = 485,
+            Y = 488,
             Width = 240,
-            Height = 48,
+            Height = 52,
             ZIndex = 8
         });
 
@@ -350,7 +350,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
             X = 50,
             Y = 572,
             Width = 500,
-            Height = 22,
+            Height = 24,
             ZIndex = 8
         });
 

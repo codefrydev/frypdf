@@ -276,4 +276,92 @@ public class CanvasEditingEngineTests
         vm.ResetZoom();
         Assert.Equal(1.0, vm.ZoomLevel);
     }
+
+    [Fact]
+    public void PdfTextElement_And_ViewModel_DefaultPadding_IsZero()
+    {
+        var model = new PdfTextElement();
+        Assert.Equal(0.0, model.Padding);
+
+        var vm = new TextElementViewModel();
+        Assert.Equal(0.0, vm.Padding);
+    }
+
+    [Fact]
+    public void TextElementViewModel_CalculateRequiredHeight_ProvidesAdequateHeight()
+    {
+        var vm = new TextElementViewModel
+        {
+            Text = "I. INTRODUCTION & EXPERIMENTAL SETUP",
+            FontSize = 11,
+            FontFamily = "Segoe UI",
+            Width = 330,
+            Height = 15 // Deliberately tight/too small
+        };
+
+        double requiredHeight = vm.CalculateRequiredHeight();
+        Assert.True(requiredHeight >= 18.0, $"Required height should be >= 18 for 11pt font, was {requiredHeight}");
+
+        vm.AutoFitHeight();
+        Assert.True(vm.Height >= 18.0);
+    }
+
+    [Fact]
+    public void InspectorViewModel_AutoFitTextHeight_ExpandsSelectedElementsWithUndoRedo()
+    {
+        var undoRedo = new UndoRedoService();
+        var inspector = new InspectorViewModel { UndoRedo = undoRedo };
+        var page = new PageViewModel { Width = 600, Height = 800 };
+        var textEl = new TextElementViewModel
+        {
+            Text = "Multi-Line\nAffiliation and Department\nUniversity of Science",
+            FontSize = 10,
+            Width = 200,
+            Height = 15 // Clipped
+        };
+        page.AddElement(textEl);
+        page.SelectElement(textEl);
+        inspector.UpdateSelection(textEl, page);
+
+        inspector.AutoFitTextHeight();
+        Assert.True(textEl.Height > 30.0, $"Height should expand for 3 lines of text, but was {textEl.Height}");
+
+        // Test Undo
+        undoRedo.Undo();
+        Assert.Equal(15.0, textEl.Height);
+
+        // Test Redo
+        undoRedo.Redo();
+        Assert.True(textEl.Height > 30.0);
+    }
+
+    [Fact]
+    public void AllTemplates_CreateValidDocuments_WithZeroPaddingAndValidTextBounds()
+    {
+        var templateService = new TemplateService();
+        var templates = templateService.GetAllTemplates();
+
+        Assert.NotEmpty(templates);
+        Assert.Equal(18, templates.Count());
+
+        foreach (var def in templates)
+        {
+            var doc = def.Create();
+            Assert.NotNull(doc);
+            Assert.NotEmpty(doc.Pages);
+
+            foreach (var p in doc.Pages)
+            {
+                Assert.True(p.Width > 0);
+                Assert.True(p.Height > 0);
+                Assert.NotEmpty(p.Elements);
+
+                foreach (var el in p.Elements.OfType<PdfTextElement>())
+                {
+                    Assert.True(el.Width > 0, $"Text element '{el.Text}' in template '{def.Name}' has non-positive width");
+                    Assert.True(el.Height >= 18, $"Text element '{el.Text}' in template '{def.Name}' has height {el.Height} which is too small and might clip");
+                }
+            }
+        }
+    }
 }

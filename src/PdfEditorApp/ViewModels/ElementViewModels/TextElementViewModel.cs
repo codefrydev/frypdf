@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PdfEditorApp.Models;
@@ -48,7 +49,7 @@ public partial class TextElementViewModel : ElementViewModelBase
     private double _characterSpacing = 0;
 
     [ObservableProperty]
-    private double _padding = 6;
+    private double _padding = 0;
 
     [ObservableProperty]
     private string _backgroundColorHex = "#00000000";
@@ -134,6 +135,53 @@ public partial class TextElementViewModel : ElementViewModelBase
             }
             return $"{count++}. {trimmed}";
         }));
+    }
+
+    public double CalculateRequiredHeight()
+    {
+        if (string.IsNullOrEmpty(Text)) return Math.Max(20, FontSize + (2 * Padding));
+
+        try
+        {
+            var typeface = new Avalonia.Media.Typeface(
+                AvaloniaFontFamily,
+                IsItalic ? Avalonia.Media.FontStyle.Italic : Avalonia.Media.FontStyle.Normal,
+                IsBold ? Avalonia.Media.FontWeight.Bold : Avalonia.Media.FontWeight.Normal);
+
+            double effectiveLineHeight = ComputedLineHeight;
+            double availableWidth = Math.Max(20, Width - (2 * Padding) - (2 * BorderThickness));
+
+            var formattedText = new Avalonia.Media.FormattedText(
+                Text,
+                System.Globalization.CultureInfo.CurrentCulture,
+                Avalonia.Media.FlowDirection.LeftToRight,
+                typeface,
+                FontSize,
+                Avalonia.Media.Brushes.Black)
+            {
+                MaxTextWidth = availableWidth,
+                LineHeight = effectiveLineHeight
+            };
+
+            double measuredHeight = Math.Ceiling(formattedText.Height) + (2 * Padding) + (2 * BorderThickness) + 2;
+            return Math.Max(20, measuredHeight);
+        }
+        catch
+        {
+            int lineCount = Text.Split('\n').Length;
+            double approxLineHeight = FontSize * (LineHeight > 0.1 ? LineHeight : 1.35);
+            return Math.Max(20, (lineCount * approxLineHeight) + (2 * Padding) + 4);
+        }
+    }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    public void AutoFitHeight()
+    {
+        double req = CalculateRequiredHeight();
+        if (req > 0)
+        {
+            Height = Math.Ceiling(req);
+        }
     }
 
     public override PdfElementBase ToModel()

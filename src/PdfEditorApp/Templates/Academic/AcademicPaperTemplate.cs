@@ -41,9 +41,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 35,
+                    Y = 32,
                     Width = 690,
-                    Height = 16,
+                    Height = 18,
                     Text = "IEEE TRANSACTIONS ON SOFTWARE ENGINEERING, VOL. 52, NO. 4, AUGUST 2026",
                     FontSize = 8.5,
                     FontFamily = "Times New Roman",
@@ -64,9 +64,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 62,
+                    Y = 58,
                     Width = 690,
-                    Height = 44,
+                    Height = 48,
                     Text = "High-Performance Cross-Platform Vector Graphics Architecture in Modern .NET Environments",
                     FontSize = 17,
                     FontFamily = "Times New Roman",
@@ -79,9 +79,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 110,
+                    Y = 108,
                     Width = 690,
-                    Height = 28,
+                    Height = 34,
                     Text = "Elena Vance, Ph.D.¹,   Marcus Thorne, M.Sc.²,   Sarah Jenkins, Ph.D.¹\n¹Institute for Advanced Software Systems, MIT   •   ²Department of Computer Science, Stanford University",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
@@ -95,7 +95,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     X = 75,
                     Y = 145,
                     Width = 650,
-                    Height = 100,
+                    Height = 104,
                     CornerRadius = 4,
                     FillColorHex = "#F8FAFC",
                     StrokeColorHex = "#E2E8F0",
@@ -104,9 +104,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 90,
-                    Y = 152,
+                    Y = 150,
                     Width = 620,
-                    Height = 64,
+                    Height = 68,
                     Text = "Abstract— We present a unified, hardware-accelerated rendering pipeline for interactive desktop publishing software running on Avalonia and SkiaSharp within .NET 9. By decoupling scene graph state from rendering primitives and implementing a zero-allocation spatial indexing tree, we achieve a 4.2× reduction in garbage collection stalls and consistent 60 FPS multi-touch canvas manipulation across Windows, macOS, and Linux.",
                     FontSize = 9,
                     FontFamily = "Times New Roman",
@@ -118,9 +118,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 90,
-                    Y = 220,
+                    Y = 222,
                     Width = 620,
-                    Height = 18,
+                    Height = 22,
                     Text = "Index Terms— Vector graphics, SkiaSharp, Avalonia UI, cross-platform publishing, GPU shaders, garbage collection.",
                     FontSize = 8.5,
                     FontFamily = "Times New Roman",
@@ -145,9 +145,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 264,
+                    Y = 262,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "I. INTRODUCTION",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -157,7 +157,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 284,
+                    Y = 286,
                     Width = 330,
                     Height = 135,
                     Text = "Desktop publishing workflows impose rigorous demands on color space management, sub-pixel glyph rasterization, and interactive transform matrices [1]. Historically, applications relied on platform-specific APIs such as Direct2D on Windows and CoreGraphics on macOS, leading to divergent rendering artifacts and doubled maintenance overhead. Our framework leverages Skia-backed hardware surfaces unified under a reactive MVVM state model.",
@@ -173,7 +173,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     X = 55,
                     Y = 425,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "II. MATHEMATICAL FORMULATION",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -183,7 +183,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 445,
+                    Y = 449,
                     Width = 330,
                     Height = 70,
                     Text = "Let Ω ⊂ ℝ² define the bounded document viewport. For each vector primitive P_i with boundary curve ∂P_i, the continuous antialiased rasterization intensity I(p) at coordinate p = (x, y) is governed by the signed distance field filter:",
@@ -198,7 +198,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfShapeElement
                 {
                     X = 55,
-                    Y = 520,
+                    Y = 522,
                     Width = 330,
                     Height = 36,
                     CornerRadius = 3,
@@ -211,7 +211,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     X = 65,
                     Y = 528,
                     Width = 310,
-                    Height = 22,
+                    Height = 24,
                     Text = "I(p) = clamp( 1/2 - dist(p, ∂P_i) / w_pixel,  0,  1 )      (1)",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
@@ -237,9 +237,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 688,
+                    Y = 686,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "III. SCENE GRAPH & ZERO-COPY BUFFERING",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -249,7 +249,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 708,
+                    Y = 710,
                     Width = 330,
                     Height = 145,
                     Text = "Managed runtime garbage collection cycles introduce non-deterministic micro-stutters during 60 Hz drag-and-drop operations. To overcome this, our scene graph uses contiguous struct spans (ReadOnlySpan<VectorVertex>) allocated through unmanaged NativeMemory pools. Viewport updates trigger differential buffer invalidations rather than total scene reconstructs.",
@@ -263,9 +263,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 860,
+                    Y = 858,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "IV. ADAPTIVE SHADER RASTERIZATION",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -275,7 +275,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 880,
+                    Y = 882,
                     Width = 330,
                     Height = 120,
                     Text = "On high-DPI displays (Apple Retina and 4K Windows monitors), pixel fill rate dominates frame time. We introduce an adaptive tessellation shader that subdivides cubic Bézier curves based on local curvature κ(t) = |x'y'' - y'x''| / (x'^2 + y'^2)^{3/2}, minimizing emitted vertex counts.",
@@ -292,9 +292,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 264,
+                    Y = 262,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "V. GPU PIPELINE & BACKEND TOPOLOGY",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -304,7 +304,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 284,
+                    Y = 286,
                     Width = 330,
                     Height = 135,
                     Text = "The backend abstracts DirectX 12 on Windows, Metal on macOS, and Vulkan on Linux through Skia's GRContext handle. Document layout matrices are pre-computed in SIMD registers (Vector256<float>), which batches up to 1,024 vector paths into a single GPU draw call invocation.",
@@ -320,7 +320,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     X = 415,
                     Y = 425,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "VI. EMPIRICAL BENCHMARK EVALUATION",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -330,7 +330,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 445,
+                    Y = 449,
                     Width = 330,
                     Height = 55,
                     Text = "We evaluated rendering throughput across 1,000 synthetic multi-layer vector documents containing complex paths, radial gradients, and typography on Apple M3 Max (Metal) and Intel Core i9 (DirectX 12).",
@@ -365,9 +365,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 688,
+                    Y = 686,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "VII. MEMORY PRESSURE & CACHE COHERENCE",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -377,7 +377,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 708,
+                    Y = 710,
                     Width = 330,
                     Height = 145,
                     Text = "As documented in Table I, the zero-allocation pipeline avoids Gen2 GC collections during rapid zooming and pan gestures. Cache miss rates for the spatial R-tree dropped from 14.2% in pointer-heavy structures to 2.1% in flat contiguous memory blocks.",
@@ -391,9 +391,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 860,
+                    Y = 858,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "VIII. ACKNOWLEDGMENTS",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -403,7 +403,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 880,
+                    Y = 882,
                     Width = 330,
                     Height = 120,
                     Text = "This research was supported by National Science Foundation Grant CCF-2490182, the MIT Center for Advanced Computing, and the Open Source Cross-Platform Software Foundation. Hardware testbeds were generously provided by Microsoft Corporation and Apple Computer.",
@@ -435,9 +435,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 35,
+                    Y = 32,
                     Width = 690,
-                    Height = 16,
+                    Height = 18,
                     Text = "VANCE ET AL.: HIGH-PERFORMANCE VECTOR GRAPHICS ARCHITECTURE IN .NET",
                     FontSize = 8.5,
                     FontFamily = "Times New Roman",
@@ -460,9 +460,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 65,
+                    Y = 62,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "IX. EXTENSIBILITY & VECTOR PLUGINS",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -472,7 +472,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 85,
+                    Y = 86,
                     Width = 330,
                     Height = 130,
                     Text = "Our architecture exposes a modular interface IPdfElementRenderer<T> enabling custom procedural shaders, SVG path decoders, and hardware-accelerated QR matrix synthesis. Because element state is decoupled from rendering logic, extensions can execute on worker threads using task parallelism without acquiring UI thread locks [3].",
@@ -486,9 +486,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 225,
+                    Y = 222,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "X. MULTI-DEVICE RESPONSIVE LATENCY",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -498,7 +498,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 245,
+                    Y = 246,
                     Width = 330,
                     Height = 65,
                     Text = "Table II benchmarks touch drag latency across diverse hardware form factors (Apple Silicon MacBook, Intel Surface Laptop, and ARM64 Linux tablets).",
@@ -533,9 +533,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 480,
+                    Y = 478,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "XI. CONCLUSION & FUTURE DIRECTIONS",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -545,7 +545,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 500,
+                    Y = 502,
                     Width = 330,
                     Height = 135,
                     Text = "We demonstrated that unified cross-platform desktop publishing in managed .NET runtimes achieves near-native performance through hardware-accelerated Skia surfaces and memory-conscious data structures. Future work will investigate real-time collaborative document synchronization via Conflict-Free Replicated Data Types (CRDTs) and neural font upscaling on WebGPU.",
@@ -564,9 +564,9 @@ public class AcademicPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 65,
+                    Y = 62,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "REFERENCES",
                     FontSize = 10.5,
                     FontFamily = "Times New Roman",
@@ -602,7 +602,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     X = 415,
                     Y = 320,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "AUTHOR BIOGRAPHIES",
                     FontSize = 10.5,
                     FontFamily = "Times New Roman",

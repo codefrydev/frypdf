@@ -15,7 +15,7 @@ public class PdfTextElement : PdfElementBase
     public TextAlignmentMode Alignment { get; set; } = TextAlignmentMode.Left;
     public double LineHeight { get; set; } = 1.4;
     public double CharacterSpacing { get; set; } = 0;
-    public double Padding { get; set; } = 4;
+    public double Padding { get; set; } = 0;
     public string BackgroundColorHex { get; set; } = "#00000000"; // Transparent by default
     public string BorderColorHex { get; set; } = "#00000000";
     public double BorderThickness { get; set; } = 0;

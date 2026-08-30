@@ -91,7 +91,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
             X = 230,
             Y = 90,
             Width = 140,
-            Height = 40,
+            Height = 44,
             ZIndex = 5
         });
 
@@ -107,7 +107,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
             X = 50,
             Y = 200,
             Width = 500,
-            Height = 20,
+            Height = 22,
             ZIndex = 5
         });
 
@@ -123,7 +123,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
             X = 50,
             Y = 235,
             Width = 500,
-            Height = 60,
+            Height = 65,
             ZIndex = 6
         });
 
@@ -136,9 +136,9 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
             TextColorHex = "#D97706",
             Alignment = TextAlignmentMode.Center,
             X = 50,
-            Y = 298,
+            Y = 300,
             Width = 500,
-            Height = 22,
+            Height = 24,
             ZIndex = 6
         });
 
@@ -151,9 +151,9 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
             TextColorHex = "#1F2937",
             Alignment = TextAlignmentMode.Center,
             X = 50,
-            Y = 325,
+            Y = 328,
             Width = 500,
-            Height = 60,
+            Height = 65,
             ZIndex = 6
         });
 
@@ -163,7 +163,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
             PresetName = "CalligraphicFlourish",
             SvgSource = SvgOrnamentLibrary.GetCalligraphicFlourishSvg("#D97706"),
             X = 175,
-            Y = 390,
+            Y = 395,
             Width = 250,
             Height = 35,
             ZIndex = 6
@@ -181,7 +181,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
             X = 50,
             Y = 440,
             Width = 500,
-            Height = 38,
+            Height = 42,
             ZIndex = 6
         });
 
@@ -197,7 +197,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
             X = 50,
             Y = 495,
             Width = 500,
-            Height = 24,
+            Height = 26,
             ZIndex = 6
         });
 
@@ -212,7 +212,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
             X = 50,
             Y = 525,
             Width = 500,
-            Height = 20,
+            Height = 22,
             ZIndex = 6
         });
 
@@ -228,7 +228,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
             X = 50,
             Y = 560,
             Width = 500,
-            Height = 60,
+            Height = 64,
             ZIndex = 6
         });
 
@@ -244,7 +244,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
             X = 50,
             Y = 640,
             Width = 500,
-            Height = 20,
+            Height = 22,
             ZIndex = 6
         });
 

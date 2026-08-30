@@ -42,9 +42,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 35,
+                    Y = 32,
                     Width = 690,
-                    Height = 16,
+                    Height = 18,
                     Text = "ANNALS OF MATHEMATICS, VOL. 198 (2026), ISSUE 3, PP. 711–754",
                     FontSize = 8.5,
                     FontFamily = "Times New Roman",
@@ -65,9 +65,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 62,
+                    Y = 58,
                     Width = 690,
-                    Height = 44,
+                    Height = 48,
                     Text = "Discrete Hodge Laplacians and Persistent Cohomology on High-Dimensional Simplicial Manifolds",
                     FontSize = 17,
                     FontFamily = "Times New Roman",
@@ -80,9 +80,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 110,
+                    Y = 108,
                     Width = 690,
-                    Height = 28,
+                    Height = 34,
                     Text = "David H. Eisenbud¹   and   Claire Montgomery²\n¹Department of Mathematics, UC Berkeley   •   ²Mathematical Institute, University of Oxford",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
@@ -96,7 +96,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                     X = 75,
                     Y = 145,
                     Width = 650,
-                    Height = 100,
+                    Height = 104,
                     CornerRadius = 4,
                     FillColorHex = "#F5F3FF",
                     StrokeColorHex = "#DDD6FE",
@@ -105,9 +105,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 90,
-                    Y = 152,
+                    Y = 150,
                     Width = 620,
-                    Height = 64,
+                    Height = 68,
                     Text = "Abstract— We establish spectral convergence bounds for higher-order discrete Hodge Laplacians Δ_k acting on real cochain complexes of triangulated Riemannian manifolds. We prove that the persistent harmonic cochains of a filtration asymptotically recover the continuous L² de Rham cohomology, and provide explicit lower bounds on the first non-zero eigenvalue λ₁(Δ_k) in terms of combinatorial Ricci curvature.",
                     FontSize = 9,
                     FontFamily = "Times New Roman",
@@ -119,9 +119,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 90,
-                    Y = 220,
+                    Y = 222,
                     Width = 620,
-                    Height = 18,
+                    Height = 22,
                     Text = "MSC 2020 Classification— 55N31 (Persistent homology), 58J50 (Spectral theory on manifolds), 05E45 (Simplicial complexes).",
                     FontSize = 8.5,
                     FontFamily = "Times New Roman",
@@ -146,9 +146,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 264,
+                    Y = 262,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "1. INTRODUCTION & PRELIMINARIES",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -158,7 +158,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 284,
+                    Y = 286,
                     Width = 330,
                     Height = 110,
                     Text = "Let K be a finite, oriented simplicial complex of dimension n. For each integer k ∈ {0, …, n}, let C_k(K; ℝ) denote the vector space of real k-chains, endowed with the canonical inner product making the oriented simplices an orthonormal basis. The combinatorial coboundary operator δ_k: C^k(K; ℝ) → C^{k+1}(K; ℝ) is the adjoint of the boundary operator ∂_{k+1}.",
@@ -172,9 +172,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 400,
+                    Y = 402,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "2. DISCRETE HODGE LAPLACIAN",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -184,7 +184,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 420,
+                    Y = 426,
                     Width = 330,
                     Height = 45,
                     Text = "Definition 2.1. The k-th discrete Hodge Laplacian Δ_k: C^k(K; ℝ) → C^k(K; ℝ) is the self-adjoint, positive semi-definite operator defined by:",
@@ -199,7 +199,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfShapeElement
                 {
                     X = 55,
-                    Y = 470,
+                    Y = 475,
                     Width = 330,
                     Height = 36,
                     CornerRadius = 3,
@@ -210,9 +210,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 65,
-                    Y = 478,
+                    Y = 481,
                     Width = 310,
-                    Height = 22,
+                    Height = 24,
                     Text = "Δ_k = δ_{k-1} ∂_k + ∂_{k+1} δ_k = Δ_k^{down} + Δ_k^{up}      (2.1)",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
@@ -224,9 +224,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 514,
+                    Y = 516,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "Theorem 2.2 (Discrete Hodge Decomposition).",
                     FontSize = 10,
                     FontFamily = "Times New Roman",
@@ -236,7 +236,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 534,
+                    Y = 540,
                     Width = 330,
                     Height = 145,
                     Text = "For any finite simplicial complex K, there exists an orthogonal direct sum decomposition:\n\nC^k(K; ℝ) = im(δ_{k-1}) ⊕ im(∂_{k+1}) ⊕ ker(Δ_k).\n\nFurthermore, there is a canonical isomorphism between the space of harmonic k-cochains and the k-th simplicial cohomology group: ker(Δ_k) ≅ H^k(K; ℝ), yielding dim ker(Δ_k) = β_k(K), where β_k is the k-th Betti number.",
@@ -251,9 +251,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 688,
+                    Y = 690,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "3. SPECTRAL GAP & CURVATURE BOUNDS",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -263,7 +263,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 708,
+                    Y = 714,
                     Width = 330,
                     Height = 140,
                     Text = "Lemma 3.1 (Bochner-Weitzenböck Formula). Let Ric_k(K) denote the Forman combinatorial Ricci curvature on k-simplices [4]. If Ric_k(K) ≥ κ > 0 for all σ ∈ K_k, then the first non-zero eigenvalue satisfies λ₁(Δ_k) ≥ κ. Consequently, whenever κ > 0, the k-th reduced cohomology group vanishes: H̃^k(K; ℝ) = 0.",
@@ -280,9 +280,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 264,
+                    Y = 262,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "4. NUMERICAL EIGENVALUE COMPUTATION",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -292,9 +292,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 284,
+                    Y = 286,
                     Width = 330,
-                    Height = 60,
+                    Height = 58,
                     Text = "We evaluated the spectral spectrum of Δ₁ on fine triangulations of standard smooth surfaces (2-Sphere S², Torus T², Klein Bottle K², and 3-Torus T³). Sparse Lanczos iterations were computed via ARPACK.",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
@@ -329,7 +329,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                     X = 415,
                     Y = 502,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "5. PERSISTENT COHOMOLOGY ALGORITHM",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -339,7 +339,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 522,
+                    Y = 526,
                     Width = 330,
                     Height = 115,
                     Text = "Given a filtered simplicial complex ∅ = K₀ ⊂ K₁ ⊂ ⋯ ⊂ K_m = K, the persistence diagram Dgm_k is computed via matrix reduction on the boundary matrix. The harmonic representatives ω_i ∈ ker(Δ_k(K_t)) provide geometric localization for persistent topological features across filtration scales [3].",
@@ -355,7 +355,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                     X = 415,
                     Y = 648,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "6. CONTINUOUS ASYMPTOTIC CONVERGENCE",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -365,7 +365,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 668,
+                    Y = 672,
                     Width = 330,
                     Height = 145,
                     Text = "Theorem 6.1 (Spectral Convergence). Let (M, g) be a smooth compact Riemannian manifold and let {K_h}_{h>0} be a family of Delaunay triangulations with mesh size h → 0 satisfying the minimal angle condition. Then for each k, the spectrum of Δ_k(K_h) converges in the Hausdorff metric to the spectrum of the continuous Hodge-de Rham Laplacian Δ_k^M on differential k-forms.",
@@ -398,9 +398,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 35,
+                    Y = 32,
                     Width = 690,
-                    Height = 16,
+                    Height = 18,
                     Text = "EISENBUD & MONTGOMERY: DISCRETE HODGE LAPLACIANS ON MANIFOLDS",
                     FontSize = 8.5,
                     FontFamily = "Times New Roman",
@@ -423,9 +423,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 65,
+                    Y = 62,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "7. DISCRETE HEAT KERNEL & SPECTRAL ZETA",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -435,7 +435,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 85,
+                    Y = 86,
                     Width = 330,
                     Height = 70,
                     Text = "The discrete heat operator H_k(t) = exp(-t Δ_k) admits a spectral expansion governed by the eigenvalues 0 ≤ λ₁ ≤ λ₂ ≤ ⋯ ≤ λ_N. The combinatorial spectral zeta function is defined for Re(s) > 0 by:",
@@ -461,9 +461,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 65,
-                    Y = 168,
+                    Y = 166,
                     Width = 310,
-                    Height = 22,
+                    Height = 24,
                     Text = "ζ_k(s) = Tr( (Δ_k|_{ker(Δ_k)^⊥})^{-s} ) = ∑_{j=1}^{N - β_k} λ_j^{-s}      (7.1)",
                     FontSize = 9,
                     FontFamily = "Times New Roman",
@@ -475,7 +475,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 205,
+                    Y = 202,
                     Width = 330,
                     Height = 120,
                     Text = "The derivative at zero, ζ'_k(0), yields the discrete Ray-Singer analytic torsion, which we prove is a topological invariant of the complex K under simplicial subdivision and Reidemeister moves [5]. This extends Cheeger's theorem to combinatorial cell complexes.",
@@ -489,9 +489,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 335,
+                    Y = 330,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "8. CONCLUDING THEORETICAL REMARKS",
                     FontSize = 11,
                     FontFamily = "Times New Roman",
@@ -501,7 +501,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 55,
-                    Y = 355,
+                    Y = 354,
                     Width = 330,
                     Height = 125,
                     Text = "Our results establish that higher-order discrete Hodge Laplacians faithfully reflect the underlying geometry and topology of continuous Riemannian manifolds. Future extensions will investigate discrete spin Dirac operators D on simplicial spin manifolds and non-linear p-Laplacian eigenvalues.",
@@ -518,7 +518,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                     X = 55,
                     Y = 490,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "AUTHOR BIOGRAPHIES",
                     FontSize = 10.5,
                     FontFamily = "Times New Roman",
@@ -593,9 +593,9 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                 new PdfTextElement
                 {
                     X = 415,
-                    Y = 65,
+                    Y = 62,
                     Width = 330,
-                    Height = 18,
+                    Height = 22,
                     Text = "REFERENCES",
                     FontSize = 10.5,
                     FontFamily = "Times New Roman",

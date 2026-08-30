@@ -14,6 +14,8 @@
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
         <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
         <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+        <converters:DoubleToThicknessConverter x:Key="DoubleToThickness" />
+        <converters:TextAlignmentConverter x:Key="TextAlignmentConverter" />
 
         <!-- Page Thumbnail Context Menu -->
         <ContextMenu x:Key="PageThumbnailContextMenu" x:DataType="vm:PageViewModel">
@@ -154,12 +156,16 @@
                                                                 <Border Width="{Binding Width}" Height="{Binding Height}"
                                                                         Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                         BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                        BorderThickness="{Binding BorderThickness}"
-                                                                        Padding="{Binding Padding}">
+                                                                        BorderThickness="{Binding BorderThickness, Converter={StaticResource DoubleToThickness}}"
+                                                                        Padding="{Binding Padding, Converter={StaticResource DoubleToThickness}}">
                                                                     <TextBlock Text="{Binding Text}"
-                                                                               FontFamily="{Binding FontFamily}"
+                                                                               FontFamily="{Binding AvaloniaFontFamily}"
                                                                                FontSize="{Binding FontSize}"
+                                                                               FontWeight="{Binding IsBold, Converter={x:Static converters:BooleanToFontWeightConverter.Instance}}"
+                                                                               FontStyle="{Binding IsItalic, Converter={x:Static converters:BooleanToFontStyleConverter.Instance}}"
+                                                                               LineHeight="{Binding ComputedLineHeight}"
                                                                                Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                               TextAlignment="{Binding Alignment, Converter={StaticResource TextAlignmentConverter}}"
                                                                                TextWrapping="Wrap" />
                                                                 </Border>
                                                             </DataTemplate>

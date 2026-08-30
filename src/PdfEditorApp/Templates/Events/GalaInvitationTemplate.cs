@@ -77,7 +77,7 @@ public class GalaInvitationTemplate : ITemplateDefinition
             X = 50,
             Y = 80,
             Width = 500,
-            Height = 20,
+            Height = 22,
             ZIndex = 5
         });
 
@@ -93,7 +93,7 @@ public class GalaInvitationTemplate : ITemplateDefinition
             X = 50,
             Y = 110,
             Width = 500,
-            Height = 85,
+            Height = 90,
             ZIndex = 6
         });
 
@@ -109,7 +109,7 @@ public class GalaInvitationTemplate : ITemplateDefinition
             X = 50,
             Y = 205,
             Width = 500,
-            Height = 20,
+            Height = 22,
             ZIndex = 6
         });
 
@@ -139,7 +139,7 @@ public class GalaInvitationTemplate : ITemplateDefinition
             X = 50,
             Y = 340,
             Width = 500,
-            Height = 40,
+            Height = 44,
             ZIndex = 6
         });
 
@@ -169,7 +169,7 @@ public class GalaInvitationTemplate : ITemplateDefinition
             X = 70,
             Y = 415,
             Width = 460,
-            Height = 24,
+            Height = 26,
             ZIndex = 6
         });
 
@@ -184,7 +184,7 @@ public class GalaInvitationTemplate : ITemplateDefinition
             X = 70,
             Y = 445,
             Width = 460,
-            Height = 36,
+            Height = 40,
             ZIndex = 6
         });
 
@@ -210,7 +210,7 @@ public class GalaInvitationTemplate : ITemplateDefinition
             X = 70,
             Y = 505,
             Width = 460,
-            Height = 36,
+            Height = 40,
             ZIndex = 6
         });
 
@@ -223,9 +223,9 @@ public class GalaInvitationTemplate : ITemplateDefinition
             TextColorHex = "#F59E0B",
             Alignment = TextAlignmentMode.Center,
             X = 70,
-            Y = 545,
+            Y = 548,
             Width = 460,
-            Height = 20,
+            Height = 22,
             ZIndex = 6
         });
 
@@ -255,7 +255,7 @@ public class GalaInvitationTemplate : ITemplateDefinition
             X = 50,
             Y = 770,
             Width = 500,
-            Height = 18,
+            Height = 22,
             ZIndex = 6
         });
 

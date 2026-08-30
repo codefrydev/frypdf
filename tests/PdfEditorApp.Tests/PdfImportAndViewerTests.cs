@@ -778,7 +778,10 @@ public class PdfImportAndViewerTests
     [Fact]
     public async Task GenerateVisualComparison_SideBySide_SavesArtifacts()
     {
-        string artifactDir = "/Users/codefrydev/.gemini/antigravity-ide/brain/15e672ca-a88b-4ef8-985f-5f4d074f80b9";
+        string? envArtifactDir = Environment.GetEnvironmentVariable("FRYPDF_ARTIFACT_DIR");
+        string artifactDir = !string.IsNullOrWhiteSpace(envArtifactDir)
+            ? envArtifactDir
+            : Path.Combine(AppContext.BaseDirectory, "VisualArtifacts");
         Directory.CreateDirectory(artifactDir);
 
         string baseDir = AppContext.BaseDirectory;

@@ -146,9 +146,11 @@ public class ToolTestFixture
         row.Append(cell);
         sheetData.Append(row);
         wsPart.Worksheet = new Worksheet(sheetData);
+        wsPart.Worksheet.Save();
         var sheets = wbPart.Workbook.AppendChild(new Sheets());
         sheets.Append(new Sheet { Id = wbPart.GetIdOfPart(wsPart), SheetId = 1, Name = "Sheet1" });
         wbPart.Workbook.Save();
+        spreadsheetDoc.Save();
         return path;
     }
 

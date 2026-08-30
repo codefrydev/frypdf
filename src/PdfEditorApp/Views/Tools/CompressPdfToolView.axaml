@@ -9,9 +9,11 @@
 
     <UserControl.Resources>
         <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
+        <converters:BooleanToThicknessConverter x:Key="BooleanToThicknessConverter" />
     </UserControl.Resources>
 
-    <Grid ColumnDefinitions="*,390" Margin="0,4,0,0">
+    <Grid ColumnDefinitions="*,420" Margin="0,4,0,0">
 
         <!-- LEFT: Workspace, selected document, and preview -->
         <ScrollViewer Grid.Column="0" Margin="0,0,20,0" VerticalScrollBarVisibility="Auto">
@@ -41,16 +43,15 @@
 
                 <!-- Rich Success & Interactive Preview Card -->
                 <Border Background="#FFFFFF" BorderBrush="#86EFAC" BorderThickness="1.5" CornerRadius="14" Padding="20" BoxShadow="0 8 24 #1516A34A" IsVisible="{Binding IsComplete}">
-                    <StackPanel Spacing="16">
-                        <Grid ColumnDefinitions="Auto,*,Auto">
-                            <Border Grid.Column="0" Width="48" Height="48" Background="#DCFCE7" CornerRadius="12" Margin="0,0,14,0">
-                                <materialIcons:MaterialIcon Kind="CheckCircle" Width="28" Height="28" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="PDF Compressed Successfully!" FontSize="16" FontWeight="Bold" Foreground="#166534" />
-                                <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="12.5" Foreground="#15803D" TextWrapping="Wrap" />
+                    <StackPanel Spacing="18">
+
+                        <!-- Header & Compress Another -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="PDFs have been compressed!" FontSize="20" FontWeight="ExtraBold" Foreground="#0F172A" />
+                                <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="12.5" Foreground="#64748B" TextWrapping="Wrap" />
                             </StackPanel>
-                            <Button Grid.Column="2" Command="{Binding StartOverCommand}" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" Foreground="#64748B" CornerRadius="8" Padding="12,6" FontSize="12" Cursor="Hand">
+                            <Button Grid.Column="1" Command="{Binding StartOverCommand}" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" Foreground="#64748B" CornerRadius="8" Padding="12,6" FontSize="12" Cursor="Hand">
                                 <StackPanel Orientation="Horizontal" Spacing="5">
                                     <materialIcons:MaterialIcon Kind="Refresh" Width="14" Height="14" />
                                     <TextBlock Text="Compress Another" VerticalAlignment="Center" />
@@ -58,36 +59,53 @@
                             </Button>
                         </Grid>
 
+                        <!-- Primary Download Button & Quick Share -->
                         <WrapPanel Orientation="Horizontal">
-                            <!-- Prominent Save As Button -->
-                            <Button Command="{Binding SaveOutputFileAsCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="16,10" FontSize="13" FontWeight="Bold" Cursor="Hand" Margin="0,0,8,6">
-                                <StackPanel Orientation="Horizontal" Spacing="7">
-                                    <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="17" Height="17" />
-                                    <TextBlock Text="Save Compressed PDF As..." VerticalAlignment="Center" />
+                            <!-- Prominent Save As Button (iLovePDF Style) -->
+                            <Button Command="{Binding SaveOutputFileAsCommand}" Background="#DC2626" Foreground="White" CornerRadius="10" Padding="22,14" FontSize="14.5" FontWeight="Bold" Cursor="Hand" Margin="0,0,10,8">
+                                <StackPanel Orientation="Horizontal" Spacing="9">
+                                    <materialIcons:MaterialIcon Kind="Download" Width="20" Height="20" />
+                                    <TextBlock Text="Download Compressed PDF" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
 
-                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="14,10" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
+                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="10" Padding="16,14" FontSize="13" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,8">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="16" Height="16" />
+                                    <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="17" Height="17" />
                                     <TextBlock Text="Open in Viewer" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Command="{Binding OpenInEditorCommand}" Background="#EFF6FF" Foreground="#0F6CBD" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="14,10" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
+                            <Button Command="{Binding OpenInEditorCommand}" Background="#EFF6FF" Foreground="#0F6CBD" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="10" Padding="16,14" FontSize="13" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,8">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="SquareEditOutline" Width="16" Height="16" />
+                                    <materialIcons:MaterialIcon Kind="SquareEditOutline" Width="17" Height="17" />
                                     <TextBlock Text="Edit in FryPDF" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#F1F5F9" Foreground="#334155" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" Padding="14,10" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
+                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#F1F5F9" Foreground="#334155" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="10" Padding="16,14" FontSize="13" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,8">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
+                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="17" Height="17" />
                                     <TextBlock Text="Show in Folder" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                         </WrapPanel>
 
-                        <!-- Output Document Metadata -->
+                        <!-- Visual Savings Gauge & Percentage Display -->
+                        <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1.5" CornerRadius="12" Padding="16,14" IsVisible="{Binding HasSizeReduction}">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <Border Grid.Column="0" Width="68" Height="68" CornerRadius="34" Background="#DCFCE7" BorderBrush="#16A34A" BorderThickness="3" Margin="0,0,16,0">
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="0">
+                                        <TextBlock Text="{Binding SizeReductionPercentage, StringFormat='{}{0:F0}%'}" FontSize="15" FontWeight="ExtraBold" Foreground="#166534" HorizontalAlignment="Center" />
+                                        <TextBlock Text="SAVED" FontSize="8.5" FontWeight="Bold" Foreground="#15803D" HorizontalAlignment="Center" LetterSpacing="0.5" />
+                                    </StackPanel>
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                    <TextBlock Text="{Binding SizeReductionPercentage, StringFormat='{}Your PDF is now {0:F0}% smaller!'}" FontSize="15" FontWeight="Bold" Foreground="#166534" />
+                                    <TextBlock Text="{Binding SizeComparisonText}" FontSize="13" FontWeight="SemiBold" Foreground="#15803D" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Output Document Metadata Card -->
                         <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="14,10">
                             <Grid ColumnDefinitions="*,Auto,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
@@ -102,6 +120,55 @@
                                 </Border>
                             </Grid>
                         </Border>
+
+                        <!-- Continue To Tools Strip (iLovePDF Style) -->
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Continue to..." FontSize="13" FontWeight="Bold" Foreground="#0F172A" />
+                            <WrapPanel Orientation="Horizontal">
+                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="MergePdf" Margin="0,0,8,8" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="CallMerge" Width="16" Height="16" Foreground="#E11D48" />
+                                        <TextBlock Text="Merge PDF" FontSize="12" FontWeight="SemiBold" Foreground="#334155" VerticalAlignment="Center" />
+                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14" Foreground="#94A3B8" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="SplitPdf" Margin="0,0,8,8" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="CallSplit" Width="16" Height="16" Foreground="#F97316" />
+                                        <TextBlock Text="Split PDF" FontSize="12" FontWeight="SemiBold" Foreground="#334155" VerticalAlignment="Center" />
+                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14" Foreground="#94A3B8" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="PageNumbers" Margin="0,0,8,8" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="Numeric" Width="16" Height="16" Foreground="#8B5CF6" />
+                                        <TextBlock Text="Add Page Numbers" FontSize="12" FontWeight="SemiBold" Foreground="#334155" VerticalAlignment="Center" />
+                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14" Foreground="#94A3B8" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="Watermark" Margin="0,0,8,8" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="Watermark" Width="16" Height="16" Foreground="#D97706" />
+                                        <TextBlock Text="Add Watermark" FontSize="12" FontWeight="SemiBold" Foreground="#334155" VerticalAlignment="Center" />
+                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14" Foreground="#94A3B8" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="RotatePdf" Margin="0,0,8,8" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="RotateRight" Width="16" Height="16" Foreground="#0284C7" />
+                                        <TextBlock Text="Rotate PDF" FontSize="12" FontWeight="SemiBold" Foreground="#334155" VerticalAlignment="Center" />
+                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14" Foreground="#94A3B8" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="ProtectPdf" Margin="0,0,8,8" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="ShieldLockOutline" Width="16" Height="16" Foreground="#059669" />
+                                        <TextBlock Text="Protect PDF" FontSize="12" FontWeight="SemiBold" Foreground="#334155" VerticalAlignment="Center" />
+                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14" Foreground="#94A3B8" />
+                                    </StackPanel>
+                                </Button>
+                            </WrapPanel>
+                        </StackPanel>
 
                         <!-- Page Gallery Strip Preview -->
                         <StackPanel Spacing="8">
@@ -172,7 +239,7 @@
                         </Border>
                         <StackPanel Spacing="4" HorizontalAlignment="Center">
                             <TextBlock Text="Select PDF to Compress &amp; Optimize" FontSize="16" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center" />
-                            <TextBlock Text="Reduce file size while preserving high visual rendering and vector clarity" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" />
+                            <TextBlock Text="Reduce file size by up to 80% while preserving visual clarity" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" />
                         </StackPanel>
                         <Button Command="{Binding AddFilesCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="24,10" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -235,42 +302,175 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- RIGHT: Settings & Trigger Panel -->
-        <Border Grid.Column="1" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
+        <!-- RIGHT: Compression Presets, Live Sliders & Trigger Panel -->
+        <Border Grid.Column="1" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 4 12 #08000000">
             <DockPanel>
-                <Border DockPanel.Dock="Top" Margin="0,0,0,16">
-                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#16A34A" />
-                        <TextBlock Text="Compression Settings" FontSize="14" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                <Border DockPanel.Dock="Top" Margin="0,0,0,14">
+                    <StackPanel Spacing="3">
+                        <TextBlock Text="Compression level" FontSize="17" FontWeight="ExtraBold" Foreground="#0F172A" />
+                        <TextBlock Text="Choose a preset or fine-tune parameters with live feedback" FontSize="11" Foreground="#64748B" />
                     </StackPanel>
                 </Border>
 
-                <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0" Spacing="10">
-                    <Button Command="{Binding ExecuteToolCommand}" Background="#16A34A" Foreground="White" CornerRadius="10" Padding="24,14" FontWeight="Bold" FontSize="14" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsEnabled="{Binding !IsRunning}">
+                <StackPanel DockPanel.Dock="Bottom" Margin="0,14,0,0" Spacing="8">
+                    <Button Command="{Binding ExecuteToolCommand}" Background="#DC2626" Foreground="White" CornerRadius="10" Padding="20,13" FontWeight="Bold" FontSize="14" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsEnabled="{Binding !IsRunning}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <materialIcons:MaterialIcon Kind="ArrowCollapseVertical" Width="18" Height="18" />
-                            <TextBlock Text="Compress PDF Now" VerticalAlignment="Center" />
+                            <TextBlock Text="Compress PDF" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <TextBlock Text="Optimizes streams, flattens unused fonts, and recompresses images" FontSize="11" Foreground="#94A3B8" HorizontalAlignment="Center" />
+                    <TextBlock Text="Safe &amp; privacy-first compression runs 100% locally on your device" FontSize="10.5" Foreground="#94A3B8" HorizontalAlignment="Center" TextAlignment="Center" />
                 </StackPanel>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="16">
-                        
-                        <!-- Optimization Options -->
-                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12">
-                            <StackPanel Spacing="10">
-                                <TextBlock Text="Optimization Controls" FontSize="11.5" FontWeight="Bold" Foreground="#475569" />
+                    <StackPanel Spacing="10">
+
+                        <!-- 1. EXTREME COMPRESSION PRESET -->
+                        <Border Background="{Binding IsExtremeCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
+                                BorderBrush="{Binding IsExtremeCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#3B82F6|#E2E8F0'}"
+                                BorderThickness="{Binding IsExtremeCompression, Converter={StaticResource BooleanToThicknessConverter}, ConverterParameter='2|1'}"
+                                CornerRadius="10" Padding="12" Cursor="Hand">
+                            <Button Command="{Binding SelectPresetCommand}" CommandParameter="extreme" Background="Transparent" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                                 <Grid ColumnDefinitions="*,Auto">
-                                    <TextBlock Grid.Column="0" Text="Target Image DPI:" FontSize="12" Foreground="#64748B" VerticalAlignment="Center" />
-                                    <NumericUpDown Grid.Column="1" Value="{Binding ImageQualityDpi}" Minimum="72" Maximum="600" Increment="10" Width="100" />
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock Text="EXTREME COMPRESSION" FontSize="12" FontWeight="ExtraBold" Foreground="{Binding IsExtremeCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#1D4ED8|#DC2626'}" LetterSpacing="0.4" />
+                                        <TextBlock Text="Less quality, high compression (~75% reduction)" FontSize="11" Foreground="#64748B" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1" Width="20" Height="20" CornerRadius="10"
+                                            Background="{Binding IsExtremeCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#16A34A|#F1F5F9'}"
+                                            VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="Check" Width="13" Height="13" Foreground="White" IsVisible="{Binding IsExtremeCompression}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
                                 </Grid>
-                                <CheckBox Content="Compress Content Streams" IsChecked="{Binding CompressStreams}" FontSize="12" />
-                                <CheckBox Content="Remove Duplicate Objects &amp; Fonts" IsChecked="{Binding RemoveDuplicateObjects}" FontSize="12" />
-                                <CheckBox Content="Strip Metadata &amp; Bookmarks" IsChecked="{Binding RemoveMetadata}" FontSize="12" />
+                            </Button>
+                        </Border>
+
+                        <!-- 2. RECOMMENDED COMPRESSION PRESET (DEFAULT) -->
+                        <Border Background="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
+                                BorderBrush="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#3B82F6|#E2E8F0'}"
+                                BorderThickness="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToThicknessConverter}, ConverterParameter='2|1'}"
+                                CornerRadius="10" Padding="12" Cursor="Hand">
+                            <Button Command="{Binding SelectPresetCommand}" CommandParameter="recommended" Background="Transparent" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="RECOMMENDED COMPRESSION" FontSize="12" FontWeight="ExtraBold" Foreground="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#1D4ED8|#DC2626'}" LetterSpacing="0.4" />
+                                            <Border Background="#DCFCE7" CornerRadius="4" Padding="5,1">
+                                                <TextBlock Text="DEFAULT" FontSize="8" FontWeight="Bold" Foreground="#166534" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="Good quality, good compression (~70% reduction)" FontSize="11" Foreground="#64748B" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1" Width="20" Height="20" CornerRadius="10"
+                                            Background="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#16A34A|#F1F5F9'}"
+                                            VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="Check" Width="13" Height="13" Foreground="White" IsVisible="{Binding IsRecommendedCompression}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+                            </Button>
+                        </Border>
+
+                        <!-- 3. LESS COMPRESSION PRESET -->
+                        <Border Background="{Binding IsLessCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
+                                BorderBrush="{Binding IsLessCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#3B82F6|#E2E8F0'}"
+                                BorderThickness="{Binding IsLessCompression, Converter={StaticResource BooleanToThicknessConverter}, ConverterParameter='2|1'}"
+                                CornerRadius="10" Padding="12" Cursor="Hand">
+                            <Button Command="{Binding SelectPresetCommand}" CommandParameter="less" Background="Transparent" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock Text="LESS COMPRESSION" FontSize="12" FontWeight="ExtraBold" Foreground="{Binding IsLessCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#1D4ED8|#DC2626'}" LetterSpacing="0.4" />
+                                        <TextBlock Text="High quality, less compression (~40% reduction)" FontSize="11" Foreground="#64748B" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1" Width="20" Height="20" CornerRadius="10"
+                                            Background="{Binding IsLessCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#16A34A|#F1F5F9'}"
+                                            VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="Check" Width="13" Height="13" Foreground="White" IsVisible="{Binding IsLessCompression}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+                            </Button>
+                        </Border>
+
+                        <!-- 4. CUSTOM / FINE-TUNE PRESET -->
+                        <Border Background="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
+                                BorderBrush="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#3B82F6|#E2E8F0'}"
+                                BorderThickness="{Binding IsCustomMode, Converter={StaticResource BooleanToThicknessConverter}, ConverterParameter='2|1'}"
+                                CornerRadius="10" Padding="12" Cursor="Hand">
+                            <Button Command="{Binding SelectPresetCommand}" CommandParameter="custom" Background="Transparent" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock Text="CUSTOM / EXPERT TUNING" FontSize="12" FontWeight="ExtraBold" Foreground="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#1D4ED8|#0F172A'}" LetterSpacing="0.4" />
+                                        <TextBlock Text="Manual sliders for DPI, quality, and color palette" FontSize="11" Foreground="#64748B" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1" Width="20" Height="20" CornerRadius="10"
+                                            Background="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#16A34A|#F1F5F9'}"
+                                            VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="Tune" Width="13" Height="13" Foreground="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#FFFFFF|#64748B'}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+                            </Button>
+                        </Border>
+
+                        <!-- DYNAMIC LIVE QUALITY & WARNING FEEDBACK BANNER -->
+                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1.5" CornerRadius="10" Padding="12,10" Margin="0,2">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <materialIcons:MaterialIcon Grid.Column="0" Kind="InformationOutline" Width="18" Height="18" Foreground="#2563EB" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding QualityFeedbackMessage}" FontSize="11.5" FontWeight="SemiBold" Foreground="#334155" TextWrapping="Wrap" VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+
+                        <!-- FINE-TUNING SLIDERS & CONTROLS -->
+                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="14,12">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="Interactive Fine-Tuning" FontSize="12" FontWeight="Bold" Foreground="#0F172A" />
+
+                                <!-- DPI Slider & Numeric Input -->
+                                <StackPanel Spacing="4">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="Target Image Resolution (DPI):" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Text="{Binding ImageQualityDpi, StringFormat='{}{0} DPI'}" FontSize="12" FontWeight="Bold" Foreground="#0F6CBD" VerticalAlignment="Center" />
+                                    </Grid>
+                                    <Slider Value="{Binding ImageQualityDpi}" Minimum="50" Maximum="350" SmallChange="5" LargeChange="25" />
+                                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,-4,0,0">
+                                        <TextBlock Grid.Column="0" Text="50 (Low / Max Small)" FontSize="9.5" Foreground="#94A3B8" />
+                                        <TextBlock Grid.Column="2" Text="350 (Ultra Sharp)" FontSize="9.5" Foreground="#94A3B8" />
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- JPEG Quality Slider & Numeric Input -->
+                                <StackPanel Spacing="4">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="JPEG Compression Quality:" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Text="{Binding JpegQuality, StringFormat='{}{0}%'}" FontSize="12" FontWeight="Bold" Foreground="#0F6CBD" VerticalAlignment="Center" />
+                                    </Grid>
+                                    <Slider Value="{Binding JpegQuality}" Minimum="20" Maximum="100" SmallChange="2" LargeChange="10" />
+                                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,-4,0,0">
+                                        <TextBlock Grid.Column="0" Text="20% (Aggressive)" FontSize="9.5" Foreground="#94A3B8" />
+                                        <TextBlock Grid.Column="2" Text="100% (Lossless)" FontSize="9.5" Foreground="#94A3B8" />
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Grayscale Switch -->
+                                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,8">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="Convert to Grayscale (B&amp;W)" FontSize="11.5" FontWeight="SemiBold" Foreground="#1E293B" />
+                                            <TextBlock Text="Saves extra ~20-30% on scanned forms &amp; receipts" FontSize="10" Foreground="#64748B" />
+                                        </StackPanel>
+                                        <ToggleSwitch Grid.Column="1" IsChecked="{Binding ConvertToGrayscale}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+
                             </StackPanel>
                         </Border>
+
+                        <!-- Advanced Optimization Options -->
+                        <Expander Header="Advanced PDF Stream Settings" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569">
+                            <StackPanel Spacing="8" Margin="0,4,0,0">
+                                <CheckBox Content="Compress Content Streams &amp; Fonts" IsChecked="{Binding CompressStreams}" FontSize="11.5" />
+                                <CheckBox Content="Remove Duplicate Objects &amp; Fonts" IsChecked="{Binding RemoveDuplicateObjects}" FontSize="11.5" />
+                                <CheckBox Content="Strip Metadata &amp; Bookmarks" IsChecked="{Binding RemoveMetadata}" FontSize="11.5" />
+                            </StackPanel>
+                        </Expander>
 
                     </StackPanel>
                 </ScrollViewer>

@@ -41,6 +41,34 @@ public class PdfToolsServiceTests
         return path;
     }
 
+    private static string CreateImageHeavyTempPdf(int pages = 2)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"img_heavy_{Guid.NewGuid():N}.pdf");
+        using var doc = new PdfSharpCore.Pdf.PdfDocument();
+        for (int i = 0; i < pages; i++)
+        {
+            var page = doc.AddPage();
+            page.Width = PdfSharpCore.Drawing.XUnit.FromPoint(595);
+            page.Height = PdfSharpCore.Drawing.XUnit.FromPoint(842);
+            using var gfx = PdfSharpCore.Drawing.XGraphics.FromPdfPage(page);
+
+            using var bmp = new SkiaSharp.SKBitmap(600, 600);
+            using var canvas = new SkiaSharp.SKCanvas(bmp);
+            canvas.Clear(SkiaSharp.SKColors.LightBlue);
+            using var paint = new SkiaSharp.SKPaint { Color = SkiaSharp.SKColors.DarkRed, StrokeWidth = 6 };
+            for (int line = 0; line < 50; line++)
+            {
+                canvas.DrawLine(0, line * 12, 600, 600 - line * 12, paint);
+            }
+            using var img = SkiaSharp.SKImage.FromBitmap(bmp);
+            using var data = img.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+            using var ximg = PdfSharpCore.Drawing.XImage.FromStream(() => new MemoryStream(data.ToArray()));
+            gfx.DrawImage(ximg, 50, 50, 495, 495);
+        }
+        doc.Save(path);
+        return path;
+    }
+
     private static void CleanupFiles(params string[] paths)
     {
         foreach (var p in paths)
@@ -204,11 +232,63 @@ public class PdfToolsServiceTests
             {
                 InputFilePath = inputPath,
                 OutputFilePath = outPath,
-                Level = PdfCompressionLevel.MaximumCompression
+                Level = PdfCompressionLevel.Balanced
             };
             var result = await svc.CompressPdfAsync(opts);
             Assert.True(result.Success, result.ErrorMessage);
             Assert.True(File.Exists(outPath));
+            Assert.True(result.OutputSizeBytes <= result.OriginalSizeBytes);
+        }
+        finally { CleanupFiles(inputPath, outPath); }
+    }
+
+    [Fact]
+    public async Task PdfOptimizationService_Compress_ImageHeavyPdf_SignificantlyReducesFileSize()
+    {
+        var inputPath = CreateImageHeavyTempPdf(2);
+        var outPath = Path.Combine(Path.GetTempPath(), $"compressed_img_{Guid.NewGuid():N}.pdf");
+        try
+        {
+            long origSize = new FileInfo(inputPath).Length;
+            Assert.True(origSize > 10000, "Test image PDF should have substantial size.");
+
+            var svc = new PdfOptimizationService();
+            var opts = new CompressToolOptions
+            {
+                InputFilePath = inputPath,
+                OutputFilePath = outPath,
+                Level = PdfCompressionLevel.MaximumCompression,
+                ImageQualityDpi = 96,
+                RemoveMetadata = true
+            };
+            var result = await svc.CompressPdfAsync(opts);
+            Assert.True(result.Success, result.ErrorMessage);
+            Assert.True(File.Exists(outPath));
+            Assert.True(result.OutputSizeBytes < result.OriginalSizeBytes, $"Expected compressed size ({result.OutputSizeBytes}) to be strictly less than original size ({result.OriginalSizeBytes}).");
+        }
+        finally { CleanupFiles(inputPath, outPath); }
+    }
+
+    [Fact]
+    public async Task PdfOptimizationService_Compress_NeverIncreasesFileSizeOnAlreadyCompactPdf()
+    {
+        var inputPath = CreateTempPdf(2, "compact");
+        var outPath = Path.Combine(Path.GetTempPath(), $"compressed_compact_{Guid.NewGuid():N}.pdf");
+        try
+        {
+            long origSize = new FileInfo(inputPath).Length;
+
+            var svc = new PdfOptimizationService();
+            var opts = new CompressToolOptions
+            {
+                InputFilePath = inputPath,
+                OutputFilePath = outPath,
+                Level = PdfCompressionLevel.Balanced
+            };
+            var result = await svc.CompressPdfAsync(opts);
+            Assert.True(result.Success, result.ErrorMessage);
+            Assert.True(File.Exists(outPath));
+            Assert.True(result.OutputSizeBytes <= origSize, $"Output size ({result.OutputSizeBytes}) should NEVER exceed original size ({origSize}).");
         }
         finally { CleanupFiles(inputPath, outPath); }
     }

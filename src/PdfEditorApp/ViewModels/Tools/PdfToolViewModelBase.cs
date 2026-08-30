@@ -77,6 +77,21 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
     [ObservableProperty]
     private bool _hasSavedNotification;
 
+    [ObservableProperty]
+    private long _originalSizeBytes;
+
+    [ObservableProperty]
+    private long _outputSizeBytes;
+
+    [ObservableProperty]
+    private double _sizeReductionPercentage;
+
+    public bool HasSizeReduction => OriginalSizeBytes > 0 && OutputSizeBytes > 0 && OutputSizeBytes < OriginalSizeBytes;
+    public string SizeComparisonText => OriginalSizeBytes > 0 && OutputSizeBytes > 0 
+        ? $"{PdfFilePreviewItem.FormatBytes(OriginalSizeBytes)} → {PdfFilePreviewItem.FormatBytes(OutputSizeBytes)}"
+        : "";
+    public string SizeReductionBadgeText => $"{SizeReductionPercentage:F0}% SAVED";
+
     public ObservableCollection<string> SelectedFiles { get; } = new();
 
     public ObservableCollection<PdfFilePreviewItem> SelectedFilePreviewItems { get; } = new();
@@ -106,6 +121,19 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
     public event Action? BackRequested;
     public event Action<string>? OpenInEditorRequested;
     public event Action<string>? OpenInViewerRequested;
+    public event Action<PdfToolId, string>? NavigateToToolRequested;
+
+    [RelayCommand]
+    public void NavigateToTool(string toolName)
+    {
+        if (Enum.TryParse<PdfToolId>(toolName, true, out var toolId))
+        {
+            string targetFile = !string.IsNullOrEmpty(LastOutputFilePath) && File.Exists(LastOutputFilePath)
+                ? LastOutputFilePath
+                : PrimaryInputFile;
+            NavigateToToolRequested?.Invoke(toolId, targetFile);
+        }
+    }
 
     protected PdfToolViewModelBase(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
     {
@@ -385,6 +413,20 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
                 ResultSummaryMessage = result.Message ?? "Operation completed successfully.";
                 StatusMessage = "Completed successfully!";
                 ProgressPercentage = 100.0;
+
+                OriginalSizeBytes = result.OriginalSizeBytes;
+                OutputSizeBytes = result.OutputSizeBytes;
+                if (result.OriginalSizeBytes > 0 && result.OutputSizeBytes > 0 && result.OutputSizeBytes < result.OriginalSizeBytes)
+                {
+                    SizeReductionPercentage = ((result.OriginalSizeBytes - result.OutputSizeBytes) / (double)result.OriginalSizeBytes) * 100.0;
+                }
+                else
+                {
+                    SizeReductionPercentage = 0.0;
+                }
+                OnPropertyChanged(nameof(HasSizeReduction));
+                OnPropertyChanged(nameof(SizeComparisonText));
+                OnPropertyChanged(nameof(SizeReductionBadgeText));
 
                 // Load rich in-app preview for the output document
                 if (!string.IsNullOrEmpty(LastOutputFilePath) && File.Exists(LastOutputFilePath))

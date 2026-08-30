@@ -169,6 +169,9 @@ public class CompressToolOptions
     public string OutputFilePath { get; set; } = string.Empty;
     public PdfCompressionLevel Level { get; set; } = PdfCompressionLevel.Balanced;
     public int ImageQualityDpi { get; set; } = 150;
+    public int JpegQuality { get; set; } = 0; // 0 = automatic based on level, or 20-100
+    public int MaxImageDimension { get; set; } = 0; // 0 = automatic based on level
+    public bool ConvertToGrayscale { get; set; }
     public bool RemoveMetadata { get; set; }
     public bool RemoveDuplicateObjects { get; set; } = true;
     public bool CompressStreams { get; set; } = true;

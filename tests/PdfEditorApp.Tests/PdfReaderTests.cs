@@ -250,5 +250,144 @@ public class PdfReaderTests
         Assert.NotNull(bytesHigh);
         Assert.True(bytesHigh.Length > bytes1.Length);
     }
+
+    [Fact]
+    public async Task PdfViewer_PageSelectionAndThumbnailClick_TriggersScrollToPageAndUpdatesIsSelected()
+    {
+        var vm = new PdfViewerViewModel();
+        byte[] pdfBytes = CreateSamplePdfBytes(3);
+        await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
+
+        int requestedPage = 0;
+        vm.ScrollToPageRequested += (pageNum) =>
+        {
+            requestedPage = pageNum;
+        };
+
+        // Click Page 2 Thumbnail
+        vm.SelectPage(vm.Pages[1]);
+
+        Assert.Equal(2, vm.CurrentPageNumber);
+        Assert.Equal(2, vm.SelectedPage?.PageNumber);
+        Assert.Equal(2, requestedPage);
+        Assert.False(vm.Pages[0].IsSelected);
+        Assert.True(vm.Pages[1].IsSelected);
+        Assert.False(vm.Pages[2].IsSelected);
+
+        // Click Page 3 Thumbnail
+        vm.SelectPage(vm.Pages[2]);
+
+        Assert.Equal(3, vm.CurrentPageNumber);
+        Assert.Equal(3, vm.SelectedPage?.PageNumber);
+        Assert.Equal(3, requestedPage);
+        Assert.False(vm.Pages[0].IsSelected);
+        Assert.False(vm.Pages[1].IsSelected);
+        Assert.True(vm.Pages[2].IsSelected);
+
+        // Click Page 1 Thumbnail
+        vm.SelectPage(vm.Pages[0]);
+
+        Assert.Equal(1, vm.CurrentPageNumber);
+        Assert.Equal(1, vm.SelectedPage?.PageNumber);
+        Assert.Equal(1, requestedPage);
+        Assert.True(vm.Pages[0].IsSelected);
+        Assert.False(vm.Pages[1].IsSelected);
+        Assert.False(vm.Pages[2].IsSelected);
+    }
+
+    [Fact]
+    public async Task PdfViewer_JumpToBookmark_ScrollsToTargetPage()
+    {
+        var vm = new PdfViewerViewModel();
+        byte[] pdfBytes = CreateSamplePdfBytes(3);
+        await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
+
+        int requestedPage = 0;
+        vm.ScrollToPageRequested += (pageNum) =>
+        {
+            requestedPage = pageNum;
+        };
+
+        var bookmark = new PdfViewerBookmarkItem { Title = "Chapter 2", PageNumber = 2 };
+        vm.JumpToBookmarkCommand.Execute(bookmark);
+
+        Assert.Equal(2, vm.CurrentPageNumber);
+        Assert.Equal(2, vm.SelectedPage?.PageNumber);
+        Assert.Equal(2, requestedPage);
+        Assert.True(vm.Pages[1].IsSelected);
+    }
+
+    [Fact]
+    public async Task PdfViewer_JumpToAnnotation_ScrollsToTargetPage()
+    {
+        var vm = new PdfViewerViewModel();
+        byte[] pdfBytes = CreateSamplePdfBytes(3);
+        await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
+
+        int requestedPage = 0;
+        vm.ScrollToPageRequested += (pageNum) =>
+        {
+            requestedPage = pageNum;
+        };
+
+        var annotation = new PdfViewerAnnotationItem { Type = "StickyNote", PageNumber = 3, Content = "Important remark", ColorHex = "#0284C7" };
+        vm.JumpToAnnotationCommand.Execute(annotation);
+
+        Assert.Equal(3, vm.CurrentPageNumber);
+        Assert.Equal(3, vm.SelectedPage?.PageNumber);
+        Assert.Equal(3, requestedPage);
+        Assert.True(vm.Pages[2].IsSelected);
+    }
+
+    [Fact]
+    public async Task PdfViewer_JumpToSearchMatch_ScrollsToTargetPage()
+    {
+        var vm = new PdfViewerViewModel();
+        byte[] pdfBytes = CreateSamplePdfBytes(3);
+        await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
+
+        int requestedPage = 0;
+        vm.ScrollToPageRequested += (pageNum) =>
+        {
+            requestedPage = pageNum;
+        };
+
+        var match = new PdfViewerSearchMatch { PageNumber = 2, Snippet = "Search match snippet", MatchIndex = 0 };
+        vm.JumpToMatchCommand.Execute(match);
+
+        Assert.Equal(2, vm.CurrentPageNumber);
+        Assert.Equal(2, vm.SelectedPage?.PageNumber);
+        Assert.Equal(2, requestedPage);
+        Assert.True(vm.Pages[1].IsSelected);
+    }
+
+    [Fact]
+    public async Task PdfViewer_TwoPageSpreadNavigation_NavigatesInTwoPageSteps()
+    {
+        var vm = new PdfViewerViewModel();
+        byte[] pdfBytes = CreateSamplePdfBytes(3);
+        await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
+
+        vm.SetLayoutModeCommand.Execute("TwoPageSpread");
+        Assert.True(vm.IsTwoPageSpreadMode);
+        Assert.Equal(1, vm.CurrentPageNumber);
+
+        int requestedPage = 0;
+        vm.ScrollToPageRequested += (pageNum) =>
+        {
+            requestedPage = pageNum;
+        };
+
+        // Next page in 2-page spread
+        vm.NextPageCommand.Execute(null);
+        Assert.Equal(3, vm.CurrentPageNumber);
+        Assert.Equal(3, requestedPage);
+
+        // Previous page in 2-page spread
+        vm.PreviousPageCommand.Execute(null);
+        Assert.Equal(1, vm.CurrentPageNumber);
+        Assert.Equal(1, requestedPage);
+    }
 }
+
 

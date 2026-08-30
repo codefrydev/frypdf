@@ -1,9 +1,11 @@
 using System;
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using PdfEditorApp.ViewModels;
 
 namespace PdfEditorApp.Views;
@@ -20,6 +22,11 @@ public partial class PdfViewerView : UserControl
     private bool _isPinching;
     private double _pinchStartZoom = 1.0;
 
+    // Scroll synchronization flags to prevent feedback loops
+    private bool _isProgrammaticScroll;
+    private bool _isUpdatingFromUserScroll;
+    private PdfViewerViewModel? _subscribedVm;
+
     public PdfViewerView()
     {
         InitializeComponent();
@@ -35,6 +42,10 @@ public partial class PdfViewerView : UserControl
         AddHandler(PointerReleasedEvent, OnViewerPointerReleased, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, OnViewerKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnViewerKeyUp, RoutingStrategies.Tunnel);
+
+        DataContextChanged += OnDataContextChanged;
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
     }
 
     private void InitializeComponent()
@@ -42,17 +53,252 @@ public partial class PdfViewerView : UserControl
         AvaloniaXamlLoader.Load(this);
     }
 
-    private PdfViewerViewModel? ViewModel => DataContext as PdfViewerViewModel;
+    public PdfViewerViewModel? ViewModel => DataContext as PdfViewerViewModel;
 
     private ScrollViewer? ActiveScrollViewer
     {
         get
         {
             if (ViewModel == null) return null;
-            if (ViewModel.IsContinuousScroll) return this.FindControl<ScrollViewer>("ContinuousScrollViewer");
-            if (ViewModel.IsSinglePageMode) return this.FindControl<ScrollViewer>("SinglePageScrollViewer");
-            if (ViewModel.IsTwoPageSpreadMode) return this.FindControl<ScrollViewer>("TwoPageSpreadScrollViewer");
+            if (ViewModel.IsContinuousScroll) return ContinuousScrollViewer;
+            if (ViewModel.IsSinglePageMode) return SinglePageScrollViewer;
+            if (ViewModel.IsTwoPageSpreadMode) return TwoPageSpreadScrollViewer;
             return null;
+        }
+    }
+
+    private void OnLoaded(object? sender, RoutedEventArgs e)
+    {
+        SetupScrollListeners();
+        SubscribeViewModel(ViewModel);
+    }
+
+    private void OnUnloaded(object? sender, RoutedEventArgs e)
+    {
+        UnsubscribeViewModel();
+    }
+
+    private void OnDataContextChanged(object? sender, EventArgs e)
+    {
+        SubscribeViewModel(ViewModel);
+        SetupScrollListeners();
+    }
+
+    private void SubscribeViewModel(PdfViewerViewModel? vm)
+    {
+        if (_subscribedVm != null)
+        {
+            _subscribedVm.ScrollToPageRequested -= OnScrollToPageRequested;
+            _subscribedVm.PropertyChanged -= OnViewModelPropertyChanged;
+            _subscribedVm = null;
+        }
+
+        if (vm != null)
+        {
+            _subscribedVm = vm;
+            _subscribedVm.ScrollToPageRequested += OnScrollToPageRequested;
+            _subscribedVm.PropertyChanged += OnViewModelPropertyChanged;
+        }
+    }
+
+    private void UnsubscribeViewModel()
+    {
+        if (_subscribedVm != null)
+        {
+            _subscribedVm.ScrollToPageRequested -= OnScrollToPageRequested;
+            _subscribedVm.PropertyChanged -= OnViewModelPropertyChanged;
+            _subscribedVm = null;
+        }
+    }
+
+    private void SetupScrollListeners()
+    {
+        var continuousViewer = ContinuousScrollViewer;
+        if (continuousViewer != null)
+        {
+            continuousViewer.PropertyChanged -= OnContinuousViewerPropertyChanged;
+            continuousViewer.PropertyChanged += OnContinuousViewerPropertyChanged;
+        }
+    }
+
+    private void OnContinuousViewerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs ev)
+    {
+        if (ev.Property == ScrollViewer.OffsetProperty)
+        {
+            OnContinuousScrollOffsetChanged();
+        }
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PdfViewerViewModel.CurrentPageNumber))
+        {
+            if (!_isUpdatingFromUserScroll && ViewModel != null)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    ScrollToPage(ViewModel.CurrentPageNumber);
+                    ScrollThumbnailIntoView(ViewModel.CurrentPageNumber);
+                });
+            }
+        }
+        else if (e.PropertyName == nameof(PdfViewerViewModel.SelectedLayoutMode))
+        {
+            if (ViewModel != null)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    ScrollToPage(ViewModel.CurrentPageNumber);
+                });
+            }
+        }
+    }
+
+    private void OnScrollToPageRequested(int pageNumber)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            ScrollToPage(pageNumber);
+            ScrollThumbnailIntoView(pageNumber);
+        });
+    }
+
+    public void ScrollToPage(int pageNumber)
+    {
+        if (ViewModel == null || pageNumber < 1) return;
+
+        if (ViewModel.IsContinuousScroll)
+        {
+            var viewer = ContinuousScrollViewer;
+            if (viewer == null) return;
+
+            _isProgrammaticScroll = true;
+            try
+            {
+                // 1. Try direct container BringIntoView if available
+                var itemsCtrl = ContinuousItemsControl;
+                if (itemsCtrl != null)
+                {
+                    var container = itemsCtrl.ContainerFromIndex(pageNumber - 1);
+                    if (container != null && container.Bounds.Height > 0)
+                    {
+                        container.BringIntoView(new Rect(0, 0, Math.Max(10, container.Bounds.Width), Math.Min(100, Math.Max(10, container.Bounds.Height))));
+                        return;
+                    }
+                }
+
+                // 2. Exact mathematical layout calculation fallback
+                double targetY = 0;
+                double zoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+                
+                // ContinuousScrollViewer has 32px top padding
+                double top = 32.0;
+                for (int i = 0; i < pageNumber - 1 && i < ViewModel.Pages.Count; i++)
+                {
+                    var page = ViewModel.Pages[i];
+                    double pageH = page.HeightPoints > 0 ? (page.HeightPoints * zoom) : (842.0 * zoom);
+                    double itemTotalH = pageH + 2 + 8 + 16 + 28;
+                    top += itemTotalH;
+                }
+                targetY = top;
+
+                double scrollY = pageNumber == 1 ? 0 : Math.Max(0, targetY - 16);
+                viewer.Offset = new Vector(viewer.Offset.X, scrollY);
+            }
+            finally
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _isProgrammaticScroll = false;
+                }, DispatcherPriority.Background);
+            }
+        }
+        else if (ViewModel.IsSinglePageMode)
+        {
+            var singleViewer = SinglePageScrollViewer;
+            if (singleViewer != null)
+            {
+                singleViewer.Offset = new Vector(singleViewer.Offset.X, 0);
+            }
+        }
+        else if (ViewModel.IsTwoPageSpreadMode)
+        {
+            var spreadViewer = TwoPageSpreadScrollViewer;
+            if (spreadViewer != null)
+            {
+                spreadViewer.Offset = new Vector(spreadViewer.Offset.X, 0);
+            }
+        }
+    }
+
+    public void ScrollThumbnailIntoView(int pageNumber)
+    {
+        var thumbViewer = ThumbnailsScrollViewer;
+        if (thumbViewer == null || ViewModel == null || pageNumber < 1) return;
+
+        try
+        {
+            double thumbHeight = 270.0;
+            double targetY = (pageNumber - 1) * thumbHeight;
+            double currentY = thumbViewer.Offset.Y;
+            double viewportH = thumbViewer.Viewport.Height;
+            if (viewportH <= 0) viewportH = 600;
+
+            if (targetY < currentY || targetY + thumbHeight > currentY + viewportH)
+            {
+                thumbViewer.Offset = new Vector(0, Math.Max(0, targetY - 20));
+            }
+        }
+        catch { }
+    }
+
+    private void OnContinuousScrollOffsetChanged()
+    {
+        if (_isProgrammaticScroll || _isUpdatingFromUserScroll || ViewModel == null || !ViewModel.IsContinuousScroll || ViewModel.Pages.Count == 0) return;
+        var viewer = ContinuousScrollViewer;
+        if (viewer == null) return;
+
+        double currentOffsetY = viewer.Offset.Y;
+        double viewportHeight = viewer.Viewport.Height;
+        double targetMidY = currentOffsetY + Math.Min(viewportHeight * 0.4, 250);
+
+        double accumulatedY = 32.0;
+        double zoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+        int detectedPageNum = 1;
+
+        for (int i = 0; i < ViewModel.Pages.Count; i++)
+        {
+            var page = ViewModel.Pages[i];
+            double pageH = page.HeightPoints > 0 ? (page.HeightPoints * zoom) : (842.0 * zoom);
+            double itemTotalH = pageH + 2 + 8 + 16 + 28;
+
+            if (targetMidY >= accumulatedY && targetMidY < accumulatedY + itemTotalH)
+            {
+                detectedPageNum = page.PageNumber;
+                break;
+            }
+            else if (targetMidY < accumulatedY && i == 0)
+            {
+                detectedPageNum = 1;
+                break;
+            }
+
+            accumulatedY += itemTotalH;
+            detectedPageNum = page.PageNumber;
+        }
+
+        if (detectedPageNum >= 1 && detectedPageNum <= ViewModel.Pages.Count && ViewModel.CurrentPageNumber != detectedPageNum)
+        {
+            _isUpdatingFromUserScroll = true;
+            try
+            {
+                ViewModel.CurrentPageNumber = detectedPageNum;
+                ScrollThumbnailIntoView(detectedPageNum);
+            }
+            finally
+            {
+                _isUpdatingFromUserScroll = false;
+            }
         }
     }
 
@@ -371,6 +617,10 @@ public partial class PdfViewerView : UserControl
                     }
                     e.Handled = true;
                     break;
+                case Key.B:
+                    ViewModel.ToggleSidebarCommand.Execute(null);
+                    e.Handled = true;
+                    break;
             }
         }
         else
@@ -408,8 +658,17 @@ public partial class PdfViewerView : UserControl
                     }
                     e.Handled = true;
                     break;
+                case Key.F11:
+                    ViewModel.ToggleFullscreenCommand.Execute(null);
+                    e.Handled = true;
+                    break;
                 case Key.Escape:
-                    if (ViewModel.HasTextSelection)
+                    if (ViewModel.IsFullscreen)
+                    {
+                        ViewModel.IsFullscreen = false;
+                        e.Handled = true;
+                    }
+                    else if (ViewModel.HasTextSelection)
                     {
                         ViewModel.ClearSelection();
                         e.Handled = true;

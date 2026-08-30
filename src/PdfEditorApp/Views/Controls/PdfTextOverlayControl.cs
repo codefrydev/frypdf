@@ -180,10 +180,14 @@ public class PdfTextOverlayControl : Control
 
             if (clickCount == 1)
             {
-                // Clear any other pages' selections if clicking a new area
-                if (vm != null && vm.ActiveSelectedPageNumber != page.PageNumber)
+                // Synchronize active page and thumbnail selection on click
+                if (vm != null)
                 {
-                    vm.ClearSelection();
+                    vm.SelectPage(page);
+                    if (vm.ActiveSelectedPageNumber != page.PageNumber)
+                    {
+                        vm.ClearSelection();
+                    }
                 }
 
                 _isPointerDown = true;

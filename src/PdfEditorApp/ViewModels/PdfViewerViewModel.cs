@@ -382,6 +382,7 @@ public partial class PdfViewerViewModel : ViewModelBase
     public event Action<string>? ShowToastRequested;
     public event Action? OpenFileRequested;
     public event Action<PdfReaderTheme>? ReadingThemeChanged;
+    public event Action<int>? ScrollToPageRequested;
 
     // --- Observable Properties ---
 
@@ -589,7 +590,15 @@ public partial class PdfViewerViewModel : ViewModelBase
         JumpPageText = value.ToString();
         if (value >= 1 && value <= Pages.Count)
         {
-            SelectedPage = Pages[value - 1];
+            var targetPage = Pages[value - 1];
+            if (SelectedPage != targetPage)
+            {
+                SelectedPage = targetPage;
+            }
+            foreach (var p in Pages)
+            {
+                p.IsSelected = (p.PageNumber == value);
+            }
             EnsurePageRendered(value);
             if (value > 1) EnsurePageRendered(value - 1);
             if (value < Pages.Count) EnsurePageRendered(value + 1);
@@ -610,7 +619,10 @@ public partial class PdfViewerViewModel : ViewModelBase
             {
                 p.IsSelected = (p.PageNumber == value.PageNumber);
             }
-            CurrentPageNumber = value.PageNumber;
+            if (CurrentPageNumber != value.PageNumber)
+            {
+                CurrentPageNumber = value.PageNumber;
+            }
         }
     }
 
@@ -1289,11 +1301,21 @@ public partial class PdfViewerViewModel : ViewModelBase
 
     // --- Navigation & Page Selection ---
 
+    public void RequestScrollToPage(int pageNumber)
+    {
+        if (pageNumber >= 1 && pageNumber <= TotalPagesCount)
+        {
+            ScrollToPageRequested?.Invoke(pageNumber);
+        }
+    }
+
     [RelayCommand]
     public void SelectPage(PdfViewerPageItem? page)
     {
         if (page == null) return;
         SelectedPage = page;
+        CurrentPageNumber = page.PageNumber;
+        RequestScrollToPage(page.PageNumber);
     }
 
     [RelayCommand]
@@ -1309,6 +1331,7 @@ public partial class PdfViewerViewModel : ViewModelBase
         {
             CurrentPageNumber = spread.RightPage.PageNumber;
         }
+        RequestScrollToPage(CurrentPageNumber);
     }
 
     [RelayCommand]
@@ -1319,6 +1342,21 @@ public partial class PdfViewerViewModel : ViewModelBase
         if (pageIndex >= 0 && pageIndex < Pages.Count)
         {
             SelectedPage = Pages[pageIndex];
+            CurrentPageNumber = bookmark.PageNumber;
+            RequestScrollToPage(bookmark.PageNumber);
+        }
+    }
+
+    [RelayCommand]
+    public void JumpToAnnotation(PdfViewerAnnotationItem? ann)
+    {
+        if (ann == null) return;
+        int pageIndex = ann.PageNumber - 1;
+        if (pageIndex >= 0 && pageIndex < Pages.Count)
+        {
+            SelectedPage = Pages[pageIndex];
+            CurrentPageNumber = ann.PageNumber;
+            RequestScrollToPage(ann.PageNumber);
         }
     }
 
@@ -1328,6 +1366,7 @@ public partial class PdfViewerViewModel : ViewModelBase
         if (int.TryParse(JumpPageText, out int target) && target >= 1 && target <= TotalPagesCount)
         {
             CurrentPageNumber = target;
+            RequestScrollToPage(target);
         }
         else
         {
@@ -1356,6 +1395,7 @@ public partial class PdfViewerViewModel : ViewModelBase
                 CurrentPageNumber++;
             }
         }
+        RequestScrollToPage(CurrentPageNumber);
     }
 
     [RelayCommand]
@@ -1379,6 +1419,7 @@ public partial class PdfViewerViewModel : ViewModelBase
                 CurrentPageNumber--;
             }
         }
+        RequestScrollToPage(CurrentPageNumber);
     }
 
     [RelayCommand]
@@ -1387,6 +1428,7 @@ public partial class PdfViewerViewModel : ViewModelBase
         if (TotalPagesCount > 0)
         {
             CurrentPageNumber = 1;
+            RequestScrollToPage(1);
         }
     }
 
@@ -1396,6 +1438,7 @@ public partial class PdfViewerViewModel : ViewModelBase
         if (TotalPagesCount > 0)
         {
             CurrentPageNumber = TotalPagesCount;
+            RequestScrollToPage(TotalPagesCount);
         }
     }
 
@@ -1628,6 +1671,8 @@ public partial class PdfViewerViewModel : ViewModelBase
         if (pageIdx >= 0 && pageIdx < Pages.Count)
         {
             SelectedPage = Pages[pageIdx];
+            CurrentPageNumber = match.PageNumber;
+            RequestScrollToPage(match.PageNumber);
         }
     }
 

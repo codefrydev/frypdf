@@ -9,6 +9,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
              x:Class="PdfEditorApp.Views.PdfViewerView"
+             x:Name="RootPdfViewer"
              x:DataType="vm:PdfViewerViewModel"
              Background="{DynamicResource WinBgBrush}">
 
@@ -25,7 +26,7 @@
         <!-- Page Card Physical Styling -->
         <Style Selector="Border.reader-page-card">
             <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="CornerRadius" Value="4" />
             <Setter Property="BoxShadow" Value="0 8 28 #22000000, 0 1 3 #12000000" />
             <Setter Property="BorderBrush" Value="#E2E8F0" />
             <Setter Property="BorderThickness" Value="1" />
@@ -82,7 +83,7 @@
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Padding" Value="6" />
+            <Setter Property="Padding" Value="4" />
             <Setter Property="BoxShadow" Value="0 2 8 #10000000" />
             <Setter Property="Transitions">
                 <Transitions>
@@ -110,37 +111,37 @@
         <!-- ============================================================== -->
         <Border Grid.Row="0"
                 Background="{DynamicResource WinPanelBrush}"
-                Height="46"
+                Height="48"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="0,0,0,1"
-                Padding="10,0"
+                Padding="12,0"
                 IsVisible="{Binding !IsFullscreen}">
             <Grid ColumnDefinitions="Auto,*,Auto">
 
                 <!-- Left Section: Back, Document Title & Open -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <!-- Back to Dashboard -->
                     <Button Classes="toolbar-btn"
                             Command="{Binding BackToHomeCommand}"
                             ToolTip.Tip="Back to Home Dashboard (⌘W)">
-                        <materialIcons:MaterialIcon Kind="ArrowLeft" Width="17" Height="17" Foreground="{DynamicResource WinMutedBrush}" />
+                        <materialIcons:MaterialIcon Kind="ArrowLeft" Width="18" Height="18" Foreground="{DynamicResource WinMutedBrush}" />
                     </Button>
 
-                    <Rectangle Width="1" Height="16" Fill="{DynamicResource WinBorderBrush}" Margin="1,0" />
+                    <Rectangle Width="1" Height="18" Fill="{DynamicResource WinBorderBrush}" Margin="1,0" />
 
                     <!-- PDF File Badge & Title -->
-                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#E11D48" VerticalAlignment="Center" />
+                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="22" Height="22" Foreground="#E11D48" VerticalAlignment="Center" />
                     <TextBlock Text="{Binding DocumentTitle}"
                                FontSize="13"
                                FontWeight="SemiBold"
                                Foreground="{DynamicResource WinTextBrush}"
                                VerticalAlignment="Center"
-                               MaxWidth="200"
+                               MaxWidth="260"
                                TextTrimming="CharacterEllipsis"
                                ToolTip.Tip="{Binding DocumentTitle}" />
 
                     <!-- Pages Count Pill -->
-                    <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="10" Padding="7,2" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
                         <TextBlock Text="{Binding TotalPagesCount, StringFormat='{}{0} pgs'}"
                                    FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                     </Border>
@@ -160,22 +161,22 @@
                     <!-- Capsule 1: Navigation & Direct Jump Box -->
                     <Border Classes="toolbar-capsule">
                         <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                            <Button Classes="toolbar-btn" Width="24" Height="24" Command="{Binding FirstPageCommand}" ToolTip.Tip="First Page (Home)">
-                                <materialIcons:MaterialIcon Kind="PageFirst" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                            <Button Classes="toolbar-btn" Width="26" Height="26" Command="{Binding FirstPageCommand}" ToolTip.Tip="First Page (Home)">
+                                <materialIcons:MaterialIcon Kind="PageFirst" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                             </Button>
-                            <Button Classes="toolbar-btn" Width="24" Height="24" Command="{Binding PreviousPageCommand}" ToolTip.Tip="Previous Page (PageUp / ⌥←)">
-                                <materialIcons:MaterialIcon Kind="ChevronLeft" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
+                            <Button Classes="toolbar-btn" Width="26" Height="26" Command="{Binding PreviousPageCommand}" ToolTip.Tip="Previous Page (PageUp / ⌥←)">
+                                <materialIcons:MaterialIcon Kind="ChevronLeft" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                             </Button>
 
                             <!-- Direct Page Jump Input Box -->
                             <TextBox x:Name="JumpPageTextBox"
                                      Text="{Binding JumpPageText, Mode=TwoWay}"
-                                     Width="34"
-                                     Height="22"
-                                     FontSize="11"
+                                     Width="38"
+                                     Height="24"
+                                     FontSize="11.5"
                                      FontWeight="SemiBold"
                                      TextAlignment="Center"
-                                     Padding="0,1"
+                                     Padding="0,2"
                                      VerticalAlignment="Center"
                                      CornerRadius="4"
                                      ToolTip.Tip="Type page number and press Enter to jump">
@@ -185,17 +186,17 @@
                             </TextBox>
 
                             <TextBlock Text="{Binding TotalPagesCount, StringFormat='/ {0}'}"
-                                       FontSize="11"
+                                       FontSize="11.5"
                                        FontWeight="Medium"
                                        Foreground="{DynamicResource WinMutedBrush}"
                                        VerticalAlignment="Center"
-                                       Margin="2,0,3,0" />
+                                       Margin="3,0,4,0" />
 
-                            <Button Classes="toolbar-btn" Width="24" Height="24" Command="{Binding NextPageCommand}" ToolTip.Tip="Next Page (PageDown / ⌥→)">
-                                <materialIcons:MaterialIcon Kind="ChevronRight" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
+                            <Button Classes="toolbar-btn" Width="26" Height="26" Command="{Binding NextPageCommand}" ToolTip.Tip="Next Page (PageDown / ⌥→)">
+                                <materialIcons:MaterialIcon Kind="ChevronRight" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                             </Button>
-                            <Button Classes="toolbar-btn" Width="24" Height="24" Command="{Binding LastPageCommand}" ToolTip.Tip="Last Page (End)">
-                                <materialIcons:MaterialIcon Kind="PageLast" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                            <Button Classes="toolbar-btn" Width="26" Height="26" Command="{Binding LastPageCommand}" ToolTip.Tip="Last Page (End)">
+                                <materialIcons:MaterialIcon Kind="PageLast" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                             </Button>
                         </StackPanel>
                     </Border>
@@ -204,27 +205,27 @@
                     <Border Classes="toolbar-capsule">
                         <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
                             <!-- Continuous Scroll -->
-                            <Button Classes="toolbar-btn" Width="26" Height="24"
-                                    Classes.mode-active="{Binding IsContinuousScroll}"
-                                    Command="{Binding SetLayoutModeCommand}" CommandParameter="ContinuousScroll"
-                                    ToolTip.Tip="Continuous Vertical Scroll">
-                                <materialIcons:MaterialIcon Kind="ViewHeadline" Width="14" Height="14"
+                            <Button Classes="toolbar-btn" Width="28" Height="26"
+                                     Classes.mode-active="{Binding IsContinuousScroll}"
+                                     Command="{Binding SetLayoutModeCommand}" CommandParameter="ContinuousScroll"
+                                     ToolTip.Tip="Continuous Vertical Scroll">
+                                <materialIcons:MaterialIcon Kind="ViewHeadline" Width="15" Height="15"
                                                             Foreground="{Binding IsContinuousScroll, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
                             </Button>
                             <!-- Single Page -->
-                            <Button Classes="toolbar-btn" Width="26" Height="24"
-                                    Classes.mode-active="{Binding IsSinglePageMode}"
-                                    Command="{Binding SetLayoutModeCommand}" CommandParameter="SinglePage"
-                                    ToolTip.Tip="Single Page View">
-                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="14" Height="14"
+                            <Button Classes="toolbar-btn" Width="28" Height="26"
+                                     Classes.mode-active="{Binding IsSinglePageMode}"
+                                     Command="{Binding SetLayoutModeCommand}" CommandParameter="SinglePage"
+                                     ToolTip.Tip="Single Page Fit View">
+                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="15" Height="15"
                                                             Foreground="{Binding IsSinglePageMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
                             </Button>
                             <!-- Two-Page Book Spread -->
-                            <Button Classes="toolbar-btn" Width="26" Height="24"
-                                    Classes.mode-active="{Binding IsTwoPageSpreadMode}"
-                                    Command="{Binding SetLayoutModeCommand}" CommandParameter="TwoPageSpread"
-                                    ToolTip.Tip="Two-Page Spread (Book &amp; Magazine Mode)">
-                                <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="14" Height="14"
+                            <Button Classes="toolbar-btn" Width="28" Height="26"
+                                     Classes.mode-active="{Binding IsTwoPageSpreadMode}"
+                                     Command="{Binding SetLayoutModeCommand}" CommandParameter="TwoPageSpread"
+                                     ToolTip.Tip="Two-Page Spread (Book &amp; Magazine Mode)">
+                                <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="15" Height="15"
                                                             Foreground="{Binding IsTwoPageSpreadMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
                             </Button>
                         </StackPanel>
@@ -233,17 +234,17 @@
                     <!-- Capsule 3: Zoom Controls -->
                     <Border Classes="toolbar-capsule">
                         <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                            <Button Classes="toolbar-btn" Width="24" Height="24" Command="{Binding FitToWidthCommand}" ToolTip.Tip="Fit to Width (⌘1)">
-                                <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                            <Button Classes="toolbar-btn" Width="26" Height="26" Command="{Binding FitToWidthCommand}" ToolTip.Tip="Fit to Width (⌘1)">
+                                <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                             </Button>
-                            <Button Classes="toolbar-btn" Width="24" Height="24" Command="{Binding FitToPageCommand}" ToolTip.Tip="Fit to Page (⌘9)">
-                                <materialIcons:MaterialIcon Kind="FitToScreenOutline" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                            <Button Classes="toolbar-btn" Width="26" Height="26" Command="{Binding FitToPageCommand}" ToolTip.Tip="Fit to Page (⌘9)">
+                                <materialIcons:MaterialIcon Kind="FitToScreenOutline" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                             </Button>
 
-                            <Rectangle Width="1" Height="12" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
+                            <Rectangle Width="1" Height="14" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
 
-                            <Button Classes="toolbar-btn" Width="22" Height="24" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom Out (⌘-)">
-                                <materialIcons:MaterialIcon Kind="Minus" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                            <Button Classes="toolbar-btn" Width="24" Height="26" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom Out (⌘-)">
+                                <materialIcons:MaterialIcon Kind="Minus" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                             </Button>
 
                             <!-- Zoom Percentage Button (Click resets 100%) -->
@@ -252,11 +253,11 @@
                                     Padding="4,2"
                                     Command="{Binding ResetZoomCommand}"
                                     ToolTip.Tip="Reset 100% Zoom (⌘0)">
-                                <TextBlock Text="{Binding ZoomPercentageText}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" Width="36" TextAlignment="Center" />
+                                <TextBlock Text="{Binding ZoomPercentageText}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" Width="38" TextAlignment="Center" />
                             </Button>
 
-                            <Button Classes="toolbar-btn" Width="22" Height="24" Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom In (⌘+)">
-                                <materialIcons:MaterialIcon Kind="Plus" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                            <Button Classes="toolbar-btn" Width="24" Height="26" Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom In (⌘+)">
+                                <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
                             </Button>
                         </StackPanel>
                     </Border>
@@ -270,31 +271,31 @@
                     <Border Classes="toolbar-capsule">
                         <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
                             <!-- Daylight -->
-                            <Button Classes="toolbar-btn" Width="22" Height="22"
+                            <Button Classes="toolbar-btn" Width="24" Height="24"
                                     Command="{Binding SetReadingThemeCommand}" CommandParameter="Default"
                                     ToolTip.Tip="Daylight Theme (Standard White)">
-                                <materialIcons:MaterialIcon Kind="WhiteBalanceSunny" Width="13" Height="13"
+                                <materialIcons:MaterialIcon Kind="WhiteBalanceSunny" Width="14" Height="14"
                                                             Foreground="{Binding IsThemeDefault, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#94A3B8'}" />
                             </Button>
                             <!-- Sepia -->
-                            <Button Classes="toolbar-btn" Width="22" Height="22"
+                            <Button Classes="toolbar-btn" Width="24" Height="24"
                                     Command="{Binding SetReadingThemeCommand}" CommandParameter="Sepia"
                                     ToolTip.Tip="Warm Sepia Book Theme (Reduced Eye Strain)">
-                                <materialIcons:MaterialIcon Kind="BookOpenOutline" Width="13" Height="13"
+                                <materialIcons:MaterialIcon Kind="BookOpenOutline" Width="14" Height="14"
                                                             Foreground="{Binding IsThemeSepia, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#D97706|#94A3B8'}" />
                             </Button>
                             <!-- Dark Night -->
-                            <Button Classes="toolbar-btn" Width="22" Height="22"
+                            <Button Classes="toolbar-btn" Width="24" Height="24"
                                     Command="{Binding SetReadingThemeCommand}" CommandParameter="Dark"
                                     ToolTip.Tip="Dark Night Reading Theme (OLED / Low Light)">
-                                <materialIcons:MaterialIcon Kind="WeatherNight" Width="13" Height="13"
+                                <materialIcons:MaterialIcon Kind="WeatherNight" Width="14" Height="14"
                                                             Foreground="{Binding IsThemeDark, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#6366F1|#94A3B8'}" />
                             </Button>
                             <!-- High Contrast -->
-                            <Button Classes="toolbar-btn" Width="22" Height="22"
+                            <Button Classes="toolbar-btn" Width="24" Height="24"
                                     Command="{Binding SetReadingThemeCommand}" CommandParameter="HighContrast"
                                     ToolTip.Tip="High Contrast Mode (Accessibility)">
-                                <materialIcons:MaterialIcon Kind="ContrastCircle" Width="13" Height="13"
+                                <materialIcons:MaterialIcon Kind="ContrastCircle" Width="14" Height="14"
                                                             Foreground="{Binding IsThemeHighContrast, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EAB308|#94A3B8'}" />
                             </Button>
                         </StackPanel>
@@ -338,8 +339,8 @@
                     <Button Classes="toolbar-btn"
                             Width="28" Height="28"
                             Command="{Binding RotateClockwiseCommand}"
-                            ToolTip.Tip="Rotate 90° Clockwise">
-                        <materialIcons:MaterialIcon Kind="RotateRight" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
+                            ToolTip.Tip="Rotate 90° Clockwise (⌘R)">
+                        <materialIcons:MaterialIcon Kind="RotateRight" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                     </Button>
 
                     <!-- Save Copy As -->
@@ -347,7 +348,7 @@
                             Width="28" Height="28"
                             Command="{Binding SaveAsCommand}"
                             ToolTip.Tip="Save Document Copy As...">
-                        <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
+                        <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                     </Button>
 
                     <!-- Fullscreen Mode -->
@@ -355,28 +356,28 @@
                             Width="28" Height="28"
                             Command="{Binding ToggleFullscreenCommand}"
                             ToolTip.Tip="Presentation Fullscreen Mode (F11)">
-                        <materialIcons:MaterialIcon Kind="Fullscreen" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
+                        <materialIcons:MaterialIcon Kind="Fullscreen" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
                     </Button>
 
-                    <Rectangle Width="1" Height="16" Fill="{DynamicResource WinBorderBrush}" Margin="1,0" />
+                    <Rectangle Width="1" Height="18" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
 
                     <!-- EDIT IN FRYPDF PRIMARY ACTION BUTTON -->
                     <Button Background="#0F6CBD"
                             Foreground="White"
                             CornerRadius="6"
-                            Padding="11,5"
+                            Padding="12,6"
                             FontWeight="SemiBold"
                             FontSize="11.5"
                             Command="{Binding EditInStudioCommand}"
                             Cursor="Hand"
                             ToolTip.Tip="Open in FryPDF Editor to modify text, layout, and images">
-                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="DrawPen" Width="14" Height="14" Foreground="White" />
                             <TextBlock Text="Edit in FryPDF" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
 
-                    <Rectangle Width="1" Height="16" Fill="{DynamicResource WinBorderBrush}" Margin="1,0" />
+                    <Rectangle Width="1" Height="18" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
 
                     <!-- Navigation Sidebar Drawer Toggle -->
                     <Button Classes="toolbar-btn"
@@ -462,26 +463,28 @@
                     </Border>
 
                     <!-- Tab 1: Thumbnails List (Apple Preview Floating Style) -->
-                    <ScrollViewer Grid.Row="1"
+                    <ScrollViewer x:Name="ThumbnailsScrollViewer"
+                                  Grid.Row="1"
                                   IsVisible="{Binding SelectedSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}"
-                                  Padding="12,10">
-                        <ItemsControl ItemsSource="{Binding Pages}">
+                                  Padding="14,12">
+                        <ItemsControl x:Name="ThumbnailsItemsControl" ItemsSource="{Binding Pages}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:PdfViewerPageItem">
                                     <Button Background="Transparent"
                                             BorderThickness="0"
                                             Padding="0"
-                                            Margin="0,0,0,14"
+                                            Margin="0,0,0,16"
                                             HorizontalAlignment="Center"
                                             Cursor="Hand"
-                                            Command="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).SelectPageCommand}"
+                                            Focusable="False"
+                                            Command="{Binding #RootPdfViewer.ViewModel.SelectPageCommand}"
                                             CommandParameter="{Binding}">
-                                        <StackPanel Spacing="5" HorizontalAlignment="Center">
+                                        <StackPanel Spacing="6" HorizontalAlignment="Center" IsHitTestVisible="False">
                                             <!-- Floating Page Thumbnail Card -->
                                             <Border Classes="thumbnail-card"
                                                     Classes.selected="{Binding IsSelected}"
-                                                    Width="170" Height="230">
-                                                <Image Source="{Binding Bitmap}"
+                                                    Width="176" MinHeight="210" MaxHeight="250">
+                                                <Image Source="{Binding ThumbnailBitmap}"
                                                        Stretch="Uniform"
                                                        RenderOptions.BitmapInterpolationMode="HighQuality"
                                                        HorizontalAlignment="Center"
@@ -491,10 +494,10 @@
                                             <!-- Page Number Pill -->
                                             <Border Background="{Binding IsSelected, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#E2E8F0'}"
                                                     CornerRadius="10"
-                                                    Padding="8,2"
+                                                    Padding="9,2"
                                                     HorizontalAlignment="Center">
                                                 <TextBlock Text="{Binding PageLabel}"
-                                                           FontSize="10"
+                                                           FontSize="10.5"
                                                            FontWeight="Bold"
                                                            Foreground="{Binding IsSelected, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#FFFFFF|#64748B'}" />
                                             </Border>
@@ -517,27 +520,32 @@
                                        IsVisible="{Binding !HasBookmarks}"
                                        Margin="0,10" />
 
-                            <ItemsControl ItemsSource="{Binding Bookmarks}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:PdfViewerBookmarkItem">
-                                        <Button Classes="toolbar-btn"
+                            <TreeView ItemsSource="{Binding Bookmarks}"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      Padding="0">
+                                <TreeView.ItemTemplate>
+                                    <TreeDataTemplate DataType="vm:PdfViewerBookmarkItem" ItemsSource="{Binding Children}">
+                                        <Button Background="Transparent"
+                                                BorderThickness="0"
+                                                Padding="4,3"
+                                                Margin="0,1"
                                                 HorizontalAlignment="Stretch"
-                                                Height="32"
-                                                Padding="8,4"
-                                                Margin="0,2"
-                                                Command="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).JumpToBookmarkCommand}"
+                                                HorizontalContentAlignment="Stretch"
+                                                Cursor="Hand"
+                                                Command="{Binding #RootPdfViewer.ViewModel.JumpToBookmarkCommand}"
                                                 CommandParameter="{Binding}">
-                                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                                <materialIcons:MaterialIcon Grid.Column="0" Kind="BookmarkOutline" Width="14" Height="14" Foreground="#0F6CBD" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                            <Grid ColumnDefinitions="Auto,*,Auto" IsHitTestVisible="False">
+                                                <materialIcons:MaterialIcon Grid.Column="0" Kind="BookmarkOutline" Width="13" Height="13" Foreground="#0F6CBD" Margin="0,0,6,0" VerticalAlignment="Center" />
                                                 <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="11" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                                <Border Grid.Column="2" Background="{DynamicResource WinHoverBrush}" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding PageNumber, StringFormat='{}p.{0}'}" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                                <Border Grid.Column="2" Background="{DynamicResource WinHoverBrush}" CornerRadius="4" Padding="5,1" Margin="4,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding PageNumber, StringFormat='{}p.{0}'}" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                                                 </Border>
                                             </Grid>
                                         </Button>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                    </TreeDataTemplate>
+                                </TreeView.ItemTemplate>
+                            </TreeView>
                         </StackPanel>
                     </ScrollViewer>
 
@@ -561,15 +569,29 @@
                             <ItemsControl ItemsSource="{Binding Annotations}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vm:PdfViewerAnnotationItem">
-                                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                                        <Border Background="{DynamicResource WinInputBgBrush}"
+                                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                Padding="10"
+                                                Margin="0,0,0,8">
                                             <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
-                                                <materialIcons:MaterialIcon Grid.Column="0" Kind="{Binding IconKind}" Width="15" Height="15" Foreground="#0F6CBD" Margin="0,0,8,0" VerticalAlignment="Center" />
-                                                <StackPanel Grid.Column="1" Spacing="1">
-                                                    <TextBlock Text="{Binding Type}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                                                    <TextBlock Text="{Binding TimeFormatted}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" />
-                                                </StackPanel>
-                                                <Button Grid.Column="2" Classes="toolbar-btn" Width="20" Height="20"
-                                                        Command="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).DeleteAnnotationCommand}"
+                                                <Button Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"
+                                                        Background="Transparent" BorderThickness="0" Padding="0"
+                                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Cursor="Hand"
+                                                        Command="{Binding #RootPdfViewer.ViewModel.JumpToAnnotationCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <Grid ColumnDefinitions="Auto,*">
+                                                        <materialIcons:MaterialIcon Grid.Column="0" Kind="{Binding IconKind}" Width="15" Height="15" Foreground="#0F6CBD" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Column="1" Spacing="1">
+                                                            <TextBlock Text="{Binding Type}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                                            <TextBlock Text="{Binding TimeFormatted}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Button>
+
+                                                <Button Grid.Column="2" Grid.Row="0" Classes="toolbar-btn" Width="20" Height="20"
+                                                        Command="{Binding #RootPdfViewer.ViewModel.DeleteAnnotationCommand}"
                                                         CommandParameter="{Binding}"
                                                         ToolTip.Tip="Delete Annotation">
                                                     <materialIcons:MaterialIcon Kind="Close" Width="12" Height="12" Foreground="{DynamicResource WinMutedBrush}" />
@@ -614,9 +636,9 @@
                                                 Height="NaN"
                                                 Padding="8"
                                                 Margin="0,0,0,6"
-                                                Command="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).JumpToMatchCommand}"
+                                                Command="{Binding #RootPdfViewer.ViewModel.JumpToMatchCommand}"
                                                 CommandParameter="{Binding}">
-                                            <StackPanel Spacing="3" HorizontalAlignment="Left">
+                                            <StackPanel Spacing="3" HorizontalAlignment="Left" IsHitTestVisible="False">
                                                 <Border Background="#EFF6FF" CornerRadius="4" Padding="5,1" HorizontalAlignment="Left">
                                                     <TextBlock Text="{Binding PageNumber, StringFormat='{}Page {0}'}" FontSize="10" FontWeight="Bold" Foreground="#0F6CBD" />
                                                 </Border>
@@ -695,11 +717,13 @@
                               HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto"
                               Padding="32"
+                              Focusable="False"
                               IsVisible="{Binding IsContinuousScroll}">
                     <ScrollViewer.GestureRecognizers>
                         <PinchGestureRecognizer />
                     </ScrollViewer.GestureRecognizers>
-                    <ItemsControl ItemsSource="{Binding Pages}"
+                    <ItemsControl x:Name="ContinuousItemsControl"
+                                  ItemsSource="{Binding Pages}"
                                   HorizontalAlignment="Center">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -708,22 +732,22 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:PdfViewerPageItem">
-                                <StackPanel HorizontalAlignment="Center" Spacing="8">
+                                <StackPanel HorizontalAlignment="Center" Spacing="8" Focusable="False">
                                     <!-- Crisp High-DPI Vector Rendered Page Canvas -->
                                     <Border Classes="reader-page-card"
-                                            Classes.reading-theme-sepia="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).IsThemeSepia}"
-                                            Classes.reading-theme-dark="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).IsThemeDark}"
-                                            Classes.reading-theme-highcontrast="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).IsThemeHighContrast}">
+                                            Classes.reading-theme-sepia="{Binding #RootPdfViewer.ViewModel.IsThemeSepia}"
+                                            Classes.reading-theme-dark="{Binding #RootPdfViewer.ViewModel.IsThemeDark}"
+                                            Classes.reading-theme-highcontrast="{Binding #RootPdfViewer.ViewModel.IsThemeHighContrast}">
                                         <Border.Width>
                                             <MultiBinding Converter="{StaticResource MultiplyConverter}">
                                                 <Binding Path="WidthPoints" />
-                                                <Binding Path="$parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel" />
+                                                <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
                                             </MultiBinding>
                                         </Border.Width>
                                         <Border.Height>
                                             <MultiBinding Converter="{StaticResource MultiplyConverter}">
                                                 <Binding Path="HeightPoints" />
-                                                <Binding Path="$parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel" />
+                                                <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
                                             </MultiBinding>
                                         </Border.Height>
 
@@ -741,8 +765,8 @@
                                             <!-- Interactive Vector Text Selection & Highlight Layer -->
                                             <controls:PdfTextOverlayControl
                                                 Page="{Binding}"
-                                                ZoomLevel="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel}"
-                                                ViewerViewModel="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext)}"
+                                                ZoomLevel="{Binding #RootPdfViewer.ViewModel.ZoomLevel}"
+                                                ViewerViewModel="{Binding #RootPdfViewer.ViewModel}"
                                                 RenderTransformOrigin="0.5,0.5">
                                                 <controls:PdfTextOverlayControl.RenderTransform>
                                                     <RotateTransform Angle="{Binding RotationAngle}" />
@@ -782,19 +806,19 @@
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10"
                                 DataContext="{Binding SelectedPage}">
                         <Border Classes="reader-page-card"
-                                Classes.reading-theme-sepia="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).IsThemeSepia}"
-                                Classes.reading-theme-dark="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).IsThemeDark}"
-                                Classes.reading-theme-highcontrast="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).IsThemeHighContrast}">
+                                Classes.reading-theme-sepia="{Binding #RootPdfViewer.ViewModel.IsThemeSepia}"
+                                Classes.reading-theme-dark="{Binding #RootPdfViewer.ViewModel.IsThemeDark}"
+                                Classes.reading-theme-highcontrast="{Binding #RootPdfViewer.ViewModel.IsThemeHighContrast}">
                             <Border.Width>
                                 <MultiBinding Converter="{StaticResource MultiplyConverter}">
                                     <Binding Path="WidthPoints" />
-                                    <Binding Path="$parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel" />
+                                    <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
                                 </MultiBinding>
                             </Border.Width>
                             <Border.Height>
                                 <MultiBinding Converter="{StaticResource MultiplyConverter}">
                                     <Binding Path="HeightPoints" />
-                                    <Binding Path="$parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel" />
+                                    <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
                                 </MultiBinding>
                             </Border.Height>
 
@@ -811,8 +835,8 @@
                                 <!-- Interactive Vector Text Selection & Highlight Layer -->
                                 <controls:PdfTextOverlayControl
                                     Page="{Binding}"
-                                    ZoomLevel="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel}"
-                                    ViewerViewModel="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext)}"
+                                    ZoomLevel="{Binding #RootPdfViewer.ViewModel.ZoomLevel}"
+                                    ViewerViewModel="{Binding #RootPdfViewer.ViewModel}"
                                     RenderTransformOrigin="0.5,0.5">
                                     <controls:PdfTextOverlayControl.RenderTransform>
                                         <RotateTransform Angle="{Binding RotationAngle}" />
@@ -850,19 +874,19 @@
                             <!-- Left Page -->
                             <Panel IsVisible="{Binding LeftPage, Converter={StaticResource NullToBooleanConverter}}">
                                 <Border Classes="reader-page-card"
-                                        Classes.reading-theme-sepia="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).IsThemeSepia}"
-                                        Classes.reading-theme-dark="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).IsThemeDark}"
-                                        Classes.reading-theme-highcontrast="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).IsThemeHighContrast}">
+                                        Classes.reading-theme-sepia="{Binding #RootPdfViewer.ViewModel.IsThemeSepia}"
+                                        Classes.reading-theme-dark="{Binding #RootPdfViewer.ViewModel.IsThemeDark}"
+                                        Classes.reading-theme-highcontrast="{Binding #RootPdfViewer.ViewModel.IsThemeHighContrast}">
                                     <Border.Width>
                                         <MultiBinding Converter="{StaticResource MultiplyConverter}">
                                             <Binding Path="LeftPage.WidthPoints" />
-                                            <Binding Path="$parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel" />
+                                            <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
                                         </MultiBinding>
                                     </Border.Width>
                                     <Border.Height>
                                         <MultiBinding Converter="{StaticResource MultiplyConverter}">
                                             <Binding Path="LeftPage.HeightPoints" />
-                                            <Binding Path="$parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel" />
+                                            <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
                                         </MultiBinding>
                                     </Border.Height>
                                     <Panel>
@@ -871,8 +895,8 @@
                                                RenderOptions.BitmapInterpolationMode="HighQuality" />
                                         <controls:PdfTextOverlayControl
                                             Page="{Binding LeftPage}"
-                                            ZoomLevel="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel}"
-                                            ViewerViewModel="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext)}" />
+                                            ZoomLevel="{Binding #RootPdfViewer.ViewModel.ZoomLevel}"
+                                            ViewerViewModel="{Binding #RootPdfViewer.ViewModel}" />
                                     </Panel>
                                 </Border>
                             </Panel>
@@ -880,19 +904,19 @@
                             <!-- Right Page -->
                             <Panel IsVisible="{Binding RightPage, Converter={StaticResource NullToBooleanConverter}}">
                                 <Border Classes="reader-page-card"
-                                        Classes.reading-theme-sepia="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).IsThemeSepia}"
-                                        Classes.reading-theme-dark="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).IsThemeDark}"
-                                        Classes.reading-theme-highcontrast="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).IsThemeHighContrast}">
+                                        Classes.reading-theme-sepia="{Binding #RootPdfViewer.ViewModel.IsThemeSepia}"
+                                        Classes.reading-theme-dark="{Binding #RootPdfViewer.ViewModel.IsThemeDark}"
+                                        Classes.reading-theme-highcontrast="{Binding #RootPdfViewer.ViewModel.IsThemeHighContrast}">
                                     <Border.Width>
                                         <MultiBinding Converter="{StaticResource MultiplyConverter}">
                                             <Binding Path="RightPage.WidthPoints" />
-                                            <Binding Path="$parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel" />
+                                            <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
                                         </MultiBinding>
                                     </Border.Width>
                                     <Border.Height>
                                         <MultiBinding Converter="{StaticResource MultiplyConverter}">
                                             <Binding Path="RightPage.HeightPoints" />
-                                            <Binding Path="$parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel" />
+                                            <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
                                         </MultiBinding>
                                     </Border.Height>
                                     <Panel>
@@ -901,8 +925,8 @@
                                                RenderOptions.BitmapInterpolationMode="HighQuality" />
                                         <controls:PdfTextOverlayControl
                                             Page="{Binding RightPage}"
-                                            ZoomLevel="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).ZoomLevel}"
-                                            ViewerViewModel="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext)}" />
+                                            ZoomLevel="{Binding #RootPdfViewer.ViewModel.ZoomLevel}"
+                                            ViewerViewModel="{Binding #RootPdfViewer.ViewModel}" />
                                     </Panel>
                                 </Border>
                             </Panel>
@@ -1059,7 +1083,7 @@
                                     <materialIcons:MaterialIcon Kind="NoteTextOutline" Width="18" Height="18" Foreground="#0284C7" VerticalAlignment="Center" />
                                     <TextBlock Text="Add Sticky Note Annotation" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
-                                <Button Grid.Column="1" Classes="toolbar-btn" Width="24" Height="24" Command="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).OpenAddNoteDialogCommand}">
+                                <Button Grid.Column="1" Classes="toolbar-btn" Width="24" Height="24" Command="{Binding #RootPdfViewer.ViewModel.OpenAddNoteDialogCommand}">
                                     <materialIcons:MaterialIcon Kind="Close" Width="14" Height="14" />
                                 </Button>
                             </Grid>
@@ -1073,7 +1097,7 @@
                                      CornerRadius="6" />
 
                             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-                                <Button Content="Cancel" Padding="12,5" FontSize="11.5" Command="{Binding $parent[UserControl].((vm:PdfViewerViewModel)DataContext).OpenAddNoteDialogCommand}" />
+                                <Button Content="Cancel" Padding="12,5" FontSize="11.5" Command="{Binding #RootPdfViewer.ViewModel.OpenAddNoteDialogCommand}" />
                                 <Button Content="Add Note" Background="#0F6CBD" Foreground="White" Padding="14,5" FontSize="11.5" FontWeight="SemiBold" Command="{Binding ConfirmAddNoteCommand}" />
                             </StackPanel>
                         </StackPanel>
@@ -1107,21 +1131,21 @@
         <!-- ========================================== -->
         <Border Grid.Row="2"
                 Background="{DynamicResource WinPanelBrush}"
-                Height="26"
+                Height="28"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="0,1,0,0"
-                Padding="10,0"
+                Padding="12,0"
                 IsVisible="{Binding !IsFullscreen}">
             <Grid ColumnDefinitions="Auto,*,Auto">
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-                    <Ellipse Width="6" Height="6" Fill="#10B981" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding StatusMessage}" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" FontWeight="Medium" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Ellipse Width="7" Height="7" Fill="#10B981" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" FontWeight="Medium" VerticalAlignment="Center" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding PageNavigationDisplay}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                    <Rectangle Width="1" Height="10" Fill="{DynamicResource WinBorderBrush}" />
-                    <TextBlock Text="{Binding ZoomPercentageText}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding PageNavigationDisplay}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                    <Rectangle Width="1" Height="12" Fill="{DynamicResource WinBorderBrush}" />
+                    <TextBlock Text="{Binding ZoomPercentageText}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                 </StackPanel>
             </Grid>
         </Border>

@@ -69,8 +69,8 @@ public class DocumentTranslationService : IDocumentTranslationService
             ct.ThrowIfCancellationRequested();
             progress?.Report(70.0);
 
-            // Reconstruct PDF layout in target language via QuestPDF
-            var doc = QuestPDF.Fluent.Document.Create(container =>
+            // Reconstruct PDF layout in target language via QuestPDF with FryPDF metadata
+            var doc = FryPdfDocument.Create(container =>
             {
                 int pNum = 1;
                 foreach (var pageLines in pagesData)

@@ -13,6 +13,102 @@ namespace PdfEditorApp.Services.Tools;
 /// </summary>
 public static class PdfFileHelper
 {
+    public static void SetFryPdfMetadata(
+        PdfSharpCore.Pdf.PdfDocument doc,
+        string? title = null,
+        string? author = null,
+        string? subject = null,
+        string? keywords = null,
+        string? creator = null,
+        string? producer = null)
+    {
+        if (doc == null) return;
+        if (!string.IsNullOrEmpty(title) && string.IsNullOrEmpty(doc.Info.Title)) doc.Info.Title = title;
+        if (!string.IsNullOrEmpty(author) && string.IsNullOrEmpty(doc.Info.Author)) doc.Info.Author = author;
+        if (!string.IsNullOrEmpty(subject) && string.IsNullOrEmpty(doc.Info.Subject)) doc.Info.Subject = subject;
+        if (!string.IsNullOrEmpty(keywords) && string.IsNullOrEmpty(doc.Info.Keywords)) doc.Info.Keywords = keywords;
+        doc.Info.Creator = !string.IsNullOrWhiteSpace(creator) ? creator : "FryPDF";
+        try
+        {
+            doc.Info.Elements.SetString("/Producer", !string.IsNullOrWhiteSpace(producer) ? producer : "codefrydev.in");
+        }
+        catch
+        {
+            try { doc.Info.Elements["/Producer"] = new PdfString(!string.IsNullOrWhiteSpace(producer) ? producer : "codefrydev.in"); } catch { }
+        }
+    }
+
+    public static void SaveDocumentWithFryPdfMetadata(
+        PdfSharpCore.Pdf.PdfDocument doc,
+        string filePath,
+        string? title = null,
+        string? author = null,
+        string? subject = null,
+        string? keywords = null,
+        string? creator = "FryPDF",
+        string? producer = "codefrydev.in")
+    {
+        SetFryPdfMetadata(doc, title, author, subject, keywords, creator, producer);
+        doc.Save(filePath);
+        PatchProducerInFile(filePath, producer ?? "codefrydev.in");
+    }
+
+    public static void PatchProducerInFile(string filePath, string producer = "codefrydev.in")
+    {
+        if (!File.Exists(filePath)) return;
+        try
+        {
+            byte[] bytes = File.ReadAllBytes(filePath);
+            byte[] updated = PatchProducerInBytes(bytes, producer);
+            if (updated != null && updated.Length > 0)
+            {
+                File.WriteAllBytes(filePath, updated);
+            }
+        }
+        catch { }
+    }
+
+    public static byte[] PatchProducerInBytes(byte[] bytes, string producer = "codefrydev.in")
+    {
+        if (bytes == null || bytes.Length < 20) return bytes ?? Array.Empty<byte>();
+
+        try
+        {
+            string text = Encoding.ASCII.GetString(bytes);
+            if (text.Contains("/Encrypt"))
+            {
+                // Never binary patch encrypted PDF streams
+                return bytes;
+            }
+
+            int searchIdx = 0;
+            while ((searchIdx = text.IndexOf("/Producer", searchIdx, StringComparison.Ordinal)) >= 0)
+            {
+                int openParen = text.IndexOf('(', searchIdx);
+                if (openParen > searchIdx && openParen < searchIdx + 25)
+                {
+                    int closeParen = text.IndexOf(')', openParen);
+                    if (closeParen > openParen)
+                    {
+                        int origSpanLen = closeParen - openParen + 1;
+                        string replacement = $"({producer})";
+                        if (replacement.Length <= origSpanLen)
+                        {
+                            string filler = "%".PadRight(origSpanLen - replacement.Length, ' ');
+                            string fullPatch = replacement + filler;
+                            byte[] patchBytes = Encoding.ASCII.GetBytes(fullPatch);
+                            Array.Copy(patchBytes, 0, bytes, openParen, patchBytes.Length);
+                        }
+                    }
+                }
+                searchIdx += 9;
+            }
+        }
+        catch { }
+
+        return bytes;
+    }
+
     public static PdfSharpCore.Pdf.PdfDocument OpenDocumentSafely(string filePath, PdfDocumentOpenMode mode = PdfDocumentOpenMode.Import, string? password = null)
     {
         if (!File.Exists(filePath))

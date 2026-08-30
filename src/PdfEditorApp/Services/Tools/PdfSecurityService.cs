@@ -65,7 +65,7 @@ public class PdfSecurityService : IPdfSecurityService
                 outPath = Path.Combine(dir, $"{name}_Protected.pdf");
             }
 
-            doc.Save(outPath);
+            PdfFileHelper.SaveDocumentWithFryPdfMetadata(doc, outPath);
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
@@ -98,9 +98,7 @@ public class PdfSecurityService : IPdfSecurityService
                 using var inputDoc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Import, options.Password ?? "");
                 using var outputDoc = new PdfDocument();
 
-                outputDoc.Info.Title = inputDoc.Info.Title;
-                outputDoc.Info.Author = inputDoc.Info.Author;
-                outputDoc.Info.Creator = "FryPDF Decryption Engine";
+                PdfFileHelper.SetFryPdfMetadata(outputDoc, inputDoc.Info.Title, inputDoc.Info.Author);
 
                 int pageCount = inputDoc.PageCount;
                 for (int i = 0; i < pageCount; i++)
@@ -118,7 +116,7 @@ public class PdfSecurityService : IPdfSecurityService
                     outPath = Path.Combine(dir, $"{name}_Unlocked.pdf");
                 }
 
-                outputDoc.Save(outPath);
+                PdfFileHelper.SaveDocumentWithFryPdfMetadata(outputDoc, outPath);
                 progress?.Report(100.0);
 
                 long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
@@ -228,7 +226,7 @@ public class PdfSecurityService : IPdfSecurityService
                 outPath = Path.Combine(dir, $"{name}_Signed.pdf");
             }
 
-            doc.Save(outPath);
+            PdfFileHelper.SaveDocumentWithFryPdfMetadata(doc, outPath);
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;

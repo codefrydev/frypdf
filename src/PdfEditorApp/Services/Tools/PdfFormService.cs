@@ -100,7 +100,7 @@ public class PdfFormService : IPdfFormService
             }
 
             progress?.Report(80.0);
-            doc.Save(outPath);
+            PdfFileHelper.SaveDocumentWithFryPdfMetadata(doc, outPath);
 
             if (options.ExportFieldValuesJson)
             {

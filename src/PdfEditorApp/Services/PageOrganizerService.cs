@@ -43,6 +43,9 @@ public class PageOrganizerService : IPageOrganizerService
                 Title = $"{System.IO.Path.GetFileNameWithoutExtension(doc.Title)}_Part{partIndex}.pdf",
                 Author = doc.Author,
                 Subject = $"{doc.Subject} (Part {partIndex})",
+                Keywords = doc.Keywords,
+                Creator = string.IsNullOrWhiteSpace(doc.Creator) ? "FryPDF" : doc.Creator,
+                Producer = string.IsNullOrWhiteSpace(doc.Producer) ? "codefrydev.in" : doc.Producer,
                 CreatedDate = doc.CreatedDate,
                 SecuritySettings = doc.SecuritySettings
             };
@@ -80,6 +83,9 @@ public class PageOrganizerService : IPageOrganizerService
                 Title = $"{System.IO.Path.GetFileNameWithoutExtension(doc.Title)}_Range_{part.Trim().Replace(' ', '_')}.pdf",
                 Author = doc.Author,
                 Subject = $"{doc.Subject} (Pages {part.Trim()})",
+                Keywords = doc.Keywords,
+                Creator = string.IsNullOrWhiteSpace(doc.Creator) ? "FryPDF" : doc.Creator,
+                Producer = string.IsNullOrWhiteSpace(doc.Producer) ? "codefrydev.in" : doc.Producer,
                 CreatedDate = doc.CreatedDate
             };
 
@@ -106,6 +112,9 @@ public class PageOrganizerService : IPageOrganizerService
             Title = newTitle ?? $"{System.IO.Path.GetFileNameWithoutExtension(doc.Title)}_Extracted.pdf",
             Author = doc.Author,
             Subject = $"Extracted pages from {doc.Title}",
+            Keywords = doc.Keywords,
+            Creator = string.IsNullOrWhiteSpace(doc.Creator) ? "FryPDF" : doc.Creator,
+            Producer = string.IsNullOrWhiteSpace(doc.Producer) ? "codefrydev.in" : doc.Producer,
             CreatedDate = DateTime.Now,
             SecuritySettings = doc.SecuritySettings
         };
@@ -130,6 +139,8 @@ public class PageOrganizerService : IPageOrganizerService
         var mergedDoc = new PdfDocumentModel
         {
             Title = mergedTitle,
+            Creator = "FryPDF",
+            Producer = "codefrydev.in",
             CreatedDate = DateTime.Now
         };
 

@@ -342,8 +342,8 @@ public class PdfConversionService : IPdfConversionService
             progress?.Report(50.0);
             ct.ThrowIfCancellationRequested();
 
-            // Generate PDF via QuestPDF
-            var doc = QuestPDF.Fluent.Document.Create(container =>
+            // Generate PDF via QuestPDF with FryPDF Creator and codefrydev.in Producer metadata
+            var doc = FryPdfDocument.Create(container =>
             {
                 container.Page(page =>
                 {
@@ -445,10 +445,15 @@ public class PdfConversionService : IPdfConversionService
                 }
             }
 
+            if (tables.Count == 0)
+            {
+                tables.Add(("Sheet 1", new List<List<string>> { new() { "Data Table" } }));
+            }
+
             progress?.Report(50.0);
             ct.ThrowIfCancellationRequested();
 
-            var doc = QuestPDF.Fluent.Document.Create(container =>
+            var doc = FryPdfDocument.Create(container =>
             {
                 foreach (var table in tables)
                 {
@@ -566,7 +571,7 @@ public class PdfConversionService : IPdfConversionService
                 slidesText.Add(new List<string> { "Presentation Slide" });
             }
 
-            var doc = QuestPDF.Fluent.Document.Create(container =>
+            var doc = FryPdfDocument.Create(container =>
             {
                 int sIndex = 1;
                 foreach (var slide in slidesText)
@@ -813,7 +818,7 @@ public class PdfConversionService : IPdfConversionService
                                  .Where(l => !string.IsNullOrWhiteSpace(l))
                                  .ToList();
 
-            var doc = QuestPDF.Fluent.Document.Create(container =>
+            var doc = FryPdfDocument.Create(container =>
             {
                 container.Page(page =>
                 {
@@ -890,7 +895,8 @@ public class PdfConversionService : IPdfConversionService
                 sb.AppendLine("---");
                 sb.AppendLine($"title: \"{Path.GetFileNameWithoutExtension(options.InputFilePath)}\"");
                 sb.AppendLine($"pages: {totalPages}");
-                sb.AppendLine($"generated_by: \"FryPDF Studio\"");
+                sb.AppendLine($"generated_by: \"FryPDF\"");
+                sb.AppendLine($"producer: \"codefrydev.in\"");
                 sb.AppendLine($"date: \"{DateTime.UtcNow:yyyy-MM-dd}\"");
                 sb.AppendLine("---");
                 sb.AppendLine();

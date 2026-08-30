@@ -66,6 +66,15 @@ public partial class MainViewModel : ViewModelBase
     private string _documentSubject = "Fiscal Year 2026 Annual Report";
 
     [ObservableProperty]
+    private string _documentKeywords = "";
+
+    [ObservableProperty]
+    private string _documentCreator = "FryPDF";
+
+    [ObservableProperty]
+    private string _documentProducer = "codefrydev.in";
+
+    [ObservableProperty]
     private RibbonTabKind _activeRibbonTab = RibbonTabKind.Edit;
 
     [ObservableProperty]

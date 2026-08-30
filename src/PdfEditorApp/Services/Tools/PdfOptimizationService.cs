@@ -134,7 +134,7 @@ public class PdfOptimizationService : IPdfOptimizationService
             doc.Info.Author = "";
             doc.Info.Subject = "";
             doc.Info.Keywords = "";
-            doc.Info.Creator = "FryPDF Optimization Engine";
+            PdfFileHelper.SetFryPdfMetadata(doc);
             doc.Internals.Catalog.Elements.Remove("/Metadata");
             doc.Internals.Catalog.Elements.Remove("/PieceInfo");
             doc.Internals.Catalog.Elements.Remove("/StructTreeRoot");
@@ -370,7 +370,7 @@ public class PdfOptimizationService : IPdfOptimizationService
                 }
             }
 
-            var doc = Document.Create(container =>
+            var doc = FryPdfDocument.Create(container =>
             {
                 foreach (var p in pageImages)
                 {
@@ -418,7 +418,7 @@ public class PdfOptimizationService : IPdfOptimizationService
                 using var outputDoc = new PdfSharpDoc();
 
                 outputDoc.Info.Title = !string.IsNullOrEmpty(inputDoc.Info.Title) ? inputDoc.Info.Title : Path.GetFileNameWithoutExtension(options.InputFilePath);
-                outputDoc.Info.Creator = "FryPDF Diagnostic Repair Engine";
+                PdfFileHelper.SetFryPdfMetadata(outputDoc);
 
                 int pages = inputDoc.PageCount;
                 int recoveredPages = 0;
@@ -439,7 +439,7 @@ public class PdfOptimizationService : IPdfOptimizationService
                     progress?.Report(20.0 + (i / (double)pages * 60.0));
                 }
 
-                outputDoc.Save(outPath);
+                PdfFileHelper.SaveDocumentWithFryPdfMetadata(outputDoc, outPath);
                 progress?.Report(100.0);
 
                 long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
@@ -467,7 +467,7 @@ public class PdfOptimizationService : IPdfOptimizationService
                     {
                         outputDoc.AddPage(inputDoc.Pages[i]);
                     }
-                    outputDoc.Save(outPath);
+                    PdfFileHelper.SaveDocumentWithFryPdfMetadata(outputDoc, outPath);
 
                     long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
                     return new ToolExecutionResult
@@ -516,7 +516,7 @@ public class PdfOptimizationService : IPdfOptimizationService
             outputDoc.Info.Title = inputDoc.Info.Title;
             outputDoc.Info.Author = inputDoc.Info.Author;
             outputDoc.Info.Subject = $"Archived under {standardLabel}";
-            outputDoc.Info.Creator = "FryPDF ISO Archival Engine";
+            PdfFileHelper.SetFryPdfMetadata(outputDoc);
             outputDoc.Options.CompressContentStreams = true;
 
             int pageCount = inputDoc.PageCount;
@@ -535,7 +535,7 @@ public class PdfOptimizationService : IPdfOptimizationService
                 outPath = Path.Combine(dir, $"{name}_PDFA.pdf");
             }
 
-            outputDoc.Save(outPath);
+            PdfFileHelper.SaveDocumentWithFryPdfMetadata(outputDoc, outPath);
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;

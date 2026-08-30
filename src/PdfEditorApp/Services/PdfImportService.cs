@@ -85,6 +85,9 @@ public class PdfImportService : IPdfImportService
                     Title = string.IsNullOrWhiteSpace(doc.Information.Title) ? title : doc.Information.Title,
                     Author = doc.Information.Author ?? "Unknown Author",
                     Subject = doc.Information.Subject ?? "Imported PDF Document",
+                    Keywords = doc.Information.Keywords ?? "",
+                    Creator = string.IsNullOrWhiteSpace(doc.Information.Creator) ? "FryPDF" : doc.Information.Creator,
+                    Producer = string.IsNullOrWhiteSpace(doc.Information.Producer) ? "codefrydev.in" : doc.Information.Producer,
                     CreatedDate = DateTime.Now,
                     ModifiedDate = DateTime.Now
                 };

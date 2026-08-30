@@ -9,6 +9,9 @@ public class PdfDocumentModel
     public string Title { get; set; } = "Annual_Report_2026.pdf";
     public string Author { get; set; } = "Acme Corp.";
     public string Subject { get; set; } = "Annual Financial & Operations Report";
+    public string Keywords { get; set; } = "";
+    public string Creator { get; set; } = "FryPDF";
+    public string Producer { get; set; } = "codefrydev.in";
     public DateTime CreatedDate { get; set; } = DateTime.Now;
     public DateTime ModifiedDate { get; set; } = DateTime.Now;
 
@@ -23,6 +26,9 @@ public class PdfDocumentModel
             Title = Title,
             Author = Author,
             Subject = Subject,
+            Keywords = Keywords,
+            Creator = Creator,
+            Producer = Producer,
             CreatedDate = CreatedDate,
             ModifiedDate = DateTime.Now,
             SecuritySettings = SecuritySettings.Clone()

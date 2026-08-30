@@ -73,7 +73,7 @@ public class PdfPageService : IPdfPageService
             if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
                 Directory.CreateDirectory(targetDir);
 
-            outputDoc.Save(outPath);
+            PdfFileHelper.SaveDocumentWithFryPdfMetadata(outputDoc, outPath);
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
@@ -122,7 +122,7 @@ public class PdfPageService : IPdfPageService
                 string oddPath = Path.Combine(outDir, $"{baseName}_OddPages.pdf");
                 if (oddDoc.PageCount > 0)
                 {
-                    oddDoc.Save(oddPath);
+                    PdfFileHelper.SaveDocumentWithFryPdfMetadata(oddDoc, oddPath);
                     createdFiles.Add(oddPath);
                 }
 
@@ -133,7 +133,7 @@ public class PdfPageService : IPdfPageService
                 string evenPath = Path.Combine(outDir, $"{baseName}_EvenPages.pdf");
                 if (evenDoc.PageCount > 0)
                 {
-                    evenDoc.Save(evenPath);
+                    PdfFileHelper.SaveDocumentWithFryPdfMetadata(evenDoc, evenPath);
                     createdFiles.Add(evenPath);
                 }
             }
@@ -156,7 +156,7 @@ public class PdfPageService : IPdfPageService
                     {
                         string rangeName = $"{baseName}_Range{rIdx}_{range.First() + 1}-{range.Last() + 1}.pdf";
                         string rangePath = Path.Combine(outDir, rangeName);
-                        rangeDoc.Save(rangePath);
+                        PdfFileHelper.SaveDocumentWithFryPdfMetadata(rangeDoc, rangePath);
                         createdFiles.Add(rangePath);
                     }
                     rIdx++;
@@ -178,7 +178,7 @@ public class PdfPageService : IPdfPageService
                     }
 
                     string partPath = Path.Combine(outDir, $"{baseName}_Part{part}.pdf");
-                    partDoc.Save(partPath);
+                    PdfFileHelper.SaveDocumentWithFryPdfMetadata(partDoc, partPath);
                     createdFiles.Add(partPath);
                     part++;
 
@@ -234,7 +234,7 @@ public class PdfPageService : IPdfPageService
                 outPath = Path.Combine(dir, $"{name}_Rotated.pdf");
             }
 
-            doc.Save(outPath);
+            PdfFileHelper.SaveDocumentWithFryPdfMetadata(doc, outPath);
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
@@ -293,7 +293,7 @@ public class PdfPageService : IPdfPageService
                 outPath = Path.Combine(dir, $"{name}_Cropped.pdf");
             }
 
-            doc.Save(outPath);
+            PdfFileHelper.SaveDocumentWithFryPdfMetadata(doc, outPath);
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
@@ -350,7 +350,7 @@ public class PdfPageService : IPdfPageService
                 outPath = Path.Combine(dir, $"{name}_Organized.pdf");
             }
 
-            outputDoc.Save(outPath);
+            PdfFileHelper.SaveDocumentWithFryPdfMetadata(outputDoc, outPath);
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
@@ -440,7 +440,7 @@ public class PdfPageService : IPdfPageService
                 outPath = Path.Combine(dir, $"{name}_Numbered.pdf");
             }
 
-            doc.Save(outPath);
+            PdfFileHelper.SaveDocumentWithFryPdfMetadata(doc, outPath);
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
@@ -561,7 +561,7 @@ public class PdfPageService : IPdfPageService
                 outPath = Path.Combine(dir, $"{name}_Watermarked.pdf");
             }
 
-            doc.Save(outPath);
+            PdfFileHelper.SaveDocumentWithFryPdfMetadata(doc, outPath);
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;

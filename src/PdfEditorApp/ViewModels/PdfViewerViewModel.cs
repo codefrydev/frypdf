@@ -591,8 +591,8 @@ public partial class PdfViewerViewModel : ViewModelBase
                         new PdfViewerMetadataItem { Label = "Author", Value = string.IsNullOrWhiteSpace(info.Author) ? "Unknown Author" : info.Author, IconKind = "AccountOutline" },
                         new PdfViewerMetadataItem { Label = "Subject", Value = string.IsNullOrWhiteSpace(info.Subject) ? "None specified" : info.Subject, IconKind = "Subject" },
                         new PdfViewerMetadataItem { Label = "Keywords", Value = string.IsNullOrWhiteSpace(info.Keywords) ? "None" : info.Keywords, IconKind = "TagOutline" },
-                        new PdfViewerMetadataItem { Label = "Creator Application", Value = string.IsNullOrWhiteSpace(info.Creator) ? "PDF Engine" : info.Creator, IconKind = "CogOutline" },
-                        new PdfViewerMetadataItem { Label = "PDF Producer", Value = string.IsNullOrWhiteSpace(info.Producer) ? "FryPDF Studio" : info.Producer, IconKind = "ApplicationOutline" },
+                        new PdfViewerMetadataItem { Label = "Creator Application", Value = string.IsNullOrWhiteSpace(info.Creator) ? "FryPDF" : info.Creator, IconKind = "CogOutline" },
+                        new PdfViewerMetadataItem { Label = "PDF Producer", Value = string.IsNullOrWhiteSpace(info.Producer) ? "codefrydev.in" : info.Producer, IconKind = "ApplicationOutline" },
                         new PdfViewerMetadataItem { Label = "PDF Version", Value = $"PDF {doc.Version}", IconKind = "ShieldCheckOutline" },
                         new PdfViewerMetadataItem { Label = "Security Status", Value = doc.IsEncrypted ? "Password Protected (Encrypted)" : "Standard (No Security)", IconKind = doc.IsEncrypted ? "LockOutline" : "LockOpenOutline" }
                     };

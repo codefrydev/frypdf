@@ -267,6 +267,9 @@ public partial class MainViewModel
             Title = DocumentTitle,
             Author = DocumentAuthor,
             Subject = DocumentSubject,
+            Keywords = DocumentKeywords,
+            Creator = string.IsNullOrWhiteSpace(DocumentCreator) ? "FryPDF" : DocumentCreator,
+            Producer = string.IsNullOrWhiteSpace(DocumentProducer) ? "codefrydev.in" : DocumentProducer,
             SecuritySettings = SecuritySettings.Clone()
         };
 
@@ -283,6 +286,9 @@ public partial class MainViewModel
         DocumentTitle = model.Title;
         DocumentAuthor = model.Author;
         DocumentSubject = model.Subject;
+        DocumentKeywords = model.Keywords ?? "";
+        DocumentCreator = string.IsNullOrWhiteSpace(model.Creator) ? "FryPDF" : model.Creator;
+        DocumentProducer = string.IsNullOrWhiteSpace(model.Producer) ? "codefrydev.in" : model.Producer;
         SecuritySettings = model.SecuritySettings?.Clone() ?? new PdfSecuritySettings();
 
         Pages.Clear();

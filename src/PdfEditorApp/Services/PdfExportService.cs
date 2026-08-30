@@ -92,7 +92,9 @@ internal class QuestPdfDocumentWrapper : IDocument
                 Author = "Anonymous",
                 Subject = "",
                 CreationDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                ModifiedDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                ModifiedDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                Creator = "FryPDF",
+                Producer = "codefrydev.in"
             };
         }
 
@@ -101,8 +103,11 @@ internal class QuestPdfDocumentWrapper : IDocument
             Title = _model.Title,
             Author = _model.Author,
             Subject = _model.Subject,
+            Keywords = _model.Keywords,
             CreationDate = _model.CreatedDate,
-            ModifiedDate = _model.ModifiedDate
+            ModifiedDate = _model.ModifiedDate,
+            Creator = string.IsNullOrWhiteSpace(_model.Creator) ? "FryPDF" : _model.Creator,
+            Producer = string.IsNullOrWhiteSpace(_model.Producer) ? "codefrydev.in" : _model.Producer
         };
     }
 

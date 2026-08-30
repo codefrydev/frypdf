@@ -237,6 +237,11 @@
                                     CommandParameter="Academic">
                                 Academic
                             </Button>
+                            <Button Classes="home-filter-pill"
+                                    Command="{Binding SetTemplateCategoryCommand}"
+                                    CommandParameter="Events &amp; Invitations">
+                                Invitations
+                            </Button>
                         </StackPanel>
                     </Grid>
 
@@ -619,6 +624,129 @@
                                                    Foreground="#0F172A"
                                                    TextTrimming="CharacterEllipsis" />
                                         <TextBlock Text="Collegiate Degree"
+                                                   FontSize="11"
+                                                   Foreground="#94A3B8" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Traditional Indian Wedding Invitation -->
+                            <Button Command="{Binding SelectTemplateCommand}"
+                                    CommandParameter="weddingtraditional"
+                                    IsVisible="{Binding IsWeddingTraditionalTemplateVisible}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    Cursor="Hand">
+                                <StackPanel Width="140" Spacing="8">
+                                    <Border Width="140" Height="110"
+                                            CornerRadius="8"
+                                            ClipToBounds="True"
+                                            BoxShadow="0 2 6 #14000000">
+                                        <Border.Styles>
+                                            <Style Selector="Border:pointerover">
+                                                <Setter Property="BoxShadow" Value="0 4 16 #228B0000" />
+                                            </Style>
+                                        </Border.Styles>
+                                        <Grid Background="#FFFDF7">
+                                            <Border BorderBrush="#D97706" BorderThickness="1.5" CornerRadius="4" Margin="6">
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="3">
+                                                    <materialIcons:MaterialIcon Kind="CardsHeartOutline" Width="22" Height="22" Foreground="#8B0000" HorizontalAlignment="Center" />
+                                                    <Border Height="2" Width="60" CornerRadius="1" Background="#EA580C" />
+                                                    <Border Height="2" Width="40" CornerRadius="1" Background="#D97706" />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Wedding Invitation"
+                                                   FontSize="12.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#0F172A"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="Traditional Marigold"
+                                                   FontSize="11"
+                                                   Foreground="#94A3B8" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Royal Botanical Wedding Invitation -->
+                            <Button Command="{Binding SelectTemplateCommand}"
+                                    CommandParameter="weddingroyalfloral"
+                                    IsVisible="{Binding IsWeddingRoyalFloralTemplateVisible}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    Cursor="Hand">
+                                <StackPanel Width="140" Spacing="8">
+                                    <Border Width="140" Height="110"
+                                            CornerRadius="8"
+                                            ClipToBounds="True"
+                                            BoxShadow="0 2 6 #14000000">
+                                        <Border.Styles>
+                                            <Style Selector="Border:pointerover">
+                                                <Setter Property="BoxShadow" Value="0 4 16 #22D97706" />
+                                            </Style>
+                                        </Border.Styles>
+                                        <Grid Background="#FAFAFA">
+                                            <Border BorderBrush="#D97706" BorderThickness="1" CornerRadius="4" Margin="6">
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="3">
+                                                    <materialIcons:MaterialIcon Kind="FlowerTulipOutline" Width="22" Height="22" Foreground="#D97706" HorizontalAlignment="Center" />
+                                                    <Border Height="2" Width="55" CornerRadius="1" Background="#059669" />
+                                                    <Border Height="2" Width="35" CornerRadius="1" Background="#D97706" />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Royal Floral Wedding"
+                                                   FontSize="12.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#0F172A"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="Botanical Wreath"
+                                                   FontSize="11"
+                                                   Foreground="#94A3B8" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Gala & Awards Invitation -->
+                            <Button Command="{Binding SelectTemplateCommand}"
+                                    CommandParameter="galainvitation"
+                                    IsVisible="{Binding IsGalaInvitationTemplateVisible}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    Cursor="Hand">
+                                <StackPanel Width="140" Spacing="8">
+                                    <Border Width="140" Height="110"
+                                            CornerRadius="8"
+                                            ClipToBounds="True"
+                                            BoxShadow="0 2 6 #14000000">
+                                        <Border.Styles>
+                                            <Style Selector="Border:pointerover">
+                                                <Setter Property="BoxShadow" Value="0 4 16 #22F59E0B" />
+                                            </Style>
+                                        </Border.Styles>
+                                        <Grid Background="#0B0F19">
+                                            <Border BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="4" Margin="6">
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="3">
+                                                    <materialIcons:MaterialIcon Kind="TicketConfirmationOutline" Width="22" Height="22" Foreground="#F59E0B" HorizontalAlignment="Center" />
+                                                    <Border Height="2" Width="50" CornerRadius="1" Background="#F59E0B" />
+                                                    <Border Height="2" Width="30" CornerRadius="1" Background="#9CA3AF" />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Gala &amp; Awards"
+                                                   FontSize="12.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#0F172A"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="Black-Tie Art Deco"
                                                    FontSize="11"
                                                    Foreground="#94A3B8" />
                                     </StackPanel>

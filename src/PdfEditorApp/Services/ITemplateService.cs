@@ -16,5 +16,8 @@ public interface ITemplateService
     PdfDocumentModel CreateCertificateTemplate();
     PdfDocumentModel CreateCertificateNavyGoldTemplate();
     PdfDocumentModel CreateDiplomaAcademicTemplate();
+    PdfDocumentModel CreateWeddingInvitationTraditionalTemplate();
+    PdfDocumentModel CreateWeddingInvitationRoyalFloralTemplate();
+    PdfDocumentModel CreateGalaInvitationTemplate();
     PdfDocumentModel CreateBlankDocument(PageFormat format = PageFormat.A4, PageOrientation orientation = PageOrientation.Portrait);
 }

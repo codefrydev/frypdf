@@ -75,6 +75,9 @@ public partial class InspectorViewModel : ViewModelBase
     private bool _isMeasurementElement;
 
     [ObservableProperty]
+    private bool _isSvgElement;
+
+    [ObservableProperty]
     private string _selectedFontFamily = "Arial";
 
     partial void OnSelectedFontFamilyChanged(string value)
@@ -186,6 +189,7 @@ public partial class InspectorViewModel : ViewModelBase
     public InkElementViewModel? InkElement => SelectedElement as InkElementViewModel;
     public StickyNoteElementViewModel? StickyNoteElement => SelectedElement as StickyNoteElementViewModel;
     public MeasurementElementViewModel? MeasurementElement => SelectedElement as MeasurementElementViewModel;
+    public SvgElementViewModel? SvgElement => SelectedElement as SvgElementViewModel;
 
     public string ActiveCategoryName => SelectedElement != null ? SelectedElement.Kind.ToString() : "Document";
     public ObservableCollection<ColorSwatchItem> ColorSwatches => Swatches;
@@ -212,6 +216,7 @@ public partial class InspectorViewModel : ViewModelBase
         IsRedactionElement = element is RedactionElementViewModel;
         IsStickyNoteElement = element is StickyNoteElementViewModel;
         IsMeasurementElement = element is MeasurementElementViewModel;
+        IsSvgElement = element is SvgElementViewModel;
 
         if (element is TextElementViewModel textVm)
         {
@@ -238,6 +243,7 @@ public partial class InspectorViewModel : ViewModelBase
         OnPropertyChanged(nameof(InkElement));
         OnPropertyChanged(nameof(StickyNoteElement));
         OnPropertyChanged(nameof(MeasurementElement));
+        OnPropertyChanged(nameof(SvgElement));
         OnPropertyChanged(nameof(ActiveCategoryName));
     }
 
@@ -431,6 +437,7 @@ public partial class InspectorViewModel : ViewModelBase
                     ElementKind.Ink => new InkElementViewModel(),
                     ElementKind.StickyNote => new StickyNoteElementViewModel(),
                     ElementKind.Measurement => new MeasurementElementViewModel(),
+                    ElementKind.Svg => new SvgElementViewModel(),
                     _ => new TextElementViewModel()
                 };
 
@@ -481,6 +488,7 @@ public partial class InspectorViewModel : ViewModelBase
                 ElementKind.Ink => new InkElementViewModel(),
                 ElementKind.StickyNote => new StickyNoteElementViewModel(),
                 ElementKind.Measurement => new MeasurementElementViewModel(),
+                ElementKind.Svg => new SvgElementViewModel(),
                 _ => new TextElementViewModel()
             };
 
@@ -1531,6 +1539,48 @@ public partial class InspectorViewModel : ViewModelBase
                 page.FooterLeft = "INTERNAL USE ONLY";
                 page.FooterRight = $"Page {page.PageNumber}";
             }
+        }
+    }
+
+    [RelayCommand]
+    public void SetSvgPreset(string preset)
+    {
+        if (SvgElement != null)
+        {
+            var el = SvgElement;
+            string? oldPreset = el.PresetName;
+            string oldSource = el.SvgSource;
+            el.ApplyPreset(preset);
+            UndoRedo?.RecordAction(
+                $"SVG Preset: {preset}",
+                () => { el.PresetName = oldPreset; el.SvgSource = oldSource; },
+                () => el.ApplyPreset(preset)
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void SetSvgTintColor(string hex)
+    {
+        if (SvgElement != null)
+        {
+            var el = SvgElement;
+            string? oldTint = el.TintColorHex;
+            string oldSource = el.SvgSource;
+            el.TintColorHex = hex;
+            if (!string.IsNullOrEmpty(el.PresetName))
+            {
+                el.SvgSource = SvgOrnamentLibrary.GetSvg(el.PresetName, hex);
+            }
+            UndoRedo?.RecordAction(
+                "Change SVG Tint Color",
+                () => { el.TintColorHex = oldTint; el.SvgSource = oldSource; },
+                () => {
+                    el.TintColorHex = hex;
+                    if (!string.IsNullOrEmpty(el.PresetName))
+                        el.SvgSource = SvgOrnamentLibrary.GetSvg(el.PresetName, hex);
+                }
+            );
         }
     }
 }

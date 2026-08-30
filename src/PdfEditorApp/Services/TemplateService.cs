@@ -20,6 +20,9 @@ public class TemplateService : ITemplateService
         RegisterTemplate(new CertificateTemplate());
         RegisterTemplate(new CertificateNavyGoldTemplate());
         RegisterTemplate(new DiplomaAcademicTemplate());
+        RegisterTemplate(new WeddingInvitationTraditionalTemplate());
+        RegisterTemplate(new WeddingInvitationRoyalFloralTemplate());
+        RegisterTemplate(new GalaInvitationTemplate());
         RegisterTemplate(_blankTemplate);
     }
 
@@ -56,6 +59,12 @@ public class TemplateService : ITemplateService
     public PdfDocumentModel CreateCertificateNavyGoldTemplate() => CreateTemplate("certificatenavygold");
 
     public PdfDocumentModel CreateDiplomaAcademicTemplate() => CreateTemplate("diploma");
+
+    public PdfDocumentModel CreateWeddingInvitationTraditionalTemplate() => CreateTemplate("weddingtraditional");
+
+    public PdfDocumentModel CreateWeddingInvitationRoyalFloralTemplate() => CreateTemplate("weddingroyalfloral");
+
+    public PdfDocumentModel CreateGalaInvitationTemplate() => CreateTemplate("galainvitation");
 
     public PdfDocumentModel CreateBlankDocument(PageFormat format = PageFormat.A4, PageOrientation orientation = PageOrientation.Portrait)
     {

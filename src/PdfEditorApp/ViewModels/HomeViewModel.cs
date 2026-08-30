@@ -55,6 +55,9 @@ public partial class HomeViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsCertificateTemplateVisible));
         OnPropertyChanged(nameof(IsCertificateNavyGoldTemplateVisible));
         OnPropertyChanged(nameof(IsDiplomaAcademicTemplateVisible));
+        OnPropertyChanged(nameof(IsWeddingTraditionalTemplateVisible));
+        OnPropertyChanged(nameof(IsWeddingRoyalFloralTemplateVisible));
+        OnPropertyChanged(nameof(IsGalaInvitationTemplateVisible));
         OnPropertyChanged(nameof(HasNoMatchingTemplates));
     }
 
@@ -80,11 +83,15 @@ public partial class HomeViewModel : ViewModelBase
     public bool IsCertificateTemplateVisible         => CheckTemplateMatch("Certificates","Certificate of Achievement","Award of excellence and official recognition credential");
     public bool IsCertificateNavyGoldTemplateVisible => CheckTemplateMatch("Certificates","Executive Certificate of Honor","Prestigious corporate recognition with navy and gold crest");
     public bool IsDiplomaAcademicTemplateVisible     => CheckTemplateMatch("Certificates","Collegiate Academic Diploma","Formal university degree with ornamental borders and seal");
+    public bool IsWeddingTraditionalTemplateVisible  => CheckTemplateMatch("Events & Invitations", "Traditional Indian Wedding Invitation", "Festive marigold toran, Ganesha crest, and dual Muhurtham & Reception schedule");
+    public bool IsWeddingRoyalFloralTemplateVisible  => CheckTemplateMatch("Events & Invitations", "Royal Botanical Wedding Invitation", "Luxury gold foil botanical laurel wreath and calligraphy");
+    public bool IsGalaInvitationTemplateVisible      => CheckTemplateMatch("Events & Invitations", "Charity Gala & Award Night Invitation", "Black-tie executive event with gold Art Deco frame and VIP QR Code");
 
     public bool HasNoMatchingTemplates =>
         !IsBlankTemplateVisible && !IsAnnualReportTemplateVisible && !IsInvoiceTemplateVisible
         && !IsResumeTemplateVisible && !IsAcademicPaperTemplateVisible && !IsCertificateTemplateVisible
-        && !IsCertificateNavyGoldTemplateVisible && !IsDiplomaAcademicTemplateVisible;
+        && !IsCertificateNavyGoldTemplateVisible && !IsDiplomaAcademicTemplateVisible
+        && !IsWeddingTraditionalTemplateVisible && !IsWeddingRoyalFloralTemplateVisible && !IsGalaInvitationTemplateVisible;
 
     public bool HasRecentDocuments => RecentDocuments.Count > 0;
 

@@ -983,6 +983,26 @@
                                     </Grid>
                                 </DataTemplate>
 
+                                <!-- 15. SVG VECTOR ART & ORNAMENTS TEMPLATE -->
+                                <DataTemplate DataType="elvm:SvgElementViewModel">
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}" PointerPressed="OnElementPointerPressed">
+                                        <Viewbox Stretch="Uniform">
+                                            <Path Data="{Binding PathGeometryData}"
+                                                  Fill="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#D97706'}"
+                                                  Stroke="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#8B0000'}"
+                                                  StrokeThickness="1.5" />
+                                        </Viewbox>
+
+                                        <!-- Selection Adorner -->
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
+                                            <Border Tag="bottomright" Width="8" Height="8" Background="White" BorderBrush="{StaticResource WinAccentBrush}" BorderThickness="1.5"
+                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                    PointerPressed="OnHandlePointerPressed" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+
                             </ItemsControl.DataTemplates>
                         </ItemsControl>
 

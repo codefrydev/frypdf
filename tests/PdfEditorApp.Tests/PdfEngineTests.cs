@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
+using PdfEditorApp.Templates;
 using PdfEditorApp.ViewModels;
 using PdfEditorApp.ViewModels.ElementViewModels;
 using Xunit;
@@ -1591,6 +1592,158 @@ public class PdfEngineTests
         vm.AddDateBlock();
         Assert.True(vm.CurrentPage.Elements.Count >= initialCount + 12);
     }
+
+    [Fact]
+    public void WeddingInvitationTraditionalTemplate_MatchesReferenceAndGeneratesValidPdfBytes()
+    {
+        var doc = WeddingInvitationTraditionalTemplate.GenerateDocument();
+        Assert.NotNull(doc);
+        Assert.Single(doc.Pages);
+
+        var page = doc.Pages[0];
+        Assert.Equal(600, page.Width);
+        Assert.Equal(900, page.Height);
+
+        // Assert presence of key ceremonial elements
+        Assert.Contains(page.Elements, e => e is PdfSvgElement svg && svg.PresetName == "MarigoldToran");
+        Assert.Contains(page.Elements, e => e is PdfSvgElement svg && svg.PresetName == "GaneshaCrest");
+        Assert.Contains(page.Elements, e => e is PdfSvgElement svg && svg.PresetName == "DottedFloralDivider");
+        Assert.Contains(page.Elements, e => e is PdfSvgElement svg && svg.PresetName == "TraditionalDeepam");
+        Assert.Contains(page.Elements, e => e is PdfSvgElement svg && svg.PresetName == "PlantainTrees");
+        Assert.Contains(page.Elements, e => e is PdfTextElement txt && txt.Text.Contains("Shree Ganeshay Namah"));
+        Assert.Contains(page.Elements, e => e is PdfTextElement txt && txt.Text == "MUHURTHAM");
+        Assert.Contains(page.Elements, e => e is PdfTextElement txt && txt.Text == "RECEPTION");
+
+        // Export to PDF
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(doc);
+        Assert.NotNull(pdfBytes);
+        Assert.True(pdfBytes.Length > 2000);
+
+        string header = System.Text.Encoding.ASCII.GetString(pdfBytes.Take(5).ToArray());
+        Assert.Equal("%PDF-", header);
+    }
+
+    [Fact]
+    public void WeddingInvitationRoyalFloralTemplate_GeneratesValidPdfBytes()
+    {
+        var doc = WeddingInvitationRoyalFloralTemplate.GenerateDocument();
+        Assert.NotNull(doc);
+        Assert.Single(doc.Pages);
+
+        var page = doc.Pages[0];
+        Assert.Contains(page.Elements, e => e is PdfSvgElement svg && svg.PresetName == "BotanicalWreath");
+        Assert.Contains(page.Elements, e => e is PdfQrCodeElement qr && qr.Label.Contains("RSVP"));
+
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(doc);
+        Assert.NotNull(pdfBytes);
+        Assert.True(pdfBytes.Length > 2000);
+        Assert.Equal("%PDF-", System.Text.Encoding.ASCII.GetString(pdfBytes.Take(5).ToArray()));
+    }
+
+    [Fact]
+    public void GalaInvitationTemplate_GeneratesValidPdfBytes()
+    {
+        var doc = GalaInvitationTemplate.GenerateDocument();
+        Assert.NotNull(doc);
+        Assert.Single(doc.Pages);
+
+        var page = doc.Pages[0];
+        Assert.Contains(page.Elements, e => e is PdfSvgElement svg && svg.PresetName == "ArtDecoFrame");
+        Assert.Contains(page.Elements, e => e is PdfQrCodeElement qr && qr.Label.Contains("VIP"));
+
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(doc);
+        Assert.NotNull(pdfBytes);
+        Assert.True(pdfBytes.Length > 2000);
+        Assert.Equal("%PDF-", System.Text.Encoding.ASCII.GetString(pdfBytes.Take(5).ToArray()));
+    }
+
+    [Fact]
+    public void SvgOrnamentLibrary_AllPresets_GenerateValidSvgMarkup()
+    {
+        Assert.True(SvgOrnamentLibrary.Presets.Count >= 10);
+
+        foreach (var (name, svg) in SvgOrnamentLibrary.Presets)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(svg), $"Preset {name} is empty");
+            Assert.StartsWith("<svg", svg.TrimStart());
+            Assert.EndsWith("</svg>", svg.TrimEnd());
+            Assert.Contains("viewBox", svg);
+
+            // Test tinting
+            string tinted = SvgOrnamentLibrary.GetSvg(name, "#FF5500");
+            Assert.NotNull(tinted);
+        }
+    }
+
+    [Fact]
+    public async Task SvgElement_PersistenceAndViewModelRoundTrip_Succeeds()
+    {
+        var original = new PdfSvgElement
+        {
+            X = 50,
+            Y = 100,
+            Width = 180,
+            Height = 180,
+            PresetName = "GaneshaCrest",
+            SvgSource = SvgOrnamentLibrary.GetGaneshaCrestSvg(),
+            TintColorHex = "#B45309",
+            KeepAspectRatio = true
+        };
+
+        var vm = new SvgElementViewModel();
+        vm.LoadFromModel(original);
+
+        Assert.Equal(50, vm.X);
+        Assert.Equal(100, vm.Y);
+        Assert.Equal(180, vm.Width);
+        Assert.Equal("GaneshaCrest", vm.PresetName);
+        Assert.Equal("#B45309", vm.TintColorHex);
+        Assert.False(string.IsNullOrEmpty(vm.PathGeometryData));
+
+        var exportedModel = Assert.IsType<PdfSvgElement>(vm.ToModel());
+        Assert.Equal(original.PresetName, exportedModel.PresetName);
+        Assert.Equal(original.TintColorHex, exportedModel.TintColorHex);
+
+        var doc = new PdfDocumentModel();
+        var page = new PdfPageModel();
+        page.Elements.Add(exportedModel);
+        doc.Pages.Add(page);
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"svg_test_{Guid.NewGuid():N}.frypdf");
+        try
+        {
+            await _persistenceService.SaveProjectAsync(doc, tempPath);
+            var loaded = await _persistenceService.LoadProjectAsync(tempPath);
+            Assert.NotNull(loaded);
+            var loadedSvg = Assert.IsType<PdfSvgElement>(loaded.Pages[0].Elements[0]);
+            Assert.Equal("GaneshaCrest", loadedSvg.PresetName);
+            Assert.Equal("#B45309", loadedSvg.TintColorHex);
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
+
+    [Fact]
+    public void MainViewModel_SvgQuickInsertionCommands_FunctionProperly()
+    {
+        var vm = new MainViewModel();
+        Assert.NotNull(vm.CurrentPage);
+        int initialCount = vm.CurrentPage.Elements.Count;
+
+        vm.AddSvgElement("GaneshaCrest");
+        Assert.Equal(initialCount + 1, vm.CurrentPage.Elements.Count);
+        var svgEl = Assert.IsType<SvgElementViewModel>(vm.CurrentPage.Elements.Last());
+        Assert.Equal("GaneshaCrest", svgEl.PresetName);
+
+        vm.AddOrnamentElement("MarigoldToran");
+        Assert.Equal(initialCount + 2, vm.CurrentPage.Elements.Count);
+
+        vm.AddOrnamentElement("BotanicalWreath");
+        Assert.Equal(initialCount + 3, vm.CurrentPage.Elements.Count);
+    }
 }
+
 
 

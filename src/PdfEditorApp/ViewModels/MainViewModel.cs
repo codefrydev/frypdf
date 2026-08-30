@@ -585,6 +585,7 @@ public partial class MainViewModel : ViewModelBase
                 ElementKind.Ink => new InkElementViewModel(),
                 ElementKind.StickyNote => new StickyNoteElementViewModel(),
                 ElementKind.Measurement => new MeasurementElementViewModel(),
+                ElementKind.Svg => new SvgElementViewModel(),
                 _ => new TextElementViewModel()
             };
 
@@ -630,6 +631,7 @@ public partial class MainViewModel : ViewModelBase
                     ElementKind.Ink => new InkElementViewModel(),
                     ElementKind.StickyNote => new StickyNoteElementViewModel(),
                     ElementKind.Measurement => new MeasurementElementViewModel(),
+                    ElementKind.Svg => new SvgElementViewModel(),
                     _ => new TextElementViewModel()
                 };
 

@@ -1502,6 +1502,98 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- 14.5. SVG VECTOR ART & ORNAMENTS STUDIO (Visible when SvgElement is selected) -->
+                    <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                            IsVisible="{Binding SvgElement, Converter={StaticResource NullToBooleanConverter}}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="VectorCurve" Width="16" Height="16" Foreground="{StaticResource WinAccentBrush}" />
+                                <TextBlock Text="SVG Vector Art Studio" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- Preset Ornaments Selector -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Ornament / Crest Preset" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal" Margin="0,2">
+                                    <Button Classes="secondary-btn" Height="26" Margin="0,0,3,3" Content="Ganesha"
+                                            Command="{Binding SetSvgPresetCommand}" CommandParameter="GaneshaCrest" />
+                                    <Button Classes="secondary-btn" Height="26" Margin="0,0,3,3" Content="Toran"
+                                            Command="{Binding SetSvgPresetCommand}" CommandParameter="MarigoldToran" />
+                                    <Button Classes="secondary-btn" Height="26" Margin="0,0,3,3" Content="Deepam"
+                                            Command="{Binding SetSvgPresetCommand}" CommandParameter="TraditionalDeepam" />
+                                    <Button Classes="secondary-btn" Height="26" Margin="0,0,3,3" Content="Hanging Lamps"
+                                            Command="{Binding SetSvgPresetCommand}" CommandParameter="HangingDiyas" />
+                                    <Button Classes="secondary-btn" Height="26" Margin="0,0,3,3" Content="Floral Divider"
+                                            Command="{Binding SetSvgPresetCommand}" CommandParameter="DottedFloralDivider" />
+                                    <Button Classes="secondary-btn" Height="26" Margin="0,0,3,3" Content="Mandap Arch"
+                                            Command="{Binding SetSvgPresetCommand}" CommandParameter="MandapArch" />
+                                    <Button Classes="secondary-btn" Height="26" Margin="0,0,3,3" Content="Plantain Trees"
+                                            Command="{Binding SetSvgPresetCommand}" CommandParameter="PlantainTrees" />
+                                    <Button Classes="secondary-btn" Height="26" Margin="0,0,3,3" Content="Vedic Kalash"
+                                            Command="{Binding SetSvgPresetCommand}" CommandParameter="AuspiciousKalash" />
+                                    <Button Classes="secondary-btn" Height="26" Margin="0,0,3,3" Content="Botanical Wreath"
+                                            Command="{Binding SetSvgPresetCommand}" CommandParameter="BotanicalWreath" />
+                                    <Button Classes="secondary-btn" Height="26" Margin="0,0,3,3" Content="Art Deco Frame"
+                                            Command="{Binding SetSvgPresetCommand}" CommandParameter="ArtDecoFrame" />
+                                    <Button Classes="secondary-btn" Height="26" Margin="0,0,3,3" Content="Om Crest"
+                                            Command="{Binding SetSvgPresetCommand}" CommandParameter="OmCrest" />
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <!-- Tint Color Studio -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Vector Tint Color (Optional)" Classes="inspector-label" />
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <Button Classes="color-studio-btn" ToolTip.Tip="Custom SVG Tint Color Studio">
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" BoxShadow="0 8 24 #30000000">
+                                                    <ColorView Color="{Binding SvgElement.TintColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                                               IsAlphaEnabled="True" IsHexInputVisible="True" Width="280" />
+                                                </Border>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        <Grid Width="24" Height="24">
+                                            <Border CornerRadius="12" Width="24" Height="24">
+                                                <Border.Background>
+                                                    <ConicGradientBrush Center="0.5,0.5">
+                                                        <GradientStop Color="#FF0000" Offset="0.0" /><GradientStop Color="#FFFF00" Offset="0.17" /><GradientStop Color="#00FF00" Offset="0.33" /><GradientStop Color="#00FFFF" Offset="0.50" /><GradientStop Color="#0000FF" Offset="0.67" /><GradientStop Color="#FF00FF" Offset="0.83" /><GradientStop Color="#FF0000" Offset="1.0" />
+                                                    </ConicGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Border Margin="3.5" CornerRadius="9" Background="White">
+                                                <materialIcons:MaterialIcon Kind="Palette" Width="11" Height="11" Foreground="#334155" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
+                                    <ItemsControl ItemsSource="{Binding ColorSwatches}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:ColorSwatchItem">
+                                                <Button Width="20" Height="20" Margin="1.5" CornerRadius="10" Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
+                                                        Command="{Binding $parent[UserControl].((vm:InspectorViewModel)DataContext).SetSvgTintColorCommand}" CommandParameter="{Binding Hex}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Keep Aspect Ratio -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Keep Aspect Ratio" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource WinMutedBrush}" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding SvgElement.KeepAspectRatio, Mode=TwoWay}" OnContent="" OffContent="" Margin="0" />
+                            </Grid>
+
+                            <!-- Raw SVG Source Editor -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Raw SVG Source Markup" Classes="inspector-label" />
+                                <TextBox Text="{Binding SvgElement.SvgSource, Mode=TwoWay}"
+                                         AcceptsReturn="True" TextWrapping="Wrap"
+                                         Height="80" FontSize="11" FontFamily="Consolas, monospace" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
                     <!-- 15. DIMENSIONS, POSITION & TRANSFORMS CARD (Visible for any selected element) -->
                     <Border Background="{StaticResource WinBgBrush}" BorderBrush="{StaticResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
                             IsVisible="{Binding HasSelectedElement}">

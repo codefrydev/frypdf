@@ -290,6 +290,10 @@ internal class QuestPdfDocumentWrapper : IDocument
                     mRow.AutoItem().Text("|").FontSize(9).Bold().FontColor(measEl.StrokeColorHex);
                 });
                 break;
+
+            case PdfSvgElement svgEl:
+                ComposeSvg(container, svgEl);
+                break;
         }
     }
 
@@ -495,10 +499,28 @@ internal class QuestPdfDocumentWrapper : IDocument
 
     private void ComposeImage(IContainer container, PdfImageElement imgEl)
     {
+        if (!string.IsNullOrEmpty(imgEl.Base64Data))
+        {
+            try
+            {
+                byte[] bytes = Convert.FromBase64String(imgEl.Base64Data);
+                container.Image(bytes).FitArea();
+                return;
+            }
+            catch { }
+        }
+
         if (!string.IsNullOrEmpty(imgEl.ImagePath) && File.Exists(imgEl.ImagePath))
         {
             try
             {
+                if (imgEl.ImagePath.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
+                {
+                    string svg = File.ReadAllText(imgEl.ImagePath);
+                    container.Svg(svg).FitArea();
+                    return;
+                }
+
                 container.Image(imgEl.ImagePath).FitArea();
                 return;
             }
@@ -507,6 +529,30 @@ internal class QuestPdfDocumentWrapper : IDocument
 
         container.Border(1).BorderColor(imgEl.BorderColorHex).Background("#F3F2F1").AlignCenter().AlignMiddle()
             .Text(imgEl.AltText ?? "Image").FontSize(10).FontColor(Colors.Grey.Medium);
+    }
+
+    private void ComposeSvg(IContainer container, PdfSvgElement svgEl)
+    {
+        try
+        {
+            string svgData = !string.IsNullOrWhiteSpace(svgEl.SvgSource)
+                ? svgEl.SvgSource
+                : (!string.IsNullOrWhiteSpace(svgEl.FilePath) && File.Exists(svgEl.FilePath)
+                    ? File.ReadAllText(svgEl.FilePath)
+                    : SvgOrnamentLibrary.GetGaneshaCrestSvg());
+
+            if (!string.IsNullOrWhiteSpace(svgEl.TintColorHex))
+            {
+                svgData = svgData.Replace("currentColor", svgEl.TintColorHex);
+            }
+
+            container.Svg(svgData).FitArea();
+        }
+        catch
+        {
+            container.Border(1).BorderColor(svgEl.BorderColorHex ?? "#CBD5E1").Background("#F8FAFC").AlignCenter().AlignMiddle()
+                .Text("SVG Vector Art").FontSize(9).FontColor(Colors.Grey.Medium);
+        }
     }
 
     private void ComposeQrCode(IContainer container, PdfQrCodeElement qrEl)

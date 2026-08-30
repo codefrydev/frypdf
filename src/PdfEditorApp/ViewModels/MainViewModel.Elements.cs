@@ -661,6 +661,51 @@ public partial class MainViewModel
         AddElementWithUndo(inkEl, isHighlighter ? "Added Highlighter Stroke" : "Added Freehand Ink Stroke");
     }
 
+    [RelayCommand]
+    public void AddSvgElement(string? presetName = null)
+    {
+        if (CurrentPage == null) return;
+
+        string preset = string.IsNullOrWhiteSpace(presetName) ? "GaneshaCrest" : presetName;
+        double w = preset switch
+        {
+            "MarigoldToran" => 500,
+            "DottedFloralDivider" => 400,
+            "MandapArch" => 480,
+            "PlantainTrees" => 90,
+            "TraditionalDeepam" => 60,
+            _ => 150
+        };
+        double h = preset switch
+        {
+            "MarigoldToran" => 75,
+            "DottedFloralDivider" => 25,
+            "MandapArch" => 55,
+            "PlantainTrees" => 180,
+            "TraditionalDeepam" => 140,
+            _ => 150
+        };
+
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, w, h);
+        var svgEl = new SvgElementViewModel
+        {
+            X = posX,
+            Y = posY,
+            Width = w,
+            Height = h,
+            PresetName = preset,
+            SvgSource = SvgOrnamentLibrary.GetSvg(preset)
+        };
+
+        AddElementWithUndo(svgEl, $"Added Vector Ornament ({preset})");
+    }
+
+    [RelayCommand]
+    public void AddOrnamentElement(string ornamentName)
+    {
+        AddSvgElement(ornamentName);
+    }
+
     // --- FILL & SIGN / DIGITAL SIGNATURE STUDIO ---
 
     [RelayCommand]

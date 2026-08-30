@@ -17,7 +17,8 @@ public enum ElementKind
     Barcode,
     Redaction,
     Ink,
-    Measurement
+    Measurement,
+    Svg
 }
 
 public enum FormFieldType

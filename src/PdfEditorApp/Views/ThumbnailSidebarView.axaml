@@ -281,6 +281,18 @@
                                                                 </Grid>
                                                             </DataTemplate>
 
+                                                            <!-- SVG Vector Mini Template -->
+                                                            <DataTemplate DataType="elvm:SvgElementViewModel">
+                                                                <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                                                    <Viewbox Stretch="Uniform">
+                                                                        <Path Data="{Binding PathGeometryData}"
+                                                                              Fill="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#D97706'}"
+                                                                              Stroke="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#8B0000'}"
+                                                                              StrokeThickness="1.5" />
+                                                                    </Viewbox>
+                                                                </Grid>
+                                                            </DataTemplate>
+
                                                         </ItemsControl.DataTemplates>
                                                     </ItemsControl>
 

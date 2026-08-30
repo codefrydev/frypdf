@@ -332,6 +332,7 @@ public partial class PageViewModel : ViewModelBase
                 PdfInkElement ink => new InkElementViewModel(),
                 PdfStickyNoteElement note => new StickyNoteElementViewModel(),
                 PdfMeasurementElement m => new MeasurementElementViewModel(),
+                PdfSvgElement svg => new SvgElementViewModel(),
                 _ => new TextElementViewModel()
             };
             vm.LoadFromModel(elModel);

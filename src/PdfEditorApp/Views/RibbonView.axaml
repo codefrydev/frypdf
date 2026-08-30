@@ -533,6 +533,51 @@
                                 </StackPanel>
                                 <TextBlock Grid.Row="1" Text="Certificates &amp; Badges" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
+
+                            <Rectangle Width="1" Height="68" Fill="{StaticResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+
+                            <!-- Invitations & Vector Ornaments Group -->
+                            <Grid RowDefinitions="*,Auto">
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Classes="tool-btn" Command="{Binding AddSvgElementCommand}" ToolTip.Tip="Insert Vector SVG Ornament / Illustration">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="VectorCurve" Width="20" Height="20" Foreground="#D97706" HorizontalAlignment="Center" />
+                                            <TextBlock Text="SVG Vector" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddOrnamentElementCommand}" CommandParameter="GaneshaCrest" ToolTip.Tip="Insert Auspicious Lord Ganesha Crest">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="CardsHeartOutline" Width="20" Height="20" Foreground="#8B0000" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Ganesha Crest" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddOrnamentElementCommand}" CommandParameter="MarigoldToran" ToolTip.Tip="Insert Festive Marigold Toran Garland">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="FlowerTulipOutline" Width="20" Height="20" Foreground="#EA580C" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Toran Garland" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddOrnamentElementCommand}" CommandParameter="TraditionalDeepam" ToolTip.Tip="Insert Traditional Brass Oil Lamp (Deepam)">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="Candle" Width="20" Height="20" Foreground="#D97706" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Deepam Lamp" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddOrnamentElementCommand}" CommandParameter="BotanicalWreath" ToolTip.Tip="Insert Royal Botanical Laurel Wreath">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="Leaf" Width="20" Height="20" Foreground="#059669" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Floral Wreath" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding AddOrnamentElementCommand}" CommandParameter="ArtDecoFrame" ToolTip.Tip="Insert Luxury Art Deco Geometric Gold Frame">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="CropFree" Width="20" Height="20" Foreground="#F59E0B" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Art Deco Frame" FontSize="10" FontWeight="Medium" Foreground="{StaticResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock Grid.Row="1" Text="Invitations &amp; Ornaments" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                            </Grid>
                         </StackPanel>
 
                         <!-- ================= TAB: FILL & SIGN ================= -->

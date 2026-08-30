@@ -103,7 +103,7 @@ public partial class HomeViewModel : ViewModelBase
 
     // --- Constructor ---
 
-    public HomeViewModel() : this(new RecentDocumentsService(), new TemplateService(), new ProjectPersistenceService(), new PdfToolRegistry()) { }
+    public HomeViewModel() : this(new RecentDocumentsService(), new TemplateService(), new ProjectPersistenceService(), new PdfToolRegistry(), null, null, new ThemeService()) { }
 
     public HomeViewModel(
         IRecentDocumentsService recentService,

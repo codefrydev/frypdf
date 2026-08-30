@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Text.Json;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels;
@@ -6,16 +8,51 @@ using Xunit;
 
 namespace PdfEditorApp.Tests;
 
-public class ThemeServiceTests
+public class ThemeServiceTests : IDisposable
 {
-    [Fact]
-    public void ThemeService_InitialState_DefaultsToLight()
+    private readonly string _settingsFilePath;
+    private readonly string? _originalBackup;
+
+    public ThemeServiceTests()
     {
-        // Arrange
+        _settingsFilePath = ThemeService.GetSettingsFilePath();
+        if (File.Exists(_settingsFilePath))
+        {
+            _originalBackup = File.ReadAllText(_settingsFilePath);
+        }
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            if (_originalBackup != null)
+            {
+                File.WriteAllText(_settingsFilePath, _originalBackup);
+            }
+            else if (File.Exists(_settingsFilePath))
+            {
+                File.Delete(_settingsFilePath);
+            }
+        }
+        catch
+        {
+            // Clean up best effort
+        }
+    }
+
+    [Fact]
+    public void ThemeService_InitialState_LoadsFromDiskOrDefaultsToLight()
+    {
+        // Arrange: remove file if present
+        if (File.Exists(_settingsFilePath)) File.Delete(_settingsFilePath);
+
+        // Act
         var service = new ThemeService();
 
         // Assert
         Assert.Equal(AppThemeMode.Light, service.CurrentTheme);
+        Assert.Equal(PdfReaderTheme.Default, service.ReadingTheme);
         Assert.False(service.IsDarkMode);
     }
 
@@ -41,6 +78,7 @@ public class ThemeServiceTests
     {
         // Arrange
         var service = new ThemeService();
+        service.SetTheme(AppThemeMode.Light);
         Assert.Equal(AppThemeMode.Light, service.CurrentTheme);
 
         // Act 1: Toggle to Dark
@@ -55,10 +93,103 @@ public class ThemeServiceTests
     }
 
     [Fact]
+    public void ThemeService_PersistsTheme_ToDisk_AndRestoresUponReopening()
+    {
+        // Arrange: instantiate service and save Dark mode
+        var service1 = new ThemeService();
+        service1.SetTheme(AppThemeMode.Dark);
+
+        // Verify file was written
+        Assert.True(File.Exists(_settingsFilePath));
+        string savedJson = File.ReadAllText(_settingsFilePath);
+        Assert.Contains("Dark", savedJson);
+
+        // Act: create brand new ThemeService instance (simulating app restart)
+        var service2 = new ThemeService();
+
+        // Assert: should restore Dark theme immediately from disk
+        Assert.Equal(AppThemeMode.Dark, service2.CurrentTheme);
+        Assert.True(service2.IsDarkMode);
+    }
+
+    [Fact]
+    public void ThemeService_PersistsReadingTheme_ToDisk_AndRestoresUponReopening()
+    {
+        // Arrange: instantiate service and set reading theme to Sepia
+        var service1 = new ThemeService();
+        service1.SetReadingTheme(PdfReaderTheme.Sepia);
+
+        // Verify file was written
+        Assert.True(File.Exists(_settingsFilePath));
+        string savedJson = File.ReadAllText(_settingsFilePath);
+        Assert.Contains("Sepia", savedJson);
+
+        // Act: create brand new ThemeService instance (simulating app restart)
+        var service2 = new ThemeService();
+
+        // Assert: should restore Sepia reading theme immediately from disk
+        Assert.Equal(PdfReaderTheme.Sepia, service2.ReadingTheme);
+    }
+
+    [Fact]
+    public void ThemeService_HandlesCaseInsensitiveAndLegacyJson_Gracefully()
+    {
+        // Arrange: manually write lowercase / legacy json
+        var legacyJson = "{\n  \"theme\": \"dark\",\n  \"readingTheme\": \"highcontrast\",\n  \"isDarkMode\": true\n}";
+        var dir = ThemeService.GetSettingsDirectory();
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(_settingsFilePath, legacyJson);
+
+        // Act: instantiate new ThemeService
+        var service = new ThemeService();
+
+        // Assert
+        Assert.Equal(AppThemeMode.Dark, service.CurrentTheme);
+        Assert.Equal(PdfReaderTheme.HighContrast, service.ReadingTheme);
+        Assert.True(service.IsDarkMode);
+    }
+
+    [Fact]
+    public void ThemeService_HandlesNumericEnumJson_Gracefully()
+    {
+        // Arrange: numeric enum values (0 = System, 1 = Light, 2 = Dark)
+        var numericJson = "{\n  \"Theme\": 2,\n  \"ReadingTheme\": 1\n}";
+        var dir = ThemeService.GetSettingsDirectory();
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(_settingsFilePath, numericJson);
+
+        // Act: instantiate new ThemeService
+        var service = new ThemeService();
+
+        // Assert
+        Assert.Equal(AppThemeMode.Dark, service.CurrentTheme);
+        Assert.Equal(PdfReaderTheme.Sepia, service.ReadingTheme);
+    }
+
+    [Fact]
+    public void ThemeService_HandlesCorruptedJson_FallsBackToDefaults()
+    {
+        // Arrange: corrupt json
+        var corruptJson = "{ INVALID JSON !! @@ }}";
+        var dir = ThemeService.GetSettingsDirectory();
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(_settingsFilePath, corruptJson);
+
+        // Act: instantiate new ThemeService
+        var service = new ThemeService();
+
+        // Assert
+        Assert.Equal(AppThemeMode.Light, service.CurrentTheme);
+        Assert.Equal(PdfReaderTheme.Default, service.ReadingTheme);
+    }
+
+    [Fact]
     public void HomeViewModel_ToggleThemeCommand_SynchronizesWithThemeService()
     {
         // Arrange
         var themeService = new ThemeService();
+        themeService.SetTheme(AppThemeMode.Light);
+
         var homeVm = new HomeViewModel(
             new RecentDocumentsService(),
             new TemplateService(),
@@ -88,6 +219,8 @@ public class ThemeServiceTests
     {
         // Arrange
         var themeService = new ThemeService();
+        themeService.SetTheme(AppThemeMode.Light);
+
         var mainVm = new MainViewModel(
             new PdfExportService(),
             new TemplateService(),
@@ -113,6 +246,29 @@ public class ThemeServiceTests
         mainVm.ToggleThemeCommand.Execute(null);
         Assert.True(mainVm.IsDarkMode);
         Assert.True(mainVm.Home.IsDarkMode);
+    }
+
+    [Fact]
+    public void MainViewModel_PdfViewer_SyncsAndPersistsReadingTheme()
+    {
+        // Arrange
+        var themeService = new ThemeService();
+        var mainVm = new MainViewModel(
+            new PdfExportService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            themeService: themeService);
+
+        // Act: User selects Dark reading mode in PDF viewer
+        mainVm.PdfViewer.SetReadingThemeCommand.Execute("Dark");
+
+        // Assert: MainViewModel, ThemeService and PdfViewer are all synced
+        Assert.Equal(PdfReaderTheme.Dark, mainVm.PdfViewer.ReadingTheme);
+        Assert.Equal(PdfReaderTheme.Dark, themeService.ReadingTheme);
+
+        // Simulating reopen
+        var reopenedService = new ThemeService();
+        Assert.Equal(PdfReaderTheme.Dark, reopenedService.ReadingTheme);
     }
 
     [Fact]

@@ -369,7 +369,8 @@ public partial class MainViewModel : ViewModelBase
         new RecentDocumentsService(),
         new PageOrganizerService(),
         null,
-        null)
+        null,
+        new ThemeService())
     {
     }
 
@@ -406,6 +407,7 @@ public partial class MainViewModel : ViewModelBase
             _themeService.ThemeChanged += (mode) =>
             {
                 IsDarkMode = _themeService.IsDarkMode;
+                if (Home != null) Home.IsDarkMode = IsDarkMode;
             };
         }
 
@@ -438,6 +440,12 @@ public partial class MainViewModel : ViewModelBase
         PdfViewer.RunToolRequested += (toolId, path) => OpenToolWithInitialFile(toolId, path);
         PdfViewer.ShowToastRequested += (msg) => ShowToast(msg);
         PdfViewer.OpenFileRequested += () => _ = OpenPdfToReadWithPickerAsync();
+        if (_themeService != null)
+        {
+            PdfViewer.ReadingTheme = _themeService.ReadingTheme;
+            PdfViewer.ReadingThemeChanged += (rt) => _themeService.SetReadingTheme(rt);
+            _themeService.ReadingThemeChanged += (rt) => { PdfViewer.ReadingTheme = rt; };
+        }
 
         // Set up Home page and wire its navigation events
         Home = new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, toolViewModelFactory, _themeService);

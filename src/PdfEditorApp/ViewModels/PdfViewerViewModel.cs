@@ -160,6 +160,7 @@ public partial class PdfViewerViewModel : ViewModelBase
     public event Action<PdfToolId, string>? RunToolRequested;
     public event Action<string>? ShowToastRequested;
     public event Action? OpenFileRequested;
+    public event Action<PdfReaderTheme>? ReadingThemeChanged;
 
     // --- Observable Properties ---
 
@@ -409,6 +410,8 @@ public partial class PdfViewerViewModel : ViewModelBase
                 ThemeBorderColorHex = "#E2E8F0";
                 break;
         }
+
+        ReadingThemeChanged?.Invoke(value);
     }
 
     partial void OnSearchQueryChanged(string value)

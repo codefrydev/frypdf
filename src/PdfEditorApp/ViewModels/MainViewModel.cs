@@ -325,6 +325,10 @@ public partial class MainViewModel : ViewModelBase
 
         // Initialize quick command palette indexing
         InitCommandPalette();
+
+        // Initialize default document model
+        var defaultDoc = _templateService.CreateAnnualReportTemplate();
+        LoadFromDocumentModel(defaultDoc);
     }
 
     // --- HOME / EDITOR NAVIGATION ---

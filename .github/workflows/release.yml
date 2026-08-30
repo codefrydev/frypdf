@@ -78,7 +78,7 @@ jobs:
       - name: Publish win-x64
         shell: pwsh
         run: >
-          dotnet publish PdfEditorApp.csproj -c Release -r win-x64 --self-contained true
+          dotnet publish src/PdfEditorApp/PdfEditorApp.csproj -c Release -r win-x64 --self-contained true
           -p:Version=$env:VERSION
           -p:AssemblyVersion=$env:FOUR_PART_VERSION
           -p:FileVersion=$env:FOUR_PART_VERSION
@@ -126,7 +126,7 @@ jobs:
 
       - name: Publish osx-arm64
         run: >
-          dotnet publish PdfEditorApp.csproj -c Release -r osx-arm64 --self-contained true
+          dotnet publish src/PdfEditorApp/PdfEditorApp.csproj -c Release -r osx-arm64 --self-contained true
           -p:Version=$VERSION
           -p:AssemblyVersion=$FOUR_PART_VERSION
           -p:FileVersion=$FOUR_PART_VERSION

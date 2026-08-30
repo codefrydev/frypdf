@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch FryPDF (Avalonia Desktop)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/PdfEditorApp/bin/Debug/net10.0/PdfEditorApp.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/PdfEditorApp",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}

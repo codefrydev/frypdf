@@ -452,7 +452,8 @@ public enum HomeNavSection
     Starred,
     Trash,
     Licensing,
-    FontPackages
+    FontPackages,
+    Help
 }
 
 public enum PdfReaderTheme

@@ -93,8 +93,10 @@ public partial class HomeViewModel : ViewModelBase
     public bool IsTrashSection => SelectedNavSection == HomeNavSection.Trash;
     public bool IsLicensingSection => SelectedNavSection == HomeNavSection.Licensing;
     public bool IsFontPackagesSection => SelectedNavSection == HomeNavSection.FontPackages;
+    public bool IsHelpSection => SelectedNavSection == HomeNavSection.Help;
 
     public FontManagerViewModel FontManager { get; } = new();
+    public HelpGuideViewModel HelpGuide { get; } = new();
 
     public int MatchingToolsCount => FilteredTools.Count;
     public bool HasNoMatchingTools => FilteredTools.Count == 0;
@@ -139,6 +141,8 @@ public partial class HomeViewModel : ViewModelBase
         {
             ToolRunner.BackRequested += BackToTools;
         }
+
+        HelpGuide.ToolLaunchRequested += (id) => OpenToolPage(id);
 
         InitializeTools();
         InitializeTemplates();
@@ -341,6 +345,30 @@ public partial class HomeViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsTrashSection));
         OnPropertyChanged(nameof(IsLicensingSection));
         OnPropertyChanged(nameof(IsFontPackagesSection));
+        OnPropertyChanged(nameof(IsHelpSection));
+    }
+
+    [RelayCommand]
+    public void OpenHelpGuide(string? topicId = null)
+    {
+        SelectedNavSection = HomeNavSection.Help;
+        IsToolPageActive = false;
+        if (!string.IsNullOrWhiteSpace(topicId))
+        {
+            HelpGuide.OpenTopicById(topicId);
+        }
+        else
+        {
+            HelpGuide.BackToGrid();
+        }
+    }
+
+    [RelayCommand]
+    public void OpenHelpForTool(PdfToolId toolId)
+    {
+        SelectedNavSection = HomeNavSection.Help;
+        IsToolPageActive = false;
+        HelpGuide.OpenGuideForTool(toolId);
     }
 
     private void UpdateFilteredTools()
@@ -551,6 +579,7 @@ public partial class HomeViewModel : ViewModelBase
                 ActiveToolViewModel.OpenInEditorRequested += OnToolOpenInEditorRequested;
                 ActiveToolViewModel.OpenInViewerRequested += OnToolOpenInViewerRequested;
                 ActiveToolViewModel.NavigateToToolRequested += OnToolNavigateToToolRequested;
+                ActiveToolViewModel.HelpGuideRequested += (id) => OpenHelpForTool(id);
                 ActiveToolViewModel.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(PdfToolViewModelBase.IsToolStarred) && ActiveToolCard != null && ActiveToolViewModel != null)

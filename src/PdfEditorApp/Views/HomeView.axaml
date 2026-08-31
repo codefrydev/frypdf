@@ -267,10 +267,21 @@
                             </Grid>
                         </Button>
 
-                        <!-- Legal & Open Source Header -->
-                        <TextBlock Text="ABOUT &amp; LEGAL" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,12,0,4" />
+                        <!-- 13. Help & User Guides -->
+                        <Button Classes="nav-tab-btn"
+                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Help}"
+                                Command="{Binding SelectNavSectionCommand}"
+                                CommandParameter="Help">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <materialIcons:MaterialIcon Grid.Column="0" Kind="HelpCircleOutline" Width="18" Height="18" Foreground="#0284C7" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="Help &amp; Guides" VerticalAlignment="Center" />
+                                <Border Grid.Column="2" Background="#E0F2FE" CornerRadius="4" Padding="5,1">
+                                    <TextBlock Text="Guides" FontSize="9.5" FontWeight="Bold" Foreground="#0284C7" />
+                                </Border>
+                            </Grid>
+                        </Button>
 
-                        <!-- 12. Licenses & Third-Party Tools -->
+                        <!-- 14. Licenses & Third-Party Tools -->
                         <Button Classes="nav-tab-btn"
                                 Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Licensing}"
                                 Command="{Binding SelectNavSectionCommand}"
@@ -461,6 +472,11 @@
                         <!-- Page 8: On-Demand Font & Language Packages Studio -->
                         <Panel IsVisible="{Binding IsFontPackagesSection}">
                             <views:FontManagerPageView DataContext="{Binding FontManager}" />
+                        </Panel>
+
+                        <!-- Page 9: Comprehensive Help & User Guides Studio -->
+                        <Panel IsVisible="{Binding IsHelpSection}">
+                            <views:HelpGuidePageView DataContext="{Binding HelpGuide}" />
                         </Panel>
                     </Panel>
                 </ScrollViewer>

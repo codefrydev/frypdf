@@ -63,6 +63,7 @@ public partial class App : Application
         services.AddSingleton<ISmartPlacementService, SmartPlacementService>();
         services.AddSingleton<IRecentDocumentsService, RecentDocumentsService>();
         services.AddSingleton<IPageOrganizerService, PageOrganizerService>();
+        services.AddSingleton<IHelpGuideService, HelpGuideService>();
         services.AddTransient<IUndoRedoService, UndoRedoService>();
 
         // PDF Tools Platform Services

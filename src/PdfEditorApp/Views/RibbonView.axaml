@@ -1024,10 +1024,16 @@
                             <!-- Support & About Group -->
                             <Grid RowDefinitions="*,Auto">
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Classes="tool-btn" Command="{Binding NavigateToHelpCommand}" ToolTip.Tip="Help &amp; User Guides for All 32 Tools &amp; Studio Features">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="20" Height="20" Foreground="#0284C7" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Help &amp; Guides" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
                                     <Button Classes="tool-btn" Command="{Binding OpenAboutDialogCommand}" ToolTip.Tip="About FryPDF &amp; CodeFryDev Support">
                                         <StackPanel HorizontalAlignment="Center" Spacing="3">
                                             <materialIcons:MaterialIcon Kind="InformationOutline" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="About &amp; Help" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                            <TextBlock Text="About FryPDF" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
                                         </StackPanel>
                                     </Button>
                                     <Button Classes="tool-btn" Command="{Binding NavigateToLicensingCommand}" ToolTip.Tip="Open Source Licenses &amp; Third-Party Tools">

@@ -122,6 +122,13 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
     public event Action<string>? OpenInEditorRequested;
     public event Action<string>? OpenInViewerRequested;
     public event Action<PdfToolId, string>? NavigateToToolRequested;
+    public event Action<PdfToolId>? HelpGuideRequested;
+
+    [RelayCommand]
+    public void OpenToolHelpGuide()
+    {
+        HelpGuideRequested?.Invoke(Tool.Id);
+    }
 
     [RelayCommand]
     public void NavigateToTool(string toolName)

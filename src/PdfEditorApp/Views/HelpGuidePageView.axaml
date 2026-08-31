@@ -1,0 +1,522 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:models="using:PdfEditorApp.Models"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.HelpGuidePageView"
+             x:DataType="vm:HelpGuideViewModel">
+
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:BooleanToStringConverter x:Key="BooleanToStringConverter" />
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Category Filter Pill Style -->
+        <Style Selector="Button.category-filter-btn">
+            <Setter Property="Background" Value="{DynamicResource WinInputBgBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="Padding" Value="14,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.category-filter-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+        </Style>
+        <Style Selector="Button.category-filter-btn.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
+        </Style>
+        <Style Selector="Button.category-filter-btn.active">
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <!-- Guide Card Style -->
+        <Style Selector="Border.guide-card">
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BoxShadow" Value="0 2 8 #08000000" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.guide-card:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="BoxShadow" Value="0 8 24 #140F6CBD" />
+            <Setter Property="RenderTransform" Value="translateY(-2px)" />
+        </Style>
+
+        <!-- Action Button Style -->
+        <Style Selector="Button.guide-action-btn">
+            <Setter Property="Background" Value="{DynamicResource WinInputBgBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.guide-action-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel Margin="32,24,32,48" Spacing="22">
+
+        <!-- ================================================================= -->
+        <!-- 1. TOP HEADER HERO BANNER                                         -->
+        <!-- ================================================================= -->
+        <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+            <!-- Left: Icon & Title -->
+            <StackPanel Grid.Column="0" Spacing="3">
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Border Width="38" Height="38" Background="#E0F2FE" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="9">
+                        <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="22" Height="22" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="Help &amp; User Guides" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                    <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="6" Padding="8,2" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <Ellipse Width="6" Height="6" Fill="#16A34A" />
+                            <TextBlock Text="100% OFFLINE GUIDES" FontSize="10" FontWeight="Bold" Foreground="#15803D" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+                <TextBlock Text="Step-by-step documentation, pro tips, keyboard shortcuts, and troubleshooting for all 32 PDF tools &amp; live editor."
+                           FontSize="12.5" Foreground="{DynamicResource WinMutedBrush}" Margin="48,0,0,0" />
+            </StackPanel>
+
+            <!-- Right: Quick External Links -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Command="{Binding OpenExternalLinkCommand}"
+                        CommandParameter="https://codefrydev.in"
+                        Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
+                        BorderThickness="1"
+                        Foreground="{DynamicResource WinTextBrush}"
+                        CornerRadius="8"
+                        Padding="12,7"
+                        FontSize="11.5"
+                        FontWeight="SemiBold"
+                        Cursor="Hand"
+                        ToolTip.Tip="Visit CodeFryDev Developer Portal">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="Web" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
+                        <TextBlock Text="Developer Portal" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- ================================================================= -->
+        <!-- 2. QUICK SEARCH BAR                                               -->
+        <!-- ================================================================= -->
+        <Border Background="{DynamicResource WinInputBgBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="14,0"
+                Height="44">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <materialIcons:MaterialIcon Grid.Column="0"
+                                            Kind="Magnify"
+                                            Width="18" Height="18"
+                                            Foreground="{DynamicResource WinSubtleBrush}"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,10,0" />
+                <TextBox Grid.Column="1"
+                         Text="{Binding SearchQuery}"
+                         PlaceholderText="Search guides, tools, shortcuts, LaTeX, OCR, batch generation, passwords, or troubleshooting..."
+                         FontSize="13"
+                         Foreground="{DynamicResource WinTextBrush}"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         VerticalAlignment="Center" />
+                <Button Grid.Column="2"
+                        Command="{Binding ClearSearchCommand}"
+                        IsVisible="{Binding HasActiveSearch}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="4"
+                        Cursor="Hand"
+                        ToolTip.Tip="Clear search">
+                    <materialIcons:MaterialIcon Kind="CloseCircle" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" />
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- ================================================================= -->
+        <!-- 3. CATEGORY FILTER PILLS                                          -->
+        <!-- ================================================================= -->
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Categories}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="8" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Button Classes="category-filter-btn"
+                                Classes.active="{Binding $parent[UserControl].((vm:HelpGuideViewModel)DataContext).SelectedCategory, Converter={StaticResource EqualityConverter}, ConverterParameter={Binding}}"
+                                Command="{Binding $parent[UserControl].((vm:HelpGuideViewModel)DataContext).SetCategoryCommand}"
+                                CommandParameter="{Binding}"
+                                Content="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- ================================================================= -->
+        <!-- 4. MAIN CONTENT AREA: MASTER GRID OR FOCUSED DETAIL VIEW         -->
+        <!-- ================================================================= -->
+
+        <!-- A. DETAIL GUIDE VIEW (Active when user clicked a guide card) -->
+        <Border IsVisible="{Binding IsDetailViewActive}"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="14"
+                Padding="24"
+                BoxShadow="0 4 16 #0A000000">
+            <StackPanel Spacing="20">
+
+                <!-- Top Navigation: Back Button + Quick Launch Button -->
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Button Grid.Column="0"
+                            Command="{Binding BackToGridCommand}"
+                            Background="{DynamicResource WinInputBgBrush}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
+                            BorderThickness="1"
+                            Foreground="{DynamicResource WinTextBrush}"
+                            CornerRadius="8"
+                            Padding="12,6"
+                            Cursor="Hand"
+                            ToolTip.Tip="Return to all guides grid">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="ArrowLeft" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
+                            <TextBlock Text="Back to All Guides" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="2"
+                            IsVisible="{Binding SelectedGuide.HasRelatedTool, FallbackValue=False}"
+                            Command="{Binding LaunchToolCommand}"
+                            CommandParameter="{Binding SelectedGuide}"
+                            Background="{DynamicResource WinAccentBrush}"
+                            Foreground="White"
+                            CornerRadius="8"
+                            Padding="14,6"
+                            Cursor="Hand"
+                            ToolTip.Tip="Open and launch this tool workspace">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="PlayCircleOutline" Width="16" Height="16" Foreground="White" />
+                            <TextBlock Text="Launch Tool Workspace" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <Separator Background="{DynamicResource WinBorderBrush}" Height="1" />
+
+                <!-- Guide Header -->
+                <Grid ColumnDefinitions="Auto,*" Margin="0,4,0,0">
+                    <Border Grid.Column="0" Width="52" Height="52"
+                            Background="{Binding SelectedGuide.BackgroundAccentHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#E0F2FE'}"
+                            CornerRadius="12" Margin="0,0,16,0" VerticalAlignment="Top">
+                        <materialIcons:MaterialIcon Kind="{Binding SelectedGuide.IconKind, FallbackValue=HelpCircleOutline}"
+                                                    Width="28" Height="28"
+                                                    Foreground="{Binding SelectedGuide.IconColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#0284C7'}"
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding SelectedGuide.Title}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                            <Border Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,1">
+                                <TextBlock Text="{Binding SelectedGuide.Badge}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                            </Border>
+                            <Border Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="4" Padding="6,1"
+                                    IsVisible="{Binding SelectedGuide.HasShortcut, FallbackValue=False}">
+                                <TextBlock Text="{Binding SelectedGuide.KeyboardShortcut}" FontSize="10.5" FontWeight="Bold" Foreground="#4F46E5" />
+                            </Border>
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding SelectedGuide.Summary}" FontSize="13" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Detailed Narrative Description -->
+                <Border Background="{DynamicResource WinInputBgBrush}" CornerRadius="8" Padding="14" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1">
+                    <TextBlock Text="{Binding SelectedGuide.Description}" FontSize="12.5" LineHeight="20" Foreground="{DynamicResource WinTextBrush}" TextWrapping="Wrap" />
+                </Border>
+
+                <!-- Step-by-Step Instructions Block -->
+                <StackPanel Spacing="10" IsVisible="{Binding SelectedGuide.HasSteps, FallbackValue=False}">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="FormatListNumbered" Width="18" Height="18" Foreground="{DynamicResource WinAccentBrush}" />
+                        <TextBlock Text="Step-by-Step Instructions" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                    </StackPanel>
+
+                    <ItemsControl ItemsSource="{Binding SelectedGuide.Steps}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Border Background="{DynamicResource WinInputBgBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="12,10"
+                                        Margin="0,0,0,6">
+                                    <Grid ColumnDefinitions="Auto,*">
+                                        <Border Grid.Column="0" Width="22" Height="22" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="11" Margin="0,0,10,0" VerticalAlignment="Top">
+                                            <materialIcons:MaterialIcon Kind="Check" Width="13" Height="13" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <TextBlock Grid.Column="1" Text="{Binding}" FontSize="12.5" Foreground="{DynamicResource WinTextBrush}" TextWrapping="Wrap" LineHeight="18" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Key Features & Capabilities -->
+                <StackPanel Spacing="10" IsVisible="{Binding SelectedGuide.HasKeyFeatures, FallbackValue=False}">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="StarOutline" Width="18" Height="18" Foreground="#F59E0B" />
+                        <TextBlock Text="Key Features &amp; Capabilities" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                    </StackPanel>
+
+                    <ItemsControl ItemsSource="{Binding SelectedGuide.KeyFeatures}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="4,2,0,2">
+                                    <Ellipse Width="6" Height="6" Fill="#0284C7" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding}" FontSize="12.5" Foreground="{DynamicResource WinTextBrush}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Pro Tips Callout Box -->
+                <Border Background="#FFFBEB"
+                        BorderBrush="#FDE68A"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="16"
+                        IsVisible="{Binding SelectedGuide.HasProTips, FallbackValue=False}">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="LightbulbOutline" Width="18" Height="18" Foreground="#D97706" />
+                            <TextBlock Text="PRO TIPS &amp; BEST PRACTICES" FontSize="11.5" FontWeight="Bold" Foreground="#92400E" />
+                        </StackPanel>
+
+                        <ItemsControl ItemsSource="{Binding SelectedGuide.ProTips}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <TextBlock Text="{Binding StringFormat='•  {0}'}" FontSize="12" Foreground="#78350F" TextWrapping="Wrap" Margin="4,2,0,2" LineHeight="18" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Technical Specifications & Supported Formats -->
+                <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                        IsVisible="{Binding SelectedGuide.HasFormats, FallbackValue=False}">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <materialIcons:MaterialIcon Grid.Column="0" Kind="FileCogOutline" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding SelectedGuide.SupportedFormats, StringFormat='Supported Formats: {0}'}"
+                                   FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+            </StackPanel>
+        </Border>
+
+        <!-- B. MASTER GUIDE GRID VIEW (Active when looking at all cards) -->
+        <StackPanel IsVisible="{Binding !IsDetailViewActive}" Spacing="20">
+
+            <!-- Result Count & Header -->
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding SelectedCategory}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="{Binding MatchingGuidesCount, StringFormat='({0} topics)'}" FontSize="13" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Zero State: When search yields no results -->
+            <Border Background="{DynamicResource WinPanelBrush}"
+                    BorderBrush="{DynamicResource WinBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="48"
+                    HorizontalAlignment="Stretch"
+                    IsVisible="{Binding HasNoMatchingGuides}">
+                <StackPanel HorizontalAlignment="Center" Spacing="12">
+                    <Border Width="64" Height="64" Background="{DynamicResource WinHoverBrush}" CornerRadius="32" HorizontalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="MagnifyRemoveOutline" Width="32" Height="32" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="No guide topics match your search" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
+                    <TextBlock Text="Try searching with different keywords like 'merge', 'compress', 'latex', 'ocr', or 'shortcuts'." FontSize="12.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                    <Button Command="{Binding ClearSearchCommand}"
+                            Background="{DynamicResource WinAccentBrush}"
+                            Foreground="White"
+                            CornerRadius="8"
+                            Padding="16,8"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            HorizontalAlignment="Center"
+                            Margin="0,6,0,0"
+                            Cursor="Hand">
+                        <TextBlock Text="Clear Search &amp; View All Guides" />
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Guide Cards Items Control Grid -->
+            <ItemsControl ItemsSource="{Binding FilteredGuides}" IsVisible="{Binding !HasNoMatchingGuides}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:HelpGuideItem">
+                        <Border Classes="guide-card"
+                                Width="340"
+                                Margin="0,0,16,16"
+                                Padding="16">
+                            <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" MinHeight="170">
+
+                                <!-- Row 0: Icon + Badge + Shortcut -->
+                                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
+                                    <!-- Icon -->
+                                    <Border Grid.Column="0" Width="36" Height="36"
+                                            Background="{Binding BackgroundAccentHex, Converter={StaticResource HexToBrushConverter}}"
+                                            CornerRadius="8">
+                                        <materialIcons:MaterialIcon Kind="{Binding IconKind}" Width="20" Height="20"
+                                                                    Foreground="{Binding IconColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+
+                                    <!-- Category Badge -->
+                                    <Border Grid.Column="1" HorizontalAlignment="Left" Margin="8,0,0,0"
+                                            Background="{DynamicResource WinHoverBrush}"
+                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="6,2"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Category}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" />
+                                    </Border>
+
+                                    <!-- Shortcut Pill (if available) -->
+                                    <Border Grid.Column="2"
+                                            IsVisible="{Binding HasShortcut}"
+                                            Background="#EEF2FF"
+                                            BorderBrush="#C7D2FE"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="6,1"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding KeyboardShortcut}" FontSize="9.5" FontWeight="Bold" Foreground="#4F46E5" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- Row 1: Title -->
+                                <TextBlock Grid.Row="1"
+                                           Text="{Binding Title}"
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource WinTextBrush}"
+                                           Margin="0,0,0,6"
+                                           TextWrapping="Wrap" />
+
+                                <!-- Row 2: Summary -->
+                                <TextBlock Grid.Row="2"
+                                           Text="{Binding Summary}"
+                                           FontSize="12"
+                                           LineHeight="17"
+                                           Foreground="{DynamicResource WinMutedBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,0,0,12" />
+
+                                <!-- Row 3: Mini Format Pill -->
+                                <Border Grid.Row="3"
+                                        IsVisible="{Binding HasFormats}"
+                                        Background="{DynamicResource WinInputBgBrush}"
+                                        CornerRadius="4"
+                                        Padding="6,3"
+                                        Margin="0,0,0,12">
+                                    <TextBlock Text="{Binding SupportedFormats}" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" TextTrimming="CharacterEllipsis" />
+                                </Border>
+
+                                <!-- Row 4: Action Buttons (Read Guide & Launch Tool) -->
+                                <Grid Grid.Row="4" ColumnDefinitions="*,Auto">
+                                    <Button Grid.Column="0"
+                                            Classes="guide-action-btn"
+                                            Command="{Binding $parent[UserControl].((vm:HelpGuideViewModel)DataContext).SelectGuideCommand}"
+                                            CommandParameter="{Binding}"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Center"
+                                            Margin="0,0,6,0"
+                                            ToolTip.Tip="View full step-by-step tutorial &amp; pro tips">
+                                        <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="BookOpenOutline" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                            <TextBlock Text="Read Guide" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+
+                                    <Button Grid.Column="1"
+                                            Classes="guide-action-btn"
+                                            IsVisible="{Binding HasRelatedTool}"
+                                            Command="{Binding $parent[UserControl].((vm:HelpGuideViewModel)DataContext).LaunchToolCommand}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip.Tip="Open and launch tool workspace">
+                                        <materialIcons:MaterialIcon Kind="PlayCircleOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
+                                    </Button>
+                                </Grid>
+
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+        </StackPanel>
+
+    </StackPanel>
+</UserControl>

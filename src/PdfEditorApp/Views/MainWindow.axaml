@@ -232,8 +232,11 @@
                             <materialIcons:MaterialIcon Kind="ExportVariant" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
                         <Rectangle Width="1" Height="16" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
+                        <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding NavigateToHelpCommand}" ToolTip.Tip="Help &amp; User Guides (All 32 Tools &amp; Studio Features)">
+                            <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="15" Height="15" Foreground="#0284C7" />
+                        </Button>
                         <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding OpenShortcutsHelpCommand}" ToolTip.Tip="Keyboard Shortcuts Cheat Sheet (F1 / ?)">
-                            <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
+                            <materialIcons:MaterialIcon Kind="KeyboardOutline" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
                         <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding OpenAboutDialogCommand}" ToolTip.Tip="About FryPDF &amp; Support (CodeFryDev)">
                             <materialIcons:MaterialIcon Kind="InformationOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />

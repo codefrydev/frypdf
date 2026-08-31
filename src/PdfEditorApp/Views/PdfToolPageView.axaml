@@ -113,8 +113,15 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Right: Quick Info / Status Pill & Star Button -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <!-- Right: Quick Info / Status Pill, Guide & Star Button -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Classes="star-btn" Command="{Binding OpenToolHelpGuideCommand}" ToolTip.Tip="View Step-by-Step Guide &amp; Pro Tips for this tool">
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="15" Height="15" Foreground="#0284C7" />
+                            <TextBlock Text="Guide &amp; Tips" FontSize="11.5" FontWeight="SemiBold" Foreground="#0284C7" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
                     <Button Classes="star-btn" Command="{Binding ToggleStarCommand}" ToolTip.Tip="Toggle Favorite / Starred Tool">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="Star" Width="16" Height="16" Foreground="#F59E0B" IsVisible="{Binding IsToolStarred}" />

@@ -114,6 +114,17 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
+    public void NavigateToHelp(string? topicId = null)
+    {
+        IsAboutDialogOpen = false;
+        IsShortcutsHelpDialogOpen = false;
+        IsHomePageVisible = true;
+        IsEditorVisible = false;
+        IsPdfViewerVisible = false;
+        Home.OpenHelpGuideCommand.Execute(topicId);
+    }
+
+    [RelayCommand]
     public async System.Threading.Tasks.Task CopySupportEmail()
     {
         const string email = "codefrydev@gmail.com";
@@ -353,6 +364,10 @@ public partial class MainViewModel
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Switch to Dark Theme", Subtitle = "Activate deep dark studio palette for low-light environments", Category = "Theme", IconKind = "WeatherNight", Action = () => SetDarkThemeCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Switch to Light Theme", Subtitle = "Activate crisp clean light studio palette", Category = "Theme", IconKind = "WeatherSunny", Action = () => SetLightThemeCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Use System Theme", Subtitle = "Follow operating system dark/light theme preference", Category = "Theme", IconKind = "Laptop", Action = () => SetSystemThemeCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Help & User Guides", Subtitle = "Open comprehensive guides for all 32 tools, editor & workflows", Category = "Help", IconKind = "HelpCircleOutline", Action = () => NavigateToHelpCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Help: 32 PDF Tools Guide", Subtitle = "Step-by-step guides, formats & pro tips for every PDF tool", Category = "Help", IconKind = "Tools", Action = () => NavigateToHelpCommand.Execute("tool-merge") });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Help: Live Document Editor Guide", Subtitle = "Guide to canvas tools, typography, math LaTeX & vector layers", Category = "Help", IconKind = "Draw", Action = () => NavigateToHelpCommand.Execute("editor-canvas-basics") });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Help: Batch PDF Generation Guide", Subtitle = "Guide to CSV/JSON Data Studio and mass PDF generation", Category = "Help", IconKind = "DatabaseArrowRightOutline", Action = () => NavigateToHelpCommand.Execute("automation-data-studio") });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "About FryPDF", Subtitle = "View app version, system info, open-source credits, and support", Category = "Help", IconKind = "InformationOutline", Action = () => OpenAboutDialogCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Keyboard Shortcuts Reference", Subtitle = "Open keyboard cheatsheet dialog", Category = "Help", IconKind = "KeyboardOutline", Shortcut = "F1", Action = () => OpenShortcutsHelpCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Open Source Licenses & Third-Party Tools", Subtitle = "View all 12 libraries, licenses, maintainers & attribution text", Category = "Help", IconKind = "CertificateOutline", Action = () => NavigateToLicensingCommand.Execute(null) });

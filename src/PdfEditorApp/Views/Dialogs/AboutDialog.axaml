@@ -291,7 +291,7 @@
                         BorderBrush="{DynamicResource WinBorderBrush}"
                         BorderThickness="0,1,0,0"
                         Padding="24,14">
-                    <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                    <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
 
                         <!-- System Diagnostics Copy Button -->
                         <Button Grid.Column="0"
@@ -306,8 +306,22 @@
                             </StackPanel>
                         </Button>
 
-                        <!-- Licenses & Tools Page Button -->
+                        <!-- Help Guides Page Button -->
                         <Button Grid.Column="1"
+                                Classes="secondary-btn"
+                                Height="34"
+                                Padding="12,0"
+                                Margin="10,0,0,0"
+                                Command="{Binding NavigateToHelpCommand}"
+                                ToolTip.Tip="Open dedicated Help &amp; User Guides page for all 32 tools">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="15" Height="15" Foreground="#0284C7" />
+                                <TextBlock Text="Help &amp; Guides" FontSize="12" FontWeight="Medium" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Licenses & Tools Page Button -->
+                        <Button Grid.Column="2"
                                 Classes="secondary-btn"
                                 Height="34"
                                 Padding="12,0"
@@ -321,7 +335,7 @@
                         </Button>
 
                         <!-- Shortcuts Button -->
-                        <Button Grid.Column="3"
+                        <Button Grid.Column="4"
                                 Classes="secondary-btn"
                                 Height="34"
                                 Padding="12,0"
@@ -335,7 +349,7 @@
                         </Button>
 
                         <!-- Primary Close Button -->
-                        <Button Grid.Column="4"
+                        <Button Grid.Column="5"
                                 Classes="primary-btn"
                                 Height="34"
                                 Width="90"

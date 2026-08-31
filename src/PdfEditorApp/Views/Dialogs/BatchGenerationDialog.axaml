@@ -1,0 +1,531 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels.BatchGeneration"
+             xmlns:ds="using:PdfEditorApp.ViewModels.DataStudio"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Dialogs.BatchGenerationDialog"
+             x:DataType="vm:BatchGenerationViewModel">
+
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+    </UserControl.Resources>
+
+    <!-- Modal Backdrop -->
+    <Grid Background="#75000000">
+        <!-- Dialog Card -->
+        <Border Width="920" Height="700"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                BoxShadow="0 24 72 #40000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Padding="24">
+
+            <Grid RowDefinitions="Auto,Auto,*,Auto">
+                <!-- 1. Header with Title & Quick Preset Actions -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,12">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <Border Width="34" Height="34" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="8">
+                                <materialIcons:MaterialIcon Kind="DatabaseArrowDownOutline" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="{Binding DialogTitle}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="Generate mass customized PDFs (payslips, invoices, certificates) by merging external data into document templates." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                    </StackPanel>
+
+                    <!-- Quick Demo / Payslip Preset Action -->
+                    <Button Grid.Column="1" Classes="secondary-btn" Height="32" Padding="10,0" Margin="0,0,10,0"
+                            Command="{Binding LoadDefaultSamplePayslipDatasetCommand}"
+                            ToolTip.Tip="Reset and load the pre-built Employee Payslip template with 6 sample salary records">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <materialIcons:MaterialIcon Kind="AutoFix" Width="15" Height="15" Foreground="#0F6CBD" />
+                            <TextBlock Text="Load Sample Payslip Preset" FontSize="11" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="2" Classes="mini-tool-btn" Width="30" Height="30" Command="{Binding CloseCommand}">
+                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
+                    </Button>
+                </Grid>
+
+                <!-- 2. Wizard Stepper Navigation Bar -->
+                <Border Grid.Row="1" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="3" Margin="0,0,0,12">
+                    <Grid ColumnDefinitions="*,*,*,*">
+                        <!-- Step 0: Data & Template -->
+                        <Button Grid.Column="0" Height="32" Margin="2"
+                                Command="{Binding SelectStepCommand}" CommandParameter="0"
+                                Classes="secondary-btn"
+                                Classes.active="{Binding SelectedStepIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=0}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="DatabaseOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
+                                <TextBlock Text="1. Data &amp; Template" FontWeight="SemiBold" FontSize="11" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Step 1: Field Mapping -->
+                        <Button Grid.Column="1" Height="32" Margin="2"
+                                Command="{Binding SelectStepCommand}" CommandParameter="1"
+                                Classes="secondary-btn"
+                                Classes.active="{Binding SelectedStepIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=1}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="CodeTags" Width="15" Height="15" Foreground="#107C41" />
+                                <TextBlock Text="2. Field Mapping" FontWeight="SemiBold" FontSize="11" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Step 2: Live Preview -->
+                        <Button Grid.Column="2" Height="32" Margin="2"
+                                Command="{Binding SelectStepCommand}" CommandParameter="2"
+                                Classes="secondary-btn"
+                                Classes.active="{Binding SelectedStepIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=2}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="EyeOutline" Width="15" Height="15" Foreground="#D97706" />
+                                <TextBlock Text="3. Live Preview" FontWeight="SemiBold" FontSize="11" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Step 3: Output & Execution -->
+                        <Button Grid.Column="3" Height="32" Margin="2"
+                                Command="{Binding SelectStepCommand}" CommandParameter="3"
+                                Classes="secondary-btn"
+                                Classes.active="{Binding SelectedStepIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=3}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FileExportOutline" Width="15" Height="15" Foreground="#E11D48" />
+                                <TextBlock Text="4. Batch Generate" FontWeight="SemiBold" FontSize="11" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- 3. Dynamic Step Body -->
+                <Grid Grid.Row="2">
+
+                    <!-- ================= STEP 0: DATA & TEMPLATE ================= -->
+                    <Grid RowDefinitions="*,Auto" ColumnDefinitions="320,*" Margin="0,0,0,8"
+                          IsVisible="{Binding SelectedStepIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+
+                        <!-- Left: Template Selection & Detected Tags -->
+                        <Border Grid.Row="0" Grid.Column="0" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="10">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <materialIcons:MaterialIcon Kind="FileDocumentEditOutline" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
+                                        <TextBlock Text="Document Template" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                    </StackPanel>
+
+                                    <!-- Template Mode -->
+                                    <StackPanel Spacing="6">
+                                        <RadioButton Content="Use Current Open Document" GroupName="TmplGrp"
+                                                     IsChecked="{Binding SelectedTemplateMode, Converter={StaticResource EqualityConverter}, ConverterParameter=CurrentDocument}"
+                                                     FontSize="11" />
+                                        <RadioButton Content="Use Built-in Starter Template" GroupName="TmplGrp"
+                                                     IsChecked="{Binding SelectedTemplateMode, Converter={StaticResource EqualityConverter}, ConverterParameter=BuiltInTemplate}"
+                                                     FontSize="11" />
+                                    </StackPanel>
+
+                                    <!-- Built-in Template Selector -->
+                                    <StackPanel Spacing="3" IsVisible="{Binding SelectedTemplateMode, Converter={StaticResource EqualityConverter}, ConverterParameter=BuiltInTemplate}">
+                                        <TextBlock Text="Choose Template:" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" />
+                                        <ComboBox ItemsSource="{Binding BuiltInTemplates}"
+                                                  SelectedItem="{Binding SelectedBuiltInTemplate, Mode=TwoWay}"
+                                                  HorizontalAlignment="Stretch" Height="28" FontSize="11">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate DataType="vm:BuiltInTemplateOption">
+                                                    <TextBlock Text="{Binding Name}" FontSize="11" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                    <!-- Detected Placeholders Summary -->
+                                    <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="8">
+                                        <StackPanel Spacing="6">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <materialIcons:MaterialIcon Kind="CodeTags" Width="14" Height="14" Foreground="#107C41" />
+                                                <TextBlock Text="Detected Placeholders in Template:" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                            </StackPanel>
+
+                                            <ItemsControl ItemsSource="{Binding DetectedPlaceholders}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="{DynamicResource WinAccentLightBrush}" CornerRadius="4" Padding="6,2" Margin="2">
+                                                            <TextBlock Text="{Binding StringFormat='\{\{{0}\}\}'}" FontSize="9.5" FontWeight="Medium" Foreground="{DynamicResource WinAccentBrush}" />
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- Right: Data Ingestion (Excel, CSV, API, Grid) -->
+                        <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="8,0,0,0">
+                            <Grid RowDefinitions="Auto,Auto,*">
+                                <!-- Source Tabs -->
+                                <Border Grid.Row="0" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="2" Margin="0,0,0,10">
+                                    <Grid ColumnDefinitions="*,*,*">
+                                        <Button Grid.Column="0" Height="28" Margin="1"
+                                                Classes="secondary-btn"
+                                                Classes.active="{Binding SelectedDataSourceTab, Converter={StaticResource EqualityConverter}, ConverterParameter=0}"
+                                                Command="{Binding SelectDataSourceTabCommand}" CommandParameter="0"
+                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <materialIcons:MaterialIcon Kind="FileExcelOutline" Width="14" Height="14" Foreground="#107C41" />
+                                                <TextBlock Text="Excel &amp; CSV" FontSize="10.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Grid.Column="1" Height="28" Margin="1"
+                                                Classes="secondary-btn"
+                                                Classes.active="{Binding SelectedDataSourceTab, Converter={StaticResource EqualityConverter}, ConverterParameter=1}"
+                                                Command="{Binding SelectDataSourceTabCommand}" CommandParameter="1"
+                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <materialIcons:MaterialIcon Kind="Api" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                                <TextBlock Text="REST API" FontSize="10.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Grid.Column="2" Height="28" Margin="1"
+                                                Classes="secondary-btn"
+                                                Classes.active="{Binding SelectedDataSourceTab, Converter={StaticResource EqualityConverter}, ConverterParameter=2}"
+                                                Command="{Binding SelectDataSourceTabCommand}" CommandParameter="2"
+                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <materialIcons:MaterialIcon Kind="Table" Width="14" Height="14" Foreground="#D97706" />
+                                                <TextBlock Text="Data Matrix" FontSize="10.5" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Tab 0: File Picker -->
+                                <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,10" IsVisible="{Binding SelectedDataSourceTab, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBox Grid.Column="0" Text="{Binding SelectedFilePath}" IsReadOnly="True"
+                                                 Height="30" FontSize="11" CornerRadius="6" PlaceholderText="Select an Excel (.xlsx), CSV, or TSV file..." Margin="0,0,8,0" />
+                                        <Button Grid.Column="1" Classes="accent-btn" Height="30" Padding="14,0" Command="{Binding BrowseFileCommand}">
+                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                <materialIcons:MaterialIcon Kind="FolderOpen" Width="14" Height="14" />
+                                                <TextBlock Text="Browse..." FontSize="11" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                    <StackPanel Orientation="Horizontal" Spacing="14">
+                                        <CheckBox Content="First row is header" IsChecked="{Binding FirstRowIsHeader, Mode=TwoWay}" FontSize="11" />
+                                        <StackPanel Orientation="Horizontal" Spacing="4" IsVisible="{Binding HasMultipleSheets}" VerticalAlignment="Center">
+                                            <TextBlock Text="Excel Sheet:" FontSize="10.5" VerticalAlignment="Center" />
+                                            <ComboBox ItemsSource="{Binding ExcelSheets}" SelectedItem="{Binding SelectedExcelSheet, Mode=TwoWay}" Height="26" FontSize="10.5" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Tab 1: REST API -->
+                                <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,10" IsVisible="{Binding SelectedDataSourceTab, Converter={StaticResource EqualityConverter}, ConverterParameter=1}">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBox Grid.Column="0" Text="{Binding ApiUrl, Mode=TwoWay}" Height="30" FontSize="11" CornerRadius="6" PlaceholderText="https://api.example.com/employees" Margin="0,0,8,0" />
+                                        <Button Grid.Column="1" Classes="accent-btn" Height="30" Padding="14,0" Command="{Binding FetchApiDataCommand}" IsEnabled="{Binding !IsFetchingApi}">
+                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                <materialIcons:MaterialIcon Kind="CloudDownloadOutline" Width="14" Height="14" />
+                                                <TextBlock Text="Fetch API" FontSize="11" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                    <TextBlock Text="{Binding ApiStatusMessage}" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" />
+                                </StackPanel>
+
+                                <!-- Tab 2 & Data Matrix View -->
+                                <Border Grid.Row="2" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="6">
+                                    <Grid RowDefinitions="Auto,*">
+                                        <TextBlock Grid.Row="0" Text="{Binding MatrixSummary}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" Margin="4,0,0,6" />
+                                        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                            <StackPanel>
+                                                <!-- Headers -->
+                                                <Border Background="{DynamicResource WinAccentLightBrush}" CornerRadius="4" Padding="6,4" Margin="0,0,0,2">
+                                                    <ItemsControl ItemsSource="{Binding MatrixHeaders}">
+                                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate><TextBlock Width="90" Text="{Binding}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" TextTrimming="CharacterEllipsis" /></DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </Border>
+                                                <!-- Data Rows -->
+                                                <ItemsControl ItemsSource="{Binding GridRows}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate DataType="ds:DataGridRowViewModel">
+                                                            <Border Padding="6,3" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1">
+                                                                <ItemsControl ItemsSource="{Binding Cells}">
+                                                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate><TextBlock Width="90" Text="{Binding}" FontSize="10" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" /></DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- ================= STEP 1: FIELD MAPPING ================= -->
+                    <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,8"
+                            IsVisible="{Binding SelectedStepIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=1}">
+                        <Grid RowDefinitions="Auto,*">
+                            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Smart Field Mapping ({{Placeholders}} ➔ Data Columns)" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                    <TextBlock Text="Map document template placeholders to external data columns with optional formatting transforms." FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Classes="secondary-btn" Height="28" Padding="10,0" Command="{Binding AutoMapFieldsCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <materialIcons:MaterialIcon Kind="AutoFix" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                        <TextBlock Text="Auto-Match by Name" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <!-- Mapping Table -->
+                            <Border Grid.Row="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="6">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel Spacing="6">
+                                        <!-- Header -->
+                                        <Grid ColumnDefinitions="200,200,160,140,*" Margin="4,2,4,4">
+                                            <TextBlock Grid.Column="0" Text="Template Tag" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" />
+                                            <TextBlock Grid.Column="1" Text="Dataset Column" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" />
+                                            <TextBlock Grid.Column="2" Text="Format / Transform" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" />
+                                            <TextBlock Grid.Column="3" Text="Fallback Default" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" />
+                                            <TextBlock Grid.Column="4" Text="Sample Value (Row 1)" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" />
+                                        </Grid>
+
+                                        <ItemsControl ItemsSource="{Binding FieldMappings}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="vm:FieldMappingItemViewModel">
+                                                    <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="8,4" Margin="0,2">
+                                                        <Grid ColumnDefinitions="200,200,160,140,*">
+                                                            <!-- Tag -->
+                                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                                <materialIcons:MaterialIcon Kind="CodeTags" Width="14" Height="14" Foreground="#107C41" />
+                                                                <TextBlock Text="{Binding PlaceholderTag, StringFormat='\{\{{0}\}\}'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                                            </StackPanel>
+
+                                                            <!-- Column Dropdown -->
+                                                            <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableColumns}" SelectedItem="{Binding SelectedColumnName, Mode=TwoWay}"
+                                                                      Height="26" FontSize="11" HorizontalAlignment="Stretch" Margin="0,0,8,0" />
+
+                                                            <!-- Transform Dropdown -->
+                                                            <ComboBox Grid.Column="2" SelectedIndex="{Binding Transform, Mode=TwoWay}" Height="26" FontSize="10.5" HorizontalAlignment="Stretch" Margin="0,0,8,0">
+                                                                <ComboBoxItem Content="None (Raw Text)" />
+                                                                <ComboBoxItem Content="Currency ($ / € / ₹)" />
+                                                                <ComboBoxItem Content="Date (yyyy-MM-dd)" />
+                                                                <ComboBoxItem Content="Numeric (0.00)" />
+                                                                <ComboBoxItem Content="Percentage (%)" />
+                                                                <ComboBoxItem Content="UPPERCASE" />
+                                                                <ComboBoxItem Content="lowercase" />
+                                                                <ComboBoxItem Content="Title Case" />
+                                                            </ComboBox>
+
+                                                            <!-- Fallback -->
+                                                            <TextBox Grid.Column="3" Text="{Binding DefaultValue, Mode=TwoWay}" Height="26" FontSize="10.5" PlaceholderText="N/A" Margin="0,0,8,0" />
+
+                                                            <!-- Sample Value -->
+                                                            <TextBlock Grid.Column="4" Text="{Binding SampleValue}" FontSize="10.5" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- ================= STEP 2: LIVE RECORD PREVIEW ================= -->
+                    <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,8"
+                            IsVisible="{Binding SelectedStepIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=2}">
+                        <Grid RowDefinitions="Auto,*">
+                            <!-- Navigator Bar -->
+                            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
+                                <Button Grid.Column="0" Classes="secondary-btn" Height="30" Padding="12,0" Command="{Binding PreviousPreviewRecordCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <materialIcons:MaterialIcon Kind="ChevronLeft" Width="16" Height="16" />
+                                        <TextBlock Text="Previous Record" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+
+                                <TextBlock Grid.Column="1" Text="{Binding CurrentRecordSummary}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                                <Button Grid.Column="2" Classes="secondary-btn" Height="30" Padding="12,0" Command="{Binding NextPreviewRecordCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="Next Record" FontSize="11" />
+                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="16" Height="16" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <!-- Document Canvas Preview -->
+                            <Border Grid.Row="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="8">
+                                <Grid>
+                                    <Image Source="{Binding PreviewBitmap}" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="HighQuality"
+                                           IsVisible="{Binding PreviewBitmap, Converter={StaticResource NullToBooleanConverter}}" />
+                                    <TextBlock Text="No preview available" FontSize="12" Foreground="{DynamicResource WinMutedBrush}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               IsVisible="{Binding PreviewBitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}" />
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- ================= STEP 3: OUTPUT & BATCH GENERATION ================= -->
+                    <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,8"
+                            IsVisible="{Binding SelectedStepIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=3}">
+                        <Grid RowDefinitions="Auto,*,Auto">
+                            <StackPanel Grid.Row="0" Spacing="10" Margin="0,0,0,12">
+                                <TextBlock Text="Output Mode &amp; Batch Configuration" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+
+                                <!-- 3 Output Mode Cards -->
+                                <Grid ColumnDefinitions="*,*,*">
+                                    <!-- Mode 0: Separate Files -->
+                                    <Border Grid.Column="0" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,6,0">
+                                        <RadioButton Content="Separate PDF Files" GroupName="OutModeGrp"
+                                                     IsChecked="{Binding OutputMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SeparateFiles}"
+                                                     FontSize="11.5" FontWeight="SemiBold" />
+                                    </Border>
+                                    <!-- Mode 1: Single Merged PDF -->
+                                    <Border Grid.Column="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="3,0,3,0">
+                                        <RadioButton Content="Single Merged Multi-Page PDF" GroupName="OutModeGrp"
+                                                     IsChecked="{Binding OutputMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SingleMergedPdf}"
+                                                     FontSize="11.5" FontWeight="SemiBold" />
+                                    </Border>
+                                    <!-- Mode 2: Compressed ZIP Archive -->
+                                    <Border Grid.Column="2" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="6,0,0,0">
+                                        <RadioButton Content="Compressed ZIP Archive" GroupName="OutModeGrp"
+                                                     IsChecked="{Binding OutputMode, Converter={StaticResource EqualityConverter}, ConverterParameter=ZipArchive}"
+                                                     FontSize="11.5" FontWeight="SemiBold" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- Dynamic Filename Pattern (for separate files & zip) -->
+                                <StackPanel Spacing="3" IsVisible="{Binding OutputMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SeparateFiles}">
+                                    <TextBlock Text="Dynamic Filename Template:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                    <TextBox Text="{Binding FilenamePattern, Mode=TwoWay}" Height="30" FontSize="11" CornerRadius="6" />
+                                </StackPanel>
+
+                                <!-- Destination Directory / File Picker -->
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="Destination Output Path:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBox Grid.Column="0" Text="{Binding OutputDirectory}" IsVisible="{Binding OutputMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SeparateFiles}"
+                                                 Height="30" FontSize="11" CornerRadius="6" Margin="0,0,8,0" />
+                                        <TextBox Grid.Column="0" Text="{Binding OutputFilePath}" IsVisible="{Binding OutputMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SeparateFiles, ConverterParameter=invert}"
+                                                 Height="30" FontSize="11" CornerRadius="6" Margin="0,0,8,0" />
+
+                                        <Button Grid.Column="1" Classes="secondary-btn" Height="30" Padding="12,0"
+                                                Command="{Binding BrowseOutputDirectoryCommand}" IsVisible="{Binding OutputMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SeparateFiles}">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <materialIcons:MaterialIcon Kind="FolderOpen" Width="14" Height="14" />
+                                                <TextBlock Text="Choose Folder..." FontSize="11" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Grid.Column="1" Classes="secondary-btn" Height="30" Padding="12,0"
+                                                Command="{Binding BrowseOutputFilePathCommand}" IsVisible="{Binding OutputMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SeparateFiles, ConverterParameter=invert}">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <materialIcons:MaterialIcon Kind="FileExportOutline" Width="14" Height="14" />
+                                                <TextBlock Text="Choose File..." FontSize="11" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Progress / Completion Card -->
+                            <Border Grid.Row="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                                <StackPanel VerticalAlignment="Center" Spacing="10">
+                                    <!-- Progress Bar -->
+                                    <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="{DynamicResource WinAccentBrush}" />
+
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="{Binding ProgressMessage}" FontSize="11.5" Foreground="{DynamicResource WinTextBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='\{0:F0\}%'}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
+                                    </Grid>
+
+                                    <!-- Success Card -->
+                                    <StackPanel Spacing="8" IsVisible="{Binding IsCompleted}">
+                                        <TextBlock Text="{Binding GenerationSummary}" FontSize="11" Foreground="#107C41" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Button Classes="secondary-btn" Height="28" Padding="12,0" Command="{Binding OpenOutputFolderCommand}">
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <materialIcons:MaterialIcon Kind="FolderOpen" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                                    <TextBlock Text="Open Output Folder" FontSize="11" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Classes="secondary-btn" Height="28" Padding="12,0" Command="{Binding OpenOutputFileCommand}">
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="14" Height="14" Foreground="#E11D48" />
+                                                    <TextBlock Text="Open Generated File" FontSize="11" />
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Bottom Action Button -->
+                            <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,12,0,0">
+                                <Button Grid.Column="0" Classes="secondary-btn" Height="34" Padding="14,0" Command="{Binding CancelGenerationCommand}" IsVisible="{Binding IsGenerating}">
+                                    <TextBlock Text="Cancel" FontSize="11.5" />
+                                </Button>
+
+                                <Button Grid.Column="2" Classes="accent-btn" Height="36" Padding="24,0" Command="{Binding StartGenerationCommand}" IsEnabled="{Binding !IsGenerating}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <materialIcons:MaterialIcon Kind="LightningBolt" Width="16" Height="16" />
+                                        <TextBlock Text="{Binding TotalRecordsCount, StringFormat='Generate All ({0} PDFs)'}" FontSize="12" FontWeight="Bold" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- 4. Footer Stepper Buttons -->
+                <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto,Auto">
+                    <Button Grid.Column="0" Classes="secondary-btn" Height="34" Padding="14,0" Command="{Binding PreviousStepCommand}" IsEnabled="{Binding SelectedStepIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=0, ConverterParameter=invert}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <materialIcons:MaterialIcon Kind="ArrowLeft" Width="15" Height="15" />
+                            <TextBlock Text="Back" FontSize="11.5" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="2" Classes="secondary-btn" Height="34" Padding="16,0" Command="{Binding CloseCommand}" Margin="0,0,8,0">
+                        <TextBlock Text="Close" FontSize="11.5" />
+                    </Button>
+
+                    <Button Grid.Column="3" Classes="accent-btn" Height="34" Padding="20,0" Command="{Binding NextStepCommand}" IsVisible="{Binding SelectedStepIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=3, ConverterParameter=invert}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="Next Step" FontSize="12" FontWeight="SemiBold" />
+                            <materialIcons:MaterialIcon Kind="ArrowRight" Width="16" Height="16" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -394,6 +394,7 @@
         <dialogs:AboutDialog IsVisible="{Binding IsAboutDialogOpen}" />
         <dialogs:DataStudioDialog DataContext="{Binding DataStudio}" IsVisible="{Binding IsOpen}" />
         <dialogs:WorkflowBuilderDialog DataContext="{Binding WorkflowBuilder}" IsVisible="{Binding IsOpen}" />
+        <dialogs:BatchGenerationDialog DataContext="{Binding BatchGeneration}" IsVisible="{Binding IsOpen}" />
     </Grid>
 
 </Window>

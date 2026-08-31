@@ -15,6 +15,7 @@ public class TemplateService : ITemplateService
     {
         // Corporate
         RegisterTemplate(new AnnualReportTemplate());
+        RegisterTemplate(new EmployeePayslipTemplate());
 
         // Finance
         RegisterTemplate(new InvoiceTemplate());
@@ -68,6 +69,7 @@ public class TemplateService : ITemplateService
     }
 
     public PdfDocumentModel CreateAnnualReportTemplate() => CreateTemplate("annualreport");
+    public PdfDocumentModel CreateEmployeePayslipTemplate() => CreateTemplate("payslip");
 
     public PdfDocumentModel CreateInvoiceTemplate() => CreateTemplate("invoice");
 

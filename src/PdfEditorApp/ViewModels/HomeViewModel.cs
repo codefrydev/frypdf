@@ -36,6 +36,7 @@ public partial class HomeViewModel : ViewModelBase
     public event Action<string>? OpenInEditorRequested;    // file path
     public event Action<string>? OpenInViewerRequested;    // file path
     public event Action? OpenWorkflowBuilderRequested;
+    public event Action? OpenBatchGenerationRequested;
 
     // --- Observable State ---
 
@@ -517,6 +518,12 @@ public partial class HomeViewModel : ViewModelBase
 
     public void OpenToolPage(PdfToolId toolId, string? initialFilePath = null)
     {
+        if (toolId == PdfToolId.BatchMailMerge)
+        {
+            OpenBatchGenerationRequested?.Invoke();
+            return;
+        }
+
         var card = AllTools.FirstOrDefault(t => t.Id == toolId);
         if (card != null)
         {

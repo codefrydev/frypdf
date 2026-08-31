@@ -17,6 +17,7 @@ public partial class MainWindow : Window
             if (DataContext is MainViewModel vm)
             {
                 vm.DataStudio.StorageProvider = StorageProvider;
+                vm.BatchGeneration.StorageProvider = StorageProvider;
             }
         };
 

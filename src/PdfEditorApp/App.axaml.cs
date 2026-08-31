@@ -81,9 +81,12 @@ public partial class App : Application
 
         services.AddSingleton<PdfEditorApp.Core.Data.IDataSourceService, PdfEditorApp.Core.Data.DataSourceService>();
         services.AddSingleton<PdfEditorApp.Core.Data.IDataBindingService, PdfEditorApp.Core.Data.DataBindingService>();
+        services.AddSingleton<PdfEditorApp.Core.Data.IDataMergeEngine, PdfEditorApp.Core.Data.DataMergeEngine>();
+        services.AddSingleton<PdfEditorApp.Core.Data.IBatchPdfGenerator, PdfEditorApp.Services.BatchPdfGeneratorService>();
 
         // ViewModels
         services.AddTransient<PdfEditorApp.ViewModels.DataStudio.DataStudioViewModel>();
+        services.AddTransient<PdfEditorApp.ViewModels.BatchGeneration.BatchGenerationViewModel>();
         services.AddTransient<InspectorViewModel>();
         services.AddTransient<PdfToolRunnerViewModel>();
         services.AddTransient<WorkflowBuilderViewModel>();

@@ -441,6 +441,20 @@ public class PdfToolRegistry : IPdfToolRegistry
                 IsWorkflowBanner = true,
                 SupportsMultiFile = true,
                 AcceptedFileExtensions = ".pdf,.fryflow,.json"
+            },
+            // 33. BATCH MAIL MERGE & MASS PDF GENERATOR (New!)
+            new PdfToolDefinition
+            {
+                Id = PdfToolId.BatchMailMerge,
+                Name = "Batch Mail Merge & Mass PDF",
+                Description = "Generate hundreds of personalized PDFs (payslips, certificates, invoices, badges) in one click using Excel, CSV, or REST APIs.",
+                Category = PdfToolCategory.AiAndAutomation,
+                IconKind = "DatabaseArrowDownOutline",
+                IconColorHex = "#0F6CBD",
+                BackgroundAccentHex = "#EFF6FF",
+                IsNew = true,
+                SupportsMultiFile = false,
+                AcceptedFileExtensions = ".xlsx,.csv,.tsv,.json"
             }
         };
     }

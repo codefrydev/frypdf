@@ -141,6 +141,7 @@ public partial class DataStudioViewModel : ViewModelBase
     private string _matrixSummary = "0 rows, 0 columns loaded";
 
     public event Action<ElementViewModelBase, string>? OnElementCreated;
+    public event Action<DataMatrix>? OpenBatchMergeRequested;
 
     public DataStudioViewModel(IDataSourceService dataSourceService, IDataBindingService dataBindingService)
     {
@@ -633,5 +634,12 @@ public partial class DataStudioViewModel : ViewModelBase
             string csvContent = _dataSourceService.FormatAsCsv(CurrentMatrix);
             await File.WriteAllTextAsync(file.Path.LocalPath, csvContent);
         }
+    }
+
+    [RelayCommand]
+    public void OpenBatchMerge()
+    {
+        IsOpen = false;
+        OpenBatchMergeRequested?.Invoke(CurrentMatrix);
     }
 }

@@ -37,7 +37,8 @@ public enum PdfToolId
     AiSummarizer,
     TranslatePdf,
     PdfToMarkdown,
-    WorkflowBuilder
+    WorkflowBuilder,
+    BatchMailMerge
 }
 
 public enum PdfToolCategory

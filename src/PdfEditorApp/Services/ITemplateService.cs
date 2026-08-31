@@ -10,6 +10,7 @@ public interface ITemplateService
     PdfDocumentModel CreateTemplate(string templateId);
 
     PdfDocumentModel CreateAnnualReportTemplate();
+    PdfDocumentModel CreateEmployeePayslipTemplate();
     PdfDocumentModel CreateInvoiceTemplate();
     PdfDocumentModel CreateResumeTemplate();
     PdfDocumentModel CreateResumeModernCleanTemplate();

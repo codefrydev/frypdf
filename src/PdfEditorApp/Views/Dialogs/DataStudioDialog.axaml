@@ -313,15 +313,22 @@
                 </Grid>
 
                 <!-- 4. Footer Buttons -->
-                <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto,Auto">
-                    <Button Grid.Column="0" Classes="secondary-btn" Height="34" Padding="12,0" Command="{Binding ExportToCsvCommand}">
+                <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                    <Button Grid.Column="0" Classes="secondary-btn" Height="34" Padding="12,0" Command="{Binding ExportToCsvCommand}" Margin="0,0,8,0">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <materialIcons:MaterialIcon Kind="ExportVariant" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
                             <TextBlock Text="Export CSV..." FontSize="11.5" />
                         </StackPanel>
                     </Button>
 
-                    <Button Grid.Column="2" Classes="secondary-btn" Height="34" Padding="16,0" Command="{Binding CloseCommand}" Margin="0,0,10,0">
+                    <Button Grid.Column="1" Classes="secondary-btn" Height="34" Padding="12,0" Command="{Binding OpenBatchMergeCommand}" ToolTip.Tip="Open Batch Mail Merge to generate personalized PDFs from this dataset">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <materialIcons:MaterialIcon Kind="DatabaseArrowDownOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
+                            <TextBlock Text="Batch Generate PDFs..." FontSize="11.5" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="3" Classes="secondary-btn" Height="34" Padding="16,0" Command="{Binding CloseCommand}" Margin="0,0,10,0">
                         <TextBlock Text="Cancel" FontSize="12" />
                     </Button>
 

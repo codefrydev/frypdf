@@ -1082,6 +1082,26 @@
                                 </StackPanel>
                                 <TextBlock Grid.Row="1" Text="Project Files" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
                             </Grid>
+                            <Rectangle Width="1" Height="68" Fill="{DynamicResource WinBorderBrush}" VerticalAlignment="Center" Margin="4,0" />
+
+                            <!-- Batch Mail Merge Studio -->
+                            <Grid RowDefinitions="*,Auto">
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Classes="tool-btn" Command="{Binding OpenBatchGenerationCommand}" ToolTip.Tip="Batch Mail Merge: Generate hundreds of PDFs from Excel, CSV, or REST API data">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="DatabaseArrowDownOutline" Width="20" Height="20" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Batch Mail Merge" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="tool-btn" Command="{Binding OpenBatchGenerationCommand}" CommandParameter="payslip" ToolTip.Tip="Generate Employee Monthly Payslips in 1-Click">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="3">
+                                            <materialIcons:MaterialIcon Kind="CashMultiple" Width="20" Height="20" Foreground="#107C41" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Mass Payslips" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock Grid.Row="1" Text="Mass PDF Generation" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="0.4" />
+                            </Grid>
                         </StackPanel>
 
                     </Panel>

@@ -37,6 +37,7 @@ public partial class MainViewModel : ViewModelBase
     public WorkflowBuilderViewModel WorkflowBuilder { get; }
     public PdfViewerViewModel PdfViewer { get; } = new();
     public PdfEditorApp.ViewModels.DataStudio.DataStudioViewModel DataStudio { get; }
+    public PdfEditorApp.ViewModels.BatchGeneration.BatchGenerationViewModel BatchGeneration { get; }
 
     // --- HOME / EDITOR / VIEWER VIEW-SWITCHING ---
 
@@ -493,11 +494,22 @@ public partial class MainViewModel : ViewModelBase
 
         var dataSourceService = new PdfEditorApp.Core.Data.DataSourceService();
         var dataBindingService = new PdfEditorApp.Core.Data.DataBindingService();
+        var mergeEngine = new PdfEditorApp.Core.Data.DataMergeEngine();
+        var batchGenerator = new PdfEditorApp.Services.BatchPdfGeneratorService(mergeEngine, _exportService);
+
         DataStudio = new PdfEditorApp.ViewModels.DataStudio.DataStudioViewModel(dataSourceService, dataBindingService)
         {
             UndoRedo = UndoRedo
         };
         DataStudio.OnElementCreated += (el, desc) => AddElementWithUndo(el, desc);
+
+        BatchGeneration = new PdfEditorApp.ViewModels.BatchGeneration.BatchGenerationViewModel(dataSourceService, mergeEngine, batchGenerator, _templateService);
+        DataStudio.OpenBatchMergeRequested += (matrix) =>
+        {
+            BatchGeneration.StorageProvider = StorageProvider;
+            var doc = (IsEditorVisible && Pages.Count > 0) ? ToDocumentModel() : _templateService.CreateEmployeePayslipTemplate();
+            BatchGeneration.OpenWithDocument(doc, matrix);
+        };
 
         // Connect undo/redo service & DataStudio to inspector
         Inspector.UndoRedo = UndoRedo;
@@ -524,6 +536,7 @@ public partial class MainViewModel : ViewModelBase
         Home.OpenInEditorRequested += OpenEditorWithFile;
         Home.OpenInViewerRequested += (path) => OpenInViewer(path);
         Home.OpenWorkflowBuilderRequested += OpenWorkflowStudio;
+        Home.OpenBatchGenerationRequested += () => OpenBatchGeneration();
 
         // Synchronize inspector when selection changes
         Inspector.PropertyChanged += (s, e) =>

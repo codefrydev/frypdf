@@ -638,6 +638,18 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
+    public void OpenBatchGeneration(string? preset = null)
+    {
+        BatchGeneration.StorageProvider = StorageProvider;
+        var doc = (IsEditorVisible && Pages.Count > 0) ? ToDocumentModel() : _templateService.CreateEmployeePayslipTemplate();
+        BatchGeneration.OpenWithDocument(doc);
+        if (preset == "payslip")
+        {
+            BatchGeneration.LoadDefaultSamplePayslipDataset();
+        }
+    }
+
+    [RelayCommand]
     public async Task ImportExcelToChartAsync()
     {
         DataStudio.StorageProvider = StorageProvider;

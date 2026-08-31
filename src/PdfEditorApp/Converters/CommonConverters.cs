@@ -20,7 +20,25 @@ public class EqualityToBooleanConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        throw new NotSupportedException();
+        if (value is true && parameter != null)
+        {
+            if (targetType == typeof(int) || targetType == typeof(int?))
+            {
+                if (int.TryParse(parameter.ToString(), out int intVal))
+                    return intVal;
+            }
+            if (targetType.IsEnum && parameter is string enumStr)
+            {
+                if (Enum.TryParse(targetType, enumStr, true, out var enumVal))
+                    return enumVal;
+            }
+            if (targetType == typeof(string))
+            {
+                return parameter.ToString();
+            }
+            return parameter;
+        }
+        return Avalonia.Data.BindingOperations.DoNothing;
     }
 }
 

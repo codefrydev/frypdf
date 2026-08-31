@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
@@ -1316,6 +1317,124 @@ public partial class InspectorViewModel : ViewModelBase
                 () => el.LegendPosition = oldPos,
                 () => el.LegendPosition = parsed
             );
+        }
+    }
+
+    public PdfEditorApp.ViewModels.DataStudio.DataStudioViewModel? DataStudio { get; set; }
+
+    [RelayCommand]
+    public void OpenDataStudioForChart()
+    {
+        if (ChartElement != null && DataStudio != null)
+        {
+            DataStudio.OpenForChart(ChartElement, SelectedPage);
+        }
+    }
+
+    [RelayCommand]
+    public void OpenDataStudioForTable()
+    {
+        if (TableElement != null && DataStudio != null)
+        {
+            DataStudio.OpenForTable(TableElement, SelectedPage);
+        }
+    }
+
+    [RelayCommand]
+    public void ConvertTableToChart()
+    {
+        if (TableElement != null && SelectedPage != null)
+        {
+            var bindingService = new PdfEditorApp.Core.Data.DataBindingService();
+            var chartModel = bindingService.ConvertTableToChart((PdfTableElement)TableElement.ToModel());
+            var chartVm = new ChartElementViewModel();
+            chartVm.LoadFromModel(chartModel);
+
+            var oldTable = TableElement;
+            var page = SelectedPage;
+            int idx = page.Elements.IndexOf(oldTable);
+
+            page.Elements.Remove(oldTable);
+            page.Elements.Insert(Math.Max(0, idx), chartVm);
+            page.SelectedElement = chartVm;
+
+            UndoRedo?.RecordAction(
+                "Convert Table to Chart",
+                () =>
+                {
+                    int cIdx = page.Elements.IndexOf(chartVm);
+                    if (cIdx >= 0) page.Elements.RemoveAt(cIdx);
+                    page.Elements.Insert(Math.Max(0, idx), oldTable);
+                    page.SelectedElement = oldTable;
+                },
+                () =>
+                {
+                    int tIdx = page.Elements.IndexOf(oldTable);
+                    if (tIdx >= 0) page.Elements.RemoveAt(tIdx);
+                    page.Elements.Insert(Math.Max(0, idx), chartVm);
+                    page.SelectedElement = chartVm;
+                }
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void ConvertChartToTable()
+    {
+        if (ChartElement != null && SelectedPage != null)
+        {
+            var bindingService = new PdfEditorApp.Core.Data.DataBindingService();
+            var tableModel = bindingService.ConvertChartToTable((PdfChartElement)ChartElement.ToModel());
+            var tableVm = new TableElementViewModel();
+            tableVm.LoadFromModel(tableModel);
+
+            var oldChart = ChartElement;
+            var page = SelectedPage;
+            int idx = page.Elements.IndexOf(oldChart);
+
+            page.Elements.Remove(oldChart);
+            page.Elements.Insert(Math.Max(0, idx), tableVm);
+            page.SelectedElement = tableVm;
+
+            UndoRedo?.RecordAction(
+                "Convert Chart to Table",
+                () =>
+                {
+                    int tIdx = page.Elements.IndexOf(tableVm);
+                    if (tIdx >= 0) page.Elements.RemoveAt(tIdx);
+                    page.Elements.Insert(Math.Max(0, idx), oldChart);
+                    page.SelectedElement = oldChart;
+                },
+                () =>
+                {
+                    int cIdx = page.Elements.IndexOf(oldChart);
+                    if (cIdx >= 0) page.Elements.RemoveAt(cIdx);
+                    page.Elements.Insert(Math.Max(0, idx), tableVm);
+                    page.SelectedElement = tableVm;
+                }
+            );
+        }
+    }
+
+    [RelayCommand]
+    public async Task QuickPasteDataToChart()
+    {
+        if (ChartElement != null && DataStudio != null)
+        {
+            await DataStudio.PasteFromClipboardAsync();
+            DataStudio.OpenForChart(ChartElement, SelectedPage);
+            DataStudio.ApplyData();
+        }
+    }
+
+    [RelayCommand]
+    public async Task QuickPasteDataToTable()
+    {
+        if (TableElement != null && DataStudio != null)
+        {
+            await DataStudio.PasteFromClipboardAsync();
+            DataStudio.OpenForTable(TableElement, SelectedPage);
+            DataStudio.ApplyData();
         }
     }
 

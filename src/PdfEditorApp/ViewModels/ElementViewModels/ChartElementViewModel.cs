@@ -562,6 +562,8 @@ public partial class ChartElementViewModel : ElementViewModelBase
         }
     }
 
+    public List<ChartSeriesItem> MultiSeries { get; set; } = new();
+
     public override PdfElementBase ToModel()
     {
         var model = new PdfChartElement
@@ -589,7 +591,8 @@ public partial class ChartElementViewModel : ElementViewModelBase
             Categories = new List<string>(),
             Values = new List<double>(),
             ValueLabels = new List<string>(),
-            BarColorsHex = new List<string>()
+            BarColorsHex = new List<string>(),
+            MultiSeries = MultiSeries.Select(s => s.Clone()).ToList()
         };
 
         foreach (var bar in Bars)
@@ -628,6 +631,7 @@ public partial class ChartElementViewModel : ElementViewModelBase
             StrokeThickness = chart.StrokeThickness;
             BackgroundColorHex = chart.BackgroundColorHex;
             BorderColorHex = chart.BorderColorHex;
+            MultiSeries = chart.MultiSeries?.Select(s => s.Clone()).ToList() ?? new();
 
             Bars.Clear();
             for (int i = 0; i < chart.Categories.Count; i++)

@@ -1,0 +1,338 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels.DataStudio"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Dialogs.DataStudioDialog"
+             x:DataType="vm:DataStudioViewModel">
+
+    <UserControl.Resources>
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+    </UserControl.Resources>
+
+    <!-- Modal Backdrop -->
+    <Grid Background="#70000000">
+        <!-- Dialog Card -->
+        <Border Width="860" Height="680"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                BoxShadow="0 24 72 #40000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Padding="24">
+
+            <Grid RowDefinitions="Auto,Auto,*,Auto">
+                <!-- 1. Header -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <Border Width="34" Height="34" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="8">
+                                <materialIcons:MaterialIcon Kind="DatabaseArrowDownOutline" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="{Binding DialogTitle}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="Seamlessly ingest data from Microsoft Excel (.xlsx), CSV, REST APIs, or system clipboard." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Classes="mini-tool-btn"
+                            Width="30" Height="30"
+                            Command="{Binding CloseCommand}">
+                        <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
+                    </Button>
+                </Grid>
+
+                <!-- 2. Source Connectors Segmented Tabs -->
+                <Border Grid.Row="1" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="3" Margin="0,0,0,14">
+                    <Grid ColumnDefinitions="*,*,*">
+                        <!-- Tab 0: Excel & Files -->
+                        <Button Grid.Column="0" Height="34" Margin="2"
+                                Command="{Binding SelectTabCommand}" CommandParameter="0"
+                                Classes="secondary-btn"
+                                Classes.active="{Binding SelectedTabIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=0}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FileExcelOutline" Width="16" Height="16" Foreground="#107C41" />
+                                <TextBlock Text="Excel &amp; CSV Files" FontWeight="SemiBold" FontSize="11.5" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Tab 1: REST API / JSON -->
+                        <Button Grid.Column="1" Height="34" Margin="2"
+                                Command="{Binding SelectTabCommand}" CommandParameter="1"
+                                Classes="secondary-btn"
+                                Classes.active="{Binding SelectedTabIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=1}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="Api" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
+                                <TextBlock Text="Live REST API / JSON" FontWeight="SemiBold" FontSize="11.5" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Tab 2: Manual / Clipboard -->
+                        <Button Grid.Column="2" Height="34" Margin="2"
+                                Command="{Binding SelectTabCommand}" CommandParameter="2"
+                                Classes="secondary-btn"
+                                Classes.active="{Binding SelectedTabIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=2}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="ClipboardTextOutline" Width="16" Height="16" Foreground="#D97706" />
+                                <TextBlock Text="Paste &amp; Manual Grid" FontWeight="SemiBold" FontSize="11.5" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- 3. Source Configurations & Data Matrix Studio -->
+                <Grid Grid.Row="2" RowDefinitions="Auto,*" Margin="0,0,0,14">
+                    <!-- Source Config Area -->
+                    <Border Grid.Row="0" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <Panel>
+                            <!-- Tab 0 Content: Excel & File Picker -->
+                            <StackPanel Spacing="10" IsVisible="{Binding SelectedTabIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBox Grid.Column="0" Text="{Binding SelectedFilePath}" IsReadOnly="True"
+                                             Height="32" FontSize="11.5" CornerRadius="6"
+                                             PlaceholderText="No file chosen. Select an .xlsx, .csv, or .tsv file..." Margin="0,0,8,0" />
+                                    <Button Grid.Column="1" Classes="accent-btn" Height="32" Padding="14,0" Command="{Binding BrowseFileCommand}">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
+                                            <TextBlock Text="Browse File..." FontSize="11.5" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center">
+                                    <CheckBox Grid.Column="0" Content="First row is column header" IsChecked="{Binding FirstRowIsHeader, Mode=TwoWay}" FontSize="11.5" Margin="0,0,16,0" />
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                                IsVisible="{Binding HasMultipleSheets}" Margin="0,0,16,0">
+                                        <TextBlock Text="Worksheet:" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                                        <ComboBox ItemsSource="{Binding ExcelSheets}" SelectedItem="{Binding SelectedExcelSheet, Mode=TwoWay}" Height="28" Width="140" FontSize="11" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <TextBlock Text="Delimiter:" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                                        <ComboBox SelectedIndex="0" Height="28" Width="90" FontSize="11">
+                                            <ComboBoxItem Content="Comma (,)" />
+                                            <ComboBoxItem Content="Tab (\t)" />
+                                            <ComboBoxItem Content="Semicolon (;)" />
+                                            <ComboBoxItem Content="Pipe (|)" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Tab 1 Content: REST API Connector -->
+                            <StackPanel Spacing="8" IsVisible="{Binding SelectedTabIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=1}">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Quick API Presets:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                    <WrapPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Button Classes="secondary-btn" Height="24" Padding="8,1" Margin="2" Command="{Binding SetPresetApiCommand}" CommandParameter="products">
+                                            <TextBlock Text="Products (DummyJSON)" FontSize="10.5" />
+                                        </Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="8,1" Margin="2" Command="{Binding SetPresetApiCommand}" CommandParameter="crypto">
+                                            <TextBlock Text="Crypto Markets (CoinGecko)" FontSize="10.5" />
+                                        </Button>
+                                        <Button Classes="secondary-btn" Height="24" Padding="8,1" Margin="2" Command="{Binding SetPresetApiCommand}" CommandParameter="users">
+                                            <TextBlock Text="Users (JSONPlaceholder)" FontSize="10.5" />
+                                        </Button>
+                                    </WrapPanel>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBox Grid.Column="0" Text="{Binding ApiUrl, Mode=TwoWay}" Height="32" FontSize="11.5" CornerRadius="6"
+                                             PlaceholderText="Enter REST API endpoint URL (e.g. https://dummyjson.com/products?limit=6)..." Margin="0,0,8,0" />
+                                    <Button Grid.Column="1" Classes="accent-btn" Height="32" Padding="14,0" Command="{Binding FetchApiDataCommand}" IsEnabled="{Binding !IsFetchingApi}">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <materialIcons:MaterialIcon Kind="CloudDownloadOutline" Width="16" Height="16" />
+                                            <TextBlock Text="Fetch API Data" FontSize="11.5" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,*,*">
+                                    <StackPanel Grid.Column="0" Spacing="3" Margin="0,0,6,0">
+                                        <TextBlock Text="Bearer Token (Optional)" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                        <TextBox Text="{Binding ApiAuthBearer, Mode=TwoWay}" Height="28" FontSize="11" CornerRadius="4" PlaceholderText="Bearer xyz123..." />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="3" Margin="3,0,3,0">
+                                        <TextBlock Text="API Key Header (Optional)" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                        <TextBox Text="{Binding ApiKeyHeader, Mode=TwoWay}" Height="28" FontSize="11" CornerRadius="4" PlaceholderText="X-Api-Key" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Spacing="3" Margin="6,0,0,0">
+                                        <TextBlock Text="JSON Array Path (Optional)" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                        <TextBox Text="{Binding ApiJsonPath, Mode=TwoWay}" Height="28" FontSize="11" CornerRadius="4" PlaceholderText="e.g. data.items, products" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <Border Background="{DynamicResource WinCardBorderBrush}" CornerRadius="4" Padding="8,4">
+                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="InformationOutline" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                        <TextBlock Text="{Binding ApiStatusMessage}" FontSize="11" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Tab 2 Content: Manual & Clipboard -->
+                            <StackPanel Spacing="8" IsVisible="{Binding SelectedTabIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=2}">
+                                <Grid ColumnDefinitions="*,Auto,Auto">
+                                    <TextBlock Grid.Column="0" Text="Paste tabular text (TSV/CSV) copied from Excel or Google Sheets:" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Classes="secondary-btn" Height="28" Padding="10,0" Margin="0,0,6,0" Command="{Binding PasteFromClipboardCommand}">
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <materialIcons:MaterialIcon Kind="ContentPaste" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                            <TextBlock Text="Paste from Clipboard" FontSize="11" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Grid.Column="2" Classes="accent-btn" Height="28" Padding="10,0" Command="{Binding ParseRawTextInputCommand}">
+                                        <TextBlock Text="Parse &amp; Load" FontSize="11" />
+                                    </Button>
+                                </Grid>
+                                <TextBox Text="{Binding RawTextInput, Mode=TwoWay}" Height="54" AcceptsReturn="True" FontSize="11" CornerRadius="4" FontFamily="Consolas, monospace" />
+                            </StackPanel>
+                        </Panel>
+                    </Border>
+
+                    <!-- Data Grid Studio & Chart Column Mapper -->
+                    <Grid Grid.Row="1" ColumnDefinitions="*,340">
+                        <!-- Left: Data Matrix Grid -->
+                        <Border Grid.Column="0" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,10,0">
+                            <Grid RowDefinitions="Auto,*,Auto">
+                                <!-- Toolbar -->
+                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="Table" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
+                                        <TextBlock Text="{Binding MatrixSummary}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding AddRowCommand}" ToolTip.Tip="Add Data Row">
+                                            <materialIcons:MaterialIcon Kind="Plus" Width="13" Height="13" />
+                                        </Button>
+                                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding RemoveRowCommand}" ToolTip.Tip="Remove Last Row">
+                                            <materialIcons:MaterialIcon Kind="Minus" Width="13" Height="13" />
+                                        </Button>
+                                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding AddColumnCommand}" ToolTip.Tip="Add Column">
+                                            <materialIcons:MaterialIcon Kind="TableColumnPlusAfter" Width="13" Height="13" />
+                                        </Button>
+                                        <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding RemoveColumnCommand}" ToolTip.Tip="Remove Column">
+                                            <materialIcons:MaterialIcon Kind="TableColumnRemove" Width="13" Height="13" />
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Grid Rows -->
+                                <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                    <StackPanel Spacing="2">
+                                        <!-- Header Row -->
+                                        <Border Background="{DynamicResource WinAccentLightBrush}" CornerRadius="4" Padding="6,4">
+                                            <ItemsControl ItemsSource="{Binding MatrixHeaders}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="8" /></ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Width="90" Text="{Binding}" FontWeight="Bold" FontSize="10.5" Foreground="{DynamicResource WinAccentBrush}" TextTrimming="CharacterEllipsis" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Border>
+
+                                        <!-- Data Rows -->
+                                        <ItemsControl ItemsSource="{Binding GridRows}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="vm:DataGridRowViewModel">
+                                                    <Border Background="{DynamicResource WinPanelBrush}" CornerRadius="3" Padding="6,3" Margin="0,1">
+                                                        <ItemsControl ItemsSource="{Binding Cells}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="8" /></ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Width="90" Text="{Binding}" FontSize="10.5" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" />
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+
+                        <!-- Right: Column Mapping & Chart Live Preview -->
+                        <Border Grid.Column="1" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="10">
+                                    <!-- Mapping Header -->
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <materialIcons:MaterialIcon Kind="ChartBoxOutline" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
+                                        <TextBlock Text="Chart Column Mapping" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                    </StackPanel>
+
+                                    <!-- Category Column Selection -->
+                                    <StackPanel Spacing="3">
+                                        <TextBlock Text="X-Axis (Category Column):" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                        <ComboBox ItemsSource="{Binding MatrixHeaders}" SelectedIndex="{Binding SelectedCategoryColumnIndex, Mode=TwoWay}"
+                                                  HorizontalAlignment="Stretch" Height="28" FontSize="11" />
+                                    </StackPanel>
+
+                                    <!-- Value / Series Columns Selection -->
+                                    <StackPanel Spacing="3">
+                                        <TextBlock Text="Value / Metric Series Columns:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                        <ItemsControl ItemsSource="{Binding AvailableColumns}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="vm:DataColumnSelectionItem">
+                                                    <CheckBox Content="{Binding Header}" IsChecked="{Binding IsSelected, Mode=TwoWay}" FontSize="11" Margin="0,1" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+
+                                    <!-- Live Chart Preview -->
+                                    <TextBlock Text="Live Preview:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" Margin="0,4,0,0" />
+                                    <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Height="140" Padding="4">
+                                        <Grid>
+                                            <Image Source="{Binding ChartPreviewBitmap}" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="HighQuality"
+                                                   IsVisible="{Binding ChartPreviewBitmap, Converter={StaticResource NullToBooleanConverter}}" />
+                                            <TextBlock Text="No preview available" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       IsVisible="{Binding ChartPreviewBitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </Grid>
+
+                <!-- 4. Footer Buttons -->
+                <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto,Auto">
+                    <Button Grid.Column="0" Classes="secondary-btn" Height="34" Padding="12,0" Command="{Binding ExportToCsvCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <materialIcons:MaterialIcon Kind="ExportVariant" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
+                            <TextBlock Text="Export CSV..." FontSize="11.5" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="2" Classes="secondary-btn" Height="34" Padding="16,0" Command="{Binding CloseCommand}" Margin="0,0,10,0">
+                        <TextBlock Text="Cancel" FontSize="12" />
+                    </Button>
+
+                    <Button Grid.Column="3" Classes="accent-btn" Height="34" Padding="20,0" Command="{Binding ApplyDataCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <materialIcons:MaterialIcon Kind="Check" Width="16" Height="16" />
+                            <TextBlock Text="Apply to Canvas" FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

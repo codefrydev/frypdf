@@ -7,6 +7,13 @@ public class ChartSeriesItem
     public string Name { get; set; } = "Series 1";
     public List<double> Values { get; set; } = new();
     public string? ColorHex { get; set; }
+
+    public ChartSeriesItem Clone() => new()
+    {
+        Name = Name,
+        Values = new List<double>(Values),
+        ColorHex = ColorHex
+    };
 }
 
 public class PdfChartElement : PdfElementBase

@@ -12,6 +12,14 @@ public partial class MainWindow : Window
         InitializeComponent();
         MainViewModel.StorageProvider = StorageProvider;
 
+        DataContextChanged += (s, e) =>
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.DataStudio.StorageProvider = StorageProvider;
+            }
+        };
+
         AddHandler(KeyDownEvent, (sender, e) =>
         {
             if (e.Source is TextBox) return;

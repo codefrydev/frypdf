@@ -79,7 +79,11 @@ public partial class App : Application
         services.AddSingleton<IPdfDocumentOperationsService, PdfDocumentOperationsService>();
         services.AddSingleton<PdfEditorApp.Services.Tools.IPdfToolViewModelFactory, PdfEditorApp.Services.Tools.PdfToolViewModelFactory>();
 
+        services.AddSingleton<PdfEditorApp.Core.Data.IDataSourceService, PdfEditorApp.Core.Data.DataSourceService>();
+        services.AddSingleton<PdfEditorApp.Core.Data.IDataBindingService, PdfEditorApp.Core.Data.DataBindingService>();
+
         // ViewModels
+        services.AddTransient<PdfEditorApp.ViewModels.DataStudio.DataStudioViewModel>();
         services.AddTransient<InspectorViewModel>();
         services.AddTransient<PdfToolRunnerViewModel>();
         services.AddTransient<WorkflowBuilderViewModel>();

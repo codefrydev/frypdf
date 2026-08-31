@@ -68,4 +68,18 @@ Located in `src/PdfEditorApp.Core/`:
 - **`PdfLayoutAnalyzer`**: Intelligent layout clustering, script-aware gap thresholding, and paragraph indent recognition.
 - **`UnicodeScriptDetector`**: Codepoint classifier covering 30+ world scripts with font fallback resolution.
 
+---
+
+## 4. Data Studio & LiveCharts2 Ingestion Subsystem
+
+Located in `src/PdfEditorApp.Core/Data/` and `src/PdfEditorApp/ViewModels/DataStudio/`:
+- **`DataMatrix`**: Unified in-memory tabular data structure with column type inference (Text, Number, Currency, Percentage, Date), row/column mutations, and matrix accessors.
+- **`IDataSourceService` / `DataSourceService`**: Multi-source data ingestion pipeline:
+  - **Excel (`.xlsx`)**: High-performance OpenXml workbook parser supporting multi-sheet inspection and shared strings.
+  - **CSV / TSV**: RFC-4180 compliant parser with auto-delimiter detection (comma, tab, semicolon, pipe) and quoted multiline cell handling.
+  - **REST API / JSON**: Async HTTP client with custom headers, Bearer tokens, and flexible JsonPath array navigation.
+  - **Clipboard & Manual Entry**: Instant tabular clipboard paste and live spreadsheet grid editor.
+- **`IDataBindingService` / `DataBindingService`**: Maps tabular datasets to LiveCharts2 series and Table elements, plus bidirectional Table $\leftrightarrow$ Chart conversion with full Undo/Redo tracking.
+- **`DataStudioViewModel` & `DataStudioDialog`**: Modal Studio providing tabbed connector workflows, interactive column mapping, and live Skia-rendered chart previews.
+
 For detailed algorithms, testing procedures, and the continuous improvement workflow, see the [PDF Deconstruction & Editing Guide](file:///Users/codefrydev/Desktop/SourceCode/PDFCreator/docs/PDF_DECONSTRUCTION_AND_EDITING.md).

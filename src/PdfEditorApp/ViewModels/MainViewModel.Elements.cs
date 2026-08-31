@@ -620,6 +620,58 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
+    public void OpenDataStudio(string? mode = "NewChart")
+    {
+        DataStudio.StorageProvider = StorageProvider;
+        if (Inspector.ChartElement != null)
+        {
+            DataStudio.OpenForChart(Inspector.ChartElement, CurrentPage);
+        }
+        else if (Inspector.TableElement != null)
+        {
+            DataStudio.OpenForTable(Inspector.TableElement, CurrentPage);
+        }
+        else
+        {
+            DataStudio.OpenForNew(mode ?? "NewChart", CurrentPage);
+        }
+    }
+
+    [RelayCommand]
+    public async Task ImportExcelToChartAsync()
+    {
+        DataStudio.StorageProvider = StorageProvider;
+        DataStudio.OpenForNew("NewChart", CurrentPage);
+        DataStudio.SelectedTabIndex = 0;
+        await DataStudio.BrowseFileAsync();
+    }
+
+    [RelayCommand]
+    public async Task ImportExcelToTableAsync()
+    {
+        DataStudio.StorageProvider = StorageProvider;
+        DataStudio.OpenForNew("NewTable", CurrentPage);
+        DataStudio.SelectedTabIndex = 0;
+        await DataStudio.BrowseFileAsync();
+    }
+
+    [RelayCommand]
+    public void FetchRestApiToChart()
+    {
+        DataStudio.StorageProvider = StorageProvider;
+        DataStudio.OpenForNew("NewChart", CurrentPage);
+        DataStudio.SelectedTabIndex = 1;
+    }
+
+    [RelayCommand]
+    public void FetchRestApiToTable()
+    {
+        DataStudio.StorageProvider = StorageProvider;
+        DataStudio.OpenForNew("NewTable", CurrentPage);
+        DataStudio.SelectedTabIndex = 1;
+    }
+
+    [RelayCommand]
     public void AddWatermarkElement()
     {
         if (CurrentPage == null) return;

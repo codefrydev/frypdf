@@ -36,6 +36,7 @@ public partial class MainViewModel : ViewModelBase
     public PdfToolRunnerViewModel ToolRunner { get; }
     public WorkflowBuilderViewModel WorkflowBuilder { get; }
     public PdfViewerViewModel PdfViewer { get; } = new();
+    public PdfEditorApp.ViewModels.DataStudio.DataStudioViewModel DataStudio { get; }
 
     // --- HOME / EDITOR / VIEWER VIEW-SWITCHING ---
 
@@ -490,8 +491,17 @@ public partial class MainViewModel : ViewModelBase
         ToolRunner.OpenInViewerRequested += (path) => OpenInViewer(path);
         WorkflowBuilder = new WorkflowBuilderViewModel(workflowEngine, _toolRegistry);
 
-        // Connect undo/redo service to inspector
+        var dataSourceService = new PdfEditorApp.Core.Data.DataSourceService();
+        var dataBindingService = new PdfEditorApp.Core.Data.DataBindingService();
+        DataStudio = new PdfEditorApp.ViewModels.DataStudio.DataStudioViewModel(dataSourceService, dataBindingService)
+        {
+            UndoRedo = UndoRedo
+        };
+        DataStudio.OnElementCreated += (el, desc) => AddElementWithUndo(el, desc);
+
+        // Connect undo/redo service & DataStudio to inspector
         Inspector.UndoRedo = UndoRedo;
+        Inspector.DataStudio = DataStudio;
 
         // Wire PDF Viewer subsystem
         PdfViewer.EditInStudioRequested += (path) => OpenEditorWithFile(path);

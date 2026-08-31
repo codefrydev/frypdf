@@ -6,6 +6,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using QRCoder;
+using PdfEditorApp.Core.Analysis;
 using PdfEditorApp.Core.Utils;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
@@ -556,57 +557,28 @@ internal class QuestPdfDocumentWrapper : IDocument
 
     private void ComposeChart(IContainer container, PdfChartElement chartEl)
     {
+        try
+        {
+            byte[] chartPng = LiveChartsRenderer.RenderChartToPngBytes(
+                chartEl, 
+                Math.Max(180, (int)chartEl.Width), 
+                Math.Max(120, (int)chartEl.Height), 
+                2.5f);
+
+            if (chartPng.Length > 0)
+            {
+                container.Border(1).BorderColor(chartEl.BorderColorHex).Background(chartEl.BackgroundColorHex).Padding(4).Image(chartPng).FitArea();
+                return;
+            }
+        }
+        catch
+        {
+            // Fallback to title block
+        }
+
         container.Border(1).BorderColor(chartEl.BorderColorHex).Background(chartEl.BackgroundColorHex).Padding(8).Column(chartCol =>
         {
             chartCol.Item().AlignCenter().Text($"{chartEl.Title}").FontSize(9f).Bold().FontColor(Colors.Grey.Darken3);
-
-            if (chartEl.ChartType == ChartType.HorizontalBar)
-            {
-                chartCol.Item().PaddingTop(6).Column(hCol =>
-                {
-                    hCol.Spacing(3);
-                    for (int i = 0; i < chartEl.Categories.Count; i++)
-                    {
-                        var idx = i;
-                        var cat = chartEl.Categories[idx];
-                        var valLabel = idx < chartEl.ValueLabels.Count ? chartEl.ValueLabels[idx] : "";
-                        var barColor = idx < chartEl.BarColorsHex.Count ? chartEl.BarColorsHex[idx] : "#0F6CBD";
-                        var val = idx < chartEl.Values.Count ? (float)chartEl.Values[idx] : 1f;
-
-                        hCol.Item().Row(hRow =>
-                        {
-                            hRow.AutoItem().Width(40).Text(cat).FontSize(7.5f).FontColor(Colors.Grey.Darken2);
-                            hRow.RelativeItem().Height(8).Background(Colors.Grey.Lighten3).Row(progRow =>
-                            {
-                                progRow.RelativeItem(Math.Min(10f, Math.Max(0.5f, val))).Background(barColor).CornerRadius(2);
-                                progRow.RelativeItem(Math.Max(0.1f, 10f - val));
-                            });
-                            hRow.AutoItem().PaddingLeft(4).Text(valLabel).FontSize(7.5f).Bold();
-                        });
-                    }
-                });
-            }
-            else
-            {
-                chartCol.Item().PaddingTop(6).Row(chartRow =>
-                {
-                    for (int i = 0; i < chartEl.Categories.Count; i++)
-                    {
-                        var idx = i;
-                        var cat = chartEl.Categories[idx];
-                        var valLabel = idx < chartEl.ValueLabels.Count ? chartEl.ValueLabels[idx] : "";
-                        var barColor = idx < chartEl.BarColorsHex.Count ? chartEl.BarColorsHex[idx] : "#0F6CBD";
-                        var val = idx < chartEl.Values.Count ? (float)chartEl.Values[idx] : 1f;
-
-                        chartRow.RelativeItem().PaddingHorizontal(2).Column(barCol =>
-                        {
-                            barCol.Item().AlignCenter().Text(valLabel).FontSize(7.5f).Bold();
-                            barCol.Item().Height(Math.Max(6, val * 14)).Background(barColor).CornerRadius(2);
-                            barCol.Item().PaddingTop(2).AlignCenter().Text(cat).FontSize(7f).FontColor(Colors.Grey.Darken1);
-                        });
-                    }
-                });
-            }
         });
     }
 

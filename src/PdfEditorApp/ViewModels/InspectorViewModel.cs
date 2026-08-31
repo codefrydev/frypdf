@@ -1288,6 +1288,38 @@ public partial class InspectorViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void SetChartPalette(string paletteStr)
+    {
+        if (ChartElement != null && Enum.TryParse<ChartPalette>(paletteStr, true, out var parsed) && ChartElement.Palette != parsed)
+        {
+            var el = ChartElement;
+            var oldPal = el.Palette;
+            el.SetPalette(paletteStr);
+            UndoRedo?.RecordAction(
+                $"Change Palette to {parsed}",
+                () => el.Palette = oldPal,
+                () => el.Palette = parsed
+            );
+        }
+    }
+
+    [RelayCommand]
+    public void SetChartLegendPosition(string posStr)
+    {
+        if (ChartElement != null && Enum.TryParse<ChartLegendPosition>(posStr, true, out var parsed) && ChartElement.LegendPosition != parsed)
+        {
+            var el = ChartElement;
+            var oldPos = el.LegendPosition;
+            el.SetLegendPosition(posStr);
+            UndoRedo?.RecordAction(
+                $"Change Legend to {parsed}",
+                () => el.LegendPosition = oldPos,
+                () => el.LegendPosition = parsed
+            );
+        }
+    }
+
+    [RelayCommand]
     public void SetBarcodeFormat(string formatStr)
     {
         if (BarcodeElement != null && BarcodeElement.BarcodeFormat != formatStr)

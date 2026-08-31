@@ -303,17 +303,42 @@ public enum ChartType
     BarColumn,
     HorizontalBar,
     Line,
+    SmoothLine,
     Area,
     DonutPie,
     StackedBar,
+    StackedHorizontalBar,
     ScatterPlot,
     Radar,
+    PolarArea,
     Funnel,
     Waterfall,
     GaugeProgress,
     StepLine,
-    Pyramid
+    Pyramid,
+    Candlestick
 }
+
+public enum ChartPalette
+{
+    CorporateBlue,
+    EmeraldGreen,
+    SunsetOrange,
+    CyberNeon,
+    ExecutiveSlate,
+    PastelHarmony,
+    VibrantRainbow
+}
+
+public enum ChartLegendPosition
+{
+    Hidden,
+    Top,
+    Bottom,
+    Left,
+    Right
+}
+
 
 public enum TablePresetStyle
 {

@@ -16,6 +16,7 @@ public partial class App : Application
     public override void Initialize()
     {
         Name = "FryPDF";
+        LiveChartsCore.LiveCharts.Configure(config => LiveChartsCore.SkiaSharpView.LiveChartsSkiaSharp.UseDefaults(config));
         AvaloniaXamlLoader.Load(this);
     }
 

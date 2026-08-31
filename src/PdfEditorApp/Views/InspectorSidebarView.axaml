@@ -1330,7 +1330,7 @@
                         <StackPanel Spacing="10">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="ChartBar" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
-                                <TextBlock Text="Chart Types (13 Kinds)" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="LiveCharts2 Engine (17 Kinds)" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
                             <!-- Chart Types Selector -->
@@ -1339,18 +1339,70 @@
                                 <WrapPanel Orientation="Horizontal">
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="BarColumn"><TextBlock Text="Columns" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="HorizontalBar"><TextBlock Text="H-Bar" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Line"><TextBlock Text="Line" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Area"><TextBlock Text="Area" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="DonutPie"><TextBlock Text="Donut" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="StackedBar"><TextBlock Text="Stacked" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Radar"><TextBlock Text="Radar" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Funnel"><TextBlock Text="Funnel" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Waterfall"><TextBlock Text="Waterfall" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="GaugeProgress"><TextBlock Text="Gauge" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="StackedHorizontalBar"><TextBlock Text="Stacked-H" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Line"><TextBlock Text="Line" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="SmoothLine"><TextBlock Text="Spline" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Area"><TextBlock Text="Area" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="StepLine"><TextBlock Text="Step" FontSize="10" /></Button>
-                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Pyramid"><TextBlock Text="Pyramid" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="DonutPie"><TextBlock Text="Donut" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="GaugeProgress"><TextBlock Text="Gauge" FontSize="10" /></Button>
                                     <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="ScatterPlot"><TextBlock Text="Scatter" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Radar"><TextBlock Text="Radar" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="PolarArea"><TextBlock Text="Polar" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Candlestick"><TextBlock Text="Candle" FontSize="10" /></Button>
+                                    <Button Classes="secondary-btn" Height="24" Padding="5,1" Margin="2" Command="{Binding SetChartTypeCommand}" CommandParameter="Waterfall"><TextBlock Text="Waterfall" FontSize="10" /></Button>
                                 </WrapPanel>
+                            </StackPanel>
+
+                            <!-- Color Palette Selector -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Color Palette" Classes="inspector-label" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1" Command="{Binding SetChartPaletteCommand}" CommandParameter="CorporateBlue"><TextBlock Text="Corporate" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1" Command="{Binding SetChartPaletteCommand}" CommandParameter="EmeraldGreen"><TextBlock Text="Emerald" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1" Command="{Binding SetChartPaletteCommand}" CommandParameter="SunsetOrange"><TextBlock Text="Sunset" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1" Command="{Binding SetChartPaletteCommand}" CommandParameter="CyberNeon"><TextBlock Text="Cyber" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1" Command="{Binding SetChartPaletteCommand}" CommandParameter="ExecutiveSlate"><TextBlock Text="Slate" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1" Command="{Binding SetChartPaletteCommand}" CommandParameter="PastelHarmony"><TextBlock Text="Pastel" FontSize="9.5" /></Button>
+                                    <Button Classes="secondary-btn" Height="22" Padding="4,1" Margin="1" Command="{Binding SetChartPaletteCommand}" CommandParameter="VibrantRainbow"><TextBlock Text="Rainbow" FontSize="9.5" /></Button>
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <!-- Legend Position Selector -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Legend Placement" Classes="inspector-label" />
+                                <Grid ColumnDefinitions="*,*,*,*,*">
+                                    <Button Grid.Column="0" Classes="secondary-btn" Height="22" Padding="2,1" Margin="1" Command="{Binding SetChartLegendPositionCommand}" CommandParameter="Top"><TextBlock Text="Top" FontSize="9" HorizontalAlignment="Center" /></Button>
+                                    <Button Grid.Column="1" Classes="secondary-btn" Height="22" Padding="2,1" Margin="1" Command="{Binding SetChartLegendPositionCommand}" CommandParameter="Bottom"><TextBlock Text="Btm" FontSize="9" HorizontalAlignment="Center" /></Button>
+                                    <Button Grid.Column="2" Classes="secondary-btn" Height="22" Padding="2,1" Margin="1" Command="{Binding SetChartLegendPositionCommand}" CommandParameter="Left"><TextBlock Text="Left" FontSize="9" HorizontalAlignment="Center" /></Button>
+                                    <Button Grid.Column="3" Classes="secondary-btn" Height="22" Padding="2,1" Margin="1" Command="{Binding SetChartLegendPositionCommand}" CommandParameter="Right"><TextBlock Text="Right" FontSize="9" HorizontalAlignment="Center" /></Button>
+                                    <Button Grid.Column="4" Classes="secondary-btn" Height="22" Padding="2,1" Margin="1" Command="{Binding SetChartLegendPositionCommand}" CommandParameter="Hidden"><TextBlock Text="Off" FontSize="9" HorizontalAlignment="Center" /></Button>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Display Options Toggles -->
+                            <Grid ColumnDefinitions="*,*">
+                                <CheckBox Grid.Column="0" Content="Data Labels" IsChecked="{Binding ChartElement.ShowDataLabels, Mode=TwoWay}" FontSize="11" />
+                                <CheckBox Grid.Column="1" Content="Gridlines" IsChecked="{Binding ChartElement.ShowGridlines, Mode=TwoWay}" FontSize="11" />
+                            </Grid>
+
+                            <!-- Donut Hole Slider (Visible for Donut) -->
+                            <StackPanel Spacing="3" IsVisible="{Binding ChartElement.IsDonutPie}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Donut Hole Ratio" Classes="inspector-label" />
+                                    <TextBlock Grid.Column="1" Text="{Binding ChartElement.DonutHoleRatio, StringFormat='{}{0:F2}'}" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                </Grid>
+                                <Slider Value="{Binding ChartElement.DonutHoleRatio, Mode=TwoWay}" Minimum="0.1" Maximum="0.85" SmallChange="0.05" Height="24" />
+                            </StackPanel>
+
+                            <!-- Curve Smoothness Slider (Visible for Spline / Area) -->
+                            <StackPanel Spacing="3" IsVisible="{Binding ChartElement.IsSmoothLine}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Curve Tension" Classes="inspector-label" />
+                                    <TextBlock Grid.Column="1" Text="{Binding ChartElement.CurveSmoothness, StringFormat='{}{0:F2}'}" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                </Grid>
+                                <Slider Value="{Binding ChartElement.CurveSmoothness, Mode=TwoWay}" Minimum="0.0" Maximum="1.0" SmallChange="0.05" Height="24" />
                             </StackPanel>
 
                             <StackPanel Spacing="3">

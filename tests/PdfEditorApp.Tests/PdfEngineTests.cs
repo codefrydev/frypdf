@@ -615,6 +615,152 @@ public class PdfEngineTests
             Assert.Equal(chartType, roundtripVm.ChartType);
         }
     }
+    [Fact]
+    public void LiveCharts2_HeadlessSkiaRendering_AllChartTypes_Work()
+    {
+        foreach (ChartType chartType in Enum.GetValues<ChartType>())
+        {
+            var chartEl = new PdfEditorApp.Models.Elements.PdfChartElement
+            {
+                Title = $"Test {chartType}",
+                ChartType = chartType,
+                Categories = new List<string> { "Q1", "Q2", "Q3", "Q4" },
+                Values = new List<double> { 12, 19, 3, 25 },
+                ValueLabels = new List<string> { "$12M", "$19M", "$3M", "$25M" },
+                Palette = ChartPalette.CyberNeon,
+                LegendPosition = ChartLegendPosition.Top,
+                ShowDataLabels = true,
+                ShowGridlines = true
+            };
+
+            byte[] pngBytes = PdfEditorApp.Core.Analysis.LiveChartsRenderer.RenderChartToPngBytes(chartEl, width: 400, height: 250);
+            Assert.NotNull(pngBytes);
+            Assert.NotEmpty(pngBytes);
+            Assert.True(pngBytes.Length > 100);
+        }
+    }
+
+    [Fact]
+    public void LiveCharts2_MultiSeries_CartesianRendering_Works()
+    {
+        var chartEl = new PdfEditorApp.Models.Elements.PdfChartElement
+        {
+            Title = "2025 vs 2026 Sales Comparison",
+            ChartType = ChartType.BarColumn,
+            Categories = new List<string> { "North", "South", "East", "West" },
+            Palette = ChartPalette.CorporateBlue,
+            LegendPosition = ChartLegendPosition.Top,
+            MultiSeries = new List<PdfEditorApp.Models.Elements.ChartSeriesItem>
+            {
+                new() { Name = "2025 Actual", Values = new List<double> { 120, 150, 180, 200 }, ColorHex = "#82BDF0" },
+                new() { Name = "2026 Target", Values = new List<double> { 140, 175, 210, 240 }, ColorHex = "#0F6CBD" }
+            }
+        };
+
+        byte[] pngBytes = PdfEditorApp.Core.Analysis.LiveChartsRenderer.RenderChartToPngBytes(chartEl, width: 500, height: 300);
+        Assert.NotNull(pngBytes);
+        Assert.NotEmpty(pngBytes);
+        Assert.True(pngBytes.Length > 200);
+    }
+
+    [Fact]
+    public void LiveCharts2_AllPalettes_RenderSuccessfully()
+    {
+        foreach (ChartPalette palette in Enum.GetValues<ChartPalette>())
+        {
+            var colors = PdfEditorApp.Core.Analysis.LiveChartsRenderer.GetPaletteHexColors(palette);
+            Assert.NotEmpty(colors);
+            Assert.True(colors.Count >= 4);
+
+            var chartEl = new PdfEditorApp.Models.Elements.PdfChartElement
+            {
+                Title = $"Palette {palette}",
+                ChartType = ChartType.SmoothLine,
+                Palette = palette,
+                Categories = new List<string> { "Jan", "Feb", "Mar", "Apr" },
+                Values = new List<double> { 50, 65, 80, 95 }
+            };
+
+            byte[] pngBytes = PdfEditorApp.Core.Analysis.LiveChartsRenderer.RenderChartToPngBytes(chartEl, 300, 200);
+            Assert.NotEmpty(pngBytes);
+        }
+    }
+
+    [Fact]
+    public void LiveCharts2_ChartElementViewModel_ReactiveUpdates_Work()
+    {
+        var vm = new PdfEditorApp.ViewModels.ElementViewModels.ChartElementViewModel();
+        Assert.NotNull(vm.CartesianSeries);
+        Assert.NotEmpty(vm.CartesianSeries);
+
+        // Change palette
+        vm.SetPaletteCommand.Execute("EmeraldGreen");
+        Assert.Equal(ChartPalette.EmeraldGreen, vm.Palette);
+
+        // Change legend position
+        vm.SetLegendPositionCommand.Execute("Right");
+        Assert.Equal(ChartLegendPosition.Right, vm.LegendPosition);
+        Assert.Equal(LiveChartsCore.Measure.LegendPosition.Right, vm.LiveLegendPosition);
+
+        // Switch to DonutPie
+        vm.SetChartTypeCommand.Execute("DonutPie");
+        Assert.Equal(ChartType.DonutPie, vm.ChartType);
+        Assert.True(vm.IsDonutPie);
+        Assert.True(vm.IsPieChart);
+        Assert.False(vm.IsCartesianChart);
+        Assert.NotEmpty(vm.PieSeries);
+
+        // Switch to Radar
+        vm.SetChartTypeCommand.Execute("Radar");
+        Assert.Equal(ChartType.Radar, vm.ChartType);
+        Assert.True(vm.IsRadar);
+        Assert.True(vm.IsPolarChart);
+        Assert.NotEmpty(vm.PolarSeries);
+
+        // Add and Remove Data points
+        int initialBars = vm.Bars.Count;
+        vm.AddDataPointCommand.Execute(null);
+        Assert.Equal(initialBars + 1, vm.Bars.Count);
+
+        vm.RemoveDataPointCommand.Execute(null);
+        Assert.Equal(initialBars, vm.Bars.Count);
+    }
+
+    [Fact]
+    public void LiveCharts2_PdfExport_ContainsRenderedChart()
+    {
+        var doc = new PdfEditorApp.Models.PdfDocumentModel
+        {
+            Pages = new List<PdfEditorApp.Models.PdfPageModel>
+            {
+                new()
+                {
+                    Width = 595,
+                    Height = 842,
+                    Elements = new List<PdfEditorApp.Models.Elements.PdfElementBase>
+                    {
+                        new PdfEditorApp.Models.Elements.PdfChartElement
+                        {
+                            X = 50,
+                            Y = 100,
+                            Width = 495,
+                            Height = 250,
+                            Title = "Executive Financial Summary",
+                            ChartType = ChartType.SmoothLine,
+                            Palette = ChartPalette.CorporateBlue,
+                            Categories = new List<string> { "2023", "2024", "2025", "2026" },
+                            Values = new List<double> { 12.5, 18.2, 24.8, 31.0 }
+                        }
+                    }
+                }
+            }
+        };
+
+        byte[] pdfBytes = _exportService.GeneratePdfBytes(doc);
+        Assert.NotNull(pdfBytes);
+        Assert.NotEmpty(pdfBytes);
+        Assert.True(pdfBytes.Length > 1000);
+    }
 
     [Fact]
     public void FullElementDuplicationAndPaste_MaintainsCorrectTypes()

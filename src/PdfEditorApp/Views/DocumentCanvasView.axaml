@@ -427,269 +427,31 @@
                                     </Grid>
                                 </DataTemplate>
 
-                                <!-- 5. ADVANCED CHART ELEMENT TEMPLATE (13 Chart Kinds) -->
+                                <!-- 5. ADVANCED LIVECHARTS2 CHART ELEMENT TEMPLATE -->
                                 <DataTemplate DataType="elvm:ChartElementViewModel">
                                     <Grid Width="{Binding Width}" Height="{Binding Height}">
                                         <Border Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderThickness="1"
                                                 CornerRadius="6"
-                                                Padding="10,8"
+                                                Padding="8,6"
+                                                ClipToBounds="True"
                                                 PointerPressed="OnElementPointerPressed">
                                             <Grid RowDefinitions="Auto,*">
                                                 <!-- Chart Header -->
-                                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,4">
                                                     <TextBlock Grid.Column="0" Text="{Binding Title}"
-                                                               FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                                    <Border Grid.Column="1" Background="#E2E8F0" CornerRadius="4" Padding="5,1">
-                                                        <TextBlock Text="{Binding ChartTypeDescription}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                                                               FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    <Border Grid.Column="1" Background="{DynamicResource WinCardBorderBrush}" CornerRadius="4" Padding="5,1">
+                                                        <TextBlock Text="{Binding ChartTypeDescription}" FontSize="8.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                                                     </Border>
                                                 </Grid>
 
-                                                <!-- 1. Vertical Column Chart View -->
-                                                <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="4,0" IsVisible="{Binding IsBarColumn}">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <UniformGrid Rows="1" />
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate DataType="elvm:ChartBarItem">
-                                                            <Grid RowDefinitions="Auto,*,Auto" Margin="2,0" VerticalAlignment="Bottom">
-                                                                <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" Margin="0,0,0,2" />
-                                                                <Border Grid.Row="1" Height="{Binding BarHeightPx}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="2,2,0,0" />
-                                                                <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" />
-                                                            </Grid>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-
-                                                <!-- 2. Horizontal Bar Chart View -->
-                                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsHorizontalBar}">
-                                                    <ItemsControl ItemsSource="{Binding Bars}">
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate DataType="elvm:ChartBarItem">
-                                                                <Grid ColumnDefinitions="55,*,50" Margin="0,3" VerticalAlignment="Center">
-                                                                    <TextBlock Grid.Column="0" Text="{Binding Category}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
-                                                                    <Border Grid.Column="1" Background="#E2E8F0" Height="14" CornerRadius="3" Margin="4,0">
-                                                                        <Border HorizontalAlignment="Left" Width="{Binding BarHeightPx}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="3" />
-                                                                    </Border>
-                                                                    <TextBlock Grid.Column="2" Text="{Binding ValueLabel}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                                                                </Grid>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </ScrollViewer>
-
-                                                <!-- 3. Donut & Pie Chart View -->
-                                                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="6,0" IsVisible="{Binding IsDonutPie}">
-                                                    <Panel Grid.Column="0" Width="90" Height="90" VerticalAlignment="Center">
-                                                        <Ellipse Width="90" Height="90" Stroke="#0F6CBD" StrokeThickness="16" Fill="Transparent" />
-                                                        <Ellipse Width="58" Height="58" Fill="White" />
-                                                        <TextBlock Text="100%" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                    </Panel>
-                                                    <ScrollViewer Grid.Column="1" Margin="10,0,0,0" VerticalScrollBarVisibility="Auto">
-                                                        <ItemsControl ItemsSource="{Binding Bars}">
-                                                            <ItemsControl.ItemTemplate>
-                                                                <DataTemplate DataType="elvm:ChartBarItem">
-                                                                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
-                                                                        <Border Width="9" Height="9" CornerRadius="2" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" VerticalAlignment="Center" />
-                                                                        <TextBlock Text="{Binding Category}" FontSize="9" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                                                    </StackPanel>
-                                                                </DataTemplate>
-                                                            </ItemsControl.ItemTemplate>
-                                                        </ItemsControl>
-                                                    </ScrollViewer>
-                                                </Grid>
-
-                                                <!-- 4. Line Chart View -->
-                                                <Grid Grid.Row="1" Margin="4,0" IsVisible="{Binding IsLine}">
-                                                    <ItemsControl ItemsSource="{Binding Bars}">
-                                                        <ItemsControl.ItemsPanel>
-                                                            <ItemsPanelTemplate>
-                                                                <UniformGrid Rows="1" />
-                                                            </ItemsPanelTemplate>
-                                                        </ItemsControl.ItemsPanel>
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate DataType="elvm:ChartBarItem">
-                                                                <Grid RowDefinitions="Auto,*,Auto" VerticalAlignment="Bottom">
-                                                                    <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                                                    <Border Grid.Row="1" Width="8" Height="8" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="4" BorderBrush="White" BorderThickness="1.5" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                                    <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" Margin="0,4,0,0" />
-                                                                </Grid>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </Grid>
-
-                                                <!-- 5. Area Chart View -->
-                                                <Grid Grid.Row="1" Margin="4,0" IsVisible="{Binding IsArea}">
-                                                    <ItemsControl ItemsSource="{Binding Bars}">
-                                                        <ItemsControl.ItemsPanel>
-                                                            <ItemsPanelTemplate>
-                                                                <UniformGrid Rows="1" />
-                                                            </ItemsPanelTemplate>
-                                                        </ItemsControl.ItemsPanel>
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate DataType="elvm:ChartBarItem">
-                                                                <Grid RowDefinitions="Auto,*,Auto" VerticalAlignment="Bottom" Margin="2,0">
-                                                                    <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                                                    <Border Grid.Row="1" Height="{Binding BarHeightPx}" Background="#BFDBFE" BorderBrush="#0F6CBD" BorderThickness="2,2,2,0" CornerRadius="4,4,0,0" Opacity="0.75" />
-                                                                    <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" Margin="0,3,0,0" />
-                                                                </Grid>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </Grid>
-
-                                                <!-- 6. Stacked Bar Chart View -->
-                                                <Grid Grid.Row="1" RowDefinitions="Auto,*" Margin="4,0" IsVisible="{Binding IsStackedBar}">
-                                                    <Border Grid.Row="0" Height="24" CornerRadius="4" ClipToBounds="True" Background="#E2E8F0">
-                                                        <ItemsControl ItemsSource="{Binding Bars}">
-                                                            <ItemsControl.ItemsPanel>
-                                                                <ItemsPanelTemplate>
-                                                                    <UniformGrid Rows="1" />
-                                                                </ItemsPanelTemplate>
-                                                            </ItemsControl.ItemsPanel>
-                                                            <ItemsControl.ItemTemplate>
-                                                                <DataTemplate DataType="elvm:ChartBarItem">
-                                                                    <Border Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}">
-                                                                        <TextBlock Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                                    </Border>
-                                                                </DataTemplate>
-                                                            </ItemsControl.ItemTemplate>
-                                                        </ItemsControl>
-                                                    </Border>
-                                                    <ScrollViewer Grid.Row="1" Margin="0,6,0,0" VerticalScrollBarVisibility="Auto">
-                                                        <ItemsControl ItemsSource="{Binding Bars}">
-                                                            <ItemsControl.ItemTemplate>
-                                                                <DataTemplate DataType="elvm:ChartBarItem">
-                                                                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
-                                                                        <Border Width="8" Height="8" CornerRadius="2" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" VerticalAlignment="Center" />
-                                                                        <TextBlock Text="{Binding Category}" FontSize="9" Foreground="{DynamicResource WinTextBrush}" />
-                                                                        <TextBlock Text="{Binding ValueLabel}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                                                                    </StackPanel>
-                                                                </DataTemplate>
-                                                            </ItemsControl.ItemTemplate>
-                                                        </ItemsControl>
-                                                    </ScrollViewer>
-                                                </Grid>
-
-                                                <!-- 7. Radar Chart View -->
-                                                <Grid Grid.Row="1" RowDefinitions="*,Auto" IsVisible="{Binding IsRadar}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <Panel Grid.Row="0" Width="90" Height="90">
-                                                        <Polygon Points="45,5 85,25 85,65 45,85 5,65 5,25" Stroke="#CBD5E1" StrokeThickness="1" Fill="#F8FAFC" />
-                                                        <Polygon Points="45,18 72,32 72,58 45,72 18,58 18,32" Stroke="#0F6CBD" StrokeThickness="1.5" Fill="#93C5FD" Opacity="0.6" />
-                                                        <Ellipse Width="6" Height="6" Fill="#0F6CBD" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                    </Panel>
-                                                    <TextBlock Grid.Row="1" Text="Multi-Metric Radar" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" Margin="0,4,0,0" />
-                                                </Grid>
-
-                                                <!-- 8. Funnel Chart View -->
-                                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsFunnel}">
-                                                    <ItemsControl ItemsSource="{Binding Bars}">
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate DataType="elvm:ChartBarItem">
-                                                                <Border Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                        Height="18" CornerRadius="4" Margin="10,2" HorizontalAlignment="Center" Width="{Binding BarHeightPx}">
-                                                                    <Grid ColumnDefinitions="*,Auto" Margin="8,0">
-                                                                        <TextBlock Grid.Column="0" Text="{Binding Category}" FontSize="9" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
-                                                                        <TextBlock Grid.Column="1" Text="{Binding ValueLabel}" FontSize="9" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
-                                                                    </Grid>
-                                                                </Border>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </ScrollViewer>
-
-                                                <!-- 9. Waterfall Chart View -->
-                                                <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="4,0" IsVisible="{Binding IsWaterfall}">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <UniformGrid Rows="1" />
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate DataType="elvm:ChartBarItem">
-                                                            <Grid RowDefinitions="Auto,*,Auto" VerticalAlignment="Bottom" Margin="2,0">
-                                                                <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="#16A34A" HorizontalAlignment="Center" />
-                                                                <Border Grid.Row="1" Height="{Binding BarHeightPx}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="2" Margin="0,2" />
-                                                                <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                                            </Grid>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-
-                                                <!-- 10. Gauge / KPI Progress View -->
-                                                <Grid Grid.Row="1" RowDefinitions="*,Auto" IsVisible="{Binding IsGaugeProgress}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <Panel Grid.Row="0" Width="100" Height="55" Margin="0,6,0,0">
-                                                        <Border Width="100" Height="50" BorderBrush="#0F6CBD" BorderThickness="8,8,8,0" CornerRadius="50,50,0,0" Background="Transparent" />
-                                                        <TextBlock Text="88.4%" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,2" />
-                                                    </Panel>
-                                                    <TextBlock Grid.Row="1" Text="KPI Performance Score" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" Margin="0,4,0,0" />
-                                                </Grid>
-
-                                                <!-- 11. StepLine Chart View -->
-                                                <Grid Grid.Row="1" Margin="4,0" IsVisible="{Binding IsStepLine}">
-                                                    <ItemsControl ItemsSource="{Binding Bars}">
-                                                        <ItemsControl.ItemsPanel>
-                                                            <ItemsPanelTemplate>
-                                                                <UniformGrid Rows="1" />
-                                                            </ItemsPanelTemplate>
-                                                        </ItemsControl.ItemsPanel>
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate DataType="elvm:ChartBarItem">
-                                                                <Grid RowDefinitions="Auto,*,Auto" VerticalAlignment="Bottom">
-                                                                    <TextBlock Grid.Row="0" Text="{Binding ValueLabel}" FontSize="8.5" FontWeight="Bold" Foreground="#0F6CBD" HorizontalAlignment="Center" />
-                                                                    <Border Grid.Row="1" Height="{Binding BarHeightPx}" BorderBrush="#0F6CBD" BorderThickness="2,2,0,0" Margin="0,2">
-                                                                        <Border Width="6" Height="6" Background="#0F6CBD" CornerRadius="3" HorizontalAlignment="Left" VerticalAlignment="Top" />
-                                                                    </Border>
-                                                                    <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                                                </Grid>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </Grid>
-
-                                                <!-- 12. Pyramid Chart View -->
-                                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsPyramid}">
-                                                    <ItemsControl ItemsSource="{Binding Bars}">
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate DataType="elvm:ChartBarItem">
-                                                                <Border Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                        Height="18" CornerRadius="3" Margin="4,2" HorizontalAlignment="Center" Width="{Binding BarHeightPx}">
-                                                                    <Grid ColumnDefinitions="*,Auto" Margin="8,0">
-                                                                        <TextBlock Grid.Column="0" Text="{Binding Category}" FontSize="9" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
-                                                                        <TextBlock Grid.Column="1" Text="{Binding ValueLabel}" FontSize="9" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
-                                                                    </Grid>
-                                                                </Border>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </ScrollViewer>
-
-                                                <!-- 13. Scatter Plot Chart View -->
-                                                <Grid Grid.Row="1" Margin="6,0" IsVisible="{Binding IsScatterPlot}">
-                                                    <Border BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1,0,0,1">
-                                                        <ItemsControl ItemsSource="{Binding Bars}">
-                                                            <ItemsControl.ItemsPanel>
-                                                                <ItemsPanelTemplate>
-                                                                    <UniformGrid Rows="1" />
-                                                                </ItemsPanelTemplate>
-                                                            </ItemsControl.ItemsPanel>
-                                                            <ItemsControl.ItemTemplate>
-                                                                <DataTemplate DataType="elvm:ChartBarItem">
-                                                                    <Grid RowDefinitions="*,Auto" VerticalAlignment="Bottom">
-                                                                        <Border Grid.Row="0" Width="14" Height="14" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="7" BorderBrush="White" BorderThickness="1.5" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,8">
-                                                                            <TextBlock Text="{Binding ValueLabel}" FontSize="7" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                                        </Border>
-                                                                        <TextBlock Grid.Row="1" Text="{Binding Category}" FontSize="9" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                                                    </Grid>
-                                                                </DataTemplate>
-                                                            </ItemsControl.ItemTemplate>
-                                                        </ItemsControl>
-                                                    </Border>
-                                                </Grid>
+                                                <!-- High-DPI LiveCharts2 Skia Image -->
+                                                <Image Grid.Row="1"
+                                                       Source="{Binding ChartBitmap}"
+                                                       Stretch="Fill"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
                                             </Grid>
                                         </Border>
 

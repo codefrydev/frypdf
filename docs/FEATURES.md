@@ -13,7 +13,7 @@ A comprehensive overview of features provided by FryPDF Desktop Studio.
 ## 2. Rich Element Types
 - **Typography & Text Blocks**: Heading presets, body text, multi-column blocks, font families, letter spacing, line height.
 - **Vector Shapes**: Rectangles, rounded rects, pills, circles, callout speech bubbles, stars, arrows, brackets.
-- **Interactive Chart Types**: Bar, column, line, smooth curve, area, donut, pie, radar, scatter, bubble, candlestick, waterfall, polar.
+- **Interactive Chart Types (LiveCharts2 & QuestPDF)**: 17+ chart kinds including Clustered Columns, Horizontal Bars, Stacked Bars/Columns, Linear & Smooth Splines, Filled Area, Step Lines, Donut & Pie Rings with hole customization, Semi-Circle KPI Speedometer Gauges, Scatter Plots, Multi-Metric Spider/Radar, Polar Area, Candlestick OHLC financial charts, and Waterfall variance analysis with 7 curated color palettes (*Corporate*, *Emerald*, *Sunset*, *Cyber Neon*, *Slate*, *Pastel*, *Rainbow*) and 300+ DPI Skia print export.
 - **Tables**: Auto-calculating rows/columns, alternating row stripes, custom border styles and header fills.
 - **Dynamic Barcodes & QR Codes**: QR codes (URL, vCard, WiFi, Email presets), Code 128, EAN-13, PDF-417.
 - **Ink & Freehand Drawing**: Vector pen strokes with configurable width, color, smoothing, and eraser.

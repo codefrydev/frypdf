@@ -803,25 +803,64 @@ public static class TextLayoutEngine
                     tx = line.X + line.Width;
                 }
 
-                string escText = EscapeXml(line.Text);
-                sb.AppendFormat(Ci, "<text x=\"{0:F1}\" y=\"{1:F1}\" font-family=\"{2}\" font-size=\"{3:F1}\" font-weight=\"{4}\" font-style=\"{5}\" fill=\"{6}\" text-anchor=\"{7}\"{8}",
-                    tx, line.BaselineY, fontFamily, el.FontSize, fontWeight, fontStyle, fontColor, textAnchor, strokeAttr);
-
-                if (el.CharacterSpacing != 0)
+                if (el.Spans != null && el.Spans.Count > 0)
                 {
-                    sb.AppendFormat(Ci, " letter-spacing=\"{0:F1}px\"", el.CharacterSpacing);
+                    sb.AppendFormat(Ci, "<text x=\"{0:F1}\" y=\"{1:F1}\" font-family=\"{2}\" font-size=\"{3:F1}\" font-weight=\"{4}\" font-style=\"{5}\" fill=\"{6}\" text-anchor=\"{7}\"{8}",
+                        tx, line.BaselineY, fontFamily, el.FontSize, fontWeight, fontStyle, fontColor, textAnchor, strokeAttr);
+
+                    if (el.CharacterSpacing != 0) sb.AppendFormat(Ci, " letter-spacing=\"{0:F1}px\"", el.CharacterSpacing);
+                    if (el.WordSpacing != 0) sb.AppendFormat(Ci, " word-spacing=\"{0:F1}px\"", el.WordSpacing);
+                    sb.Append(">");
+
+                    foreach (var span in el.Spans)
+                    {
+                        if (string.IsNullOrEmpty(span.Text)) continue;
+                        sb.Append("<tspan");
+                        if (!string.IsNullOrEmpty(span.FontFamily) && span.FontFamily != el.FontFamily)
+                            sb.AppendFormat(Ci, " font-family=\"{0}\"", span.FontFamily);
+                        if (span.FontSize.HasValue && Math.Abs(span.FontSize.Value - el.FontSize) > 0.1)
+                            sb.AppendFormat(Ci, " font-size=\"{0:F1}\"", span.FontSize.Value);
+                        if (span.IsBold.HasValue && span.IsBold.Value != el.IsBold)
+                            sb.AppendFormat(Ci, " font-weight=\"{0}\"", span.IsBold.Value ? "bold" : "normal");
+                        if (span.IsItalic.HasValue && span.IsItalic.Value != el.IsItalic)
+                            sb.AppendFormat(Ci, " font-style=\"{0}\"", span.IsItalic.Value ? "italic" : "normal");
+                        if (!string.IsNullOrEmpty(span.TextColorHex) && span.TextColorHex != el.TextColorHex)
+                            sb.AppendFormat(Ci, " fill=\"{0}\"", span.TextColorHex);
+                        if (span.Script == TextScriptMode.Superscript)
+                            sb.Append(" baseline-shift=\"super\" font-size=\"70%\"");
+                        else if (span.Script == TextScriptMode.Subscript)
+                            sb.Append(" baseline-shift=\"sub\" font-size=\"70%\"");
+
+                        if (span.IsUnderline == true && span.IsStrikethrough == true) sb.Append(" text-decoration=\"underline line-through\"");
+                        else if (span.IsUnderline == true) sb.Append(" text-decoration=\"underline\"");
+                        else if (span.IsStrikethrough == true) sb.Append(" text-decoration=\"line-through\"");
+
+                        sb.AppendFormat(">{0}</tspan>", EscapeXml(span.Text));
+                    }
+                    sb.Append("</text>");
                 }
-                if (el.WordSpacing != 0)
+                else
                 {
-                    sb.AppendFormat(Ci, " word-spacing=\"{0:F1}px\"", el.WordSpacing);
+                    string escText = EscapeXml(line.Text);
+                    sb.AppendFormat(Ci, "<text x=\"{0:F1}\" y=\"{1:F1}\" font-family=\"{2}\" font-size=\"{3:F1}\" font-weight=\"{4}\" font-style=\"{5}\" fill=\"{6}\" text-anchor=\"{7}\"{8}",
+                        tx, line.BaselineY, fontFamily, el.FontSize, fontWeight, fontStyle, fontColor, textAnchor, strokeAttr);
+
+                    if (el.CharacterSpacing != 0)
+                    {
+                        sb.AppendFormat(Ci, " letter-spacing=\"{0:F1}px\"", el.CharacterSpacing);
+                    }
+                    if (el.WordSpacing != 0)
+                    {
+                        sb.AppendFormat(Ci, " word-spacing=\"{0:F1}px\"", el.WordSpacing);
+                    }
+
+                    // Text decorations
+                    if (el.IsUnderline && el.IsStrikethrough) sb.Append(" text-decoration=\"underline line-through\"");
+                    else if (el.IsUnderline) sb.Append(" text-decoration=\"underline\"");
+                    else if (el.IsStrikethrough) sb.Append(" text-decoration=\"line-through\"");
+
+                    sb.AppendFormat(">{0}</text>", escText);
                 }
-
-                // Text decorations
-                if (el.IsUnderline && el.IsStrikethrough) sb.Append(" text-decoration=\"underline line-through\"");
-                else if (el.IsUnderline) sb.Append(" text-decoration=\"underline\"");
-                else if (el.IsStrikethrough) sb.Append(" text-decoration=\"line-through\"");
-
-                sb.AppendFormat(">{0}</text>", escText);
 
                 // Double underline vector line if requested
                 if (el.IsDoubleUnderline)

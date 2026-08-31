@@ -65,6 +65,13 @@ public class DataMergeEngine : IDataMergeEngine
                 {
                     case PdfTextElement textEl:
                         ScanString(textEl.Text);
+                        if (textEl.Spans != null)
+                        {
+                            foreach (var span in textEl.Spans)
+                            {
+                                ScanString(span.Text);
+                            }
+                        }
                         ScanString(textEl.TextColorHex);
                         ScanString(textEl.BackgroundColorHex);
                         break;
@@ -161,6 +168,14 @@ public class DataMergeEngine : IDataMergeEngine
         {
             case PdfTextElement textEl:
                 textEl.Text = EvaluateText(textEl.Text, record, options);
+                if (textEl.Spans != null && textEl.Spans.Count > 0)
+                {
+                    foreach (var span in textEl.Spans)
+                    {
+                        span.Text = EvaluateText(span.Text, record, options);
+                    }
+                    textEl.SynchronizePlainTextFromSpans();
+                }
                 if (textEl.TextColorHex.Contains("{{"))
                 {
                     string evaluatedColor = EvaluateText(textEl.TextColorHex, record, options);

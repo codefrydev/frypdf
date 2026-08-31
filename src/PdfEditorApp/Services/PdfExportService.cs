@@ -393,16 +393,42 @@ internal class QuestPdfDocumentWrapper : IDocument
             else if (textEl.Alignment == TextAlignmentMode.Right) text.AlignRight();
             else if (textEl.Alignment == TextAlignmentMode.Justify) text.Justify();
 
-            var span = text.Span(textEl.Text ?? "")
-                .FontFamily(textEl.FontFamily ?? "Arial")
-                .FontSize((float)textEl.FontSize)
-                .FontColor(textEl.TextColorHex);
+            if (textEl.Spans != null && textEl.Spans.Count > 0)
+            {
+                foreach (var s in textEl.Spans)
+                {
+                    if (string.IsNullOrEmpty(s.Text)) continue;
 
-            if (textEl.LineHeight > 0.1) span.LineHeight((float)textEl.LineHeight);
-            if (textEl.IsBold) span.Bold();
-            if (textEl.IsItalic) span.Italic();
-            if (textEl.IsUnderline) span.Underline();
-            if (textEl.IsStrikethrough) span.Strikethrough();
+                    var span = !string.IsNullOrEmpty(s.LinkUrl)
+                        ? text.Hyperlink(s.Text, s.LinkUrl)
+                        : text.Span(s.Text);
+
+                    span.FontFamily(s.FontFamily ?? textEl.FontFamily ?? "Arial")
+                        .FontSize((float)(s.FontSize ?? textEl.FontSize))
+                        .FontColor(s.TextColorHex ?? textEl.TextColorHex);
+
+                    if (textEl.LineHeight > 0.1) span.LineHeight((float)textEl.LineHeight);
+                    if (s.IsBold ?? textEl.IsBold) span.Bold();
+                    if (s.IsItalic ?? textEl.IsItalic) span.Italic();
+                    if (s.IsUnderline ?? textEl.IsUnderline) span.Underline();
+                    if (s.IsStrikethrough ?? textEl.IsStrikethrough) span.Strikethrough();
+                    if (s.Script == TextScriptMode.Superscript) span.Superscript();
+                    if (s.Script == TextScriptMode.Subscript) span.Subscript();
+                }
+            }
+            else
+            {
+                var span = text.Span(textEl.Text ?? "")
+                    .FontFamily(textEl.FontFamily ?? "Arial")
+                    .FontSize((float)textEl.FontSize)
+                    .FontColor(textEl.TextColorHex);
+
+                if (textEl.LineHeight > 0.1) span.LineHeight((float)textEl.LineHeight);
+                if (textEl.IsBold) span.Bold();
+                if (textEl.IsItalic) span.Italic();
+                if (textEl.IsUnderline) span.Underline();
+                if (textEl.IsStrikethrough) span.Strikethrough();
+            }
         });
     }
 

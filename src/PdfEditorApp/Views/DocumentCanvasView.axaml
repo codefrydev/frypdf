@@ -196,6 +196,7 @@
                                         <!-- Visual Advanced Text Canvas Element -->
                                         <controls:AdvancedTextControl
                                             Text="{Binding Text}"
+                                            Spans="{Binding Spans}"
                                             FontFamilyName="{Binding FontFamily}"
                                             FontSize="{Binding FontSize}"
                                             IsBold="{Binding IsBold}"

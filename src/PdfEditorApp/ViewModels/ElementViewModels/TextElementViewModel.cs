@@ -16,6 +16,9 @@ public partial class TextElementViewModel : ElementViewModelBase
     private string _text = "Enter text here";
 
     [ObservableProperty]
+    private System.Collections.Generic.List<PdfTextSpan>? _spans;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AvaloniaFontFamily))]
     private string _fontFamily = "Arial";
 
@@ -514,9 +517,40 @@ public partial class TextElementViewModel : ElementViewModelBase
         Height = Math.Ceiling(dims.Height);
     }
 
+    public void SetMarkdownText(string markdown)
+    {
+        var model = (PdfTextElement)ToModel();
+        var parsedSpans = RichTextHelper.ParseMarkdownToSpans(markdown, model);
+        if (parsedSpans.Count > 1 || parsedSpans.Any(s => s.IsBold == true || s.IsItalic == true || s.IsUnderline == true || s.IsStrikethrough == true || !string.IsNullOrEmpty(s.TextColorHex) || s.Script != TextScriptMode.Normal))
+        {
+            Spans = parsedSpans;
+            Text = RichTextHelper.SpansToPlainText(parsedSpans);
+        }
+        else
+        {
+            Spans = null;
+            Text = RichTextHelper.SpansToPlainText(parsedSpans);
+        }
+    }
+
+    public string GetMarkdownText()
+    {
+        if (Spans != null && Spans.Count > 0)
+        {
+            var model = (PdfTextElement)ToModel();
+            return RichTextHelper.SpansToMarkdown(Spans, model);
+        }
+        return Text ?? string.Empty;
+    }
+
+    public void ClearSpans()
+    {
+        Spans = null;
+    }
+
     public override PdfElementBase ToModel()
     {
-        return new PdfTextElement
+        var el = new PdfTextElement
         {
             Id = Id,
             X = X,
@@ -582,6 +616,17 @@ public partial class TextElementViewModel : ElementViewModelBase
             BezierP3X = BezierP3X,
             BezierP3Y = BezierP3Y
         };
+
+        if (Spans != null)
+        {
+            el.Spans = new System.Collections.Generic.List<PdfTextSpan>(Spans.Count);
+            foreach (var span in Spans)
+            {
+                el.Spans.Add(span.Clone());
+            }
+        }
+
+        return el;
     }
 
     public override void LoadFromModel(PdfElementBase model)
@@ -652,6 +697,19 @@ public partial class TextElementViewModel : ElementViewModelBase
             BezierP2Y = textModel.BezierP2Y;
             BezierP3X = textModel.BezierP3X;
             BezierP3Y = textModel.BezierP3Y;
+
+            if (textModel.Spans != null)
+            {
+                Spans = new System.Collections.Generic.List<PdfTextSpan>(textModel.Spans.Count);
+                foreach (var span in textModel.Spans)
+                {
+                    Spans.Add(span.Clone());
+                }
+            }
+            else
+            {
+                Spans = null;
+            }
         }
     }
 }

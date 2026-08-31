@@ -589,6 +589,11 @@ public partial class DocumentCanvasView : UserControl
     {
         if (sender is Control control && control.DataContext is TextElementViewModel textVm)
         {
+            if (textVm.Spans != null && textVm.Spans.Count > 0)
+            {
+                textVm.Text = textVm.GetMarkdownText();
+            }
+
             textVm.IsInEditMode = true;
             e.Handled = true;
 
@@ -603,14 +608,28 @@ public partial class DocumentCanvasView : UserControl
     {
         if (sender is Control control && control.DataContext is TextElementViewModel textVm)
         {
-            if (_initialEditContents.TryGetValue(textVm.Id, out var oldTxt) && textVm.Text != oldTxt)
+            string currentEditText = textVm.Text ?? "";
+            _initialEditContents.TryGetValue(textVm.Id, out var oldTxt);
+
+            textVm.SetMarkdownText(currentEditText);
+
+            string finalPlain = textVm.Text ?? "";
+            var finalSpans = textVm.Spans?.Select(s => s.Clone()).ToList();
+
+            if (currentEditText != oldTxt)
             {
-                string newTxt = textVm.Text;
-                _initialEditContents[textVm.Id] = newTxt;
+                _initialEditContents[textVm.Id] = finalPlain;
+                var savedSpans = finalSpans;
                 ViewModel?.UndoRedo.RecordAction(
                     "Edit Text",
-                    () => textVm.Text = oldTxt,
-                    () => textVm.Text = newTxt
+                    () => {
+                        textVm.Text = oldTxt ?? "";
+                        textVm.Spans = null;
+                    },
+                    () => {
+                        textVm.Text = finalPlain;
+                        textVm.Spans = savedSpans != null ? savedSpans.Select(s => s.Clone()).ToList() : null;
+                    }
                 );
             }
         }

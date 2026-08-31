@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using PdfEditorApp.Models;
+using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
 using PdfEditorApp.Services.Typography;
 
@@ -176,10 +177,13 @@ public class AdvancedTextControl : Control
     public static readonly StyledProperty<double> BezierP3YProperty =
         AvaloniaProperty.Register<AdvancedTextControl, double>(nameof(BezierP3Y), defaultValue: 0.5);
 
+    public static readonly StyledProperty<System.Collections.Generic.IReadOnlyList<PdfTextSpan>?> SpansProperty =
+        AvaloniaProperty.Register<AdvancedTextControl, System.Collections.Generic.IReadOnlyList<PdfTextSpan>?>(nameof(Spans), defaultValue: null);
+
     static AdvancedTextControl()
     {
         AffectsRender<AdvancedTextControl>(
-            TextProperty, FontFamilyNameProperty, FontSizeProperty, IsBoldProperty, IsItalicProperty,
+            TextProperty, SpansProperty, FontFamilyNameProperty, FontSizeProperty, IsBoldProperty, IsItalicProperty,
             IsUnderlineProperty, IsDoubleUnderlineProperty, IsStrikethroughProperty, TextBrushProperty,
             TextOpacityProperty, AlignmentProperty, TextVerticalAlignmentProperty, LineHeightProperty,
             CharacterSpacingProperty, WordSpacingProperty, ParagraphSpacingProperty, TextWrapProperty,
@@ -196,6 +200,7 @@ public class AdvancedTextControl : Control
     }
 
     #region Properties Accessors
+    public System.Collections.Generic.IReadOnlyList<PdfTextSpan>? Spans { get => GetValue(SpansProperty); set => SetValue(SpansProperty, value); }
     public string Text { get => GetValue(TextProperty); set => SetValue(TextProperty, value); }
     public string FontFamilyName { get => GetValue(FontFamilyNameProperty); set => SetValue(FontFamilyNameProperty, value); }
     public double FontSize { get => GetValue(FontSizeProperty); set => SetValue(FontSizeProperty, value); }
@@ -364,6 +369,7 @@ public class AdvancedTextControl : Control
                         typeface,
                         FontSize,
                         shadowBrush);
+                    ApplySpanTypography(shadowFt, line.Text, shadowBrush);
                     context.DrawText(shadowFt, new Point(line.X + ShadowOffsetX, line.Y + ShadowOffsetY));
                 }
             }
@@ -375,6 +381,7 @@ public class AdvancedTextControl : Control
                 typeface,
                 FontSize,
                 fillBrush);
+            ApplySpanTypography(ft, line.Text, null);
 
             // Draw Stroke Outline
             if (strokePen != null)
@@ -397,6 +404,81 @@ public class AdvancedTextControl : Control
                 var uPen = new Pen(fillBrush, 1.0);
                 context.DrawLine(uPen, new Point(line.X, uY1), new Point(line.X + line.Width, uY1));
                 context.DrawLine(uPen, new Point(line.X, uY2), new Point(line.X + line.Width, uY2));
+            }
+        }
+    }
+
+    private void ApplySpanTypography(FormattedText ft, string lineText, IBrush? forceBrush)
+    {
+        if (Spans == null || Spans.Count == 0 || string.IsNullOrEmpty(lineText)) return;
+
+        int currentIndex = 0;
+        foreach (var span in Spans)
+        {
+            if (string.IsNullOrEmpty(span.Text)) continue;
+            int spanLength = span.Text.Length;
+            if (currentIndex + spanLength > lineText.Length)
+            {
+                spanLength = Math.Max(0, lineText.Length - currentIndex);
+            }
+
+            if (spanLength > 0)
+            {
+                // 1. Font family, weight, italic
+                bool spanBold = span.IsBold ?? IsBold;
+                bool spanItalic = span.IsItalic ?? IsItalic;
+                string spanFamily = span.FontFamily ?? FontFamilyName;
+
+                if (spanBold != IsBold || spanItalic != IsItalic || spanFamily != FontFamilyName)
+                {
+                    if (spanFamily != FontFamilyName)
+                    {
+                        ft.SetFontFamily(FontHelper.CreateFontFamily(spanFamily), currentIndex, spanLength);
+                    }
+                    if (spanBold != IsBold)
+                    {
+                        ft.SetFontWeight(spanBold ? FontWeight.Bold : FontWeight.Normal, currentIndex, spanLength);
+                    }
+                    if (spanItalic != IsItalic)
+                    {
+                        ft.SetFontStyle(spanItalic ? FontStyle.Italic : FontStyle.Normal, currentIndex, spanLength);
+                    }
+                }
+
+                // 2. Font size / script scaling
+                double spanSize = span.FontSize ?? FontSize;
+                if (span.Script == TextScriptMode.Superscript || span.Script == TextScriptMode.Subscript)
+                {
+                    spanSize = Math.Max(6, spanSize * 0.75);
+                }
+
+                if (Math.Abs(spanSize - FontSize) > 0.01)
+                {
+                    ft.SetFontSize(spanSize, currentIndex, spanLength);
+                }
+
+                // 3. Foreground Brush (if not overriding with shadow brush)
+                if (forceBrush == null && !string.IsNullOrEmpty(span.TextColorHex))
+                {
+                    if (Color.TryParse(span.TextColorHex, out var col))
+                    {
+                        ft.SetForegroundBrush(new SolidColorBrush(col), currentIndex, spanLength);
+                    }
+                }
+
+                // 4. Text decorations (underline / strikethrough)
+                bool spanUnderline = span.IsUnderline ?? IsUnderline;
+                bool spanStrikethrough = span.IsStrikethrough ?? IsStrikethrough;
+                if (spanUnderline || spanStrikethrough)
+                {
+                    var decs = new TextDecorationCollection();
+                    if (spanUnderline) foreach (var d in Avalonia.Media.TextDecorations.Underline) decs.Add(d);
+                    if (spanStrikethrough) foreach (var d in Avalonia.Media.TextDecorations.Strikethrough) decs.Add(d);
+                    ft.SetTextDecorations(decs, currentIndex, spanLength);
+                }
+
+                currentIndex += spanLength;
+                if (currentIndex >= lineText.Length) break;
             }
         }
     }

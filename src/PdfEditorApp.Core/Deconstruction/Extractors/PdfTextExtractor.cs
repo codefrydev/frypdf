@@ -78,6 +78,21 @@ public static class PdfTextExtractor
                     TextWrap = false,
                     ZIndex = textZIndex++
                 };
+
+                if (para.Spans != null && para.Spans.Count > 1)
+                {
+                    textElement.Spans = new List<PdfTextSpan>(para.Spans.Count);
+                    foreach (var span in para.Spans)
+                    {
+                        var spanClone = span.Clone();
+                        if (string.Equals(spanClone.TextColorHex, para.ColorHex, StringComparison.OrdinalIgnoreCase))
+                        {
+                            spanClone.TextColorHex = finalColor;
+                        }
+                        textElement.Spans.Add(spanClone);
+                    }
+                }
+
                 textElements.Add(textElement);
             }
 

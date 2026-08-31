@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UglyToad.PdfPig.Content;
 using PdfEditorApp.Models;
+using PdfEditorApp.Models.Elements;
 
 namespace PdfEditorApp.Core.Analysis;
 
@@ -13,6 +14,7 @@ namespace PdfEditorApp.Core.Analysis;
 public class ExtractedPdfLine
 {
     public List<Word> Words { get; } = new();
+    public List<PdfTextSpan> Spans { get; set; } = new();
     public double Left { get; set; }
     public double Right { get; set; }
     public double Top { get; set; }
@@ -38,6 +40,7 @@ public class ExtractedPdfLine
 public class ExtractedPdfParagraph
 {
     public List<ExtractedPdfLine> Lines { get; } = new();
+    public List<PdfTextSpan> Spans { get; set; } = new();
     public double Left { get; set; }
     public double Right { get; set; }
     public double Top { get; set; }
@@ -598,6 +601,43 @@ public static class PdfLayoutAnalyzer
             }
         }
 
+        var rawLineSpans = new List<PdfTextSpan>();
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            var w = ordered[i];
+            var let = w.Letters.FirstOrDefault();
+            double wSize = let != null ? Math.Max(6.0, let.PointSize) : fontSize;
+            string wFam = let != null ? NormalizeFontFamily(let.FontName) : fontFamily;
+            bool wBold = false;
+            bool wItalic = false;
+            string wCol = colorHex;
+
+            if (let != null && !string.IsNullOrEmpty(let.FontName))
+            {
+                string fn = let.FontName.ToLowerInvariant();
+                wBold = fn.Contains("bold") || fn.Contains("black") || fn.Contains("heavy") || fn.Contains("semibold") || fn.Contains("extrabold");
+                wItalic = fn.Contains("italic") || fn.Contains("oblique");
+            }
+            if (let?.Color != null)
+            {
+                var (r, g, b) = let.Color.ToRGBValues();
+                wCol = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(b * 255):X2}";
+            }
+
+            string wText = (i > 0 ? " " : "") + w.Text;
+            rawLineSpans.Add(new PdfTextSpan
+            {
+                Text = wText,
+                FontFamily = wFam,
+                FontSize = wSize,
+                IsBold = wBold,
+                IsItalic = wItalic,
+                TextColorHex = wCol
+            });
+        }
+
+        var normalizedLineSpans = NormalizeSpans(rawLineSpans);
+
         return new ExtractedPdfLine
         {
             Left = minLeft,
@@ -610,7 +650,8 @@ public static class PdfLayoutAnalyzer
             FontFamily = fontFamily,
             IsBold = isBold,
             IsItalic = isItalic,
-            ColorHex = colorHex
+            ColorHex = colorHex,
+            Spans = normalizedLineSpans
         };
     }
 
@@ -825,6 +866,23 @@ public static class PdfLayoutAnalyzer
         double canvasWidth = Math.Max(30.0, (maxRight - minLeft) + 6.0);
         double canvasHeight = Math.Max(16.0, (maxTop - minBottom) + 4.0);
 
+        var paraSpans = new List<PdfTextSpan>();
+        for (int i = 0; i < lines.Count; i++)
+        {
+            if (i > 0 && paraSpans.Count > 0)
+            {
+                paraSpans.Last().Text += "\n";
+            }
+            if (lines[i].Spans != null && lines[i].Spans.Count > 0)
+            {
+                foreach (var s in lines[i].Spans)
+                {
+                    paraSpans.Add(s.Clone());
+                }
+            }
+        }
+        var normalizedParaSpans = NormalizeSpans(paraSpans);
+
         return new ExtractedPdfParagraph
         {
             Left = minLeft,
@@ -844,8 +902,49 @@ public static class PdfLayoutAnalyzer
             CanvasX = Math.Round(canvasX, 1),
             CanvasY = Math.Round(canvasY, 1),
             CanvasWidth = Math.Round(canvasWidth, 1),
-            CanvasHeight = Math.Round(canvasHeight, 1)
+            CanvasHeight = Math.Round(canvasHeight, 1),
+            Spans = normalizedParaSpans
         };
+    }
+
+    private static List<PdfTextSpan> NormalizeSpans(List<PdfTextSpan> spans)
+    {
+        if (spans.Count <= 1) return spans;
+
+        var merged = new List<PdfTextSpan>(spans.Count);
+        PdfTextSpan? current = null;
+
+        foreach (var s in spans)
+        {
+            if (string.IsNullOrEmpty(s.Text)) continue;
+
+            if (current == null)
+            {
+                current = s.Clone();
+                continue;
+            }
+
+            if (string.Equals(current.FontFamily, s.FontFamily, StringComparison.OrdinalIgnoreCase) &&
+                Nullable.Equals(current.FontSize, s.FontSize) &&
+                current.IsBold == s.IsBold &&
+                current.IsItalic == s.IsItalic &&
+                string.Equals(current.TextColorHex, s.TextColorHex, StringComparison.OrdinalIgnoreCase))
+            {
+                current.Text += s.Text;
+            }
+            else
+            {
+                merged.Add(current);
+                current = s.Clone();
+            }
+        }
+
+        if (current != null)
+        {
+            merged.Add(current);
+        }
+
+        return merged;
     }
 
     /// <summary>

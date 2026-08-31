@@ -73,9 +73,50 @@ public class PdfTextElement : PdfElementBase
     public double BezierP3X { get; set; } = 1.0;
     public double BezierP3Y { get; set; } = 0.5;
 
+    // Multi-Span Rich Text Runs (Granular inline formatting)
+    public System.Collections.Generic.List<PdfTextSpan>? Spans { get; set; }
+
+    /// <summary>
+    /// Returns the effective plain text for search, display titles, and fallback rendering.
+    /// Concatenates inline spans if present, otherwise returns <see cref="Text"/>.
+    /// </summary>
+    public string GetEffectivePlainText()
+    {
+        if (Spans == null || Spans.Count == 0)
+        {
+            return Text ?? string.Empty;
+        }
+
+        var sb = new System.Text.StringBuilder();
+        foreach (var span in Spans)
+        {
+            sb.Append(span.Text);
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Synchronizes <see cref="Text"/> with the concatenated content of <see cref="Spans"/>.
+    /// </summary>
+    public void SynchronizePlainTextFromSpans()
+    {
+        if (Spans != null && Spans.Count > 0)
+        {
+            Text = GetEffectivePlainText();
+        }
+    }
+
     public override PdfElementBase Clone()
     {
         var clone = (PdfTextElement)base.Clone();
+        if (Spans != null)
+        {
+            clone.Spans = new System.Collections.Generic.List<PdfTextSpan>(Spans.Count);
+            foreach (var span in Spans)
+            {
+                clone.Spans.Add(span.Clone());
+            }
+        }
         return clone;
     }
 }

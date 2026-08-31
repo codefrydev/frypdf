@@ -11,8 +11,11 @@
 [![QuestPDF](https://img.shields.io/badge/QuestPDF-2026.8-FF4500?style=flat-square)](https://www.questpdf.com/)
 [![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Windows%20%7C%20Linux-4B5563?style=flat-square)](https://github.com)
 [![Tests](https://img.shields.io/badge/Tests-382%20Passed-10B981?style=flat-square)](tests/PdfEditorApp.Tests)
+[![Status](https://img.shields.io/badge/Status-Early%20Development-F59E0B?style=flat-square)](https://github.com/CodeFryDev/FryPDF)
 
 </div>
+
+> ⚠️ **Early Development Stage**: FryPDF is currently in an active early stage of development. While core document engines, offline tools, and vector editing are fully operational, some features or complex edge cases are actively being refined and will be continuously enhanced in upcoming releases. Feedback & issue reports are warmly welcomed!
 
 ---
 

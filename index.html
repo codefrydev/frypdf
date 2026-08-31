@@ -66,7 +66,7 @@
         "applicationCategory": "ProductivityApplication",
         "applicationSubCategory": "PDF Editor & Document Studio",
         "operatingSystem": "macOS 12.0+, Windows 10+, Linux (Ubuntu, Fedora, Arch)",
-        "softwareVersion": "1.0.0",
+        "softwareVersion": "0.0.1-alpha",
         "releaseNotes": "Initial release featuring 32 PDF tools, full-page dedicated tool workspaces, vector canvas editor, LaTeX typesetting, AcroForms evaluator, document templates, and dark theme support.",
         "offers": {
           "@type": "Offer",
@@ -138,6 +138,14 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "When downloading binaries from GitHub Releases outside the App Store, macOS may attach a quarantine flag. Move FryPDF.app to /Applications and run: xattr -dr com.apple.quarantine \"/Applications/FryPDF.app\" in your Terminal."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is FryPDF in early development?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. FryPDF is currently in an early active stage of development. While core features are fully functional offline, some edge cases are being actively refined and will be continuously enhanced in upcoming releases."
             }
           }
         ]
@@ -313,6 +321,59 @@
       border: 1px solid rgba(56, 189, 248, 0.25);
       border-radius: var(--radius-sm);
       color: var(--fry-cyan);
+    }
+
+    /* Early Development Banner */
+    .development-banner {
+      background: linear-gradient(90deg, rgba(225, 29, 72, 0.14) 0%, rgba(56, 189, 248, 0.12) 100%);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.22);
+      padding: 10px 0;
+      font-size: 0.84rem;
+      position: relative;
+      z-index: 99;
+    }
+
+    .dev-banner-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      text-align: center;
+    }
+
+    .dev-banner-badge {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      background: rgba(225, 29, 72, 0.25);
+      border: 1px solid rgba(225, 29, 72, 0.45);
+      border-radius: var(--radius-sm);
+      color: #FF6B8B;
+      flex-shrink: 0;
+    }
+
+    .dev-banner-text {
+      color: var(--text-primary);
+      font-size: 0.83rem;
+      line-height: 1.45;
+    }
+
+    .dev-banner-link {
+      color: var(--fry-cyan);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.83rem;
+      white-space: nowrap;
+      transition: color 0.15s;
+    }
+
+    .dev-banner-link:hover {
+      color: #FFFFFF;
+      text-decoration: underline;
     }
 
     .nav-menu {
@@ -1325,7 +1386,7 @@
         </div>
         <div class="brand-text">
           <span>FryPDF</span>
-          <span class="version-tag">v1.0.0</span>
+          <span class="version-tag" id="app-version-tag">v0.0.1-alpha • Early Preview</span>
         </div>
       </a>
 
@@ -1363,6 +1424,17 @@
       </div>
     </div>
   </header>
+
+  <!-- Early Development Notice Banner -->
+  <aside class="development-banner" aria-label="Early development notice">
+    <div class="container dev-banner-inner">
+      <span class="dev-banner-badge">Early Development Stage</span>
+      <span class="dev-banner-text">
+        FryPDF is currently in an early active stage of development. While core document engines and tools are working, some features or edge cases are actively being refined and will be continuously enhanced in upcoming updates.
+      </span>
+      <a href="https://github.com/CodeFryDev/FryPDF/issues" target="_blank" rel="noopener noreferrer" class="dev-banner-link">Report Bugs &amp; Request Features &rarr;</a>
+    </div>
+  </aside>
 
   <!-- Mobile Navigation Drawer -->
   <div id="mobile-nav" class="mobile-nav-drawer">
@@ -1404,7 +1476,7 @@
     <div class="container">
       <div class="hero-meta-badge">
         <span class="meta-indicator"></span>
-        <span>AVALONIA 12.1 • QUESTPDF • .NET 10 • 32 TOOLS • 382 TESTS PASSED • 100% OFFLINE</span>
+        <span>EARLY ACCESS PREVIEW • AVALONIA 12.1 • QUESTPDF • .NET 10 • 32 TOOLS • 382 TESTS PASSED • 100% OFFLINE</span>
       </div>
 
       <h1 class="hero-headline">
@@ -2197,7 +2269,7 @@
             </svg>
             <span>Get from <strong>Microsoft Store</strong></span>
           </a>
-          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson" style="padding: 9px 18px;">Download FryPDF-Setup-v1.0.0.exe</a>
+          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson" style="padding: 9px 18px;" id="dl-win-btn">Download FryPDF-Setup-v0.0.1-alpha.exe</a>
         </div>
 
         <div class="code-block-wrap">
@@ -2275,6 +2347,13 @@
             </span>
           </p>
         </div>
+
+        <div class="faq-item-box">
+          <h4>Is FryPDF in early development?</h4>
+          <p>
+            Yes. FryPDF is currently in an early active stage of development (v1.0.0-preview). While the core vector engine, document viewer, and 32 tool workspaces are functional, some features or complex edge cases are actively being refined and will be continuously enhanced in upcoming releases. Feedback and issue reports on GitHub are warmly appreciated!
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -2302,7 +2381,7 @@
        11. Client Logic
        ========================================================================== -->
   <script>
-    // 1. Install Tab Switcher
+    // 1. Install Tab Switcher & Dynamic Data
     const installData = {
       windows: {
         title: "Windows 10 / 11 (x64 & ARM64)",
@@ -2317,7 +2396,7 @@
             </svg>
             <span>Get from <strong>Microsoft Store</strong></span>
           </a>
-          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson" style="padding: 9px 18px;">Download FryPDF-Setup-v1.0.0.exe</a>
+          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson" style="padding: 9px 18px;" id="dl-win-btn">Download FryPDF-Setup-v0.0.1-alpha.exe</a>
         `,
         cmd: "winget install CodeFryDev.FryPDF"
       },
@@ -2325,7 +2404,7 @@
         title: "macOS (Universal / Apple Silicon & Intel)",
         desc: "Drag FryPDF into /Applications. If macOS displays a Gatekeeper quarantine notice after downloading from GitHub Releases, run this command in Terminal to authorize launch:",
         actionsHtml: `
-          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson" style="padding: 9px 18px;">Download FryPDF-v1.0.0.dmg</a>
+          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson" style="padding: 9px 18px;" id="dl-mac-btn">Download FryPDF-v0.0.1-alpha.dmg</a>
         `,
         cmd: 'xattr -dr com.apple.quarantine "/Applications/FryPDF.app"'
       },
@@ -2333,7 +2412,7 @@
         title: "Linux & Source Compilation",
         desc: "Portable Tarball, AppImage, or direct compile via modern .NET 10 SDK runtime.",
         actionsHtml: `
-          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson" style="padding: 9px 18px;">Download Linux .tar.gz / AppImage</a>
+          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson" style="padding: 9px 18px;" id="dl-linux-btn">Download Linux .tar.gz / AppImage</a>
         `,
         cmd: "dotnet run --project src/PdfEditorApp"
       }
@@ -2341,7 +2420,7 @@
 
     function switchInstallTab(platform, btn) {
       document.querySelectorAll('.install-tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      if (btn) btn.classList.add('active');
 
       const d = installData[platform];
       if (d) {
@@ -2363,7 +2442,67 @@
       }
     }
 
-    // 2. 32 Tools Category Filter
+    // 2. Smart Dynamic Release Fetcher (Auto-updates version tag & direct binary links)
+    async function fetchLatestRelease() {
+      try {
+        const res = await fetch('https://api.github.com/repos/CodeFryDev/FryPDF/releases');
+        if (!res.ok) return;
+        const releases = await res.json();
+        if (!Array.isArray(releases) || releases.length === 0) return;
+
+        const latest = releases[0];
+        const tag = latest.tag_name || 'v0.0.1-alpha';
+        const cleanTag = tag.startsWith('v') ? tag : `v${tag}`;
+
+        // 1. Update version badge in header
+        const versionBadge = document.getElementById('app-version-tag');
+        if (versionBadge) {
+          versionBadge.innerText = `${cleanTag} • Early Preview`;
+        }
+
+        // 2. Parse assets for direct download URLs
+        if (latest.assets && latest.assets.length > 0) {
+          latest.assets.forEach(asset => {
+            const fileName = asset.name;
+            const lower = fileName.toLowerCase();
+            const downloadUrl = asset.browser_download_url;
+
+            if (lower.endsWith('.dmg')) {
+              installData.macos.actionsHtml = `<a href="${downloadUrl}" class="btn btn-crimson" style="padding: 9px 18px;" id="dl-mac-btn">Download ${fileName}</a>`;
+            } else if (lower.endsWith('.exe')) {
+              installData.windows.actionsHtml = `
+                <a href="https://apps.microsoft.com/store/detail/9P5GW2Q81B33?cid=DevShareMCLPCS" target="_blank" rel="noopener noreferrer" class="btn btn-store" style="padding: 9px 18px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M1 1h10v10H1V1z" fill="#F25022"/>
+                    <path d="M13 1h10v10H13V1z" fill="#7FBA00"/>
+                    <path d="M1 13h10v10H1V13z" fill="#00A4EF"/>
+                    <path d="M13 13h10v10H13V13z" fill="#FFB900"/>
+                  </svg>
+                  <span>Get from <strong>Microsoft Store</strong></span>
+                </a>
+                <a href="${downloadUrl}" class="btn btn-crimson" style="padding: 9px 18px;" id="dl-win-btn">Download ${fileName}</a>
+              `;
+            } else if (lower.endsWith('.tar.gz') || lower.endsWith('.appimage')) {
+              installData.linux.actionsHtml = `<a href="${downloadUrl}" class="btn btn-crimson" style="padding: 9px 18px;" id="dl-linux-btn">Download ${fileName}</a>`;
+            }
+          });
+
+          // Refresh currently active tab with new direct link
+          const activeBtn = document.querySelector('.install-tab-btn.active');
+          if (activeBtn) {
+            const tabText = activeBtn.innerText.toLowerCase();
+            const platform = tabText.includes('windows') ? 'windows' :
+                             tabText.includes('mac') ? 'macos' : 'linux';
+            switchInstallTab(platform, activeBtn);
+          }
+        }
+      } catch (err) {
+        // Silently retain v0.0.1-alpha fallback defaults
+        console.debug('Using fallback v0.0.1-alpha', err);
+      }
+    }
+
+    // 3. 32 Tools Category Filter
     function filterTools(category, btn) {
       document.querySelectorAll('.tool-filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -2378,7 +2517,7 @@
       });
     }
 
-    // 3. Mobile Navigation Drawer Controller
+    // 4. Mobile Navigation Drawer Controller
     function toggleMobileMenu() {
       const drawer = document.getElementById('mobile-nav');
       const btn = document.getElementById('hamburger-btn');
@@ -2402,7 +2541,7 @@
       document.body.style.overflow = '';
     }
 
-    // Close mobile drawer on Escape key or outside click
+    // Close mobile drawer on Escape key or resize
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeMobileMenu();
     });
@@ -2413,7 +2552,7 @@
       }
     });
 
-    // 4. Copy Helper
+    // 5. Copy Helper
     function copyText(text) {
       navigator.clipboard.writeText(text).then(() => {
         const toast = document.getElementById('toast');
@@ -2423,7 +2562,7 @@
       });
     }
 
-    // 5. OS Auto-Detection
+    // 6. OS Auto-Detection & Release Hydration
     window.addEventListener('DOMContentLoaded', () => {
       const ua = navigator.userAgent.toLowerCase();
       const heroBtn = document.getElementById('hero-btn-label');
@@ -2440,6 +2579,9 @@
           if (linuxBtn) switchInstallTab('linux', linuxBtn);
         }
       }
+
+      // Fetch dynamic release info in the background
+      fetchLatestRelease();
     });
   </script>
 </body>

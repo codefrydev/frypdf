@@ -109,13 +109,13 @@ public partial class MainViewModel : ViewModelBase
     // --- CORE OBSERVABLE PROPERTIES ---
 
     [ObservableProperty]
-    private string _documentTitle = "Annual_Report_2026.pdf";
+    private string _documentTitle = "Document_2026.pdf";
 
     [ObservableProperty]
-    private string _documentAuthor = "ACME CORP.";
+    private string _documentAuthor = "CodeFryDev";
 
     [ObservableProperty]
-    private string _documentSubject = "Fiscal Year 2026 Annual Report";
+    private string _documentSubject = "PDF Document";
 
     [ObservableProperty]
     private string _documentKeywords = "";

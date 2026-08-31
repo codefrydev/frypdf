@@ -45,9 +45,9 @@ public class EmployeePayslipBatchTests
 
         string sampleCsv =
 @"EmployeeId,EmployeeName,Designation,Department,JoiningDate,BankName,AccountNumber,TaxId,WorkingDays,BasicSalary,HRA,SpecialAllowance,Bonus,MedicalAllowance,GrossEarnings,ProvidentFund,IncomeTax,ProfessionalTax,Insurance,OtherDeductions,TotalDeductions,NetSalary,NetSalaryInWords,PayPeriod,CompanyName,AuthHash
-EMP-2026-0842,Johnathan Doe,Senior Software Architect,Cloud Infrastructure,2021-03-15,JPMorgan Chase,****8492,US-SSN-8429,30,8500,3400,1800,1200,600,15500,950,1850,200,350,0,3350,12150,Twelve Thousand One Hundred Fifty US Dollars,August 2026,Apex Global Technologies Inc.,9A4F-8201-B732
-EMP-2026-0914,Sophia Martinez,Principal UI/UX Designer,Product Experience,2022-06-01,Bank of America,****3198,US-SSN-1942,30,7800,3120,1500,900,500,13820,850,1550,200,300,0,2900,10920,Ten Thousand Nine Hundred Twenty US Dollars,August 2026,Apex Global Technologies Inc.,7E2B-9410-C311
-EMP-2026-1052,David Kim,Lead DevOps Engineer,Cloud Infrastructure,2020-11-10,Wells Fargo,****9041,US-SSN-7731,30,8200,3280,1650,1100,550,14780,900,1720,200,320,0,3140,11640,Eleven Thousand Six Hundred Forty US Dollars,August 2026,Apex Global Technologies Inc.,4D1C-8822-A904";
+EMP-2026-0842,John Doe,Senior Software Architect,Cloud Infrastructure,2021-03-15,First National Bank,****8492,US-TAX-8429,30,8500,3400,1800,1200,600,15500,950,1850,200,350,0,3350,12150,Twelve Thousand One Hundred Fifty US Dollars,August 2026,CodeFryDev Inc.,9A4F-8201-B732
+EMP-2026-0914,Jane Doe,Principal UI/UX Designer,Product Experience,2022-06-01,Metro Commercial Bank,****3198,US-TAX-1942,30,7800,3120,1500,900,500,13820,850,1550,200,300,0,2900,10920,Ten Thousand Nine Hundred Twenty US Dollars,August 2026,CodeFryDev Inc.,7E2B-9410-C311
+EMP-2026-1052,Alex Doe,Lead DevOps Engineer,Cloud Infrastructure,2020-11-10,Standard City Bank,****9041,US-TAX-7731,30,8200,3280,1650,1100,550,14780,900,1720,200,320,0,3140,11640,Eleven Thousand Six Hundred Forty US Dollars,August 2026,CodeFryDev Inc.,4D1C-8822-A904";
 
         var matrix = _dataSourceService.ParseCsv(sampleCsv, ',', true);
         Assert.Equal(3, matrix.RowCount);

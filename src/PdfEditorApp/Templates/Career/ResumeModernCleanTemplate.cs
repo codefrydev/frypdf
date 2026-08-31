@@ -17,8 +17,8 @@ public class ResumeModernCleanTemplate : ITemplateDefinition
     {
         var doc = new PdfDocumentModel
         {
-            Title = "Sarah_Chen_Product_Engineer_Resume.pdf",
-            Author = "Sarah Chen",
+            Title = "John_Doe_Product_Engineer_Resume.pdf",
+            Author = "John Doe",
             Subject = "Lead Product & Full-Stack Engineer Resume"
         };
 
@@ -30,7 +30,7 @@ public class ResumeModernCleanTemplate : ITemplateDefinition
             Width = 800,
             Height = 1131,
             BackgroundColorHex = "#FFFFFF",
-            FooterLeft = "Sarah Chen • Lead Product Engineer | Portfolio: sarahchen.io",
+            FooterLeft = "John Doe • Lead Product Engineer | Portfolio: codefrydev.in",
             FooterCenter = "CONFIDENTIAL",
             FooterRight = "Page 1 of 1",
             Elements = new List<PdfElementBase>
@@ -74,7 +74,7 @@ public class ResumeModernCleanTemplate : ITemplateDefinition
                     FillColorHex = "#0284C7",
                     StrokeColorHex = "#0369A1",
                     StrokeThickness = 2,
-                    Label = "SC",
+                    Label = "JD",
                     LabelColorHex = "#FFFFFF",
                     LabelFontSize = 26
                 },
@@ -107,7 +107,7 @@ public class ResumeModernCleanTemplate : ITemplateDefinition
                     Y = 162,
                     Width = 205,
                     Height = 100,
-                    Text = "📧 sarah.chen@techlead.io\n📱 +1 (415) 892-4019\n📍 San Francisco, CA\n🌐 sarahchen.io\n🐙 github.com/sarahchen-dev\n💼 linkedin.com/in/sarahchen",
+                    Text = "📧 john.doe@codefrydev.in\n📱 +1 (555) 019-2834\n📍 San Francisco, CA\n🌐 codefrydev.in\n🐙 github.com/codefrydev\n💼 linkedin.com/in/codefrydev",
                     FontSize = 8.5,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.45,
@@ -226,7 +226,7 @@ public class ResumeModernCleanTemplate : ITemplateDefinition
                     Y = 745,
                     Width = 100,
                     Height = 100,
-                    Content = "https://github.com/sarahchen-dev",
+                    Content = "https://github.com/codefrydev",
                     Label = "SCAN FOR GITHUB",
                     DarkColorHex = "#0284C7",
                     LightColorHex = "#F1F5F9"
@@ -278,7 +278,7 @@ public class ResumeModernCleanTemplate : ITemplateDefinition
                     Y = 40,
                     Width = 480,
                     Height = 34,
-                    Text = "SARAH CHEN",
+                    Text = "JOHN DOE",
                     FontSize = 26,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -343,7 +343,7 @@ public class ResumeModernCleanTemplate : ITemplateDefinition
                     Y = 202,
                     Width = 330,
                     Height = 20,
-                    Text = "Lead Product Engineer | CloudForge Technologies",
+                    Text = "Lead Product Engineer | CodeFryDev Technologies",
                     FontSize = 11,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -382,7 +382,7 @@ public class ResumeModernCleanTemplate : ITemplateDefinition
                     Y = 315,
                     Width = 330,
                     Height = 20,
-                    Text = "Senior Full-Stack Engineer | Stripe (Connect Platform)",
+                    Text = "Senior Full-Stack Engineer | CodeFryDev Solutions",
                     FontSize = 11,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -421,7 +421,7 @@ public class ResumeModernCleanTemplate : ITemplateDefinition
                     Y = 428,
                     Width = 330,
                     Height = 20,
-                    Text = "Software Engineer | NextGen Analytics Inc.",
+                    Text = "Software Engineer | CodeFryDev Labs",
                     FontSize = 11,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -591,7 +591,7 @@ public class ResumeModernCleanTemplate : ITemplateDefinition
                     Y = 875,
                     Width = 480,
                     Height = 90,
-                    Text = "• US Patent 11,842,109: \"Zero-Allocation Vector Tile Streaming in Distributed Browser Clients\"\n• Chen, S. (2024). \"Sub-Millisecond Canvas Geometry Rendering in Modern WebGL2 Environments.\" ACM SIGGRAPH Web3D Proceedings, pp. 45–56.\n• Available for advisory and engineering leadership consultations via sarahchen.io.",
+                    Text = "• US Patent 11,842,109: \"Zero-Allocation Vector Tile Streaming in Distributed Browser Clients\"\n• Doe, J. (2024). \"Sub-Millisecond Canvas Geometry Rendering in Modern WebGL2 Environments.\" ACM SIGGRAPH Web3D Proceedings, pp. 45–56.\n• Available for advisory and engineering leadership consultations via codefrydev.in.",
                     FontSize = 9,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.4,

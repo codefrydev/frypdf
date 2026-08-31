@@ -17,8 +17,8 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
     {
         var doc = new PdfDocumentModel
         {
-            Title = "Prof_Marcus_Aurelius_Academic_CV.pdf",
-            Author = "Prof. Marcus Aurelius, Ph.D.",
+            Title = "Prof_John_Doe_Academic_CV.pdf",
+            Author = "Prof. John Doe, Ph.D.",
             Subject = "Curriculum Vitae • Computational Neuroscience & Applied Mathematics"
         };
 
@@ -33,7 +33,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
             Width = 800,
             Height = 1131,
             BackgroundColorHex = "#FFFFFF",
-            FooterLeft = "Prof. Marcus Aurelius, Ph.D. • Curriculum Vitae | ORCID: 0000-0002-8910-4492",
+            FooterLeft = "Prof. John Doe, Ph.D. • Curriculum Vitae | ORCID: 0000-0002-8910-4492",
             FooterCenter = "FACULTY DOSSIER",
             FooterRight = "Page 1 of 2",
             Elements = new List<PdfElementBase>
@@ -56,7 +56,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     Y = 45,
                     Width = 520,
                     Height = 34,
-                    Text = "MARCUS A. AURELIUS, Ph.D.",
+                    Text = "JOHN DOE, Ph.D.",
                     FontSize = 24,
                     FontFamily = "Times New Roman",
                     IsBold = true,
@@ -70,7 +70,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     Y = 78,
                     Width = 520,
                     Height = 44,
-                    Text = "Associate Professor of Applied Mathematics & Computational Neuroscience\nInstitute for Advanced Theoretical Studies • Oxford University\nEmail: m.aurelius@stats.ox.ac.uk • Web: oxford.ac.uk/people/m-aurelius",
+                    Text = "Associate Professor of Applied Mathematics & Computational Neuroscience\nInstitute for Advanced Theoretical Studies • CodeFryDev Institute of Technology\nEmail: j.doe@codefrydev.in • Web: codefrydev.in/people/john-doe",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
                     LineHeight = 1.35,
@@ -269,7 +269,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     Y = 544,
                     Width = 690,
                     Height = 185,
-                    Text = "1. Aurelius, M. A., & Chen, E. (2025). \"Persistent Spectral Cohomology on High-Dimensional Simplicial Manifolds.\" Journal of the American Mathematical Society, 38(2), pp. 412–458. DOI: 10.1090/jams/9842.\n2. Aurelius, M. A., Thorne, M., & Jenkins, S. (2024). \"Neural Differential Equations with Guaranteed Stability via Hodge Decomposition.\" Nature Machine Intelligence, 6(8), pp. 892–906. DOI: 10.1038/s42256-024-00892.\n3. Aurelius, M. A. (2023). \"Spectral Gap Concentration on Random Simplicial Complexes.\" Communications on Pure and Applied Mathematics, 76(4), pp. 789–834. DOI: 10.1002/cpa.22019.\n4. Vance, E., & Aurelius, M. A. (2022). \"Topological Decoding of Multi-Electrode Array Cortical Spikes.\" Proceedings of the National Academy of Sciences (PNAS), 119(14), e2119842119. DOI: 10.1073/pnas.2119842119.\n5. Aurelius, M. A., et al. (2020). \"Continuous Invertible Neural Flows on Riemannian Manifolds.\" IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI), 42(11), pp. 2780–2794. DOI: 10.1109/TPAMI.2020.29841.",
+                    Text = "1. Doe, J., & Chen, E. (2025). \"Persistent Spectral Cohomology on High-Dimensional Simplicial Manifolds.\" Journal of the American Mathematical Society, 38(2), pp. 412–458. DOI: 10.1090/jams/9842.\n2. Doe, J., Thorne, M., & Jenkins, S. (2024). \"Neural Differential Equations with Guaranteed Stability via Hodge Decomposition.\" Nature Machine Intelligence, 6(8), pp. 892–906. DOI: 10.1038/s42256-024-00892.\n3. Doe, J. (2023). \"Spectral Gap Concentration on Random Simplicial Complexes.\" Communications on Pure and Applied Mathematics, 76(4), pp. 789–834. DOI: 10.1002/cpa.22019.\n4. Vance, E., & Doe, J. (2022). \"Topological Decoding of Multi-Electrode Array Cortical Spikes.\" Proceedings of the National Academy of Sciences (PNAS), 119(14), e2119842119. DOI: 10.1073/pnas.2119842119.\n5. Doe, J., et al. (2020). \"Continuous Invertible Neural Flows on Riemannian Manifolds.\" IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI), 42(11), pp. 2780–2794. DOI: 10.1109/TPAMI.2020.29841.",
                     FontSize = 8.5,
                     FontFamily = "Times New Roman",
                     LineHeight = 1.35,
@@ -289,7 +289,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
             Width = 800,
             Height = 1131,
             BackgroundColorHex = "#FFFFFF",
-            FooterLeft = "Prof. Marcus Aurelius, Ph.D. • Curriculum Vitae (Page 2)",
+            FooterLeft = "Prof. John Doe, Ph.D. • Curriculum Vitae (Page 2)",
             FooterCenter = "FACULTY DOSSIER",
             FooterRight = "Page 2 of 2",
             Elements = new List<PdfElementBase>
@@ -333,7 +333,7 @@ public class ResumeAcademicCvTemplate : ITemplateDefinition
                     Y = 76,
                     Width = 690,
                     Height = 150,
-                    Text = "6. Aurelius, M. A., & Sterling, C. (2020). \"Discrete Bochner Laplacians and Curvature Bounds on Cell Complexes.\" SIAM Journal on Applied Mathematics, 80(3), pp. 1120–1145. DOI: 10.1137/19M1284102.\n7. Aurelius, M. A., & Tanaka, H. (2019). \"Diffusion Geometry on Non-Compact Symmetric Spaces.\" Journal of Machine Learning Research (JMLR), 20(84), pp. 1–38.\n8. Aurelius, M. A. (2018). \"Spectral Geometry of Cortical Folding Patterns.\" Cambridge University Press Research Monograph Series in Mathematical Biology, Vol. 14, 280 pages. ISBN 978-1-108-49210-4.\n9. Thorne, J., & Aurelius, M. A. (2017). \"Persistent Homology of Neural Population Codes.\" Physical Review E, 96(4), 042412. DOI: 10.1103/PhysRevE.96.042412.",
+                    Text = "6. Doe, J., & Sterling, C. (2020). \"Discrete Bochner Laplacians and Curvature Bounds on Cell Complexes.\" SIAM Journal on Applied Mathematics, 80(3), pp. 1120–1145. DOI: 10.1137/19M1284102.\n7. Doe, J., & Tanaka, H. (2019). \"Diffusion Geometry on Non-Compact Symmetric Spaces.\" Journal of Machine Learning Research (JMLR), 20(84), pp. 1–38.\n8. Doe, J. (2018). \"Spectral Geometry of Cortical Folding Patterns.\" Cambridge University Press Research Monograph Series in Mathematical Biology, Vol. 14, 280 pages. ISBN 978-1-108-49210-4.\n9. Thorne, J., & Doe, J. (2017). \"Persistent Homology of Neural Population Codes.\" Physical Review E, 96(4), 042412. DOI: 10.1103/PhysRevE.96.042412.",
                     FontSize = 8.5,
                     FontFamily = "Times New Roman",
                     LineHeight = 1.35,

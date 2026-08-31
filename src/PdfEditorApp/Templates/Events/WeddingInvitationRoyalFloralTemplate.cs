@@ -27,7 +27,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Wedding_Invitation_Royal_Floral.pdf",
-            Author = "Royal Occasions",
+            Author = "CodeFryDev Events",
             Subject = "Luxury Floral Wedding Invitation Card"
         };
 
@@ -82,7 +82,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
         // Monogram Initial inside wreath
         page.Elements.Add(new PdfTextElement
         {
-            Text = "E & J",
+            Text = "J & J",
             FontFamily = "Great Vibes",
             FontSize = 32,
             IsBold = true,
@@ -114,7 +114,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
         // 5. Couple Names in Great Vibes Cursive Calligraphy
         page.Elements.Add(new PdfTextElement
         {
-            Text = "Eleanor Vance",
+            Text = "Jane Doe",
             FontFamily = "Great Vibes",
             FontSize = 48,
             IsBold = true,
@@ -144,7 +144,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
 
         page.Elements.Add(new PdfTextElement
         {
-            Text = "Julian Montgomery",
+            Text = "John Doe",
             FontFamily = "Great Vibes",
             FontSize = 48,
             IsBold = true,
@@ -250,7 +250,7 @@ public class WeddingInvitationRoyalFloralTemplate : ITemplateDefinition
 
         page.Elements.Add(new PdfQrCodeElement
         {
-            Content = "https://www.weddingwire.com/eleanor-and-julian-2026",
+            Content = "https://wedding.codefrydev.in/jane-and-john",
             Label = "SCAN TO RSVP ONLINE",
             DarkColorHex = "#D97706",
             LightColorHex = "#FAFAFA",

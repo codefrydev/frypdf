@@ -18,7 +18,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Discrete_Hodge_Laplacians_Simplicial_Manifolds_2026.pdf",
-            Author = "Prof. David H. Eisenbud & Dr. Claire Montgomery",
+            Author = "Prof. John Doe & Dr. Jane Doe",
             Subject = "Discrete Differential Geometry & Topological Data Analysis"
         };
 
@@ -83,7 +83,7 @@ public class MathResearchPaperTemplate : ITemplateDefinition
                     Y = 108,
                     Width = 690,
                     Height = 34,
-                    Text = "David H. Eisenbud¹   and   Claire Montgomery²\n¹Department of Mathematics, UC Berkeley   •   ²Mathematical Institute, University of Oxford",
+                    Text = "John Doe¹   and   Jane Doe²\n¹Department of Mathematics, CodeFryDev Institute   •   ²Mathematical Institute, CodeFryDev Academy",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
                     TextColorHex = "#334155",

@@ -29,7 +29,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Wedding_Invitation_Aarav_and_Ananya.pdf",
-            Author = "Sharma & Iyer Families",
+            Author = "CodeFryDev Events",
             Subject = "Traditional Indian Wedding Invitation Card"
         };
 
@@ -341,7 +341,7 @@ public class WeddingInvitationTraditionalTemplate : ITemplateDefinition
         // 11. RSVP / Best Compliments
         page.Elements.Add(new PdfTextElement
         {
-            Text = "With Best Compliments From: Sharma & Iyer Families  •  RSVP: +91 98450 12345",
+            Text = "With Best Compliments From: Doe Families  •  RSVP: +1 (555) 019-2834",
             FontFamily = "Montserrat",
             FontSize = 10.5,
             IsBold = true,

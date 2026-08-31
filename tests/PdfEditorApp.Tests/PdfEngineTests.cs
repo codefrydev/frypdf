@@ -112,7 +112,7 @@ public class PdfEngineTests
         var model = _templateService.CreateResumeTemplate();
         Assert.NotNull(model);
         Assert.Single(model.Pages);
-        Assert.Equal("Alex_Morgan_Executive_Resume.pdf", model.Title);
+        Assert.Equal("John_Doe_Executive_Resume.pdf", model.Title);
 
         var page = model.Pages[0];
         Assert.NotEmpty(page.Elements);
@@ -120,9 +120,9 @@ public class PdfEngineTests
 
         // Verify presence of QR code, avatar badge, dividers, and rich text sections
         Assert.Contains(page.Elements, e => e is PdfQrCodeElement);
-        Assert.Contains(page.Elements, e => e is PdfShapeElement shape && shape.Label == "AM");
+        Assert.Contains(page.Elements, e => e is PdfShapeElement shape && shape.Label == "JD");
         Assert.Contains(page.Elements, e => e is PdfDividerElement);
-        Assert.Contains(page.Elements, e => e is PdfTextElement text && text.Text.Contains("ALEXANDER MORGAN"));
+        Assert.Contains(page.Elements, e => e is PdfTextElement text && text.Text.Contains("JOHN DOE"));
         Assert.Contains(page.Elements, e => e is PdfTextElement text && text.Text.Contains("EXECUTIVE SUMMARY"));
         Assert.Contains(page.Elements, e => e is PdfTextElement text && text.Text.Contains("PROFESSIONAL EXPERIENCE"));
         Assert.Contains(page.Elements, e => e is PdfTextElement text && text.Text.Contains("EDUCATION & PROFESSIONAL CREDENTIALS"));
@@ -192,15 +192,15 @@ public class PdfEngineTests
         Assert.NotNull(academicCv);
 
         // Modern Clean tech resume checks
-        Assert.Contains(modern.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("SARAH CHEN"));
-        Assert.Contains(modern.Pages[0].Elements, e => e is PdfQrCodeElement qr && qr.Content.Contains("github.com"));
+        Assert.Contains(modern.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("JOHN DOE"));
+        Assert.Contains(modern.Pages[0].Elements, e => e is PdfQrCodeElement qr && qr.Content.Contains("github.com/codefrydev"));
 
         // Creative UI/UX resume checks
-        Assert.Contains(creative.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("MAYA LIN"));
-        Assert.Contains(creative.Pages[0].Elements, e => e is PdfQrCodeElement qr && qr.Content.Contains("mayalin.design"));
+        Assert.Contains(creative.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("JANE DOE"));
+        Assert.Contains(creative.Pages[0].Elements, e => e is PdfQrCodeElement qr && qr.Content.Contains("codefrydev.in"));
 
         // Academic CV checks
-        Assert.Contains(academicCv.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("MARCUS A. AURELIUS"));
+        Assert.Contains(academicCv.Pages[0].Elements, e => e is PdfTextElement t && t.Text.Contains("JOHN DOE"));
         Assert.Contains(academicCv.Pages[0].Elements, e => e is PdfTableElement tbl && tbl.Headers.Contains("Total Amount"));
         Assert.Contains(academicCv.Pages[0].Elements, e => e is PdfQrCodeElement qr && qr.Content.Contains("orcid.org"));
     }
@@ -530,7 +530,7 @@ public class PdfEngineTests
         Assert.NotNull(vm.QrPngBytes);
         Assert.True(vm.QrPngBytes.Length > 0);
 
-        vm.Content = "https://codefrydev.com/docs";
+        vm.Content = "https://codefrydev.in/docs";
         Assert.NotNull(vm.QrPngBytes);
 
         vm.DarkColorHex = "#16A34A";
@@ -1749,10 +1749,10 @@ public class PdfEngineTests
         Assert.Contains(texts, t => t.Text == "CERTIFICATE" && t.TextColorHex == "#990000");
         Assert.Contains(texts, t => t.Text.Contains("OUTSTANDING ACHIEVEMENT"));
         Assert.Contains(texts, t => t.Text.Contains("THIS CERTIFICATE IS PROUDLY PRESENTED TO"));
-        Assert.Contains(texts, t => t.Text == "Alexander Maxwell Vance" && t.FontFamily == "Great Vibes");
+        Assert.Contains(texts, t => t.Text == "John Doe" && t.FontFamily == "Great Vibes");
         Assert.Contains(texts, t => t.Text.Contains("Mathematics & Computational Science Olympiad"));
-        Assert.Contains(texts, t => t.Text == "Jonathan Thorne" && t.FontFamily == "Great Vibes");
-        Assert.Contains(texts, t => t.Text.Contains("Dr. Jonathan R. Thorne, Ph.D."));
+        Assert.Contains(texts, t => t.Text == "Jane Doe" && t.FontFamily == "Great Vibes");
+        Assert.Contains(texts, t => t.Text.Contains("Dr. Jane Doe, Ph.D."));
         Assert.Contains(texts, t => t.Text.Contains("President"));
         Assert.Contains(texts, t => t.Text.Contains("Date"));
 

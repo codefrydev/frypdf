@@ -23,7 +23,7 @@ public class BlankDocumentTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Untitled_Document.pdf",
-            Author = "User",
+            Author = "CodeFryDev",
             Subject = "New PDF Document"
         };
 

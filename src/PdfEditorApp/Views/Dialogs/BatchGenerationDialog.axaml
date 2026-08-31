@@ -236,7 +236,7 @@
                                 <!-- Tab 1: REST API -->
                                 <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,10" IsVisible="{Binding SelectedDataSourceTab, Converter={StaticResource EqualityConverter}, ConverterParameter=1}">
                                     <Grid ColumnDefinitions="*,Auto">
-                                        <TextBox Grid.Column="0" Text="{Binding ApiUrl, Mode=TwoWay}" Height="30" FontSize="11" CornerRadius="6" PlaceholderText="https://api.example.com/employees" Margin="0,0,8,0" />
+                                        <TextBox Grid.Column="0" Text="{Binding ApiUrl, Mode=TwoWay}" Height="30" FontSize="11" CornerRadius="6" PlaceholderText="https://api.codefrydev.in/employees" Margin="0,0,8,0" />
                                         <Button Grid.Column="1" Classes="accent-btn" Height="30" Padding="14,0" Command="{Binding FetchApiDataCommand}" IsEnabled="{Binding !IsFetchingApi}">
                                             <StackPanel Orientation="Horizontal" Spacing="5">
                                                 <materialIcons:MaterialIcon Kind="CloudDownloadOutline" Width="14" Height="14" />

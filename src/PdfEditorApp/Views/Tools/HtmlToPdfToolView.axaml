@@ -83,7 +83,7 @@
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                                 <TextBlock Text="Webpage URL or HTML Content" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                                <TextBlock Text="Enter a web URL (e.g. https://example.com) or paste HTML code" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                                <TextBlock Text="Enter a web URL (e.g. https://codefrydev.in) or paste HTML code" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
                             </StackPanel>
                         </Grid>
 
@@ -94,7 +94,7 @@
                                  MaxHeight="320"
                                  FontSize="13"
                                  FontFamily="Cascadia Code,Consolas,Courier New"
-                                 PlaceholderText="https://en.wikipedia.org/wiki/Portable_Document_Format or &lt;html&gt;&lt;body&gt;...&lt;/body&gt;&lt;/html&gt;" />
+                                 PlaceholderText="https://codefrydev.in or &lt;html&gt;&lt;body&gt;...&lt;/body&gt;&lt;/html&gt;" />
                     </StackPanel>
                 </Border>
 

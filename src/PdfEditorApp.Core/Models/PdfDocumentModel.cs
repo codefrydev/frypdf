@@ -6,8 +6,8 @@ namespace PdfEditorApp.Models;
 public class PdfDocumentModel
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
-    public string Title { get; set; } = "Annual_Report_2026.pdf";
-    public string Author { get; set; } = "Acme Corp.";
+    public string Title { get; set; } = "Document_2026.pdf";
+    public string Author { get; set; } = "CodeFryDev";
     public string Subject { get; set; } = "Annual Financial & Operations Report";
     public string Keywords { get; set; } = "";
     public string Creator { get; set; } = "FryPDF";

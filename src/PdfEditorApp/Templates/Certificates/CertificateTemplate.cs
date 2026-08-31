@@ -18,7 +18,7 @@ public class CertificateTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Certificate_of_Achievement.pdf",
-            Author = "National Academy of Sciences & Mathematics",
+            Author = "CodeFryDev Academy of Computing & Science",
             Subject = "Official Certificate of Outstanding Achievement & First-Place Distinction"
         };
 
@@ -218,7 +218,7 @@ public class CertificateTemplate : ITemplateDefinition
                     Y = 205,
                     Width = 760,
                     Height = 95,
-                    Text = "Alexander Maxwell Vance",
+                    Text = "John Doe",
                     FontSize = 52,
                     FontFamily = "Great Vibes",
                     IsItalic = true,
@@ -248,7 +248,7 @@ public class CertificateTemplate : ITemplateDefinition
                     Y = 330,
                     Width = 760,
                     Height = 115,
-                    Text = "For distinguished excellence, exceptional analytical problem-solving, and achieving First Place Honors in the National Mathematics & Computational Science Olympiad. Conferred on the 18th of July, 2026 by the Executive Board of Examiners.",
+                    Text = "For distinguished excellence, exceptional analytical problem-solving, and achieving First Place Honors in the CodeFryDev Mathematics & Computational Science Olympiad. Conferred on the 18th of July, 2026 by the Executive Board of Examiners.",
                     FontSize = 15.5,
                     FontFamily = "Lora",
                     IsBold = false,
@@ -324,7 +324,7 @@ public class CertificateTemplate : ITemplateDefinition
                     Y = 654,
                     Width = 260,
                     Height = 22,
-                    Text = "Credential ID: NSO-2026-89412",
+                    Text = "Credential ID: CFD-2026-89412",
                     FontSize = 10,
                     FontFamily = "Montserrat",
                     TextColorHex = "#64748B",
@@ -339,7 +339,7 @@ public class CertificateTemplate : ITemplateDefinition
                     Y = 555,
                     Width = 280,
                     Height = 60,
-                    Text = "Jonathan Thorne",
+                    Text = "Jane Doe",
                     FontSize = 32,
                     FontFamily = "Great Vibes",
                     IsItalic = true,
@@ -363,7 +363,7 @@ public class CertificateTemplate : ITemplateDefinition
                     Y = 628,
                     Width = 280,
                     Height = 26,
-                    Text = "Dr. Jonathan R. Thorne, Ph.D.",
+                    Text = "Dr. Jane Doe, Ph.D.",
                     FontSize = 12.5,
                     FontFamily = "Montserrat",
                     IsBold = true,
@@ -377,7 +377,7 @@ public class CertificateTemplate : ITemplateDefinition
                     Y = 654,
                     Width = 280,
                     Height = 22,
-                    Text = "President, National Academy of Sciences",
+                    Text = "President, CodeFryDev Academy",
                     FontSize = 10,
                     FontFamily = "Montserrat",
                     TextColorHex = "#64748B",

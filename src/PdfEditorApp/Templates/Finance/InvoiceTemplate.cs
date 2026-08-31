@@ -18,7 +18,7 @@ public class InvoiceTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Invoice_INV-2026-8492.pdf",
-            Author = "Apex Digital Solutions LLC",
+            Author = "CodeFryDev Solutions Inc.",
             Subject = "Enterprise Software & Cloud Engineering Services Invoice"
         };
 
@@ -30,7 +30,7 @@ public class InvoiceTemplate : ITemplateDefinition
             Width = 800,
             Height = 1131,
             BackgroundColorHex = "#FFFFFF",
-            FooterLeft = "Apex Digital Solutions LLC • Tax ID: US-EIN 94-3829104 • support@apexdigital.io",
+            FooterLeft = "CodeFryDev Solutions Inc. • Tax ID: US-EIN 94-3829104 • support@codefrydev.in",
             FooterCenter = "Payment Terms: Net 30 Days",
             FooterRight = "Invoice #INV-2026-8492 • Page 1 of 1",
             Elements = new List<PdfElementBase>
@@ -58,7 +58,7 @@ public class InvoiceTemplate : ITemplateDefinition
                     FillColorHex = "#0F6CBD",
                     StrokeColorHex = "#0C599B",
                     StrokeThickness = 0,
-                    Label = "AP",
+                    Label = "CF",
                     LabelColorHex = "#FFFFFF",
                     LabelFontSize = 20
                 },
@@ -70,7 +70,7 @@ public class InvoiceTemplate : ITemplateDefinition
                     Y = 38,
                     Width = 320,
                     Height = 26,
-                    Text = "APEX DIGITAL SOLUTIONS LLC",
+                    Text = "CODEFRYDEV SOLUTIONS INC.",
                     FontSize = 15,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -82,7 +82,7 @@ public class InvoiceTemplate : ITemplateDefinition
                     Y = 64,
                     Width = 320,
                     Height = 58,
-                    Text = "742 Montgomery St, Suite 1200 • Financial District\nSan Francisco, CA 94111 • United States\nPhone: +1 (415) 890-2300 • billing@apexdigital.io",
+                    Text = "742 Market St, Suite 1200 • Financial District\nSan Francisco, CA 94111 • United States\nPhone: +1 (555) 019-2834 • billing@codefrydev.in",
                     FontSize = 9.5,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.35,
@@ -148,7 +148,7 @@ public class InvoiceTemplate : ITemplateDefinition
                     Y = 166,
                     Width = 320,
                     Height = 72,
-                    Text = "Acme Global Enterprise Inc.\nAttn: Accounts Payable & Financial Operations\n500 Technology Square, Floor 8\nCambridge, MA 02139 • United States\nClient Tax ID: US-EIN 04-2918471",
+                    Text = "CodeFryDev Client Enterprises Inc.\nAttn: Accounts Payable & Financial Operations\n500 Technology Square, Floor 8\nCambridge, MA 02139 • United States\nClient Tax ID: US-EIN 04-2918471",
                     FontSize = 9.5,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.35,
@@ -273,7 +273,7 @@ public class InvoiceTemplate : ITemplateDefinition
                     Y = 604,
                     Width = 330,
                     Height = 115,
-                    Text = "Bank Name: Silicon Valley Commercial Bank, N.A.\nAccount Holder: Apex Digital Solutions LLC\nRouting / ABA (Domestic): 121000358\nAccount Number: 98402941829\nSWIFT / BIC (International): SVCBUS6SXXX\nPayment Reference: INV-2026-8492",
+                    Text = "Bank Name: First Commercial Bank, N.A.\nAccount Holder: CodeFryDev Solutions Inc.\nRouting / ABA (Domestic): 121000358\nAccount Number: 98402941829\nSWIFT / BIC (International): CFDEVUS6SXXX\nPayment Reference: INV-2026-8492",
                     FontSize = 9.5,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.4,
@@ -287,7 +287,7 @@ public class InvoiceTemplate : ITemplateDefinition
                     Y = 746,
                     Width = 110,
                     Height = 110,
-                    Content = "https://pay.apexdigital.io/invoice/INV-2026-8492",
+                    Content = "https://pay.codefrydev.in/invoice/INV-2026-8492",
                     Label = "SCAN TO PAY INVOICE",
                     DarkColorHex = "#0F6CBD",
                     LightColorHex = "#FFFFFF"
@@ -300,7 +300,7 @@ public class InvoiceTemplate : ITemplateDefinition
                     Y = 746,
                     Width = 565,
                     Height = 110,
-                    Text = "TERMS & CONDITIONS:\n1. Payment is due strictly within thirty (30) calendar days from the invoice issuance date.\n2. Overdue balances are subject to a late service fee of 1.5% per month or the maximum permitted by law.\n3. All deliverables are licensed upon full settlement of this invoice according to Master Services Agreement #MSA-2026-11.\n4. For billing inquiries, discrepancies, or receipt confirmations, contact finance@apexdigital.io.",
+                    Text = "TERMS & CONDITIONS:\n1. Payment is due strictly within thirty (30) calendar days from the invoice issuance date.\n2. Overdue balances are subject to a late service fee of 1.5% per month or the maximum permitted by law.\n3. All deliverables are licensed upon full settlement of this invoice according to Master Services Agreement #MSA-2026-11.\n4. For billing inquiries, discrepancies, or receipt confirmations, contact finance@codefrydev.in.",
                     FontSize = 9,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.4,
@@ -325,7 +325,7 @@ public class InvoiceTemplate : ITemplateDefinition
                     Y = 885,
                     Width = 320,
                     Height = 45,
-                    Text = "Marcus Aurelius Vance",
+                    Text = "John Doe",
                     FontSize = 22,
                     FontFamily = "Great Vibes",
                     IsItalic = true,
@@ -346,7 +346,7 @@ public class InvoiceTemplate : ITemplateDefinition
                     Y = 938,
                     Width = 280,
                     Height = 35,
-                    Text = "Authorized Corporate Signatory\nChief Financial Officer • Apex Digital Solutions LLC",
+                    Text = "Authorized Corporate Signatory\nChief Financial Officer • CodeFryDev Solutions Inc.",
                     FontSize = 9,
                     FontFamily = "Segoe UI",
                     TextColorHex = "#64748B"
@@ -373,7 +373,7 @@ public class InvoiceTemplate : ITemplateDefinition
                     Y = 920,
                     Width = 145,
                     Height = 38,
-                    Text = "Cryptographically signed &\nverified by Apex Trust PKI",
+                    Text = "Cryptographically signed &\nverified by CodeFryDev Trust PKI",
                     FontSize = 8.5,
                     FontFamily = "Segoe UI",
                     TextColorHex = "#166534",

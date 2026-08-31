@@ -17,8 +17,8 @@ public class ResumeTemplate : ITemplateDefinition
     {
         var doc = new PdfDocumentModel
         {
-            Title = "Alex_Morgan_Executive_Resume.pdf",
-            Author = "Alex Morgan",
+            Title = "John_Doe_Executive_Resume.pdf",
+            Author = "John Doe",
             Subject = "Principal Software Architect Resume"
         };
 
@@ -30,7 +30,7 @@ public class ResumeTemplate : ITemplateDefinition
             Width = 800,
             Height = 1131,
             BackgroundColorHex = "#FFFFFF",
-            FooterLeft = "Alex Morgan • Principal Software Architect | Portfolio: alexmorgan.dev",
+            FooterLeft = "John Doe • Principal Software Architect | Portfolio: codefrydev.in",
             FooterCenter = "CONFIDENTIAL & VERIFIED",
             FooterRight = "Page 1 of 1",
             Elements = new List<PdfElementBase>
@@ -46,7 +46,7 @@ public class ResumeTemplate : ITemplateDefinition
                     FillColorHex = "#0F6CBD",
                     StrokeColorHex = "#0C599B",
                     StrokeThickness = 0,
-                    Label = "AM",
+                    Label = "JD",
                     LabelColorHex = "#FFFFFF",
                     LabelFontSize = 22
                 },
@@ -58,7 +58,7 @@ public class ResumeTemplate : ITemplateDefinition
                     Y = 45,
                     Width = 510,
                     Height = 32,
-                    Text = "ALEXANDER MORGAN, M.Sc.",
+                    Text = "JOHN DOE, M.Sc.",
                     FontSize = 22,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -86,7 +86,7 @@ public class ResumeTemplate : ITemplateDefinition
                     Y = 96,
                     Width = 510,
                     Height = 20,
-                    Text = "📧 alex.morgan@techlead.io   •   📱 +1 (555) 234-5678   •   📍 Seattle, WA",
+                    Text = "📧 john.doe@codefrydev.in   •   📱 +1 (555) 019-2834   •   📍 Seattle, WA",
                     FontSize = 10,
                     FontFamily = "Segoe UI",
                     TextColorHex = "#475569"
@@ -99,7 +99,7 @@ public class ResumeTemplate : ITemplateDefinition
                     Y = 114,
                     Width = 510,
                     Height = 20,
-                    Text = "🔗 linkedin.com/in/alexmorgan-dev   •   🌐 alexmorgan.dev   •   🐙 github.com/alexmorgan",
+                    Text = "🔗 linkedin.com/in/codefrydev   •   🌐 codefrydev.in   •   🐙 github.com/codefrydev",
                     FontSize = 10,
                     FontFamily = "Segoe UI",
                     TextColorHex = "#475569"
@@ -112,7 +112,7 @@ public class ResumeTemplate : ITemplateDefinition
                     Y = 45,
                     Width = 100,
                     Height = 85,
-                    Content = "https://alexmorgan.dev",
+                    Content = "https://codefrydev.in",
                     Label = "PORTFOLIO QR"
                 },
 
@@ -245,7 +245,7 @@ public class ResumeTemplate : ITemplateDefinition
                     Y = 378,
                     Width = 490,
                     Height = 20,
-                    Text = "Principal Software Architect | CloudScale Global Inc. — Seattle, WA",
+                    Text = "Principal Software Architect | CodeFryDev CloudScale Inc. — Seattle, WA",
                     FontSize = 11,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -288,7 +288,7 @@ public class ResumeTemplate : ITemplateDefinition
                     Y = 498,
                     Width = 490,
                     Height = 20,
-                    Text = "Staff Systems Engineer | Horizon Data Systems — Redmond, WA",
+                    Text = "Staff Systems Engineer | CodeFryDev Data Systems — Redmond, WA",
                     FontSize = 11,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -331,7 +331,7 @@ public class ResumeTemplate : ITemplateDefinition
                     Y = 618,
                     Width = 490,
                     Height = 20,
-                    Text = "Senior Software Engineer | Apex Solutions Ltd — Seattle, WA",
+                    Text = "Senior Software Engineer | CodeFryDev Solutions Ltd — Seattle, WA",
                     FontSize = 11,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -510,7 +510,7 @@ public class ResumeTemplate : ITemplateDefinition
                     Y = 1002,
                     Width = 690,
                     Height = 20,
-                    Text = "References, patent publications, and verified code portfolio available upon request at alexmorgan.dev",
+                    Text = "References, patent publications, and verified code portfolio available upon request at codefrydev.in",
                     FontSize = 9,
                     FontFamily = "Segoe UI",
                     TextColorHex = "#64748B",

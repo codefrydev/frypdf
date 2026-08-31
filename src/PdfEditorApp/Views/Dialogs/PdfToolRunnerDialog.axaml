@@ -311,7 +311,7 @@
                                 <!-- HTML to PDF Options -->
                                 <StackPanel Spacing="6" IsVisible="{Binding Tool.Id, Converter={StaticResource EqualityConverter}, ConverterParameter=HtmlToPdf}">
                                     <TextBlock Text="Web Page URL or Local HTML File" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                                    <TextBox Text="{Binding HtmlInputTextOrUrl}" FontSize="12" PlaceholderText="https://example.com" />
+                                    <TextBox Text="{Binding HtmlInputTextOrUrl}" FontSize="12" PlaceholderText="https://codefrydev.in" />
                                 </StackPanel>
 
                                 <!-- AI Summary Options -->

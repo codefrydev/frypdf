@@ -79,11 +79,11 @@ public partial class QrCodeElementViewModel : ElementViewModelBase
                     Label = "SCAN TO CONNECT WI-FI";
                     break;
                 case QrCodePresetKind.VCard:
-                    Content = "BEGIN:VCARD\nVERSION:3.0\nN:Smith;John\nORG:Acme Corp\nTEL:+1-555-0149\nEMAIL:john@acmecorp.com\nEND:VCARD";
+                    Content = "BEGIN:VCARD\nVERSION:3.0\nN:Doe;John\nORG:CodeFryDev\nTEL:+1-555-0149\nEMAIL:john.doe@codefrydev.in\nEND:VCARD";
                     Label = "SCAN FOR DIGITAL VCARD";
                     break;
                 case QrCodePresetKind.Email:
-                    Content = "mailto:legal@acmecorp.com?subject=Document%20Verification";
+                    Content = "mailto:legal@codefrydev.in?subject=Document%20Verification";
                     Label = "SCAN TO SEND EMAIL";
                     break;
                 case QrCodePresetKind.PhoneCall:

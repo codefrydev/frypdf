@@ -18,7 +18,7 @@ public class HistoryResearchPaperTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Mediterranean_Maritime_Trade_1250_1450_Research.pdf",
-            Author = "Prof. Henriette de Montmirail",
+            Author = "Prof. Jane Doe",
             Subject = "Economic History & Medieval Mediterranean Archival Trade Networks"
         };
 
@@ -83,7 +83,7 @@ public class HistoryResearchPaperTemplate : ITemplateDefinition
                     Y = 108,
                     Width = 690,
                     Height = 34,
-                    Text = "Henriette de Montmirail, Ph.D.\nChair of Medieval Economic History, École des Hautes Études en Sciences Sociales (EHESS), Paris",
+                    Text = "Jane Doe, Ph.D.\nChair of Medieval Economic History, CodeFryDev Institute of Historical Studies",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
                     TextColorHex = "#522504",

@@ -52,7 +52,7 @@
                         <TextBlock Text="Signer Full Legal Name" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                         <TextBox Text="{Binding SignatureSignerName, Mode=TwoWay}"
                                  Height="36" FontSize="13" CornerRadius="6"
-                                 Padding="10,8" PlaceholderText="e.g. Johnathan A. Doe" />
+                                 Padding="10,8" PlaceholderText="e.g. John Doe" />
                     </StackPanel>
 
                     <!-- Style Selection Cards (4 Distinct Cursive Styles) -->

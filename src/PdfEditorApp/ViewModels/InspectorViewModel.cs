@@ -2277,7 +2277,7 @@ public partial class InspectorViewModel : ViewModelBase
             }
             else if (preset == "Corporate")
             {
-                page.HeaderLeft = "ACME CORPORATION";
+                page.HeaderLeft = "CodeFryDev";
                 page.HeaderRight = DateTime.Now.ToString("yyyy-MM-dd");
                 page.FooterLeft = "INTERNAL USE ONLY";
                 page.FooterRight = $"Page {page.PageNumber}";

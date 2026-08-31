@@ -18,7 +18,7 @@ public class CertificateNavyGoldTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Executive_Certificate_of_Honor.pdf",
-            Author = "Executive Leadership Institute",
+            Author = "CodeFryDev Leadership Institute",
             Subject = "Official Certificate of Distinction and Honor"
         };
 
@@ -121,7 +121,7 @@ public class CertificateNavyGoldTemplate : ITemplateDefinition
                     FillColorHex = "#FEF3C7",
                     StrokeColorHex = "#D97706",
                     StrokeThickness = 2.5,
-                    Label = "ELI",
+                    Label = "CFD",
                     LabelColorHex = "#B45309",
                     LabelFontSize = 14,
                     ZIndex = 10
@@ -164,7 +164,7 @@ public class CertificateNavyGoldTemplate : ITemplateDefinition
                     Y = 280,
                     Width = 831,
                     Height = 90,
-                    Text = "Victoria Sterling, MBA",
+                    Text = "Jane Doe, MBA",
                     FontSize = 48,
                     FontFamily = "Great Vibes",
                     IsItalic = true,
@@ -257,7 +257,7 @@ public class CertificateNavyGoldTemplate : ITemplateDefinition
                     Y = 620,
                     Width = 260,
                     Height = 48,
-                    Text = "E. H. Vance",
+                    Text = "John Doe",
                     FontSize = 26,
                     FontFamily = "Dancing Script",
                     IsItalic = true,
@@ -297,7 +297,7 @@ public class CertificateNavyGoldTemplate : ITemplateDefinition
                     Y = 620,
                     Width = 260,
                     Height = 48,
-                    Text = "Arthur Kingsbury",
+                    Text = "Alex Doe",
                     FontSize = 26,
                     FontFamily = "Dancing Script",
                     IsItalic = true,

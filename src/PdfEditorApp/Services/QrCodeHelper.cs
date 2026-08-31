@@ -74,7 +74,7 @@ public static class QrCodeHelper
         int pixelsPerModule = 10,
         bool drawQuietZones = true)
     {
-        string payload = string.IsNullOrWhiteSpace(content) ? "https://github.com/PrashantUnity/PDFCreator" : content;
+        string payload = string.IsNullOrWhiteSpace(content) ? "https://codefrydev.in" : content;
         byte[] darkRgba = HexToRgba(darkHex, 15, 23, 42); // #0F172A
         byte[] lightRgba = HexToRgba(lightHex, 255, 255, 255); // #FFFFFF
 

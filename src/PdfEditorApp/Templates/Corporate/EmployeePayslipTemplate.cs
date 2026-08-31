@@ -18,7 +18,7 @@ public class EmployeePayslipTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Payslip_{{EmployeeId}}_{{EmployeeName}}_{{PayPeriod}}.pdf",
-            Author = "{{CompanyName ?? Apex Global Technologies Inc.}}",
+            Author = "{{CompanyName ?? CodeFryDev Inc.}}",
             Subject = "Salary Payslip for {{EmployeeName}} - {{PayPeriod}}"
         };
 
@@ -30,7 +30,7 @@ public class EmployeePayslipTemplate : ITemplateDefinition
             Width = 800,
             Height = 1131,
             BackgroundColorHex = "#FFFFFF",
-            FooterLeft = "Apex Global Technologies • Confidential & Proprietary Document",
+            FooterLeft = "CodeFryDev Inc. • Confidential & Proprietary Document",
             FooterCenter = "Computer Generated • No Physical Signature Required",
             FooterRight = "Generated for {{EmployeeName}} (ID: {{EmployeeId}})",
             Elements = new List<PdfElementBase>
@@ -58,7 +58,7 @@ public class EmployeePayslipTemplate : ITemplateDefinition
                     FillColorHex = "#0F6CBD",
                     StrokeColorHex = "#0C599B",
                     StrokeThickness = 0,
-                    Label = "AP",
+                    Label = "CF",
                     LabelColorHex = "#FFFFFF",
                     LabelFontSize = 18
                 },
@@ -70,7 +70,7 @@ public class EmployeePayslipTemplate : ITemplateDefinition
                     Y = 35,
                     Width = 380,
                     Height = 24,
-                    Text = "{{CompanyName ?? APEX GLOBAL TECHNOLOGIES INC.}}",
+                    Text = "{{CompanyName ?? CODEFRYDEV INC.}}",
                     FontSize = 14,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -82,7 +82,7 @@ public class EmployeePayslipTemplate : ITemplateDefinition
                     Y = 60,
                     Width = 380,
                     Height = 35,
-                    Text = "100 Innovation Way, Suite 500 • Silicon Valley, CA 94025\nTax ID: US-EIN 94-8291042 • payroll@apextech.io",
+                    Text = "100 Innovation Way, Suite 500 • Silicon Valley, CA 94025\nTax ID: US-EIN 94-8291042 • payroll@codefrydev.in",
                     FontSize = 9,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.3,
@@ -173,7 +173,7 @@ public class EmployeePayslipTemplate : ITemplateDefinition
                     Y = 150,
                     Width = 220,
                     Height = 36,
-                    Text = "Employee Name\n{{EmployeeName ?? Johnathan Doe}}",
+                    Text = "Employee Name\n{{EmployeeName ?? John Doe}}",
                     FontSize = 9.5,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.35,
@@ -223,7 +223,7 @@ public class EmployeePayslipTemplate : ITemplateDefinition
                     Y = 190,
                     Width = 200,
                     Height = 36,
-                    Text = "Bank & Account No.\n{{BankName ?? Chase Bank}} • {{AccountNumber ?? ****4892}}",
+                    Text = "Bank & Account No.\n{{BankName ?? First National Bank}} • {{AccountNumber ?? ****4892}}",
                     FontSize = 9.5,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.35,
@@ -359,7 +359,7 @@ public class EmployeePayslipTemplate : ITemplateDefinition
                     Y = 605,
                     Width = 100,
                     Height = 100,
-                    Content = "https://payroll.apextech.io/verify?emp={{EmployeeId}}&period={{PayPeriod}}&hash={{AuthHash ?? 8f92a10c}}",
+                    Content = "https://payroll.codefrydev.in/verify?emp={{EmployeeId}}&period={{PayPeriod}}&hash={{AuthHash ?? 8f92a10c}}",
                     Label = "SCAN TO VERIFY",
                     DarkColorHex = "#0F172A",
                     LightColorHex = "#FFFFFF"
@@ -372,7 +372,7 @@ public class EmployeePayslipTemplate : ITemplateDefinition
                     Y = 608,
                     Width = 270,
                     Height = 110,
-                    Text = "OFFICIAL DIGITAL RECORD\n\nThis payroll document is digitally signed and cryptographically registered in the Apex Enterprise Payroll Ledger.\n\nVerification Token: {{AuthHash ?? 8F92-A10C-5542}}\nDisbursement Date: {{PaymentDate ?? 2026-08-31}}",
+                    Text = "OFFICIAL DIGITAL RECORD\n\nThis payroll document is digitally signed and cryptographically registered in the CodeFryDev Enterprise Payroll Ledger.\n\nVerification Token: {{AuthHash ?? 8F92-A10C-5542}}\nDisbursement Date: {{PaymentDate ?? 2026-08-31}}",
                     FontSize = 8.5,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.35,
@@ -400,7 +400,7 @@ public class EmployeePayslipTemplate : ITemplateDefinition
                     Y = 680,
                     Width = 250,
                     Height = 40,
-                    Text = "Authorized Payroll Officer\nApex Global Technologies Inc.",
+                    Text = "Authorized Payroll Officer\nCodeFryDev Inc.",
                     FontSize = 9,
                     FontFamily = "Segoe UI",
                     Alignment = TextAlignmentMode.Center,

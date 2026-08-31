@@ -18,7 +18,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Research_Paper_Vector_Graphics_2026.pdf",
-            Author = "Dr. Elena Vance, Marcus Thorne, and Sarah Jenkins",
+            Author = "Dr. John Doe, Jane Doe, and Alex Doe",
             Subject = "High-Performance Cross-Platform Desktop Vector Rendering"
         };
 
@@ -82,7 +82,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     Y = 108,
                     Width = 690,
                     Height = 34,
-                    Text = "Elena Vance, Ph.D.¹,   Marcus Thorne, M.Sc.²,   Sarah Jenkins, Ph.D.¹\n¹Institute for Advanced Software Systems, MIT   •   ²Department of Computer Science, Stanford University",
+                    Text = "John Doe, Ph.D.¹,   Jane Doe, M.Sc.²,   Alex Doe, Ph.D.¹\n¹Institute for Advanced Computing, CodeFryDev Institute   •   ²Department of Computer Science, CodeFryDev University",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
                     TextColorHex = "#334155",
@@ -619,7 +619,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     ColorHex = "#CBD5E1"
                 },
 
-                // Bio 1: Elena Vance
+                // Bio 1: John Doe
                 new PdfShapeElement
                 {
                     X = 415,
@@ -628,7 +628,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     Height = 36,
                     CornerRadius = 18,
                     FillColorHex = "#0F6CBD",
-                    Label = "EV",
+                    Label = "JD",
                     LabelColorHex = "#FFFFFF",
                     LabelFontSize = 12
                 },
@@ -638,14 +638,14 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     Y = 348,
                     Width = 285,
                     Height = 85,
-                    Text = "Elena Vance received the Ph.D. in Computer Science from MIT in 2020. She is currently a Principal Research Scientist specializing in GPU compilers and vector rendering systems.",
+                    Text = "John Doe received the Ph.D. in Computer Science in 2020. He is currently a Principal Research Scientist specializing in GPU compilers and vector rendering systems.",
                     FontSize = 8,
                     FontFamily = "Times New Roman",
                     LineHeight = 1.3,
                     TextColorHex = "#334155"
                 },
 
-                // Bio 2: Marcus Thorne
+                // Bio 2: Jane Doe
                 new PdfShapeElement
                 {
                     X = 415,
@@ -654,7 +654,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     Height = 36,
                     CornerRadius = 18,
                     FillColorHex = "#0284C7",
-                    Label = "MT",
+                    Label = "JD",
                     LabelColorHex = "#FFFFFF",
                     LabelFontSize = 12
                 },
@@ -664,14 +664,14 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     Y = 443,
                     Width = 285,
                     Height = 85,
-                    Text = "Marcus Thorne received the M.Sc. in Electrical Engineering from Stanford University in 2022. His research focuses on zero-allocation memory pools and low-latency user interfaces.",
+                    Text = "Jane Doe received the M.Sc. in Electrical Engineering in 2022. Her research focuses on zero-allocation memory pools and low-latency user interfaces.",
                     FontSize = 8,
                     FontFamily = "Times New Roman",
                     LineHeight = 1.3,
                     TextColorHex = "#334155"
                 },
 
-                // Bio 3: Sarah Jenkins
+                // Bio 3: Alex Doe
                 new PdfShapeElement
                 {
                     X = 415,
@@ -680,7 +680,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     Height = 36,
                     CornerRadius = 18,
                     FillColorHex = "#7E22CE",
-                    Label = "SJ",
+                    Label = "AD",
                     LabelColorHex = "#FFFFFF",
                     LabelFontSize = 12
                 },
@@ -690,7 +690,7 @@ public class AcademicPaperTemplate : ITemplateDefinition
                     Y = 538,
                     Width = 285,
                     Height = 85,
-                    Text = "Sarah Jenkins is an Associate Professor at MIT. Her research interests include human-computer interaction, digital document security, and typography rendering algorithms.",
+                    Text = "Alex Doe is an Associate Professor at CodeFryDev Institute. His research interests include human-computer interaction, digital document security, and typography rendering algorithms.",
                     FontSize = 8,
                     FontFamily = "Times New Roman",
                     LineHeight = 1.3,

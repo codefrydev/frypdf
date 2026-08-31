@@ -27,7 +27,7 @@ public class GalaInvitationTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Annual_Charity_Gala_Invitation.pdf",
-            Author = "Apex Foundation",
+            Author = "CodeFryDev Foundation",
             Subject = "Annual Charity Gala & Award Night"
         };
 
@@ -68,7 +68,7 @@ public class GalaInvitationTemplate : ITemplateDefinition
         // 3. Organization Host
         page.Elements.Add(new PdfTextElement
         {
-            Text = "THE APEX GLOBAL FOUNDATION CORDIALLY INVITES YOU TO THE",
+            Text = "THE CODEFRYDEV FOUNDATION CORDIALLY INVITES YOU TO THE",
             FontFamily = "Montserrat",
             FontSize = 9.5,
             IsBold = true,
@@ -232,7 +232,7 @@ public class GalaInvitationTemplate : ITemplateDefinition
         // 9. RSVP QR Code
         page.Elements.Add(new PdfQrCodeElement
         {
-            Content = "https://apexcharitygala2026.org/rsvp/vip",
+            Content = "https://gala.codefrydev.in/rsvp/vip",
             Label = "SCAN FOR VIP TABLE RESERVATION",
             DarkColorHex = "#0B0F19",
             LightColorHex = "#F59E0B",

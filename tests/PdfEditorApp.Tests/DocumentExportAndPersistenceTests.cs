@@ -128,7 +128,7 @@ public class DocumentExportAndPersistenceTests
 
             var page = new PdfPageModel { Width = 612, Height = 792, PageNumber = 1 };
             page.Elements.Add(new PdfTextElement { Text = "Test Note", X = 20, Y = 30, Width = 150, Height = 40 });
-            page.Elements.Add(new PdfQrCodeElement { Content = "https://codefrydev.com", X = 100, Y = 100, Width = 80, Height = 80 });
+            page.Elements.Add(new PdfQrCodeElement { Content = "https://codefrydev.in", X = 100, Y = 100, Width = 80, Height = 80 });
             doc.Pages.Add(page);
 
             // Act - Save

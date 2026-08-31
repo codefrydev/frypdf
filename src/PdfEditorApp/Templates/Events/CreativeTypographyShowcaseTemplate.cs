@@ -28,7 +28,7 @@ public class CreativeTypographyShowcaseTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Bezier_Typography_Creative_Showcase.pdf",
-            Author = "Apex International Typography Institute",
+            Author = "CodeFryDev Typography Institute",
             Subject = "Official Specimen & Showcase of Bézier Curve Typography & Vector Arts"
         };
 
@@ -530,7 +530,7 @@ public class CreativeTypographyShowcaseTemplate : ITemplateDefinition
 
         page.Elements.Add(new PdfTextElement
         {
-            Text = "Dr. Elena Rostova — Senior Computational Typographer",
+            Text = "Dr. Jane Doe — Senior Computational Typographer",
             FontFamily = "Inter",
             FontSize = 7.8,
             TextColorHex = "#94A3B8",
@@ -577,7 +577,7 @@ public class CreativeTypographyShowcaseTemplate : ITemplateDefinition
 
         page.Elements.Add(new PdfTextElement
         {
-            Text = "Prof. Marcus Vance — Director of Vector Arts Institute",
+            Text = "Prof. John Doe — Director of Vector Arts Institute",
             FontFamily = "Inter",
             FontSize = 7.8,
             TextColorHex = "#94A3B8",
@@ -642,7 +642,7 @@ public class CreativeTypographyShowcaseTemplate : ITemplateDefinition
             Y = 698,
             Width = 68,
             Height = 68,
-            Content = "https://pdfcreator.design/showcase/bezier-typography-2026",
+            Content = "https://codefrydev.in/showcase/bezier-typography-2026",
             DarkColorHex = "#F8FAFC",
             LightColorHex = "#0B0F19",
             ZIndex = 31
@@ -679,7 +679,7 @@ public class CreativeTypographyShowcaseTemplate : ITemplateDefinition
             ZIndex = 33
         });
 
-        // Signer 1: Smooth Ink Signature (Elena Rostova)
+        // Signer 1: Smooth Ink Signature (Jane Doe)
         page.Elements.Add(new PdfInkElement
         {
             X = 175,
@@ -708,7 +708,7 @@ public class CreativeTypographyShowcaseTemplate : ITemplateDefinition
 
         page.Elements.Add(new PdfTextElement
         {
-            Text = "Dr. Elena Rostova\nLead Typographer & Jury Chair",
+            Text = "Dr. Jane Doe\nLead Typographer & Jury Chair",
             FontFamily = "Inter",
             FontSize = 7.0,
             TextColorHex = "#94A3B8",
@@ -719,7 +719,7 @@ public class CreativeTypographyShowcaseTemplate : ITemplateDefinition
             ZIndex = 36
         });
 
-        // Signer 2: Smooth Ink Signature (Marcus Vance)
+        // Signer 2: Smooth Ink Signature (John Doe)
         page.Elements.Add(new PdfInkElement
         {
             X = 355,
@@ -748,7 +748,7 @@ public class CreativeTypographyShowcaseTemplate : ITemplateDefinition
 
         page.Elements.Add(new PdfTextElement
         {
-            Text = "Prof. Marcus Vance\nDirector of Vector Arts Institute",
+            Text = "Prof. John Doe\nDirector of Vector Arts Institute",
             FontFamily = "Inter",
             FontSize = 7.0,
             TextColorHex = "#94A3B8",

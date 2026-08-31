@@ -18,7 +18,7 @@ public class FinanceResearchPaperTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Quantitative_Finance_Jump_Diffusion_2026.pdf",
-            Author = "Dr. Jonathan R. Vance, CFA & Dr. Linnea Holmström",
+            Author = "Dr. John Doe, CFA & Dr. Jane Doe",
             Subject = "Quantitative Finance, Stochastic Volatility & High-Frequency Risk Modeling"
         };
 
@@ -83,7 +83,7 @@ public class FinanceResearchPaperTemplate : ITemplateDefinition
                     Y = 108,
                     Width = 690,
                     Height = 34,
-                    Text = "Jonathan R. Vance, Ph.D., CFA¹   and   Linnea Holmström, Ph.D.²\n¹Quantitative Investment Strategies, AQR Capital Management   •   ²Department of Finance, Stockholm School of Economics",
+                    Text = "John Doe, Ph.D., CFA¹   and   Jane Doe, Ph.D.²\n¹Quantitative Investment Strategies, CodeFryDev Capital Management   •   ²Department of Finance, CodeFryDev Institute",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
                     TextColorHex = "#334155",
@@ -499,7 +499,7 @@ public class FinanceResearchPaperTemplate : ITemplateDefinition
                     Y = 423,
                     Width = 285,
                     Height = 70,
-                    Text = "Jonathan R. Vance, CFA, received his Ph.D. in Finance from the University of Chicago. He is a Managing Director in Quantitative Strategies at AQR Capital Management.",
+                    Text = "John Doe, CFA, received his Ph.D. in Finance. He is a Managing Director in Quantitative Strategies at CodeFryDev Capital Management.",
                     FontSize = 8,
                     FontFamily = "Times New Roman",
                     LineHeight = 1.3,
@@ -514,7 +514,7 @@ public class FinanceResearchPaperTemplate : ITemplateDefinition
                     Height = 36,
                     CornerRadius = 18,
                     FillColorHex = "#166534",
-                    Label = "LH",
+                    Label = "JD",
                     LabelColorHex = "#FFFFFF",
                     LabelFontSize = 12
                 },
@@ -524,7 +524,7 @@ public class FinanceResearchPaperTemplate : ITemplateDefinition
                     Y = 498,
                     Width = 285,
                     Height = 70,
-                    Text = "Linnea Holmström is Associate Professor of Financial Econometrics at the Stockholm School of Economics, specializing in continuous-time asset pricing and rough volatility surfaces.",
+                    Text = "Jane Doe is Associate Professor of Financial Econometrics at CodeFryDev Institute, specializing in continuous-time asset pricing and rough volatility surfaces.",
                     FontSize = 8,
                     FontFamily = "Times New Roman",
                     LineHeight = 1.3,

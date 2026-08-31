@@ -18,7 +18,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
         var doc = new PdfDocumentModel
         {
             Title = "Cavity_QED_Superconducting_Qubits_2026.pdf",
-            Author = "Dr. Alexander Bohr, Dr. Evelyn Chen, and Prof. Julian Thorne",
+            Author = "Dr. John Doe, Dr. Jane Doe, and Prof. Alex Doe",
             Subject = "Quantum Electrodynamics & Non-Equilibrium Phase Transitions"
         };
 
@@ -83,7 +83,7 @@ public class PhysicsResearchPaperTemplate : ITemplateDefinition
                     Y = 108,
                     Width = 690,
                     Height = 34,
-                    Text = "Alexander Bohr¹,   Evelyn Chen²,   and   Julian Thorne¹\n¹Quantum Photonics Laboratory, Department of Physics, Harvard University\n²Center for Quantum Information, Massachusetts Institute of Technology",
+                    Text = "John Doe¹,   Jane Doe²,   and   Alex Doe¹\n¹Quantum Photonics Laboratory, Department of Physics, CodeFryDev Institute\n²Center for Quantum Information, CodeFryDev Academy",
                     FontSize = 9.5,
                     FontFamily = "Times New Roman",
                     TextColorHex = "#334155",

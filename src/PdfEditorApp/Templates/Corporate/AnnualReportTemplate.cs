@@ -18,8 +18,8 @@ public class AnnualReportTemplate : ITemplateDefinition
     {
         var doc = new PdfDocumentModel
         {
-            Title = "Acme_Corp_Annual_Report_2026.pdf",
-            Author = "Acme Corporation Inc. (NYSE: ACME)",
+            Title = "CodeFryDev_Corp_Annual_Report_2026.pdf",
+            Author = "CodeFryDev Corporation Inc.",
             Subject = "Fiscal Year 2026 Annual Report & Consolidated Financial Statements",
             CreatedDate = DateTime.Now
         };
@@ -35,7 +35,7 @@ public class AnnualReportTemplate : ITemplateDefinition
             Width = 800,
             Height = 1131,
             BackgroundColorHex = "#FFFFFF",
-            FooterLeft = "ACME CORPORATION • NYSE: ACME • FISCAL YEAR 2026 ANNUAL REPORT",
+            FooterLeft = "CODEFRYDEV CORPORATION • FISCAL YEAR 2026 ANNUAL REPORT",
             FooterCenter = "CONFIDENTIAL & PROPRIETARY",
             FooterRight = "Page 1 of 3",
             Elements = new List<PdfElementBase>
@@ -52,7 +52,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     StrokeThickness = 0
                 },
 
-                // Acme Logo Badge Top Right
+                // CodeFryDev Logo Badge Top Right
                 new PdfShapeElement
                 {
                     X = 680,
@@ -63,7 +63,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     FillColorHex = "#0F6CBD",
                     StrokeColorHex = "#0C599B",
                     StrokeThickness = 0,
-                    Label = "AC",
+                    Label = "CF",
                     LabelColorHex = "#FFFFFF",
                     LabelFontSize = 24
                 },
@@ -73,7 +73,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 95,
                     Width = 135,
                     Height = 24,
-                    Text = "ACME CORP. (NYSE: ACME)",
+                    Text = "CODEFRYDEV CORP.",
                     FontSize = 9.5,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -139,7 +139,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 158,
                     Width = 690,
                     Height = 105,
-                    Text = "Fiscal year 2026 has been a transformative period of record performance, disciplined capital allocation, and technological breakthroughs for Acme Corporation. In an evolving global macro environment, our cloud-native enterprise architecture, automated AI publishing engines, and mission-critical cybersecurity suites generated record top-line revenue of $3.10 Billion (+24% YoY) and net income of $540 Million (+33% YoY). We expanded gross margins to 63.8% and generated $412 Million in free cash flow.",
+                    Text = "Fiscal year 2026 has been a transformative period of record performance, disciplined capital allocation, and technological breakthroughs for CodeFryDev Corporation. In an evolving global macro environment, our cloud-native enterprise architecture, automated AI publishing engines, and mission-critical cybersecurity suites generated record top-line revenue of $3.10 Billion (+24% YoY) and net income of $540 Million (+33% YoY). We expanded gross margins to 63.8% and generated $412 Million in free cash flow.",
                     FontSize = 9.5,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.45,
@@ -395,7 +395,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 930,
                     Width = 330,
                     Height = 50,
-                    Text = "Jonathan R. Vance\nChief Executive Officer & Chair of the Board",
+                    Text = "John Doe\nChief Executive Officer & Chair of the Board",
                     FontSize = 10,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -407,7 +407,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 930,
                     Width = 330,
                     Height = 50,
-                    Text = "Marcus Aurelius Thorne\nChief Financial Officer & Executive VP of Operations",
+                    Text = "Jane Doe\nChief Financial Officer & Executive VP of Operations",
                     FontSize = 10,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -428,7 +428,7 @@ public class AnnualReportTemplate : ITemplateDefinition
             Width = 800,
             Height = 1131,
             BackgroundColorHex = "#FFFFFF",
-            FooterLeft = "ACME CORPORATION • NYSE: ACME • GLOBAL OPERATIONS & ESG",
+            FooterLeft = "CODEFRYDEV CORPORATION • GLOBAL OPERATIONS & ESG",
             FooterCenter = "CONFIDENTIAL & PROPRIETARY",
             FooterRight = "Page 2 of 3",
             Elements = new List<PdfElementBase>
@@ -451,7 +451,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 35,
                     Width = 690,
                     Height = 32,
-                    Text = "3.0 Global Operations & Segment Performance",
+                    Text = "3.0 Global Operational Footprint & Segment Performance",
                     FontSize = 22,
                     FontFamily = "Georgia",
                     IsBold = true,
@@ -472,7 +472,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 85,
                     Width = 690,
                     Height = 45,
-                    Text = "Acme operates across 4 core geographical markets supporting over 8,420 enterprise clients in 68 countries. High-availability cloud clustering and automated edge nodes delivered 99.995% uptime across all commercial SLA agreements throughout 2026.",
+                    Text = "CodeFryDev operates across 4 core geographical markets supporting over 8,420 enterprise clients in 68 countries. High-availability cloud clustering and automated edge nodes delivered 99.995% uptime across all commercial SLA agreements throughout 2026.",
                     FontSize = 9.5,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.35,
@@ -667,7 +667,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 842,
                     Width = 330,
                     Height = 130,
-                    Text = "EXECUTIVE COMMITTEE:\n• Jonathan R. Vance — Chief Executive Officer & Chair\n• Marcus Aurelius Thorne — Chief Financial Officer\n• Dr. Elena Rostova — Chief Technology Officer\n• Sarah Jenkins, J.D. — Chief Legal & Compliance Officer\n• Kevin Zhao — Chief Product Officer",
+                    Text = "EXECUTIVE COMMITTEE:\n• John Doe — Chief Executive Officer & Chair\n• Jane Doe — Chief Financial Officer\n• Alex Doe — Chief Technology Officer\n• Sam Doe, J.D. — Chief Legal & Compliance Officer\n• Taylor Doe — Chief Product Officer",
                     FontSize = 8.5,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.35,
@@ -679,7 +679,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 842,
                     Width = 340,
                     Height = 130,
-                    Text = "INDEPENDENT DIRECTORS:\n• Dame Victoria Sterling — Lead Independent Director\n• Robert C. Henderson — Former CFO, Microsoft Azure\n• Dr. Aris Thorne — Dean of Engineering, Stanford University\n• Amara Patel — Managing Partner, Silicon Horizon Capital\n• Henrik Lindqvist — Chair of Audit Committee",
+                    Text = "INDEPENDENT DIRECTORS:\n• Jordan Doe — Lead Independent Director\n• Morgan Doe — Former CFO, Enterprise Cloud\n• Dr. Robin Doe — Dean of Engineering, Technology Institute\n• Chris Doe — Managing Partner, Horizon Capital\n• Lee Doe — Chair of Audit Committee",
                     FontSize = 8.5,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.35,
@@ -699,7 +699,7 @@ public class AnnualReportTemplate : ITemplateDefinition
             Width = 800,
             Height = 1131,
             BackgroundColorHex = "#FFFFFF",
-            FooterLeft = "ACME CORPORATION • CONSOLIDATED FINANCIAL STATEMENTS",
+            FooterLeft = "CODEFRYDEV CORPORATION • CONSOLIDATED FINANCIAL STATEMENTS",
             FooterCenter = "CONFIDENTIAL & PROPRIETARY",
             FooterRight = "Page 3 of 3",
             Elements = new List<PdfElementBase>
@@ -841,7 +841,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 608,
                     Width = 660,
                     Height = 102,
-                    Text = "To the Shareholders and Board of Directors of Acme Corporation Inc.:\n\nOpinion on the Financial Statements: We have audited the accompanying consolidated balance sheets of Acme Corporation as of December 31, 2026 and 2025, and the related consolidated statements of operations, stockholders' equity, and cash flows. In our opinion, the consolidated financial statements present fairly, in all material respects, the financial position of Acme Corporation in conformity with U.S. GAAP.\n\nHorizon Global Assurance LLP • Certified Public Accountants • New York, NY • February 24, 2027",
+                    Text = "To the Shareholders and Board of Directors of CodeFryDev Corporation Inc.:\n\nOpinion on the Financial Statements: We have audited the accompanying consolidated balance sheets of CodeFryDev Corporation as of December 31, 2026 and 2025, and the related consolidated statements of operations, stockholders' equity, and cash flows. In our opinion, the consolidated financial statements present fairly, in all material respects, the financial position of CodeFryDev Corporation in conformity with U.S. GAAP.\n\nHorizon Global Assurance LLP • Certified Public Accountants • New York, NY • February 24, 2027",
                     FontSize = 8.5,
                     FontFamily = "Segoe UI",
                     LineHeight = 1.35,
@@ -878,7 +878,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 770,
                     Width = 210,
                     Height = 40,
-                    Text = "Jonathan R. Vance",
+                    Text = "John Doe",
                     FontSize = 20,
                     FontFamily = "Great Vibes",
                     IsItalic = true,
@@ -899,7 +899,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 818,
                     Width = 200,
                     Height = 35,
-                    Text = "Jonathan R. Vance\nChief Executive Officer",
+                    Text = "John Doe\nChief Executive Officer",
                     FontSize = 9,
                     FontFamily = "Segoe UI",
                     TextColorHex = "#475569"
@@ -912,7 +912,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 770,
                     Width = 210,
                     Height = 40,
-                    Text = "Marcus Aurelius Thorne",
+                    Text = "Jane Doe",
                     FontSize = 20,
                     FontFamily = "Great Vibes",
                     IsItalic = true,
@@ -933,7 +933,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 818,
                     Width = 200,
                     Height = 35,
-                    Text = "Marcus Aurelius Thorne\nChief Financial Officer",
+                    Text = "Jane Doe\nChief Financial Officer",
                     FontSize = 9,
                     FontFamily = "Segoe UI",
                     TextColorHex = "#475569"
@@ -946,7 +946,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 770,
                     Width = 210,
                     Height = 40,
-                    Text = "Victoria Sterling",
+                    Text = "Alex Doe",
                     FontSize = 20,
                     FontFamily = "Great Vibes",
                     IsItalic = true,
@@ -967,7 +967,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 818,
                     Width = 200,
                     Height = 35,
-                    Text = "Dame Victoria Sterling\nLead Independent Director",
+                    Text = "Alex Doe\nLead Independent Director",
                     FontSize = 9,
                     FontFamily = "Segoe UI",
                     TextColorHex = "#475569"
@@ -989,7 +989,7 @@ public class AnnualReportTemplate : ITemplateDefinition
                     Y = 878,
                     Width = 690,
                     Height = 30,
-                    Text = "SEC EDGAR Form 10-K CIK #0001894218 • Stock Exchange Listing: New York Stock Exchange (NYSE: ACME)\nInvestor Relations: ir@acmecorp.com • Web: https://investors.acmecorp.com • Transfer Agent: Computershare Trust Co.",
+                    Text = "Investor Relations: ir@codefrydev.in • Web: https://investors.codefrydev.in • Transfer Agent: Trust Co.",
                     FontSize = 8,
                     FontFamily = "Segoe UI",
                     TextColorHex = "#64748B",

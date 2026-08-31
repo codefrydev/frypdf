@@ -17,8 +17,8 @@ public class ResumeCreativeMinimalistTemplate : ITemplateDefinition
     {
         var doc = new PdfDocumentModel
         {
-            Title = "Maya_Lin_Design_Director_Resume.pdf",
-            Author = "Maya Lin",
+            Title = "Jane_Doe_Design_Director_Resume.pdf",
+            Author = "Jane Doe",
             Subject = "Senior Design Director & UI/UX Specialist Resume"
         };
 
@@ -30,7 +30,7 @@ public class ResumeCreativeMinimalistTemplate : ITemplateDefinition
             Width = 800,
             Height = 1131,
             BackgroundColorHex = "#FCFCFD",
-            FooterLeft = "Maya Lin • Creative Director & Product Designer | mayalin.design",
+            FooterLeft = "Jane Doe • Creative Director & Product Designer | codefrydev.in",
             FooterCenter = "PORTFOLIO & CASE STUDIES",
             FooterRight = "Page 1 of 1",
             Elements = new List<PdfElementBase>
@@ -54,7 +54,7 @@ public class ResumeCreativeMinimalistTemplate : ITemplateDefinition
                     Y = 54,
                     Width = 480,
                     Height = 38,
-                    Text = "MAYA LIN",
+                    Text = "JANE DOE",
                     FontSize = 28,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -80,7 +80,7 @@ public class ResumeCreativeMinimalistTemplate : ITemplateDefinition
                     Y = 116,
                     Width = 520,
                     Height = 20,
-                    Text = "🌐 mayalin.design   •   ✉️ maya@mayalin.design   •   📍 New York, NY   •   📱 +1 (917) 482-9011",
+                    Text = "🌐 codefrydev.in   •   ✉️ jane.doe@codefrydev.in   •   📍 New York, NY   •   📱 +1 (555) 019-2834",
                     FontSize = 9.5,
                     FontFamily = "Segoe UI",
                     TextColorHex = "#64748B"
@@ -93,7 +93,7 @@ public class ResumeCreativeMinimalistTemplate : ITemplateDefinition
                     Y = 48,
                     Width = 100,
                     Height = 85,
-                    Content = "https://mayalin.design/case-studies",
+                    Content = "https://codefrydev.in/case-studies",
                     Label = "VIEW CASE STUDIES",
                     DarkColorHex = "#0D9488",
                     LightColorHex = "#FCFCFD"
@@ -213,7 +213,7 @@ public class ResumeCreativeMinimalistTemplate : ITemplateDefinition
                     Y = 370,
                     Width = 490,
                     Height = 20,
-                    Text = "Design Director | Studio Horizon — New York, NY",
+                    Text = "Design Director | CodeFryDev Design Studio — New York, NY",
                     FontSize = 11,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -252,7 +252,7 @@ public class ResumeCreativeMinimalistTemplate : ITemplateDefinition
                     Y = 485,
                     Width = 490,
                     Height = 20,
-                    Text = "Principal Product Designer | Airbnb (Host Experience) — San Francisco, CA",
+                    Text = "Principal Product Designer | CodeFryDev Interactive — San Francisco, CA",
                     FontSize = 11,
                     FontFamily = "Segoe UI",
                     IsBold = true,
@@ -291,7 +291,7 @@ public class ResumeCreativeMinimalistTemplate : ITemplateDefinition
                     Y = 600,
                     Width = 490,
                     Height = 20,
-                    Text = "Senior Interaction Designer | Pentagram Design — New York, NY",
+                    Text = "Senior Interaction Designer | CodeFryDev Creative — New York, NY",
                     FontSize = 11,
                     FontFamily = "Segoe UI",
                     IsBold = true,

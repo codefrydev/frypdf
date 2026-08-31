@@ -584,6 +584,16 @@ internal class QuestPdfDocumentWrapper : IDocument
 
     private void ComposeImage(IContainer container, PdfImageElement imgEl)
     {
+        if (imgEl.ImageData != null && imgEl.ImageData.Length > 0)
+        {
+            try
+            {
+                container.Image(imgEl.ImageData).FitArea();
+                return;
+            }
+            catch { }
+        }
+
         if (!string.IsNullOrEmpty(imgEl.Base64Data))
         {
             try

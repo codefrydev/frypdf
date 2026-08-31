@@ -179,9 +179,7 @@
                                     <Setter Property="Canvas.ZIndex" Value="{Binding ZIndex}" />
                                     <Setter Property="Opacity" Value="{Binding Opacity}" />
                                     <Setter Property="RenderTransformOrigin" Value="50%,50%" />
-                                    <Setter Property="RenderTransform">
-                                        <RotateTransform Angle="{Binding Rotation}" />
-                                    </Setter>
+                                    <Setter Property="RenderTransform" Value="{Binding Rotation, Converter={StaticResource RotationToTransformConverter}}" />
                                     <Setter Property="ContextMenu" Value="{StaticResource ElementContextMenu}" />
                                 </ControlTheme>
                             </ItemsControl.ItemContainerTheme>
@@ -348,8 +346,7 @@
                                               StrokeDashArray="{Binding DashArrayString}"
                                               StrokeLineCap="Round"
                                               StrokeJoin="Round"
-                                              Stretch="Fill"
-                                              VerticalAlignment="Center" />
+                                              Stretch="Fill" />
 
                                         <!-- Selection Adorner -->
                                         <Grid IsVisible="{Binding IsSelected}">

@@ -26,6 +26,49 @@
             <converters:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
             <converters:BooleanToStringConverter x:Key="BooleanToStringConverter" />
             <converters:StringToFontFamilyConverter x:Key="StringToFontFamilyConverter" />
+            <converters:RotationToTransformConverter x:Key="RotationToTransformConverter" />
+            <converters:ZoomPercentageConverter x:Key="ZoomPercentageConverter" />
+            <converters:TextAlignmentConverter x:Key="TextAlignmentConverter" />
+            <converters:BooleanToStretchConverter x:Key="BooleanToStretchConverter" />
+            <converters:BooleanToThicknessConverter x:Key="BooleanToThicknessConverter" />
+            <converters:BooleanToFontWeightConverter x:Key="BooleanToFontWeightConverter" />
+            <converters:BooleanToFontStyleConverter x:Key="BooleanToFontStyleConverter" />
+            <converters:BooleanToTextDecorationsConverter x:Key="BooleanToTextDecorationsConverter" />
+            <converters:MultiplyConverter x:Key="MultiplyConverter" />
+
+            <!-- Extended Studio Converters -->
+            <converters:ByteSizeToStringConverter x:Key="ByteSizeToStringConverter" />
+            <converters:ByteSizeToStringConverter x:Key="FileSizeConverter" />
+            <converters:DateTimeFormatConverter x:Key="DateTimeFormatConverter" />
+            <converters:TimeSpanFormatConverter x:Key="TimeSpanFormatConverter" />
+            <converters:MathAddConverter x:Key="MathAddConverter" />
+            <converters:MathSubtractConverter x:Key="MathSubtractConverter" />
+            <converters:MathMultiplyConverter x:Key="MathMultiplyConverter" />
+            <converters:MathDivideConverter x:Key="MathDivideConverter" />
+            <converters:PercentageConverter x:Key="PercentageConverter" />
+            <converters:PointsToMillimetersConverter x:Key="PointsToMillimetersConverter" />
+            <converters:PointsToInchesConverter x:Key="PointsToInchesConverter" />
+            <converters:PointsToPixelsConverter x:Key="PointsToPixelsConverter" />
+            <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+            <converters:InverseBooleanConverter x:Key="BooleanNegationConverter" />
+            <converters:CountToBooleanConverter x:Key="CountToBooleanConverter" />
+            <converters:CountToBooleanConverter x:Key="GreaterThanZeroToBooleanConverter" />
+            <converters:NullOrEmptyToBooleanConverter x:Key="NullOrEmptyToBooleanConverter" />
+            <converters:ComparisonToBooleanConverter x:Key="ComparisonToBooleanConverter" />
+            <converters:CountToStringConverter x:Key="CountToStringConverter" />
+            <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+            <converters:ScaleToTransformConverter x:Key="ScaleToTransformConverter" />
+            <converters:TranslateToTransformConverter x:Key="TranslateToTransformConverter" />
+            <converters:StringToGeometryConverter x:Key="StringToGeometryConverter" />
+            <converters:StringCaseConverter x:Key="StringCaseConverter" />
+            <converters:StringTruncateConverter x:Key="StringTruncateConverter" />
+            <converters:StringPrefixSuffixConverter x:Key="StringPrefixSuffixConverter" />
+            <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter" />
+            <converters:AllTrueMultiConverter x:Key="AllTrueMultiConverter" />
+            <converters:AnyTrueMultiConverter x:Key="AnyTrueMultiConverter" />
+            <converters:StringConcatMultiConverter x:Key="StringConcatMultiConverter" />
+            <converters:MathMaxMultiConverter x:Key="MathMaxMultiConverter" />
+            <converters:MathMinMultiConverter x:Key="MathMinMultiConverter" />
 
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">

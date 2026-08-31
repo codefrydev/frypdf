@@ -171,7 +171,9 @@ public static class PdfLayoutAnalyzer
         var paragraphs = new List<ExtractedPdfParagraph>();
         if (words == null || words.Count == 0) return paragraphs;
 
-        // Group words by vertical column baseline (matching X coordinate)
+        // Group words by vertical column baseline (matching X coordinate).
+        // For Rotate270 text each glyph is a single character stacked bottom-to-top,
+        // so we use a narrow X-band threshold to bucket same-column glyphs together.
         var colBuckets = new List<List<Word>>();
         var sortedByX = words.OrderBy(w => w.BoundingBox.Left).ToList();
 
@@ -188,6 +190,7 @@ public static class PdfLayoutAnalyzer
             {
                 double colMidX = (col.Min(w => w.BoundingBox.Left) + col.Max(w => w.BoundingBox.Right)) / 2.0;
                 double dist = Math.Abs(wordMidX - colMidX);
+                // Use a tight 12pt X-band tolerance so left/right card text is never merged
                 if (dist <= 12.0 && dist < bestDist)
                 {
                     bestDist = dist;
@@ -207,13 +210,31 @@ public static class PdfLayoutAnalyzer
 
         foreach (var col in colBuckets)
         {
-            // For Rotate270 text, reading direction is bottom-to-top (increasing Y)
-            var orderedWords = col.OrderBy(w => w.BoundingBox.Bottom).ToList();
+            // For Rotate270: PDF text matrix is rotated 270°, meaning each glyph's Y-axis
+            // points leftward. Reading order runs bottom→top in PDF coordinates.
+            // For Rotate90: reading order runs top→bottom in PDF coordinates.
+            //
+            // IMPORTANT: PdfPig may return inverted BoundingBox.Bottom/Top for rotated glyphs
+            // (Bottom > Top is possible). Use GeoMinY/GeoMaxY helpers for reliable geometric bounds.
+            static double GeoMinY(Word w) => Math.Min(w.BoundingBox.Bottom, w.BoundingBox.Top);
+            static double GeoMaxY(Word w) => Math.Max(w.BoundingBox.Bottom, w.BoundingBox.Top);
+
+            // Sort by geometric minimum Y (bottom of glyph on page). For Rotate270 text,
+            // glyphs with the smallest Y value are at the visual bottom of the card.
+            var orderedWords = rotationAngle is 270.0 or 90.0
+                ? col.OrderBy(GeoMinY).ToList()
+                : col.OrderByDescending(GeoMinY).ToList();
+
             if (orderedWords.Count == 0) continue;
 
             var firstLetter = orderedWords[0].Letters.FirstOrDefault();
             double fontSize = firstLetter != null ? Math.Max(6.0, firstLetter.PointSize) : 10.0;
-            double spaceThreshold = Math.Max(2.5, fontSize * 0.35);
+
+            // For Rotate270/90 text, gaps are computed geometrically (GeoMinY(cur) - GeoMaxY(prev)).
+            // Adjacent glyphs within the same word overlap slightly (gap ≈ 0 to -0.5pt).
+            // A word-space character produces a gap of approximately fontSize * 0.15 to 0.25.
+            // Use a threshold just above 0 to catch spaces without false-positives within a word.
+            double spaceThreshold = Math.Max(fontSize * 0.2, 0.8);
 
             var sb = new StringBuilder();
             for (int i = 0; i < orderedWords.Count; i++)
@@ -225,14 +246,18 @@ public static class PdfLayoutAnalyzer
                 if (i > 0 && sb.Length > 0)
                 {
                     var prev = orderedWords[i - 1];
-                    // Upward gap between top of prev word and bottom of cur word
-                    double verticalGap = cur.BoundingBox.Bottom - prev.BoundingBox.Top;
+                    // Gap between the geometric top of prev glyph and geometric bottom of cur glyph.
+                    // Using geometric bounds ensures correctness for inverted PdfPig Rotate270 boxes.
+                    double prevGeoMaxY = GeoMaxY(prev);
+                    double curGeoMinY  = GeoMinY(cur);
+                    double verticalGap = curGeoMinY - prevGeoMaxY;
 
-                    bool prevIsMulti = prev.Text.Trim().Length > 1;
-                    bool curIsMulti = txt.Length > 1;
-
-                    // Add space only between real words, not between individual glyphs/letters of the same word
-                    if ((prevIsMulti && curIsMulti && verticalGap > 1.2) || verticalGap >= spaceThreshold)
+                    // Add a space whenever the geometric gap between successive glyphs exceeds
+                    // the word-space threshold. With correct geometric bounds:
+                    //   - Adjacent glyphs within the same word: gap ≤ 0 (overlap or touching)
+                    //   - Word-space boundary: gap ≈ fontSize * 0.15-0.25 (positive gap)
+                    // The threshold of fontSize*0.2 (≥0.8pt) cleanly separates these cases.
+                    if (verticalGap >= spaceThreshold)
                     {
                         sb.Append(' ');
                     }
@@ -251,46 +276,103 @@ public static class PdfLayoutAnalyzer
                 colorHex = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(b * 255):X2}";
             }
 
-            double minLeft = orderedWords.Min(w => w.BoundingBox.Left);
+            double minLeft  = orderedWords.Min(w => w.BoundingBox.Left);
             double maxRight = orderedWords.Max(w => w.BoundingBox.Right);
-            double maxTop = orderedWords.Max(w => w.BoundingBox.Top);
-            double minBottom = orderedWords.Min(w => w.BoundingBox.Bottom);
+            // Use geometric bounds: span all geometric Y extents of glyphs in the column.
+            double geoMaxY  = orderedWords.Max(GeoMaxY);
+            double geoMinY  = orderedWords.Min(GeoMinY);
 
-            double pdfSpanLength = maxTop - minBottom;
-            double pdfSpanThickness = maxRight - minLeft;
+            // In PDF space for Rotate270/90 text:
+            //   pdfSpanLength  = full Y-axis span of the glyph column  → TEXT LENGTH (how long the text run is)
+            //   pdfSpanThick   = X-axis width of the glyph column      → FONT THICKNESS (cap height in points)
+            double pdfSpanLength = geoMaxY - geoMinY;
+            double pdfSpanThick  = maxRight - minLeft;
 
-            // Element unrotated dimensions: Width = length of text, Height = thickness/font size
-            double unrotatedW = Math.Max(30.0, pdfSpanLength + 10.0);
-            double unrotatedH = Math.Max(14.0, fontSize * 1.5);
+            // Unrotated element dimensions:
+            //   Width  = text run length (how long the string is when rendered horizontally)
+            //   Height = line height / font cap-height
+            // Add generous padding so glyphs don't clip at the bounding box edge.
+            double unrotatedW = Math.Max(30.0, pdfSpanLength + 12.0);
+            double unrotatedH = Math.Max(14.0, Math.Max(pdfSpanThick * 2.2, fontSize * 1.6));
 
-            // Bounding center in canvas coordinates
-            double centerPdfX = (minLeft + maxRight) / 2.0;
-            double centerPdfY = (maxTop + minBottom) / 2.0;
+            // Center of the glyph cluster in PDF coordinates → Canvas coordinates.
+            // Use geometric center Y of the column.
+            double centerPdfX    = (minLeft + maxRight) / 2.0;
+            double centerPdfY    = (geoMaxY + geoMinY) / 2.0;
             double centerCanvasX = centerPdfX;
             double centerCanvasY = pageHeight - centerPdfY;
 
+            // ── Rotation-aware placement ────────────────────────────────────────────────
+            // Avalonia's RotateTransform pivots around the element's own center (RenderTransformOrigin=50%,50%).
+            // After a 90° or 270° rotation the element's visual footprint swaps Width↔Height:
+            //   Visual width  = unrotatedH  (the thin font-height dimension)
+            //   Visual height = unrotatedW  (the long text-run dimension)
+            //
+            // Canvas.Left/Top (top-left of the UNROTATED box) must satisfy:
+            //   pivot_X = canvasX + unrotatedW/2  →  canvasX = centerCanvasX - unrotatedW/2
+            //   pivot_Y = canvasY + unrotatedH/2  →  canvasY = centerCanvasY - unrotatedH/2
+            //
+            // This places the rotation pivot exactly at (centerCanvasX, centerCanvasY),
+            // so the rotated text visually appears centred over the original PDF glyph cluster.
             double canvasX = Math.Max(0, centerCanvasX - (unrotatedW / 2.0));
             double canvasY = Math.Max(0, centerCanvasY - (unrotatedH / 2.0));
 
             paragraphs.Add(new ExtractedPdfParagraph
             {
-                Left = minLeft,
-                Right = maxRight,
-                Top = maxTop,
-                Bottom = minBottom,
-                Text = fullText,
-                FontSize = Math.Round(fontSize, 1),
-                FontFamily = fontFamily,
-                ColorHex = colorHex,
-                Rotation = rotationAngle,
-                CanvasX = Math.Round(canvasX, 1),
-                CanvasY = Math.Round(canvasY, 1),
-                CanvasWidth = Math.Round(unrotatedW, 1),
+                Left         = minLeft,
+                Right        = maxRight,
+                Top          = geoMaxY,
+                Bottom       = geoMinY,
+                Text         = fullText,
+                FontSize     = Math.Round(fontSize, 1),
+                FontFamily   = fontFamily,
+                ColorHex     = colorHex,
+                Rotation     = rotationAngle,
+                CanvasX      = Math.Round(canvasX, 1),
+                CanvasY      = Math.Round(canvasY, 1),
+                CanvasWidth  = Math.Round(unrotatedW, 1),
                 CanvasHeight = Math.Round(unrotatedH, 1)
             });
         }
 
         return paragraphs;
+    }
+
+    /// <summary>
+    /// Computes accurate geometric and typographic bounds for a word.
+    /// Replaces collapsed bounding boxes (e.g. Type3 fonts, OCR lines, or glyphs with zero height)
+    /// with proper font ascender/descender bounds relative to the actual baseline.
+    /// </summary>
+    public static (double Left, double Right, double Top, double Bottom, double BaselineY, double Height) GetWordEffectiveBounds(Word word)
+    {
+        var firstLetter = word.Letters.FirstOrDefault();
+        double ptSize = firstLetter != null && firstLetter.PointSize > 0 ? firstLetter.PointSize : Math.Max(word.BoundingBox.Height, 10.0);
+
+        double bboxH = word.BoundingBox.Height;
+        double rawBottom = word.BoundingBox.Bottom;
+        double rawTop = word.BoundingBox.Top;
+        double rawLeft = word.BoundingBox.Left;
+        double rawRight = word.BoundingBox.Right;
+
+        // Baseline: prefer StartBaseLine.Y if non-zero, otherwise rawBottom
+        double baselineY = rawBottom;
+        if (firstLetter != null && Math.Abs(firstLetter.StartBaseLine.Y) > 0.001)
+        {
+            baselineY = firstLetter.StartBaseLine.Y;
+        }
+
+        // If the bounding box height is collapsed or abnormally small (< 60% of point size)
+        // (common in Type3 fonts, OCR text overlays, or stripped font metrics):
+        if (bboxH < ptSize * 0.60 || (firstLetter != null && string.Equals(firstLetter.FontName, "Type3", StringComparison.OrdinalIgnoreCase)))
+        {
+            double ascent = ptSize * 0.78;
+            double descent = ptSize * 0.22;
+            double effTop = baselineY + ascent;
+            double effBottom = baselineY - descent;
+            return (rawLeft, rawRight, effTop, effBottom, baselineY, ptSize);
+        }
+
+        return (rawLeft, rawRight, rawTop, rawBottom, baselineY, Math.Max(ptSize * 0.8, bboxH));
     }
 
     private class LineBucket
@@ -314,21 +396,19 @@ public static class PdfLayoutAnalyzer
         // Step 1: Bucket words into baseline lines
         var buckets = new List<LineBucket>();
 
-        // Sort roughly by vertical position descending
+        // Sort roughly by vertical baseline position descending
         var sortedByY = words
-            .OrderByDescending(w => w.BoundingBox.Bottom)
+            .OrderByDescending(w => GetWordEffectiveBounds(w).BaselineY)
             .ToList();
 
         foreach (var word in sortedByY)
         {
-            double wordBottom = word.BoundingBox.Bottom;
-            double wordTop = word.BoundingBox.Top;
-            double wordHeight = Math.Max(4.0, word.BoundingBox.Height);
-            double wordMidY = (wordTop + wordBottom) / 2.0;
+            var (wLeft, wRight, wTop, wBottom, wBase, wHeight) = GetWordEffectiveBounds(word);
+            double wordMidY = (wTop + wBottom) / 2.0;
 
             // For scripts with tall ascenders (Devanagari, Arabic, CJK), use a tighter midY-only match
             // so characters in different rows are never bucketed together.
-            double threshold = Math.Max(3.0, wordHeight * 0.40);
+            double threshold = Math.Max(3.0, wHeight * 0.40);
 
             // Find matching bucket
             LineBucket? matchingBucket = null;
@@ -338,7 +418,7 @@ public static class PdfLayoutAnalyzer
             {
                 double bucketMidY = (b.Top + b.Bottom) / 2.0;
                 double dist = Math.Abs(wordMidY - bucketMidY);
-                double baseDist = Math.Abs(wordBottom - b.BaselineY);
+                double baseDist = Math.Abs(wBase - b.BaselineY);
 
                 if (dist <= threshold || baseDist <= threshold)
                 {
@@ -353,17 +433,17 @@ public static class PdfLayoutAnalyzer
             if (matchingBucket != null)
             {
                 matchingBucket.Words.Add(word);
-                matchingBucket.Top = Math.Max(matchingBucket.Top, wordTop);
-                matchingBucket.Bottom = Math.Min(matchingBucket.Bottom, wordBottom);
-                matchingBucket.BaselineY = (matchingBucket.BaselineY * (matchingBucket.Words.Count - 1) + wordBottom) / matchingBucket.Words.Count;
+                matchingBucket.Top = Math.Max(matchingBucket.Top, wTop);
+                matchingBucket.Bottom = Math.Min(matchingBucket.Bottom, wBottom);
+                matchingBucket.BaselineY = (matchingBucket.BaselineY * (matchingBucket.Words.Count - 1) + wBase) / matchingBucket.Words.Count;
             }
             else
             {
                 var newBucket = new LineBucket
                 {
-                    BaselineY = wordBottom,
-                    Top = wordTop,
-                    Bottom = wordBottom
+                    BaselineY = wBase,
+                    Top = wTop,
+                    Bottom = wBottom
                 };
                 newBucket.Words.Add(word);
                 buckets.Add(newBucket);
@@ -386,9 +466,10 @@ public static class PdfLayoutAnalyzer
                     continue;
                 }
 
-                double prevRight = currentSegment.Max(w => w.BoundingBox.Right);
-                double gap = word.BoundingBox.Left - prevRight;
-                double wordHeight = Math.Max(6.0, word.BoundingBox.Height);
+                double prevRight = currentSegment.Max(w => GetWordEffectiveBounds(w).Right);
+                double gap = GetWordEffectiveBounds(word).Left - prevRight;
+                var wordBounds = GetWordEffectiveBounds(word);
+                double wordHeight = Math.Max(6.0, wordBounds.Height);
 
                 // Column / element gap threshold: in typography, gaps > 25pt or > 1.1x font size represent separate columns/badges.
                 double baseGap = Math.Max(16.0, Math.Min(30.0, wordHeight * 1.1));
@@ -426,13 +507,14 @@ public static class PdfLayoutAnalyzer
     {
         if (words == null || words.Count == 0) return null;
 
-        var ordered = words.OrderBy(w => w.BoundingBox.Left).ToList();
+        var ordered = words.OrderBy(w => GetWordEffectiveBounds(w).Left).ToList();
         var sb = new StringBuilder();
 
-        double minLeft = ordered.Min(w => w.BoundingBox.Left);
-        double maxRight = ordered.Max(w => w.BoundingBox.Right);
-        double maxTop = ordered.Max(w => w.BoundingBox.Top);
-        double minBottom = ordered.Min(w => w.BoundingBox.Bottom);
+        double minLeft = ordered.Min(w => GetWordEffectiveBounds(w).Left);
+        double maxRight = ordered.Max(w => GetWordEffectiveBounds(w).Right);
+        double maxTop = ordered.Max(w => GetWordEffectiveBounds(w).Top);
+        double minBottom = ordered.Min(w => GetWordEffectiveBounds(w).Bottom);
+        double avgBaseline = ordered.Average(w => GetWordEffectiveBounds(w).BaselineY);
 
         for (int i = 0; i < ordered.Count; i++)
         {
@@ -440,7 +522,7 @@ public static class PdfLayoutAnalyzer
             {
                 var prev = ordered[i - 1];
                 var cur = ordered[i];
-                double gap = cur.BoundingBox.Left - prev.BoundingBox.Right;
+                double gap = GetWordEffectiveBounds(cur).Left - GetWordEffectiveBounds(prev).Right;
                 double ptSize = cur.Letters.FirstOrDefault()?.PointSize ?? 10.0;
                 double spaceThreshold = Math.Max(1.6, ptSize * 0.18);
 
@@ -501,6 +583,12 @@ public static class PdfLayoutAnalyzer
                 string fn = firstLetter.FontName.ToLowerInvariant();
                 isBold = fn.Contains("bold") || fn.Contains("black") || fn.Contains("heavy") || fn.Contains("semibold") || fn.Contains("extrabold");
                 isItalic = fn.Contains("italic") || fn.Contains("oblique");
+
+                // Type3 Identification sequence formatting (12-digit ID numbers)
+                if (fn.Contains("type3") && text.Length >= 12 && text.Count(char.IsDigit) >= 10)
+                {
+                    isBold = true;
+                }
             }
 
             if (firstLetter.Color != null)
@@ -516,7 +604,7 @@ public static class PdfLayoutAnalyzer
             Right = maxRight,
             Top = maxTop,
             Bottom = minBottom,
-            BaselineY = minBottom,
+            BaselineY = avgBaseline,
             Text = text,
             FontSize = fontSize,
             FontFamily = fontFamily,
@@ -582,41 +670,60 @@ public static class PdfLayoutAnalyzer
         double maxX = lines.Max(l => l.Right);
         double spanW = maxX - minX;
 
-        // Detect 2-column or 3-column layouts on wide pages/articles
-        if (spanW > 260.0)
+        // Detect multi-column or card layouts (2, 3, 4+ columns) on wide pages or cheat sheets
+        if (spanW > 240.0)
         {
-            double midX = minX + (spanW / 2.0);
-            double gutterMin = midX - 25.0;
-            double gutterMax = midX + 25.0;
+            // Full-width headers spanning > 60% of total content width
+            var fullSpanHeaders = lines.Where(l => (l.Right - l.Left) >= spanW * 0.60).ToList();
+            var nonSpanLines = lines.Except(fullSpanHeaders).ToList();
 
-            var col1Lines = lines.Where(l => l.Right <= gutterMax).ToList();
-            var col2Lines = lines.Where(l => l.Left >= gutterMin).ToList();
-            var crossingLines = lines.Where(l => l.Left < gutterMin && l.Right > gutterMax).ToList();
-
-            // If >= 75% of lines fall strictly into left or right column
-            if (col1Lines.Count >= 3 && col2Lines.Count >= 3 && crossingLines.Count <= lines.Count * 0.30)
+            if (nonSpanLines.Count >= 4)
             {
-                var ordered = new List<ExtractedPdfLine>();
+                var columnGroups = new List<List<ExtractedPdfLine>>();
+                var sortedByX = nonSpanLines.OrderBy(l => l.Left).ToList();
 
-                double col1Top = col1Lines.Max(l => l.Top);
-                double col2Top = col2Lines.Max(l => l.Top);
-                double topColumnThreshold = Math.Max(col1Top, col2Top) - 10.0;
+                foreach (var line in sortedByX)
+                {
+                    // Find a column group where line overlaps horizontally or is closely aligned with column bounds
+                    var matchingCol = columnGroups.FirstOrDefault(col =>
+                    {
+                        double colMinX = col.Min(cl => cl.Left);
+                        double colMaxX = col.Max(cl => cl.Right);
+                        return (line.Left >= colMinX - 15.0 && line.Left <= colMaxX + 15.0) ||
+                               (line.Right >= colMinX - 15.0 && line.Right <= colMaxX + 15.0);
+                    });
 
-                // Full-width title/banner lines at top
-                var topHeaders = crossingLines.Where(l => l.Bottom >= topColumnThreshold).OrderByDescending(l => l.Top).ToList();
-                ordered.AddRange(topHeaders);
+                    if (matchingCol != null)
+                    {
+                        matchingCol.Add(line);
+                    }
+                    else
+                    {
+                        columnGroups.Add(new List<ExtractedPdfLine> { line });
+                    }
+                }
 
-                // Column 1 top-to-bottom
-                ordered.AddRange(col1Lines.OrderByDescending(l => l.Top).ThenBy(l => l.Left));
+                // If multiple distinct columns were identified
+                if (columnGroups.Count >= 2 && columnGroups.All(c => c.Count >= 2))
+                {
+                    var ordered = new List<ExtractedPdfLine>();
 
-                // Column 2 top-to-bottom
-                ordered.AddRange(col2Lines.OrderByDescending(l => l.Top).ThenBy(l => l.Left));
+                    double topContentY = nonSpanLines.Max(l => l.Top);
+                    var topHeaders = fullSpanHeaders.Where(h => h.Bottom >= topContentY - 10.0).OrderByDescending(h => h.Top).ToList();
+                    var bottomFooters = fullSpanHeaders.Where(h => h.Bottom < topContentY - 10.0).OrderByDescending(h => h.Top).ToList();
 
-                // Remaining footer lines at bottom
-                var bottomFooters = crossingLines.Where(l => l.Bottom < topColumnThreshold).OrderByDescending(l => l.Top).ToList();
-                ordered.AddRange(bottomFooters);
+                    ordered.AddRange(topHeaders);
 
-                return ordered;
+                    // Sort column groups from left to right, and lines inside each column top-to-bottom
+                    var sortedColumns = columnGroups.OrderBy(c => c.Min(l => l.Left)).ToList();
+                    foreach (var col in sortedColumns)
+                    {
+                        ordered.AddRange(col.OrderByDescending(l => l.Top).ThenBy(l => l.Left));
+                    }
+
+                    ordered.AddRange(bottomFooters);
+                    return ordered;
+                }
             }
         }
 

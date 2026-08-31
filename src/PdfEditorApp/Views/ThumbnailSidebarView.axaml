@@ -158,6 +158,8 @@
                                                                 <Setter Property="Canvas.Top" Value="{Binding Y}" />
                                                                 <Setter Property="Canvas.ZIndex" Value="{Binding ZIndex}" />
                                                                 <Setter Property="Opacity" Value="{Binding Opacity}" />
+                                                                <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+                                                                <Setter Property="RenderTransform" Value="{Binding Rotation, Converter={StaticResource RotationToTransformConverter}}" />
                                                             </ControlTheme>
                                                         </ItemsControl.ItemContainerTheme>
 
@@ -241,8 +243,7 @@
                                                                           Stroke="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                           StrokeThickness="{Binding Thickness}"
                                                                           StrokeDashArray="{Binding DashArrayString}"
-                                                                          Stretch="Fill"
-                                                                          VerticalAlignment="Center" />
+                                                                          Stretch="Fill" />
                                                                 </Grid>
                                                             </DataTemplate>
 

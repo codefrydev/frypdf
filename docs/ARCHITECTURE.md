@@ -82,4 +82,4 @@ Located in `src/PdfEditorApp.Core/Data/` and `src/PdfEditorApp/ViewModels/DataSt
 - **`IDataBindingService` / `DataBindingService`**: Maps tabular datasets to LiveCharts2 series and Table elements, plus bidirectional Table $\leftrightarrow$ Chart conversion with full Undo/Redo tracking.
 - **`DataStudioViewModel` & `DataStudioDialog`**: Modal Studio providing tabbed connector workflows, interactive column mapping, and live Skia-rendered chart previews.
 
-For detailed algorithms, testing procedures, and the continuous improvement workflow, see the [PDF Deconstruction & Editing Guide](file:///Users/codefrydev/Desktop/SourceCode/PDFCreator/docs/PDF_DECONSTRUCTION_AND_EDITING.md).
+For detailed algorithms, testing procedures, and the continuous improvement workflow, see the [PDF Deconstruction & Editing Guide](PDF_DECONSTRUCTION_AND_EDITING.md).

@@ -267,8 +267,8 @@ public static class SvgShapeHelper
 
     public static string GenerateDividerSvgPath(DividerStyle style, double width, double height, double amplitude = 6.0, double frequency = 4.0, bool isVertical = false)
     {
-        double w = Math.Max(10, width);
-        double h = Math.Max(4, height);
+        double w = isVertical ? Math.Max(1.0, width) : Math.Max(10.0, width);
+        double h = isVertical ? Math.Max(10.0, height) : Math.Max(1.0, height);
         var ci = CultureInfo.InvariantCulture;
 
         if (isVertical)
@@ -434,8 +434,8 @@ public static class SvgShapeHelper
 
     public static string GenerateDividerSvgMarkup(PdfDividerElement div)
     {
-        double w = Math.Max(10, div.Width);
-        double h = Math.Max(4, div.Height);
+        double w = div.IsVertical ? Math.Max(1.0, div.Width) : Math.Max(10.0, div.Width);
+        double h = div.IsVertical ? Math.Max(10.0, div.Height) : Math.Max(1.0, div.Height);
         var ci = CultureInfo.InvariantCulture;
 
         string stroke = !string.IsNullOrWhiteSpace(div.ColorHex) ? div.ColorHex : "#0F6CBD";

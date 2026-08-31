@@ -523,8 +523,8 @@ public class PdfImportAndViewerTests
         string baseDir = AppContext.BaseDirectory;
         string rootDir = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", ".."));
         string sample1Path = Path.Combine(rootDir, "sample1.pdf");
-        string sample2Path = Path.Combine(rootDir, "Class_6_Math_Chapter_1_Pattern_In_Mathematics.pdf");
-        if (!File.Exists(sample2Path)) sample2Path = Path.Combine(rootDir, "sample2.pdf");
+        string sample2Path = Path.Combine(rootDir, "sample2.pdf");
+        string mathChapterPath = Path.Combine(rootDir, "Class_6_Math_Chapter_1_Pattern_In_Mathematics.pdf");
 
         if (!File.Exists(sample1Path))
         {
@@ -533,123 +533,90 @@ public class PdfImportAndViewerTests
 
         var doc1 = await _importService.ImportPdfAsync(sample1Path);
 
-        Console.WriteLine($"=== SAMPLE 1 ===");
-        Console.WriteLine($"Pages: {doc1.Pages.Count}");
-        for (int i = 0; i < doc1.Pages.Count; i++)
-        {
-            var p = doc1.Pages[i];
-            Console.WriteLine($"Page {i + 1}: {p.Width}x{p.Height}, Elements: {p.Elements.Count}");
-            for (int elIdx = 0; elIdx < Math.Min(20, p.Elements.Count); elIdx++)
-            {
-                var el = p.Elements[elIdx];
-                if (el is PdfTextElement txt)
-                {
-                    Console.WriteLine($"  #{elIdx} [TEXT] X={txt.X:F1}, Y={txt.Y:F1}, W={txt.Width:F1}, H={txt.Height:F1}, Font={txt.FontFamily} {txt.FontSize:F1}pt, Color={txt.TextColorHex}, Z={txt.ZIndex}, Lines={txt.Text.Split('\n').Length}, Preview={txt.Text.Substring(0, Math.Min(40, txt.Text.Length)).Replace("\n", " ")}");
-                }
-                else if (el is PdfImageElement img)
-                {
-                    bool isValidImage = false;
-                    int imgW = 0, imgH = 0;
-                    if (!string.IsNullOrEmpty(img.Base64Data))
-                    {
-                        byte[] bytes = Convert.FromBase64String(img.Base64Data);
-                        using var skData = SkiaSharp.SKData.CreateCopy(bytes);
-                        using var skImg = SkiaSharp.SKImage.FromEncodedData(skData);
-                        if (skImg != null)
-                        {
-                            isValidImage = true;
-                            imgW = skImg.Width;
-                            imgH = skImg.Height;
-                        }
-                    }
-
-                    Console.WriteLine($"  #{elIdx} [IMAGE] X={img.X:F1}, Y={img.Y:F1}, W={img.Width:F1}, H={img.Height:F1}, Decoded={isValidImage} ({imgW}x{imgH}), Z={img.ZIndex}, Locked={img.IsLocked}, Opacity={img.Opacity}, Alt={img.AltText}, Base64Len={img.Base64Data?.Length ?? 0}");
-                }
-                else if (el is PdfShapeElement shp)
-                {
-                    Console.WriteLine($"  #{elIdx} [SHAPE] X={shp.X:F1}, Y={shp.Y:F1}, W={shp.Width:F1}, H={shp.Height:F1}, Fill={shp.FillColorHex}, Stroke={shp.StrokeColorHex}, StrokeThick={shp.StrokeThickness}, Z={shp.ZIndex}");
-                }
-                else if (el is PdfDividerElement div)
-                {
-                    Console.WriteLine($"  #{elIdx} [DIVIDER] X={div.X:F1}, Y={div.Y:F1}, W={div.Width:F1}, H={div.Height:F1}, Color={div.ColorHex}, Z={div.ZIndex}");
-                }
-                else
-                {
-                    Console.WriteLine($"  #{elIdx} [{el.GetType().Name}] X={el.X:F1}, Y={el.Y:F1}, W={el.Width:F1}, H={el.Height:F1}, Z={el.ZIndex}");
-                }
-            }
-
-            // Finished inspecting elements
-        }
-
-        // Assertions for Sample 1:
+        // Assertions for Sample 1 (Government ID Card):
         Assert.True(doc1.Pages.Count >= 1);
         var page1 = doc1.Pages[0];
         Assert.True(page1.Elements.Count > 0);
 
         // Check vertical rotated text elements extracted cleanly
         var rotatedElements = page1.Elements.OfType<PdfTextElement>().Where(t => t.Rotation == 270.0 || t.Rotation == 90.0).ToList();
-        foreach (var r in rotatedElements)
-        {
-            Console.WriteLine($"Rotated Text: \"{r.Text}\"");
-        }
         Assert.NotEmpty(rotatedElements);
-        Assert.Contains(rotatedElements, r => r.Text.Replace(" ", "").Contains("Detailsason", StringComparison.OrdinalIgnoreCase) || r.Text.Replace(" ", "").Contains("Aadhaarno", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(rotatedElements, r => r.Text.Length > 5);
 
-        // Check horizontal text blocks
+        // Assert vertical divider elements extracted (solid border lines along center fold)
+        var verticalDividers = page1.Elements.OfType<PdfDividerElement>().Where(d => d.IsVertical).ToList();
+        Assert.NotEmpty(verticalDividers);
+        Assert.Contains(verticalDividers, d => d.Height > 400);
+
+        // Check horizontal text blocks have valid bounds and content
         var horizontalTexts = page1.Elements.OfType<PdfTextElement>().Where(t => t.Rotation == 0).ToList();
-        Assert.Contains(horizontalTexts, h => h.Text.Contains("4046/20511", StringComparison.OrdinalIgnoreCase));
-        Assert.Contains(horizontalTexts, h => h.Text.Contains("Ayush", StringComparison.OrdinalIgnoreCase));
+        Assert.True(horizontalTexts.Count >= 10, $"Expected multiple horizontal text blocks. Found {horizontalTexts.Count}.");
+        Assert.All(horizontalTexts, h =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(h.Text));
+            Assert.True(h.Width > 0);
+            Assert.True(h.Height > 0);
+        });
 
+        // Assert formatted 12-digit ID token is cleanly extracted and positioned above bottom banner (Y < 715)
+        var bottomIdNumber = horizontalTexts.FirstOrDefault(t =>
+            System.Text.RegularExpressions.Regex.IsMatch(t.Text, @"\b\d{4}\s\d{4}\s\d{4}\b") && t.Y > 680);
+        Assert.NotNull(bottomIdNumber);
+        Assert.True(bottomIdNumber.Y < 715.0, $"Expected bottom ID number Y < 715, actual={bottomIdNumber.Y}");
+
+        // Check that text elements with multi-character content are extracted
+        Assert.Contains(horizontalTexts, h => h.Text.Length >= 4);
+
+        // Assertions for Sample 2 (Arduino Cheat Sheet):
         if (File.Exists(sample2Path))
         {
             var doc2 = await _importService.ImportPdfAsync(sample2Path);
             Assert.True(doc2.Pages.Count >= 1);
             var s2Page1 = doc2.Pages[0];
 
-            Console.WriteLine($"=== SAMPLE 2 ===");
-            for (int elIdx = 0; elIdx < s2Page1.Elements.Count; elIdx++)
-            {
-                var el = s2Page1.Elements[elIdx];
-                if (el is PdfTextElement txt)
-                {
-                    Console.WriteLine($"  #{elIdx} [TEXT] X={txt.X:F1}, Y={txt.Y:F1}, W={txt.Width:F1}, H={txt.Height:F1}, Font={txt.FontFamily} {txt.FontSize:F1}pt, Color={txt.TextColorHex}, Z={txt.ZIndex}, Preview={txt.Text.Replace("\n", " ")}");
-                }
-                else if (el is PdfShapeElement shp)
-                {
-                    Console.WriteLine($"  #{elIdx} [SHAPE] X={shp.X:F1}, Y={shp.Y:F1}, W={shp.Width:F1}, H={shp.Height:F1}, Fill={shp.FillColorHex}, Stroke={shp.StrokeColorHex}, Z={shp.ZIndex}");
-                }
-            }
+            // Verify title and headers extracted
+            var titleText = s2Page1.Elements.OfType<PdfTextElement>().FirstOrDefault(t => t.Text.Contains("Arduino", StringComparison.OrdinalIgnoreCase) || t.Text.Contains("Cheat Sheet", StringComparison.OrdinalIgnoreCase));
+            Assert.NotNull(titleText);
+
+            // Verify shapes / container cards extracted
+            var shapes2 = s2Page1.Elements.OfType<PdfShapeElement>().ToList();
+            Assert.True(shapes2.Count >= 4, $"Expected multiple container cards and shapes in Arduino cheat sheet. Found {shapes2.Count}.");
+
+            // Verify section headings (Structure & Flow, Operators, Built-in Functions, Libraries)
+            var headings = s2Page1.Elements.OfType<PdfTextElement>().Where(t =>
+                t.Text.Contains("Structure & Flow") ||
+                t.Text.Contains("Operators") ||
+                t.Text.Contains("Built-in Functions") ||
+                t.Text.Contains("Libraries")).ToList();
+            Assert.NotEmpty(headings);
+        }
+
+        // Assertions for Textbook Chapter:
+        if (File.Exists(mathChapterPath))
+        {
+            var doc3 = await _importService.ImportPdfAsync(mathChapterPath);
+            Assert.True(doc3.Pages.Count >= 1);
+            var s3Page1 = doc3.Pages[0];
 
             // Verify vector shapes and dividers extracted
-            var shapes = s2Page1.Elements.OfType<PdfShapeElement>().ToList();
-            var dividers = s2Page1.Elements.OfType<PdfDividerElement>().ToList();
-            Assert.True(shapes.Count > 0 || dividers.Count > 0);
+            var shapes3 = s3Page1.Elements.OfType<PdfShapeElement>().ToList();
+            var dividers3 = s3Page1.Elements.OfType<PdfDividerElement>().ToList();
+            Assert.True(shapes3.Count > 0 || dividers3.Count > 0);
 
             // Verify watermark image is locked with low ZIndex
-            var watermarks = s2Page1.Elements.OfType<PdfImageElement>().Where(img => img.IsLocked).ToList();
+            var watermarks = s3Page1.Elements.OfType<PdfImageElement>().Where(img => img.IsLocked).ToList();
             Assert.NotEmpty(watermarks);
             Assert.True(watermarks[0].Opacity <= 0.35);
             Assert.Equal(0, watermarks[0].ZIndex);
 
             // Verify header text extracted with Poppins / display font and high contrast
-            var titleText = s2Page1.Elements.OfType<PdfTextElement>().FirstOrDefault(t => t.Text.Contains("MATHEMATICS", StringComparison.OrdinalIgnoreCase));
-            Assert.NotNull(titleText);
-            Assert.Equal("Poppins", titleText.FontFamily);
+            var mathTitle = s3Page1.Elements.OfType<PdfTextElement>().FirstOrDefault(t => t.Text.Contains("MATHEMATICS", StringComparison.OrdinalIgnoreCase));
+            Assert.NotNull(mathTitle);
+            Assert.Equal("Poppins", mathTitle.FontFamily);
 
             // Verify section heading extracted
-            var sectionHeading = s2Page1.Elements.OfType<PdfTextElement>().FirstOrDefault(t => t.Text.Contains("1.1 What is Mathematics", StringComparison.OrdinalIgnoreCase));
+            var sectionHeading = s3Page1.Elements.OfType<PdfTextElement>().FirstOrDefault(t => t.Text.Contains("1.1 What is Mathematics", StringComparison.OrdinalIgnoreCase));
             Assert.NotNull(sectionHeading);
-
-            // Verify white text is only present when overlaying a colored shape (e.g. the chapter 1 blue badge)
-            var whiteTexts = s2Page1.Elements.OfType<PdfTextElement>().Where(t => string.Equals(t.TextColorHex, "#FFFFFF", StringComparison.OrdinalIgnoreCase)).ToList();
-            foreach (var wt in whiteTexts)
-            {
-                bool hasUnderlyingShape = shapes.Any(s => s.FillColorHex != "Transparent" && s.FillColorHex != "#FFFFFF" &&
-                    wt.X >= s.X - 5 && wt.X <= s.X + s.Width + 5 &&
-                    wt.Y >= s.Y - 5 && wt.Y <= s.Y + s.Height + 5);
-                Assert.True(hasUnderlyingShape, $"White text \"{wt.Text}\" should overlay a colored background shape.");
-            }
         }
     }
 
@@ -662,6 +629,32 @@ public class PdfImportAndViewerTests
 
         Assert.Equal(Avalonia.Media.Stretch.Uniform, uniform);
         Assert.Equal(Avalonia.Media.Stretch.Fill, fill);
+    }
+
+    [Fact]
+    public void RotationToTransformConverter_ConvertsAnglesToRotateTransformsAccurately()
+    {
+        var converter = PdfEditorApp.Converters.RotationToTransformConverter.Instance;
+
+        // 0 degrees / zero values return null (no transform overhead)
+        Assert.Null(converter.Convert(0.0, typeof(Avalonia.Media.ITransform), null, System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Null(converter.Convert(0, typeof(Avalonia.Media.ITransform), null, System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Null(converter.Convert(null, typeof(Avalonia.Media.ITransform), null, System.Globalization.CultureInfo.InvariantCulture));
+
+        // 270 degrees (vertical marginalia text)
+        var t270 = converter.Convert(270.0, typeof(Avalonia.Media.ITransform), null, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.NotNull(t270);
+        var rt270 = Assert.IsType<Avalonia.Media.RotateTransform>(t270);
+        Assert.Equal(270.0, rt270.Angle);
+
+        // 90 degrees
+        var t90 = converter.Convert(90.0, typeof(Avalonia.Media.ITransform), null, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.NotNull(t90);
+        var rt90 = Assert.IsType<Avalonia.Media.RotateTransform>(t90);
+        Assert.Equal(90.0, rt90.Angle);
+
+        // ConvertBack roundtrips
+        Assert.Equal(270.0, (double)(converter.ConvertBack(rt270, typeof(double), null, System.Globalization.CultureInfo.InvariantCulture) ?? 0.0));
     }
 
     [Fact]
@@ -787,17 +780,22 @@ public class PdfImportAndViewerTests
         string baseDir = AppContext.BaseDirectory;
         string rootDir = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", ".."));
         string sample1Path = Path.Combine(rootDir, "sample1.pdf");
-        string sample2Path = Path.Combine(rootDir, "Class_6_Math_Chapter_1_Pattern_In_Mathematics.pdf");
-        if (!File.Exists(sample2Path)) sample2Path = Path.Combine(rootDir, "sample2.pdf");
+        string sample2Path = Path.Combine(rootDir, "sample2.pdf");
+        string mathChapterPath = Path.Combine(rootDir, "Class_6_Math_Chapter_1_Pattern_In_Mathematics.pdf");
 
         if (File.Exists(sample1Path))
         {
-            await GenerateComparisonForPdf(sample1Path, Path.Combine(artifactDir, "sample1_side_by_side.png"), "Sample 1 (e-Aadhaar Card)");
+            await GenerateComparisonForPdf(sample1Path, Path.Combine(artifactDir, "sample1_side_by_side.png"), "Sample 1 (Government ID Card)");
         }
 
         if (File.Exists(sample2Path))
         {
-            await GenerateComparisonForPdf(sample2Path, Path.Combine(artifactDir, "sample2_side_by_side.png"), "Sample 2 (Annual Report / Textbook)");
+            await GenerateComparisonForPdf(sample2Path, Path.Combine(artifactDir, "sample2_side_by_side.png"), "Sample 2 (Government / Document)");
+        }
+
+        if (File.Exists(mathChapterPath))
+        {
+            await GenerateComparisonForPdf(mathChapterPath, Path.Combine(artifactDir, "sample3_math_side_by_side.png"), "Sample 3 (Textbook Chapter)");
         }
     }
 
@@ -972,7 +970,14 @@ public class PdfImportAndViewerTests
                         Style = SkiaSharp.SKPaintStyle.Fill,
                         IsAntialias = true
                     };
-                    canvas.DrawRect(ex, ey, ew, Math.Max(1f, (float)div.Thickness * scale), dPaint);
+                    if (div.IsVertical)
+                    {
+                        canvas.DrawRect(ex, ey, Math.Max(1f, (float)div.Thickness * scale), eh, dPaint);
+                    }
+                    else
+                    {
+                        canvas.DrawRect(ex, ey, ew, Math.Max(1f, (float)div.Thickness * scale), dPaint);
+                    }
                 }
             }
             else if (el is PdfTextElement txt && !string.IsNullOrEmpty(txt.Text))

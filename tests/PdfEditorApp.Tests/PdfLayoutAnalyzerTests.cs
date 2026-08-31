@@ -214,4 +214,52 @@ public class PdfLayoutAnalyzerTests
         Assert.True(e2.X > e1.X + e1.Width);
         Assert.True(e3.X > e2.X + e2.Width);
     }
+
+    /// <summary>
+    /// Regression test: Verify that Rotate270 marginalia text from vertical margins
+    /// (sample1.pdf) is extracted with Rotation=270 and that CanvasX/CanvasY are placed
+    /// so that the rotation pivot falls at the PDF text center (correct geometric placement).
+    /// </summary>
+    [Fact]
+    public async Task GovernmentId_Rotate270MarginaliaText_HasCorrectRotationAndPlacement()
+    {
+        string baseDir = AppContext.BaseDirectory;
+        string rootDir = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", ".."));
+        string sample1Path = Path.Combine(rootDir, "sample1.pdf");
+        if (!File.Exists(sample1Path)) return; // Skip if not present in CI
+
+        var doc = await _importService.ImportPdfAsync(sample1Path);
+        Assert.NotNull(doc);
+        Assert.NotEmpty(doc.Pages);
+
+        var page1 = doc.Pages[0];
+        var textElements = page1.Elements.OfType<PdfTextElement>().ToList();
+
+        // 1. Verify at least some rotated text elements exist (document has left-margin marginalia)
+        var rotated270 = textElements.Where(t => t.Rotation == 270.0).ToList();
+        Assert.NotEmpty(rotated270);
+
+        // 2. Verify at least one element contains marginalia text
+        var marginaliaEl = rotated270.FirstOrDefault(t => t.Text.Length > 5);
+        Assert.NotNull(marginaliaEl);
+
+        // 3. Verify the element has positive Width and Height (unrotated dimensions)
+        Assert.True(marginaliaEl.Width > 0, "Rotated text element must have positive Width");
+        Assert.True(marginaliaEl.Height > 0, "Rotated text element must have positive Height");
+
+        // 4. Verify Width (text run length) >> Height (font thickness): for a long string like
+        //    marginalia text, Width should be significantly larger than Height.
+        Assert.True(marginaliaEl.Width > marginaliaEl.Height * 2,
+            $"For rotated marginalia, Width ({marginaliaEl.Width:F1}) should be much larger than Height ({marginaliaEl.Height:F1})");
+
+        // 5. The canvas X position should be near the left margin of the page.
+        //    After 270° rotation, the visual left edge = CanvasX + Width/2 - Height/2.
+        //    The pivot (center of element) must be near the original PDF text X center (~59-62pt).
+        double pivotX = marginaliaEl.X + (marginaliaEl.Width / 2.0);
+        Assert.True(pivotX < 150, $"Left-margin rotated text pivot X ({pivotX:F1}) should be near left margin (<150pt)");
+
+        // 6. Verify CanvasY is within page bounds
+        Assert.True(marginaliaEl.Y >= 0, "CanvasY must be non-negative");
+        Assert.True(marginaliaEl.Y < page1.Height, $"CanvasY ({marginaliaEl.Y:F1}) must be within page height ({page1.Height:F1}pt)");
+    }
 }

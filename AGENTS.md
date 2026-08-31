@@ -60,7 +60,7 @@ PDFCreator/
 ├── tests/
 │   └── PdfEditorApp.Tests/         # Comprehensive xUnit test suite & visual verification tests
 ├── docs/                           # Architecture, contributing, and PDF deconstruction manuals
-├── sample1.pdf                     # Standard test fixture: Government e-Aadhaar ID Card (Images + Hindi)
+├── sample1.pdf                     # Standard test fixture: Government ID Card (Images + Hindi)
 ├── Class_6_Math_Chapter_1...pdf    # Standard test fixture: Textbook Chapter (Multi-paragraph + Watermark)
 ├── AGENTS.md                       # This operating guide
 └── README.md                       # Repository overview
@@ -70,7 +70,7 @@ PDFCreator/
 
 ## 4. Architectural Rules & Subsystem Guidelines
 
-### A. PDF Deconstruction Engine ([`PdfDeconstructionEngine.cs`](file:///Users/codefrydev/Desktop/SourceCode/PDFCreator/src/PdfEditorApp.Core/Deconstruction/PdfDeconstructionEngine.cs))
+### A. PDF Deconstruction Engine ([`PdfDeconstructionEngine.cs`](src/PdfEditorApp.Core/Deconstruction/PdfDeconstructionEngine.cs))
 
 When importing 3rd-party PDFs for live editing:
 
@@ -91,7 +91,7 @@ When importing 3rd-party PDFs for live editing:
 
 ---
 
-### B. Layout Analysis & Typography Engine ([`PdfLayoutAnalyzer.cs`](file:///Users/codefrydev/Desktop/SourceCode/PDFCreator/src/PdfEditorApp.Core/Analysis/PdfLayoutAnalyzer.cs))
+### B. Layout Analysis & Typography Engine ([`PdfLayoutAnalyzer.cs`](src/PdfEditorApp.Core/Analysis/PdfLayoutAnalyzer.cs))
 
 1. **Script-Aware Token Joining**:
    - For Indic scripts (Devanagari, Tamil, Telugu, etc.) and CJK, evaluate horizontal bounding-box gaps. Sub-threshold gaps must be joined without artificial spaces to preserve natural words.
@@ -103,7 +103,7 @@ When importing 3rd-party PDFs for live editing:
 3. **Line Height Multipliers**:
    - `LineHeight` is a proportional multiplier ($1.25\times$ to $1.4\times\text{FontSize}$), not fixed points.
 
-4. **Script-Aware Font Fallback ([`UnicodeScriptDetector.cs`](file:///Users/codefrydev/Desktop/SourceCode/PDFCreator/src/PdfEditorApp.Core/Analysis/UnicodeScriptDetector.cs))**:
+4. **Script-Aware Font Fallback ([`UnicodeScriptDetector.cs`](src/PdfEditorApp.Core/Analysis/UnicodeScriptDetector.cs))**:
    - Match detected Unicode script ranges to system/embedded font families (e.g. `Noto Sans Devanagari`, `Kohinoor Devanagari`, `Noto Sans SC`, `PingFang SC`) to eliminate tofu boxes (`□□□`).
 
 ---
@@ -113,6 +113,63 @@ When importing 3rd-party PDFs for live editing:
 1. Every canvas element inherits from `ElementViewModelBase` and implements `LoadFromModel(PdfElementModelBase)` and `ToModel()`.
 2. Property changes must notify via `SetProperty(ref field, value)` to support live canvas rendering, property sidebar binding, and atomic undo/redo records.
 3. Keep business logic and coordinate conversions inside `Core` and `Services`, leaving ViewModels focused on presentation state.
+
+---
+
+### D. Avalonia UI Data Binding & Value Converters
+
+When binding ViewModels to Avalonia XAML Views:
+
+1. **Verify Converter Requirement for Data Types & Transforms**:
+   - Always check if a ViewModel property type differs from the View property type (e.g. `double` $\to$ `ITransform`, `string` hex $\to$ `IBrush`/`Color`, `long` bytes $\to$ formatted size, `enum` $\to$ display title, `double` points $\to$ mm/inches).
+   - **Critical Avalonia Rule**: Never instantiate an `AvaloniaObject` transform directly inside a Style/ControlTheme Setter (e.g. `<Setter Property="RenderTransform"><RotateTransform Angle="{Binding Rotation}" /></Setter>`). Avalonia `Transform` instances do **not** inherit `DataContext` inside Setter values, causing `{Binding}` to fail silently to 0. Always bind through an `IValueConverter`:
+     ```xml
+     <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+     <Setter Property="RenderTransform" Value="{Binding Rotation, Converter={StaticResource RotationToTransformConverter}}" />
+     ```
+
+2. **Check Existing Converter Registrations**:
+   - Inspect [`CommonConverters.cs`](src/PdfEditorApp/Converters/CommonConverters.cs) and [`ExtendedConverters.cs`](src/PdfEditorApp/Converters/ExtendedConverters.cs) before writing ad-hoc inline bindings.
+   - When adding a new converter, register it in [`App.axaml`](src/PdfEditorApp/App.axaml) for global application availability.
+
+3. **Converter Quality & Testing**:
+   - Implement `ConvertBack` whenever two-way binding is required (e.g. numeric adjustments, unit conversions, color views).
+   - Handle `null` and invalid input gracefully without throwing unhandled exceptions.
+   - Add deterministic unit test assertions in [`tests/PdfEditorApp.Tests/ConverterTests.cs`](tests/PdfEditorApp.Tests/ConverterTests.cs).
+
+---
+
+### E. Memory Leak Prevention, Resource Disposal & LOH Management
+
+To maintain high responsiveness and prevent memory leaks during long editing sessions and large PDF processing:
+
+1. **Large Object Heap (LOH) & Base64 Bloat Prevention**:
+   - **Never** store Base64 strings for raw image or vector assets inside document models (`PdfDocumentModel`, `PdfPageModel`, `PdfImageElement`) or ViewModels.
+   - Store raw `byte[] ImageData` directly. Any object $\ge 85,000\text{ bytes}$ is allocated on the LOH, which is not compacted in standard GC cycles and causes memory fragmentation.
+   - `Base64Data` must only be computed lazily on demand for JSON serialization.
+
+2. **Unmanaged Graphics Handle & Bitmap Disposal**:
+   - `SKBitmap`, `SKImage`, `SKSurface`, `SKPixmap`, `SKData`, `SKCodec`, and Avalonia `Bitmap`/`WriteableBitmap` wrap native unmanaged graphics handles (`IntPtr`).
+   - Always wrap short-lived Skia graphics objects in `using` statements.
+   - In ViewModels ([`ImageElementViewModel.cs`](src/PdfEditorApp/ViewModels/ElementViewModels/ImageElementViewModel.cs), [`ChartElementViewModel.cs`](src/PdfEditorApp/ViewModels/ElementViewModels/ChartElementViewModel.cs)), always dispose previous bitmap instances before assigning a new `PreviewBitmap` or `ChartBitmap`:
+     ```csharp
+     var oldBitmap = _previewBitmap;
+     _previewBitmap = newBitmap;
+     OnPropertyChanged(nameof(PreviewBitmap));
+     oldBitmap?.Dispose();
+     ```
+   - When closing pages or clearing canvas items, ensure child element view models dispose their bitmaps.
+
+3. **Event Handler & Subscription Lifecycle**:
+   - Do not attach event listeners (`PropertyChanged`, `CollectionChanged`, timers) to singleton services from transient ViewModels without an unsubscription mechanism.
+   - Prefer `CommunityToolkit.Mvvm` `WeakReferenceMessenger` for cross-component communication to avoid strong reference cycles that prevent garbage collection.
+
+4. **PDF Streams & UglyToad.PdfPig Lifecycle**:
+   - `PdfDocument.Open(...)` parses internal object tables and font dictionaries. Always wrap `PdfDocument` instances in `using` blocks in [`PdfDeconstructionEngine.cs`](src/PdfEditorApp.Core/Deconstruction/PdfDeconstructionEngine.cs) and services.
+   - Always dispose input/output `MemoryStream` and `FileStream` objects promptly.
+
+5. **Bounded Undo/Redo History**:
+   - The undo/redo command stack must remain bounded (e.g. max 50 actions) to prevent unlimited memory growth from document state snapshots.
 
 ---
 
@@ -127,7 +184,7 @@ When adding support for a new or complex PDF type:
    ```
 3. **Inspect Output Bitmaps**: Open `<sample_name>_side_by_side.png` to compare original PDF ground truth against the deconstructed canvas.
 4. **Tune Algorithms**: Adjust clustering, Z-indexing, or shape heuristics in `PdfDeconstructionEngine` or `PdfLayoutAnalyzer`.
-5. **Enforce Regression Invariance**: Run `dotnet test` and confirm all 370+ unit tests pass.
+5. **Enforce Regression Invariance**: Run `dotnet test` and confirm all 450+ unit tests pass.
 
 ---
 
@@ -135,5 +192,5 @@ When adding support for a new or complex PDF type:
 
 - **Nullable Reference Types**: Enabled across all projects (`<Nullable>enable</Nullable>`).
 - **Treat Warnings As Errors**: All builds must be 100% warning-free.
-- **Unit Testing**: Every new service or deconstruction heuristic must include unit tests with deterministic assertions.
-- **Documentation**: Keep [`docs/PDF_DECONSTRUCTION_AND_EDITING.md`](file:///Users/codefrydev/Desktop/SourceCode/PDFCreator/docs/PDF_DECONSTRUCTION_AND_EDITING.md) and [`docs/ARCHITECTURE.md`](file:///Users/codefrydev/Desktop/SourceCode/PDFCreator/docs/ARCHITECTURE.md) updated when making structural changes.
+- **Unit Testing**: Every new service, converter, or deconstruction heuristic must include unit tests with deterministic assertions.
+- **Documentation**: Keep [`docs/PDF_DECONSTRUCTION_AND_EDITING.md`](docs/PDF_DECONSTRUCTION_AND_EDITING.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) updated when making structural changes.

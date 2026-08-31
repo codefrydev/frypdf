@@ -83,3 +83,7 @@ Icon
 !Templates/**/*.pdfproj
 *sample1.pdf*
 *sample2.pdf*
+
+## Visual Verification Artifacts
+VisualArtifacts/
+*_side_by_side.png

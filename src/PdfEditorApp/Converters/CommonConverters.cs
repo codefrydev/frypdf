@@ -357,3 +357,38 @@ public class MultiplyConverter : IMultiValueConverter
     }
 }
 
+public class RotationToTransformConverter : IValueConverter
+{
+    public static readonly RotationToTransformConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is double angle && Math.Abs(angle) > 0.001)
+        {
+            return new RotateTransform(angle);
+        }
+        if (value is int angleInt && angleInt != 0)
+        {
+            return new RotateTransform(angleInt);
+        }
+        if (value is float angleFloat && Math.Abs(angleFloat) > 0.001f)
+        {
+            return new RotateTransform(angleFloat);
+        }
+        if (value is string str && double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsed) && Math.Abs(parsed) > 0.001)
+        {
+            return new RotateTransform(parsed);
+        }
+        return null;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is RotateTransform rt)
+        {
+            return rt.Angle;
+        }
+        return 0.0;
+    }
+}
+

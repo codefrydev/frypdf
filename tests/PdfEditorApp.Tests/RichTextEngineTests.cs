@@ -304,4 +304,69 @@ public class RichTextEngineTests
         Assert.Contains("fill=\"#DC2626\"", svg);
         Assert.Contains("baseline-shift=\"super\"", svg);
     }
+
+    [Fact]
+    public void TemplateService_CreatesRichTextShowcaseTemplate_ValidModelAndSpans()
+    {
+        var templateService = new TemplateService();
+        var doc = templateService.CreateRichTextShowcaseTemplate();
+
+        Assert.NotNull(doc);
+        Assert.Single(doc.Pages);
+        var page = doc.Pages[0];
+
+        var textElements = page.Elements.OfType<PdfTextElement>().ToList();
+        Assert.NotEmpty(textElements);
+
+        // Verify that multi-span elements exist with rich formatting
+        var multiSpanElements = textElements.Where(t => t.Spans != null && t.Spans.Count > 1).ToList();
+        Assert.True(multiSpanElements.Count >= 5);
+
+        // Verify subscripts and superscripts in the specimen
+        bool hasSubscript = multiSpanElements.Any(t => t.Spans!.Any(s => s.Script == TextScriptMode.Subscript));
+        bool hasSuperscript = multiSpanElements.Any(t => t.Spans!.Any(s => s.Script == TextScriptMode.Superscript));
+        bool hasColors = multiSpanElements.Any(t => t.Spans!.Any(s => !string.IsNullOrEmpty(s.TextColorHex)));
+        bool hasLinks = multiSpanElements.Any(t => t.Spans!.Any(s => !string.IsNullOrEmpty(s.LinkUrl)));
+
+        Assert.True(hasSubscript);
+        Assert.True(hasSuperscript);
+        Assert.True(hasColors);
+        Assert.True(hasLinks);
+
+        // Verify QuestPDF export
+        var exporter = new PdfExportService();
+        byte[] pdfBytes = exporter.GeneratePdfBytes(doc);
+        Assert.NotNull(pdfBytes);
+        Assert.True(pdfBytes.Length > 1000);
+    }
+
+    [Fact]
+    public void TemplateService_CreatesOcrAnalysisReportTemplate_ValidModelAndSpans()
+    {
+        var templateService = new TemplateService();
+        var doc = templateService.CreateOcrAnalysisReportTemplate();
+
+        Assert.NotNull(doc);
+        Assert.Single(doc.Pages);
+        var page = doc.Pages[0];
+
+        // Verify table, QR code, and text elements
+        var tables = page.Elements.OfType<PdfTableElement>().ToList();
+        var qrCodes = page.Elements.OfType<PdfQrCodeElement>().ToList();
+        var textElements = page.Elements.OfType<PdfTextElement>().ToList();
+
+        Assert.Single(tables);
+        Assert.Single(qrCodes);
+        Assert.NotEmpty(textElements);
+
+        // Verify multi-span OCR annotations
+        var multiSpanElements = textElements.Where(t => t.Spans != null && t.Spans.Count > 1).ToList();
+        Assert.True(multiSpanElements.Count >= 4);
+
+        // Verify QuestPDF export
+        var exporter = new PdfExportService();
+        byte[] pdfBytes = exporter.GeneratePdfBytes(doc);
+        Assert.NotNull(pdfBytes);
+        Assert.True(pdfBytes.Length > 1000);
+    }
 }

@@ -28,5 +28,7 @@ public interface ITemplateService
     PdfDocumentModel CreateWeddingInvitationRoyalFloralTemplate();
     PdfDocumentModel CreateGalaInvitationTemplate();
     PdfDocumentModel CreateTypographyShowcaseTemplate();
+    PdfDocumentModel CreateRichTextShowcaseTemplate();
+    PdfDocumentModel CreateOcrAnalysisReportTemplate();
     PdfDocumentModel CreateBlankDocument(PageFormat format = PageFormat.A4, PageOrientation orientation = PageOrientation.Portrait);
 }

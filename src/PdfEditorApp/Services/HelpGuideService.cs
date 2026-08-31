@@ -1296,6 +1296,47 @@ public class HelpGuideService : IHelpGuideService
             },
             new HelpGuideItem
             {
+                Id = "editor-rich-text",
+                Title = "Rich Text & Inline Markdown Formatting",
+                Category = "Live Editor",
+                Summary = "Style words within the same text box with mixed bold, italics, underlines, strikethroughs, sub/superscripts, colors, and links.",
+                Description = "FryPDF supports high-fidelity rich text with multi-span inline styling. You can format distinct words and phrases within a single text box using quick Markdown shorthand or HTML-style tags during in-place editing, or via the Properties Inspector.",
+                Steps = new List<string>
+                {
+                    "Double-click any text box on the canvas to activate in-place editing mode.",
+                    "Type standard Markdown shorthand: use **bold** for bold text, *italic* for italic text, <u>underline</u> for underlines, and ~~strikethrough~~ for revisions.",
+                    "Use scientific scripts: type ~2~ for subscript (e.g. H~2~O) and ^2^ for superscript (e.g. E=mc^2^, 1^st^).",
+                    "Apply custom inline colors with <color=#HEX>text</color> (e.g. <color=#0F6CBD>Blue</color>) and highlights with <mark=#HEX>text</mark>.",
+                    "Add clickable hyperlinks with [Label Text](https://example.com).",
+                    "Press Enter or click outside the text box: FryPDF instantly compiles the markup into high-performance multi-span runs rendered on the canvas and exported to vector PDF."
+                },
+                KeyFeatures = new List<string>
+                {
+                    "Multi-Span Architecture: Single unified text element with granular typography for every word",
+                    "In-Place Markdown & HTML Tag Parsing on double-tap and blur",
+                    "Scientific Subscript (~x~) and Superscript (^x^) Notation Support",
+                    "Inline Hex Color Tags (<color=#HEX>) and Highlights (<mark=#HEX>)",
+                    "Clickable PDF Hyperlinks ([Title](url)) compiled directly to QuestPDF links",
+                    "Template DataMerge Support: {{Variable}} tags evaluate seamlessly inside rich spans",
+                    "100% Vector PDF Export with zero rasterization"
+                },
+                ProTips = new List<string>
+                {
+                    "Combine formatting freely! For example, **<color=#0F6CBD>Bold Blue</color>** creates styled highlighted headings in one step.",
+                    "Press ⌘Z (Ctrl+Z) after editing to undo any formatting changes atomically.",
+                    "Check out the 'Rich Typography & Publishing Specimen' in the Template Studio for live examples."
+                },
+                SupportedFormats = "Live Canvas, Markdown Shorthand, QuestPDF Vector Export, SVG <tspan>",
+                KeyboardShortcut = "Double-Click text (In-Place Edit)",
+                IconKind = "FormatColorText",
+                IconColorHex = "#0F6CBD",
+                BackgroundAccentHex = "#EFF6FF",
+                Badge = "New Feature",
+                Keywords = "richtext rich text markdown bold italic underline strikethrough subscript superscript color highlight link spans formatting tags",
+                IsFeatured = true
+            },
+            new HelpGuideItem
+            {
                 Id = "editor-shapes-ink",
                 Title = "Vector Shapes, Cards & Freehand Ink",
                 Category = "Live Editor",

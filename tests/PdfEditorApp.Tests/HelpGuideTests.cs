@@ -88,6 +88,13 @@ public class HelpGuideTests
         var mathGuide = service.GetGuideById("editor-math-latex");
         Assert.NotNull(mathGuide);
         Assert.Equal("LaTeX Math Equation Studio", mathGuide.Title);
+
+        var richTextGuide = service.GetGuideById("editor-rich-text");
+        Assert.NotNull(richTextGuide);
+        Assert.Equal("Rich Text & Inline Markdown Formatting", richTextGuide.Title);
+        Assert.Equal("Live Editor", richTextGuide.Category);
+        Assert.True(richTextGuide.IsFeatured);
+        Assert.Contains("markdown", richTextGuide.Keywords, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

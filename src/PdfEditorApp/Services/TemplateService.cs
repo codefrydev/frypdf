@@ -16,6 +16,7 @@ public class TemplateService : ITemplateService
         // Corporate
         RegisterTemplate(new AnnualReportTemplate());
         RegisterTemplate(new EmployeePayslipTemplate());
+        RegisterTemplate(new OcrAnalysisReportTemplate());
 
         // Finance
         RegisterTemplate(new InvoiceTemplate());
@@ -38,11 +39,12 @@ public class TemplateService : ITemplateService
         RegisterTemplate(new CertificateNavyGoldTemplate());
         RegisterTemplate(new DiplomaAcademicTemplate());
 
-        // Events & Invitations
+        // Events, Design & Publishing
         RegisterTemplate(new WeddingInvitationTraditionalTemplate());
         RegisterTemplate(new WeddingInvitationRoyalFloralTemplate());
         RegisterTemplate(new GalaInvitationTemplate());
         RegisterTemplate(new CreativeTypographyShowcaseTemplate());
+        RegisterTemplate(new RichTextPublishingShowcaseTemplate());
 
         // General
         RegisterTemplate(_blankTemplate);
@@ -102,8 +104,9 @@ public class TemplateService : ITemplateService
     public PdfDocumentModel CreateWeddingInvitationRoyalFloralTemplate() => CreateTemplate("weddingroyalfloral");
 
     public PdfDocumentModel CreateGalaInvitationTemplate() => CreateTemplate("galainvitation");
-
     public PdfDocumentModel CreateTypographyShowcaseTemplate() => CreateTemplate("typographyshowcase");
+    public PdfDocumentModel CreateRichTextShowcaseTemplate() => CreateTemplate("richtextshowcase");
+    public PdfDocumentModel CreateOcrAnalysisReportTemplate() => CreateTemplate("ocranalysisreport");
 
     public PdfDocumentModel CreateBlankDocument(PageFormat format = PageFormat.A4, PageOrientation orientation = PageOrientation.Portrait)
     {

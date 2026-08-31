@@ -10,7 +10,7 @@
 [![Avalonia UI](https://img.shields.io/badge/Avalonia-12.1-7029E6?style=flat-square&logo=avalonia&logoColor=white)](https://avaloniaui.net/)
 [![QuestPDF](https://img.shields.io/badge/QuestPDF-2026.8-FF4500?style=flat-square)](https://www.questpdf.com/)
 [![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Windows%20%7C%20Linux-4B5563?style=flat-square)](https://github.com)
-[![Tests](https://img.shields.io/badge/Tests-327%20Passed-10B981?style=flat-square)](tests/PdfEditorApp.Tests)
+[![Tests](https://img.shields.io/badge/Tests-382%20Passed-10B981?style=flat-square)](tests/PdfEditorApp.Tests)
 
 </div>
 
@@ -20,9 +20,9 @@
 - 📖 **Universal PDF File Editing**: Open and deconstruct real-world `.pdf` files into fully editable visual canvas objects (grouped text, fonts, colors, embedded images, and AcroForms) with zero deserialization errors.
 - 🎨 **Visual Document Canvas**: Fluid zoom (25%–500%), page margins, smart snap-to-grid, viewport-centered smart placement, multi-element alignment, and layering.
 - 📝 **Interactive AcroForms**: Text fields, checkboxes, radio buttons, dropdowns, combo boxes, and signature boxes with real-time formula recalculation and validation.
-- 🖋️ **Signature Studio**: Type-to-sign with 4 cursive calligraphy styles or draw custom vector signatures with smooth bezier curves.
-- 📊 **13 Dynamic Chart Types**: Horizontal Bar, Column, Line, Smooth Curve, Area, Donut, Pie, Radar, Scatter, Bubble, Candlestick, Waterfall, and Polar charts.
-- 📐 **20+ Vector Shapes & Drawing**: Rectangles, pills, speech callouts, stars, arrows, measurement tool (pt/mm/cm/in), and freehand ink pen.
+- 🖋️ **Signature Studio**: Type-to-sign with curated cursive calligraphy styles or draw custom vector signatures with smooth bezier curves.
+- 📊 **Dynamic Vector Charts**: Horizontal Bar, Column, Line, Smooth Curve, Area, Donut, Pie, Radar, Scatter, Bubble, Candlestick, Waterfall, Polar charts, and extensible vector datasets.
+- 📐 **Vector Shapes & Drawing**: Rectangles, pills, speech callouts, stars, arrows, measurement tools (pt/mm/cm/in), and freehand ink pen.
 - 🔢 **Legal Bates Numbering**: Automated sequential page numbering with customizable prefixes, suffixes, digit padding, and 6-anchor positioning.
 - 🛡️ **Security & Redaction**: AES-256 password protection, permission flags (copy/print prevention), and permanent pattern-based search-and-redact with FOIA exemption codes.
 - 🔍 **Preflight & Accessibility Audit**: Built-in document health scanner checking for low contrast, missing alt text, unflattened form fields, and security vulnerabilities.
@@ -100,8 +100,13 @@ dotnet build -c Release
 
 ## 📦 Packaging & Installers
 
-- **macOS**: Bundled into standalone `FryPDF.app` and `.dmg` installer with universal / Apple Silicon support.
-- **Windows**: Packaged via **Inno Setup** (`FryPDF-Setup.exe`) and signed **MSIX** package with `.frypdf` file associations.
+- **macOS**: Standalone `FryPDF.app` bundle and `.dmg` disk image (Universal Apple Silicon & Intel).
+  > **Note**: If macOS Gatekeeper displays a quarantine or unverified developer notice after downloading from GitHub Releases, run this command in Terminal:
+  > ```bash
+  > xattr -dr com.apple.quarantine "/Applications/FryPDF.app"
+  > ```
+- **Windows**: Official **Microsoft Store** verified app (`ms-windows-store://pdp/?productid=9P5GW2Q81B33`), **Inno Setup** executable (`FryPDF-Setup.exe`), and winget package.
+- **Linux**: Portable `.tar.gz` archive, AppImage, or direct .NET 10 compilation.
 
 ---
 

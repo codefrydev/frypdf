@@ -45,7 +45,8 @@
         "url": "https://codefrydev.in",
         "logo": "https://codefrydev.in/frypdf/logo.png",
         "sameAs": [
-          "https://github.com/CodeFryDev/FryPDF"
+          "https://github.com/CodeFryDev/FryPDF",
+          "https://apps.microsoft.com/store/detail/9P5GW2Q81B33?cid=DevShareMCLPCS"
         ]
       },
       {
@@ -66,7 +67,7 @@
         "applicationSubCategory": "PDF Editor & Document Studio",
         "operatingSystem": "macOS 12.0+, Windows 10+, Linux (Ubuntu, Fedora, Arch)",
         "softwareVersion": "1.0.0",
-        "releaseNotes": "Initial release featuring 32 PDF tools, full-page dedicated tool workspaces, vector canvas editor, LaTeX typesetting, AcroForms evaluator, 18+ templates, and dark theme support.",
+        "releaseNotes": "Initial release featuring 32 PDF tools, full-page dedicated tool workspaces, vector canvas editor, LaTeX typesetting, AcroForms evaluator, document templates, and dark theme support.",
         "offers": {
           "@type": "Offer",
           "price": "0.00",
@@ -75,6 +76,7 @@
         },
         "license": "https://opensource.org/licenses/MIT",
         "downloadUrl": "https://github.com/CodeFryDev/FryPDF/releases",
+        "installUrl": "https://apps.microsoft.com/store/detail/9P5GW2Q81B33?cid=DevShareMCLPCS",
         "description": "Privacy-first, 100% offline desktop PDF creator, editor, and 32-tool automation suite built with Avalonia UI and QuestPDF.",
         "featureList": [
           "Interactive Vector Canvas Editor with multi-element selection, rotation, and snap-to-grid",
@@ -82,12 +84,12 @@
           "Lossless format conversions (PDF to Word DOCX, Excel XLSX, PPTX, Markdown, Images, Text)",
           "Interactive AcroForms with live formula dependency recalculation and input validation",
           "LaTeX Math Equation Studio with sub-pixel vector typesetting",
-          "13 Dynamic Vector Chart types (Bar, Donut, Waterfall, Radar, Candlestick, etc.)",
+          "Dynamic Vector Charts (Bar, Donut, Waterfall, Radar, Candlestick, Line, Area, etc.)",
           "Legal FOIA Redaction with irreversible pixel destruction and Bates docket numbering",
           "OCR PDF engine for generating searchable text layers locally",
-          "Vector Signature Studio with 4 calligraphy typography models and 120Hz smooth ink",
+          "Vector Signature Studio with calligraphy typography models and smooth ink digitizer",
           "Chainable Multi-Step Batch Pipeline Automation Workflow Builder",
-          "18+ Executive Templates (Invoices, Annual Reports, Resumes, Academic Papers)",
+          "Executive Templates (Invoices, Annual Reports, Resumes, Academic Papers)",
           "100% Local CPU processing with Zero Telemetry and Zero Network Sockets"
         ],
         "author": {
@@ -119,7 +121,7 @@
             "name": "How does FryPDF compare to Adobe Acrobat Pro and Canva PDF?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Unlike Adobe Acrobat Pro ($239/year) and Canva PDF ($120/year), FryPDF is completely free, does not require cloud accounts, and runs 100% offline. It includes unique engineering features like built-in LaTeX typesetting, 13 native vector chart types, visual revision diffing, and automated batch pipelines."
+              "text": "Unlike Adobe Acrobat Pro ($239/year) and Canva PDF ($120/year), FryPDF is completely free, does not require cloud accounts, and runs 100% offline. It includes unique engineering features like built-in LaTeX typesetting, native dynamic vector charts, visual revision diffing, and automated batch pipelines."
             }
           },
           {
@@ -128,6 +130,14 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "FryPDF is built on .NET 10 and Avalonia UI 12.1 for cross-platform desktop performance, SkiaSharp for GPU-accelerated 2D rendering, QuestPDF for layout compilation, and PdfPig for PDF extraction and structural inspection."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I run FryPDF on macOS if Gatekeeper flags the app?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "When downloading binaries from GitHub Releases outside the App Store, macOS may attach a quarantine flag. Move FryPDF.app to /Applications and run: xattr -dr com.apple.quarantine \"/Applications/FryPDF.app\" in your Terminal."
             }
           }
         ]
@@ -214,6 +224,12 @@
       padding: 0 24px;
     }
 
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 16px;
+      }
+    }
+
     .font-mono { font-family: var(--font-mono); }
     
     .label-mono {
@@ -237,15 +253,15 @@
     }
 
     /* ==========================================================================
-       2. Navigation Bar
+       2. Navigation Bar & Mobile Drawer
        ========================================================================== */
     header {
       position: sticky;
       top: 0;
-      z-index: 100;
-      background: rgba(9, 13, 20, 0.88);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      z-index: 1000;
+      background: rgba(9, 13, 20, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-subtle);
       height: 64px;
     }
@@ -255,14 +271,16 @@
       align-items: center;
       justify-content: space-between;
       height: 100%;
+      gap: 16px;
     }
 
     .brand-wrap {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       text-decoration: none;
       color: var(--text-primary);
+      flex-shrink: 0;
     }
 
     .brand-icon-box {
@@ -274,6 +292,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .brand-text {
@@ -299,19 +318,22 @@
     .nav-menu {
       display: flex;
       align-items: center;
-      gap: 22px;
+      gap: 20px;
       list-style: none;
+      margin: 0;
+      padding: 0;
     }
 
-    @media (max-width: 860px) {
-      .nav-menu { display: none; }
+    .nav-menu li {
+      flex-shrink: 0;
     }
 
     .nav-menu a {
       color: var(--text-secondary);
       text-decoration: none;
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 500;
+      white-space: nowrap;
       transition: color 0.15s ease;
     }
 
@@ -322,6 +344,142 @@
     .nav-cta-group {
       display: flex;
       align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 1080px) {
+      .nav-menu {
+        display: none !important;
+      }
+      .nav-cta-github {
+        display: none !important;
+      }
+      .hamburger-btn {
+        display: flex !important;
+      }
+    }
+
+    @media (max-width: 580px) {
+      .nav-cta-msstore {
+        display: none !important;
+      }
+      .nav-cta-download span.dl-text-extra {
+        display: none;
+      }
+      .nav-cta-download {
+        padding: 7px 12px !important;
+      }
+    }
+
+    /* Hamburger Toggle Button */
+    .hamburger-btn {
+      display: none;
+      flex-direction: column;
+      justify-content: space-around;
+      width: 36px;
+      height: 36px;
+      padding: 8px 7px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      z-index: 1010;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .hamburger-btn:hover {
+      background: var(--bg-elevated);
+      border-color: var(--border-strong);
+    }
+
+    .hamburger-btn span {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background: var(--text-primary);
+      border-radius: 2px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: center;
+    }
+
+    .hamburger-btn.active span:nth-child(1) {
+      transform: translateY(6.5px) rotate(45deg);
+    }
+
+    .hamburger-btn.active span:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+
+    .hamburger-btn.active span:nth-child(3) {
+      transform: translateY(-6.5px) rotate(-45deg);
+    }
+
+    /* Mobile Navigation Drawer */
+    .mobile-nav-drawer {
+      position: fixed;
+      top: 64px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(9, 13, 20, 0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .mobile-nav-drawer.open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .mobile-nav-content {
+      padding: 24px 20px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .mobile-nav-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 18px;
+    }
+
+    .mobile-nav-links a {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: block;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s ease;
+    }
+
+    .mobile-nav-links a:hover,
+    .mobile-nav-links a:active {
+      color: var(--text-primary);
+      background: var(--bg-surface);
+    }
+
+    .mobile-nav-actions {
+      display: flex;
+      flex-direction: column;
       gap: 10px;
     }
 
@@ -341,6 +499,7 @@
       transition: all 0.15s ease;
       border: 1px solid transparent;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .btn-crimson {
@@ -378,11 +537,40 @@
       background: var(--bg-surface);
     }
 
+    .btn-store {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-store:hover {
+      background: var(--bg-panel);
+      border-color: #00A4EF;
+      box-shadow: 0 4px 20px rgba(0, 164, 239, 0.25);
+      transform: translateY(-1px);
+      color: #FFFFFF;
+    }
+
+    .btn-msstore-header {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      border-color: var(--border-subtle);
+      font-size: 0.82rem;
+      padding: 7px 12px;
+    }
+
+    .btn-msstore-header:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #00A4EF;
+      color: #FFFFFF;
+    }
+
     /* ==========================================================================
        3. Hero Section
        ========================================================================== */
     .hero-section {
-      padding: 80px 0 64px;
+      padding: clamp(48px, 8vw, 84px) 0 clamp(40px, 6vw, 64px);
       border-bottom: 1px solid var(--border-subtle);
       position: relative;
     }
@@ -391,14 +579,16 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 5px 12px;
+      padding: 6px 12px;
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-sm);
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: clamp(0.68rem, 1.4vw, 0.75rem);
       color: var(--text-secondary);
       margin-bottom: 24px;
+      line-height: 1.4;
+      max-width: 100%;
     }
 
     .meta-indicator {
@@ -407,15 +597,17 @@
       border-radius: 50%;
       background: var(--fry-emerald);
       box-shadow: 0 0 8px var(--fry-emerald);
+      flex-shrink: 0;
     }
 
     .hero-headline {
-      font-size: clamp(2.3rem, 4.8vw, 3.8rem);
+      font-size: clamp(2rem, 5vw, 3.8rem);
       font-weight: 800;
       letter-spacing: -0.035em;
-      line-height: 1.12;
+      line-height: 1.14;
       max-width: 960px;
       margin-bottom: 20px;
+      word-wrap: break-word;
     }
 
     .hero-headline span.accent {
@@ -426,7 +618,7 @@
     }
 
     .hero-lead {
-      font-size: 1.15rem;
+      font-size: clamp(0.96rem, 1.8vw, 1.15rem);
       color: var(--text-secondary);
       max-width: 760px;
       line-height: 1.65;
@@ -441,6 +633,18 @@
       margin-bottom: 38px;
     }
 
+    @media (max-width: 640px) {
+      .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .hero-actions .btn,
+      .hero-actions .terminal-runner {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
     .terminal-runner {
       display: inline-flex;
       align-items: center;
@@ -450,14 +654,19 @@
       padding: 0 12px;
       height: 42px;
       font-family: var(--font-mono);
-      font-size: 0.82rem;
+      font-size: clamp(0.74rem, 1.5vw, 0.82rem);
       color: var(--text-secondary);
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      white-space: nowrap;
     }
 
     .terminal-runner .prompt {
       color: var(--fry-cyan);
       margin-right: 8px;
       user-select: none;
+      flex-shrink: 0;
     }
 
     .copy-icon-btn {
@@ -469,6 +678,7 @@
       display: flex;
       align-items: center;
       transition: color 0.15s;
+      flex-shrink: 0;
     }
 
     .copy-icon-btn:hover {
@@ -476,31 +686,38 @@
     }
 
     .spec-badges-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 14px 20px;
       padding-top: 24px;
       border-top: 1px solid var(--border-subtle);
       font-size: 0.82rem;
       color: var(--text-tertiary);
     }
 
+    @media (max-width: 480px) {
+      .spec-badges-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+    }
+
     .spec-item {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .spec-item svg {
       color: var(--fry-cyan);
+      flex-shrink: 0;
     }
 
     /* ==========================================================================
        4. 32 PDF Tools Studio Suite (Interactive Showcase)
        ========================================================================== */
     .tools-showcase-section {
-      padding: 88px 0;
+      padding: clamp(56px, 8vw, 88px) 0;
       border-bottom: 1px solid var(--border-subtle);
       background: linear-gradient(180deg, var(--bg-base) 0%, #0B111D 100%);
     }
@@ -510,6 +727,23 @@
       flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 28px;
+    }
+
+    @media (max-width: 768px) {
+      .tool-filter-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .tool-filter-tabs::-webkit-scrollbar {
+        display: none;
+      }
+      .tool-filter-btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
     }
 
     .tool-filter-btn {
@@ -544,10 +778,13 @@
       gap: 14px;
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1200px) {
+      .tools-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 860px) {
       .tools-grid { grid-template-columns: repeat(2, 1fr); }
     }
-    @media (max-width: 640px) {
+    @media (max-width: 560px) {
       .tools-grid { grid-template-columns: 1fr; }
     }
 
@@ -623,16 +860,16 @@
        5. Engineering Pillars (Monotonic Technical Grid)
        ========================================================================== */
     .features-grid-section {
-      padding: 88px 0;
+      padding: clamp(56px, 8vw, 88px) 0;
       border-bottom: 1px solid var(--border-subtle);
     }
 
     .section-title-wrap {
-      margin-bottom: 44px;
+      margin-bottom: clamp(28px, 5vw, 44px);
     }
 
     .section-headline {
-      font-size: 2rem;
+      font-size: clamp(1.6rem, 3.5vw, 2.1rem);
       font-weight: 700;
       letter-spacing: -0.025em;
       margin-top: 6px;
@@ -641,7 +878,7 @@
 
     .section-description {
       color: var(--text-secondary);
-      font-size: 1.02rem;
+      font-size: clamp(0.92rem, 1.6vw, 1.02rem);
       max-width: 720px;
       line-height: 1.6;
     }
@@ -652,7 +889,10 @@
       gap: 20px;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1024px) {
+      .pillars-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
       .pillars-grid { grid-template-columns: 1fr; }
     }
 
@@ -660,7 +900,7 @@
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
-      padding: 24px;
+      padding: 22px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -710,7 +950,7 @@
        6. Open Source Transparency & License Hub
        ========================================================================== */
     .licensing-section {
-      padding: 88px 0;
+      padding: clamp(56px, 8vw, 88px) 0;
       border-bottom: 1px solid var(--border-subtle);
       background: #080D18;
     }
@@ -722,7 +962,10 @@
       margin-top: 32px;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1024px) {
+      .licenses-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
       .licenses-grid { grid-template-columns: 1fr; }
     }
 
@@ -781,7 +1024,7 @@
        7. Architecture & Runtime Specs
        ========================================================================== */
     .architecture-section {
-      padding: 88px 0;
+      padding: clamp(56px, 8vw, 88px) 0;
       border-bottom: 1px solid var(--border-subtle);
     }
 
@@ -791,15 +1034,18 @@
       gap: 16px;
     }
 
-    @media (max-width: 860px) {
+    @media (max-width: 900px) {
       .specs-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .specs-grid { grid-template-columns: 1fr; }
     }
 
     .spec-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
-      padding: 24px;
+      padding: 22px;
       text-align: center;
     }
 
@@ -821,12 +1067,13 @@
        8. Comparison Matrix
        ========================================================================== */
     .comparison-section {
-      padding: 88px 0;
+      padding: clamp(56px, 8vw, 88px) 0;
       border-bottom: 1px solid var(--border-subtle);
     }
 
     .table-responsive {
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
       background: var(--bg-surface);
@@ -834,6 +1081,7 @@
 
     table.matrix-table {
       width: 100%;
+      min-width: 640px;
       border-collapse: collapse;
       text-align: left;
       font-size: 0.88rem;
@@ -876,16 +1124,20 @@
        9. Distribution Hub
        ========================================================================== */
     .install-section {
-      padding: 88px 0;
+      padding: clamp(56px, 8vw, 88px) 0;
       border-bottom: 1px solid var(--border-subtle);
     }
 
     .install-tabs {
       display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
       gap: 8px;
       border-bottom: 1px solid var(--border-subtle);
       margin-bottom: 24px;
     }
+    .install-tabs::-webkit-scrollbar { display: none; }
 
     .install-tab-btn {
       background: transparent;
@@ -899,6 +1151,8 @@
       cursor: pointer;
       margin-bottom: -1px;
       transition: all 0.15s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .install-tab-btn.active {
@@ -913,25 +1167,34 @@
       padding: 24px;
     }
 
+    @media (max-width: 640px) {
+      .install-pane {
+        padding: 18px 14px;
+      }
+    }
+
     .code-block-wrap {
       background: var(--bg-input);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-sm);
       padding: 12px 16px;
       font-family: var(--font-mono);
-      font-size: 0.84rem;
+      font-size: clamp(0.74rem, 1.5vw, 0.84rem);
       color: var(--text-primary);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
       margin-top: 14px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     /* ==========================================================================
        10. Technical FAQ
        ========================================================================== */
     .faq-section {
-      padding: 88px 0;
+      padding: clamp(56px, 8vw, 88px) 0;
       border-bottom: 1px solid var(--border-subtle);
     }
 
@@ -983,11 +1246,26 @@
       gap: 20px;
     }
 
+    @media (max-width: 768px) {
+      .footer-flex {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+      }
+    }
+
     .footer-links {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 24px;
+      gap: 16px 24px;
       list-style: none;
+    }
+
+    @media (max-width: 768px) {
+      .footer-links {
+        justify-content: center;
+      }
     }
 
     .footer-links a {
@@ -1016,7 +1294,7 @@
       opacity: 0;
       transform: translateY(10px);
       transition: all 0.2s ease;
-      z-index: 999;
+      z-index: 9999;
       pointer-events: none;
     }
 
@@ -1052,22 +1330,72 @@
       </a>
 
       <ul class="nav-menu">
-        <li><a href="#tools">32 Studio Tools</a></li>
+        <li><a href="#tools">32 Tools</a></li>
         <li><a href="#pillars">Capabilities</a></li>
-        <li><a href="#licensing">Open Source &amp; Legal</a></li>
+        <li><a href="#licensing">Open Source</a></li>
         <li><a href="#comparison">Comparison</a></li>
         <li><a href="#install">Install</a></li>
       </ul>
 
       <div class="nav-cta-group">
-        <a href="https://github.com/CodeFryDev/FryPDF" target="_blank" class="btn btn-outline" rel="noopener noreferrer">
+        <a href="https://github.com/CodeFryDev/FryPDF" target="_blank" class="btn btn-outline nav-cta-github" rel="noopener noreferrer">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
           GitHub
         </a>
-        <a href="#install" class="btn btn-crimson">Download Studio</a>
+        <a href="https://apps.microsoft.com/store/detail/9P5GW2Q81B33?cid=DevShareMCLPCS" target="_blank" class="btn btn-msstore-header nav-cta-msstore" rel="noopener noreferrer" title="Get FryPDF on Microsoft Store">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+            <path d="M1 1h10v10H1V1z" fill="#F25022"/>
+            <path d="M13 1h10v10H13V1z" fill="#7FBA00"/>
+            <path d="M1 13h10v10H1V13z" fill="#00A4EF"/>
+            <path d="M13 13h10v10H13V13z" fill="#FFB900"/>
+          </svg>
+          <span>Store</span>
+        </a>
+        <a href="#install" class="btn btn-crimson nav-cta-download">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span>Download<span class="dl-text-extra"> Studio</span></span>
+        </a>
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle navigation menu" onclick="toggleMobileMenu()">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
     </div>
   </header>
+
+  <!-- Mobile Navigation Drawer -->
+  <div id="mobile-nav" class="mobile-nav-drawer">
+    <div class="mobile-nav-content">
+      <ul class="mobile-nav-links">
+        <li><a href="#tools" onclick="closeMobileMenu()">32 Studio Tools</a></li>
+        <li><a href="#pillars" onclick="closeMobileMenu()">Capabilities</a></li>
+        <li><a href="#licensing" onclick="closeMobileMenu()">Open Source &amp; Legal</a></li>
+        <li><a href="#comparison" onclick="closeMobileMenu()">Technical Comparison</a></li>
+        <li><a href="#install" onclick="closeMobileMenu()">Download &amp; Installation</a></li>
+        <li><a href="#faq" onclick="closeMobileMenu()">Frequently Asked Questions</a></li>
+      </ul>
+      <div class="mobile-nav-actions">
+        <a href="https://apps.microsoft.com/store/detail/9P5GW2Q81B33?cid=DevShareMCLPCS" target="_blank" rel="noopener noreferrer" class="btn btn-store" style="width: 100%; justify-content: center; padding: 11px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M1 1h10v10H1V1z" fill="#F25022"/>
+            <path d="M13 1h10v10H13V1z" fill="#7FBA00"/>
+            <path d="M1 13h10v10H1V13z" fill="#00A4EF"/>
+            <path d="M13 13h10v10H13V13z" fill="#FFB900"/>
+          </svg>
+          <span>Get from <strong>Microsoft Store</strong></span>
+        </a>
+        <a href="#install" onclick="closeMobileMenu()" class="btn btn-crimson" style="width: 100%; justify-content: center; padding: 11px;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Direct Download Binary
+        </a>
+        <a href="https://github.com/CodeFryDev/FryPDF" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="width: 100%; justify-content: center; padding: 11px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View GitHub Repository
+        </a>
+      </div>
+    </div>
+  </div>
 
   <!-- ==========================================================================
        2. Hero Section
@@ -1076,7 +1404,7 @@
     <div class="container">
       <div class="hero-meta-badge">
         <span class="meta-indicator"></span>
-        <span>AVALONIA 12.1 • QUESTPDF • .NET 10 • 32 TOOLS • 313 TESTS PASSED • 100% OFFLINE</span>
+        <span>AVALONIA 12.1 • QUESTPDF • .NET 10 • 32 TOOLS • 382 TESTS PASSED • 100% OFFLINE</span>
       </div>
 
       <h1 class="hero-headline">
@@ -1088,9 +1416,19 @@
       </p>
 
       <div class="hero-actions">
+        <a href="https://apps.microsoft.com/store/detail/9P5GW2Q81B33?cid=DevShareMCLPCS" target="_blank" rel="noopener noreferrer" class="btn btn-store" style="padding: 10px 20px; font-size: 0.94rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M1 1h10v10H1V1z" fill="#F25022"/>
+            <path d="M13 1h10v10H13V1z" fill="#7FBA00"/>
+            <path d="M1 13h10v10H1V13z" fill="#00A4EF"/>
+            <path d="M13 13h10v10H13V13z" fill="#FFB900"/>
+          </svg>
+          <span>Get from <strong>Microsoft Store</strong></span>
+        </a>
+
         <a href="#install" class="btn btn-crimson" style="padding: 10px 22px; font-size: 0.94rem;">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-          <span id="hero-btn-label">Download for macOS / Windows</span>
+          <span id="hero-btn-label">Direct Installers</span>
         </a>
 
         <div class="terminal-runner">
@@ -1105,23 +1443,23 @@
       <div class="spec-badges-row">
         <div class="spec-item">
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-          Lossless <code>.frypdf</code> Schema
+          <span>Lossless <code>.frypdf</code> Schema</span>
         </div>
         <div class="spec-item">
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-          Sub-350ms Cold Launch
+          <span>Sub-350ms Cold Launch</span>
         </div>
         <div class="spec-item">
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-          Zero External Network Sockets
+          <span>Zero Network Sockets</span>
         </div>
         <div class="spec-item">
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-          313 Passing Unit Tests
+          <span>382 Passing Unit Tests</span>
         </div>
         <div class="spec-item">
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-          AES-256 GCM Encryption
+          <span>AES-256 GCM Security</span>
         </div>
       </div>
     </div>
@@ -1551,27 +1889,27 @@
             <span class="pillar-badge">04 // CRYPTOGRAPHIC INK</span>
             <h3>Vector Signature Studio</h3>
             <p>
-              Sign legal documents with 4 cursive calligraphy typography models or draw smooth 60fps vector ink paths using cubic bezier curve smoothing and pressure simulation.
+              Sign legal documents with curated calligraphy typography models or draw smooth 60fps vector ink paths using cubic bezier curve smoothing and pressure simulation.
             </p>
           </div>
           <div class="pillar-tech-snippet">
             engine: "BezierSplineFilter"<br/>
             sampling: "120Hz Hardware Digitizer"<br/>
-            calligraphy: "4 Vector Font Models"
+            calligraphy: "Vector Typography Models"
           </div>
         </div>
 
-        <!-- 5. 13 Dynamic Vector Charts -->
+        <!-- 5. Dynamic Vector Charts -->
         <div class="pillar-card">
           <div>
             <span class="pillar-badge">05 // DATA VISUALIZATION</span>
-            <h3>13 Dynamic Vector Charts</h3>
+            <h3>Dynamic Vector Charts</h3>
             <p>
               Embed Bar, Column, Line, Smooth Curve, Area, Donut, Pie, Radar, Scatter, Bubble, Candlestick, Waterfall, and Polar charts directly into documents with live color customization.
             </p>
           </div>
           <div class="pillar-tech-snippet">
-            types: ["Waterfall", "Radar", "Candle"]<br/>
+            types: ["Waterfall", "Radar", "Candle", "..."]<br/>
             output: "Lossless Skia Vector Path"
           </div>
         </div>
@@ -1603,7 +1941,7 @@
         <span class="label-mono">OPEN SOURCE TRANSPARENCY // MIT LICENSED</span>
         <h2 class="section-headline">100% Free &amp; Open Source Software.</h2>
         <p class="section-description">
-          Transparency by design: all 12 underlying open-source libraries, document engines, graphics frameworks, and runtimes used in FryPDF are fully attributed with verbatim licenses in-app.
+          Transparency by design: all underlying open-source libraries, document engines, graphics frameworks, and runtimes used in FryPDF are fully attributed with verbatim licenses in-app.
         </p>
       </div>
 
@@ -1728,7 +2066,7 @@
           <div class="lbl">Cloud Network Sockets</div>
         </div>
         <div class="spec-card">
-          <div class="val">313 Passed</div>
+          <div class="val">382 Passed</div>
           <div class="lbl">Automated Test Suites (xUnit)</div>
         </div>
       </div>
@@ -1786,7 +2124,7 @@
               <td><span class="status-no">✗ Read-only Filling</span></td>
             </tr>
             <tr>
-              <td><strong>13 Vector Chart Types</strong></td>
+              <td><strong>Dynamic Vector Charts</strong></td>
               <td class="col-fry"><span class="status-yes">✓ Native Vector Paths</span></td>
               <td><span class="status-no">✗ Raster Only</span></td>
               <td><span class="status-yes">✓ Cloud Charts</span></td>
@@ -1834,28 +2172,37 @@
       <div class="section-title-wrap">
         <span class="label-mono">DISTRIBUTION // NATIVE BINARIES</span>
         <h2 class="section-headline">Install FryPDF</h2>
-        <p class="section-description">Native standalone binaries available for macOS, Windows, and Linux.</p>
+        <p class="section-description">Official store packages and standalone native binaries for Windows, macOS, and Linux.</p>
       </div>
 
       <div class="install-tabs">
-        <button class="install-tab-btn active" onclick="switchInstallTab('macos', this)">macOS</button>
-        <button class="install-tab-btn" onclick="switchInstallTab('windows', this)">Windows</button>
+        <button class="install-tab-btn active" onclick="switchInstallTab('windows', this)">Windows (Store &amp; Installer)</button>
+        <button class="install-tab-btn" onclick="switchInstallTab('macos', this)">macOS</button>
         <button class="install-tab-btn" onclick="switchInstallTab('linux', this)">Linux &amp; Source</button>
       </div>
 
       <div class="install-pane" id="install-pane-content">
-        <h3 style="font-size: 1.1rem; margin-bottom: 8px;">macOS (Universal / Apple Silicon &amp; Intel)</h3>
+        <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Windows 10 / 11 (x64 &amp; ARM64)</h3>
         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
-          Standalone application bundle with notarized DMG installer. Requires macOS 12.0 (Monterey) or later.
+          Official Microsoft Store verified desktop app with automatic background updates, or standalone Inno Setup executable installer.
         </p>
 
-        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
-          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson">Download FryPDF-v1.0.0.dmg</a>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+          <a href="https://apps.microsoft.com/store/detail/9P5GW2Q81B33?cid=DevShareMCLPCS" target="_blank" rel="noopener noreferrer" class="btn btn-store" style="padding: 9px 18px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M1 1h10v10H1V1z" fill="#F25022"/>
+              <path d="M13 1h10v10H13V1z" fill="#7FBA00"/>
+              <path d="M1 13h10v10H1V13z" fill="#00A4EF"/>
+              <path d="M13 13h10v10H13V13z" fill="#FFB900"/>
+            </svg>
+            <span>Get from <strong>Microsoft Store</strong></span>
+          </a>
+          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson" style="padding: 9px 18px;">Download FryPDF-Setup-v1.0.0.exe</a>
         </div>
 
         <div class="code-block-wrap">
-          <span>brew install codefrydev/tap/frypdf</span>
-          <button class="copy-icon-btn" onclick="copyText('brew install codefrydev/tap/frypdf')" title="Copy Command">
+          <span>winget install CodeFryDev.FryPDF</span>
+          <button class="copy-icon-btn" onclick="copyText('winget install CodeFryDev.FryPDF')" title="Copy Command">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           </button>
         </div>
@@ -1874,6 +2221,13 @@
       </div>
 
       <div class="faq-grid">
+        <div class="faq-item-box">
+          <h4>Is FryPDF available on the Microsoft Store?</h4>
+          <p>
+            Yes. You can install FryPDF directly from the <a href="https://apps.microsoft.com/store/detail/9P5GW2Q81B33?cid=DevShareMCLPCS" target="_blank" rel="noopener noreferrer" style="color: var(--fry-cyan); text-decoration: underline;">Microsoft Store (ID: 9P5GW2Q81B33)</a> for 1-click installation, sandboxed security, and seamless automatic updates on Windows 10 and 11.
+          </p>
+        </div>
+
         <div class="faq-item-box">
           <h4>Is FryPDF really 100% offline and privacy-first?</h4>
           <p>
@@ -1910,9 +2264,15 @@
         </div>
 
         <div class="faq-item-box">
-          <h4>What are the build prerequisites from source?</h4>
+          <h4>How do I run FryPDF on macOS if Gatekeeper flags the app?</h4>
           <p>
-            Pre-compiled standalone binaries include their own self-contained runtime. If building directly from source, you only need the standard .NET 10 SDK and can launch immediately using <code>./run</code>.
+            When downloading binaries outside the Mac App Store, macOS may attach a quarantine flag. Move <code>FryPDF.app</code> to <code>/Applications</code>, then run this one-line command in Terminal:
+            <span class="code-block-wrap" style="margin-top: 8px; padding: 8px 12px; font-size: 0.78rem;">
+              <span>xattr -dr com.apple.quarantine "/Applications/FryPDF.app"</span>
+              <button class="copy-icon-btn" onclick="copyText('xattr -dr com.apple.quarantine &quot;/Applications/FryPDF.app&quot;')" title="Copy Command">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </span>
           </p>
         </div>
       </div>
@@ -1929,6 +2289,7 @@
       </div>
       <ul class="footer-links">
         <li><a href="https://codefrydev.in">Developer Portal</a></li>
+        <li><a href="https://apps.microsoft.com/store/detail/9P5GW2Q81B33?cid=DevShareMCLPCS" target="_blank" rel="noopener noreferrer">Microsoft Store</a></li>
         <li><a href="docs/ARCHITECTURE.md">Architecture</a></li>
         <li><a href="docs/FEATURES.md">Features</a></li>
         <li><a href="docs/CONTRIBUTING.md">Contributing</a></li>
@@ -1943,22 +2304,37 @@
   <script>
     // 1. Install Tab Switcher
     const installData = {
-      macos: {
-        title: "macOS (Universal / Apple Silicon & Intel)",
-        desc: "Standalone application bundle with notarized DMG installer. Requires macOS 12.0 or later.",
-        btnText: "Download FryPDF-v1.0.0.dmg",
-        cmd: "brew install codefrydev/tap/frypdf"
-      },
       windows: {
         title: "Windows 10 / 11 (x64 & ARM64)",
-        desc: "Inno Setup Windows installer or signed MSIX desktop package with .frypdf file association.",
-        btnText: "Download FryPDF-Setup-v1.0.0.exe",
+        desc: "Official Microsoft Store verified desktop app with automatic background updates, or standalone Inno Setup executable installer.",
+        actionsHtml: `
+          <a href="https://apps.microsoft.com/store/detail/9P5GW2Q81B33?cid=DevShareMCLPCS" target="_blank" rel="noopener noreferrer" class="btn btn-store" style="padding: 9px 18px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M1 1h10v10H1V1z" fill="#F25022"/>
+              <path d="M13 1h10v10H13V1z" fill="#7FBA00"/>
+              <path d="M1 13h10v10H1V13z" fill="#00A4EF"/>
+              <path d="M13 13h10v10H13V13z" fill="#FFB900"/>
+            </svg>
+            <span>Get from <strong>Microsoft Store</strong></span>
+          </a>
+          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson" style="padding: 9px 18px;">Download FryPDF-Setup-v1.0.0.exe</a>
+        `,
         cmd: "winget install CodeFryDev.FryPDF"
+      },
+      macos: {
+        title: "macOS (Universal / Apple Silicon & Intel)",
+        desc: "Drag FryPDF into /Applications. If macOS displays a Gatekeeper quarantine notice after downloading from GitHub Releases, run this command in Terminal to authorize launch:",
+        actionsHtml: `
+          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson" style="padding: 9px 18px;">Download FryPDF-v1.0.0.dmg</a>
+        `,
+        cmd: 'xattr -dr com.apple.quarantine "/Applications/FryPDF.app"'
       },
       linux: {
         title: "Linux & Source Compilation",
         desc: "Portable Tarball, AppImage, or direct compile via modern .NET 10 SDK runtime.",
-        btnText: "Clone GitHub Repository",
+        actionsHtml: `
+          <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson" style="padding: 9px 18px;">Download Linux .tar.gz / AppImage</a>
+        `,
         cmd: "dotnet run --project src/PdfEditorApp"
       }
     };
@@ -1974,8 +2350,8 @@
           <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
             ${d.desc}
           </p>
-          <div style="display: flex; gap: 10px; margin-bottom: 16px;">
-            <a href="https://github.com/CodeFryDev/FryPDF/releases" class="btn btn-crimson">${d.btnText}</a>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+            ${d.actionsHtml}
           </div>
           <div class="code-block-wrap">
             <span>${d.cmd}</span>
@@ -2002,7 +2378,42 @@
       });
     }
 
-    // 3. Copy Helper
+    // 3. Mobile Navigation Drawer Controller
+    function toggleMobileMenu() {
+      const drawer = document.getElementById('mobile-nav');
+      const btn = document.getElementById('hamburger-btn');
+      if (drawer && btn) {
+        const isOpen = drawer.classList.contains('open');
+        if (isOpen) {
+          closeMobileMenu();
+        } else {
+          drawer.classList.add('open');
+          btn.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+      }
+    }
+
+    function closeMobileMenu() {
+      const drawer = document.getElementById('mobile-nav');
+      const btn = document.getElementById('hamburger-btn');
+      if (drawer) drawer.classList.remove('open');
+      if (btn) btn.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Close mobile drawer on Escape key or outside click
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMobileMenu();
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1080) {
+        closeMobileMenu();
+      }
+    });
+
+    // 4. Copy Helper
     function copyText(text) {
       navigator.clipboard.writeText(text).then(() => {
         const toast = document.getElementById('toast');
@@ -2012,17 +2423,21 @@
       });
     }
 
-    // 4. OS Auto-Detection
+    // 5. OS Auto-Detection
     window.addEventListener('DOMContentLoaded', () => {
       const ua = navigator.userAgent.toLowerCase();
       const heroBtn = document.getElementById('hero-btn-label');
       if (heroBtn) {
         if (ua.includes('mac')) {
           heroBtn.innerText = 'Download for macOS (.dmg)';
+          const macBtn = document.querySelectorAll('.install-tab-btn')[1];
+          if (macBtn) switchInstallTab('macos', macBtn);
         } else if (ua.includes('win')) {
-          heroBtn.innerText = 'Download for Windows (.exe)';
+          heroBtn.innerText = 'Direct Windows Installer (.exe)';
         } else if (ua.includes('linux')) {
           heroBtn.innerText = 'Download for Linux (.tar.gz)';
+          const linuxBtn = document.querySelectorAll('.install-tab-btn')[2];
+          if (linuxBtn) switchInstallTab('linux', linuxBtn);
         }
       }
     });

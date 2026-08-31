@@ -100,7 +100,7 @@ public class PdfOcrService : IPdfOcrService
             string outPath = options.OutputFilePath;
             if (string.IsNullOrWhiteSpace(outPath))
             {
-                string dir = Path.GetDirectoryName(options.InputImageFiles[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string dir = Path.GetDirectoryName(options.InputImageFiles[0]) ?? Path.GetTempPath();
                 outPath = Path.Combine(dir, "Scanned_Document.pdf");
             }
 

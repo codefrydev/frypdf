@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using PdfEditorApp.ViewModels;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
@@ -21,6 +22,15 @@ public partial class DocumentCanvasView : UserControl
     private ElementViewModelBase? _draggedElement;
     private List<ElementViewModelBase> _draggedElements = new();
 
+    // Potential Drag Tracking (for reliable click vs drag detection)
+    private bool _isPotentialDrag;
+    private ElementViewModelBase? _potentialDragElement;
+    private Point _potentialDragStartPos;
+    private bool _wasAlreadySelectedOnPress;
+
+    // In-place text editing baseline tracking
+    private readonly Dictionary<string, string> _initialEditContents = new();
+
     // Movement & Resize Undo Tracking
     private double _dragStartElementX;
     private double _dragStartElementY;
@@ -29,7 +39,6 @@ public partial class DocumentCanvasView : UserControl
     private double _resizeStartY;
     private double _resizeStartW;
     private double _resizeStartH;
-    private string _initialTextEditContent = "";
 
     // Pan state
     private bool _isSpacePressed;
@@ -48,7 +57,7 @@ public partial class DocumentCanvasView : UserControl
         GestureRecognizers.Add(new PinchGestureRecognizer());
 
         AddHandler(PointerMovedEvent, OnGlobalPointerMoved, RoutingStrategies.Tunnel);
-        AddHandler(PointerReleasedEvent, OnGlobalPointerReleased, RoutingStrategies.Tunnel);
+        AddHandler(PointerReleasedEvent, OnGlobalPointerReleased, RoutingStrategies.Bubble);
         AddHandler(PointerWheelChangedEvent, OnCanvasPointerWheelChanged, RoutingStrategies.Bubble | RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(PointerTouchPadGestureMagnifyEvent, OnCanvasTouchPadGestureMagnify, RoutingStrategies.Bubble | RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(PinchEvent, OnCanvasPinch, RoutingStrategies.Bubble | RoutingStrategies.Tunnel, handledEventsToo: true);
@@ -61,6 +70,7 @@ public partial class DocumentCanvasView : UserControl
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+
         if (CanvasScrollViewer != null)
         {
             CanvasScrollViewer.PropertyChanged += (s, ev) =>
@@ -226,11 +236,95 @@ public partial class DocumentCanvasView : UserControl
         {
             ViewModel.FitToPageDynamic(CanvasScrollViewer.Viewport.Width, CanvasScrollViewer.Viewport.Height);
             e.Handled = true;
+            return;
         }
         else if (ViewModel.ActiveToolMode == Models.ToolMode.Zoom)
         {
             ViewModel.ResetZoom();
             e.Handled = true;
+            return;
+        }
+
+        // Ignore double-taps originating inside overlays (CanvasTextHudView, FindReplaceBarView)
+        if (e.Source is Visual sourceVisual && (sourceVisual.FindAncestorOfType<CanvasTextHudView>() != null || sourceVisual.FindAncestorOfType<FindReplaceBarView>() != null))
+        {
+            return;
+        }
+
+        // Direct in-place editing trigger on double-click
+        if (ViewModel.CurrentPage == null || PageElementsCanvas == null) return;
+
+        // 1. Check if the double-tap happened directly on an element visual or its ancestor
+        ElementViewModelBase? targetElement = null;
+        if (e.Source is Visual visual)
+        {
+            targetElement = (visual as Control)?.DataContext as ElementViewModelBase ??
+                            visual.FindAncestorOfType<Control>()?.DataContext as ElementViewModelBase;
+        }
+
+        // 2. If not found from visual source, check geometric coordinates on the canvas
+        if (targetElement == null)
+        {
+            var canvasPos = e.GetPosition(PageElementsCanvas);
+            double zoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+            double docX = canvasPos.X / zoom;
+            double docY = canvasPos.Y / zoom;
+
+            targetElement = ViewModel.CurrentPage.Elements
+                .Where(el => !el.IsLocked && docX >= el.X && docX <= el.X + el.Width && docY >= el.Y && docY <= el.Y + el.Height)
+                .OrderByDescending(el => el.ZIndex)
+                .FirstOrDefault();
+        }
+
+        if (targetElement == null)
+        {
+            targetElement = ViewModel.CurrentPage.SelectedElement;
+        }
+
+        if (targetElement != null && !targetElement.IsLocked)
+        {
+            ViewModel.CurrentPage.SelectElement(targetElement);
+
+            if (targetElement is TextElementViewModel textVm)
+            {
+                textVm.IsInEditMode = true;
+                e.Handled = true;
+
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    FocusInPlaceTextBox(textVm);
+                }, Avalonia.Threading.DispatcherPriority.Input);
+            }
+            else if (targetElement is ShapeElementViewModel shapeVm)
+            {
+                shapeVm.IsInEditMode = true;
+                e.Handled = true;
+
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    FocusInPlaceTextBox(shapeVm);
+                }, Avalonia.Threading.DispatcherPriority.Input);
+            }
+            else if (targetElement is StickyNoteElementViewModel stickyVm)
+            {
+                stickyVm.IsInEditMode = true;
+                e.Handled = true;
+
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    FocusInPlaceTextBox(stickyVm);
+                }, Avalonia.Threading.DispatcherPriority.Loaded);
+            }
+            else if (targetElement is MathElementViewModel mathVm)
+            {
+                mathVm.IsInEditMode = true;
+                e.Handled = true;
+
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    FocusInPlaceTextBox(mathVm);
+                }, Avalonia.Threading.DispatcherPriority.Loaded);
+            }
         }
     }
 
@@ -375,6 +469,7 @@ public partial class DocumentCanvasView : UserControl
                 }
             }
 
+            bool wasAlreadySelected = elementVm.IsSelected;
             bool isToggle = e.KeyModifiers.HasFlag(KeyModifiers.Shift) || e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
 
             if (isToggle)
@@ -395,27 +490,16 @@ public partial class DocumentCanvasView : UserControl
 
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && ViewModel?.CurrentPage != null && !elementVm.IsLocked)
             {
-                _isDraggingElement = true;
-                _draggedElement = elementVm;
-                _draggedElements = ViewModel.CurrentPage.SelectedElements.Where(el => !el.IsLocked).ToList();
-                if (!_draggedElements.Contains(elementVm)) _draggedElements.Add(elementVm);
-
-                // If element belongs to a group, drag all group members synchronously
-                if (!string.IsNullOrEmpty(elementVm.GroupId))
+                if (elementVm.IsInEditMode)
                 {
-                    var groupMembers = ViewModel.CurrentPage.Elements.Where(el => el.GroupId == elementVm.GroupId && !el.IsLocked);
-                    foreach (var gm in groupMembers)
-                    {
-                        if (!_draggedElements.Contains(gm)) _draggedElements.Add(gm);
-                    }
+                    return;
                 }
 
-                _dragStartPositions = _draggedElements.Select(el => (Element: el, el.X, el.Y)).ToList();
-
-                _dragStartElementX = elementVm.X;
-                _dragStartElementY = elementVm.Y;
-                _lastPointerPosition = e.GetPosition(PageElementsCanvas);
-                e.Pointer.Capture(this);
+                _isPotentialDrag = true;
+                _potentialDragElement = elementVm;
+                _potentialDragStartPos = e.GetPosition(PageElementsCanvas);
+                _wasAlreadySelectedOnPress = wasAlreadySelected;
+                _lastPointerPosition = _potentialDragStartPos;
                 e.Handled = true;
             }
         }
@@ -438,13 +522,80 @@ public partial class DocumentCanvasView : UserControl
         }
     }
 
+    private void FocusInPlaceTextBox(ElementViewModelBase elementVm)
+    {
+        if (PageElementsCanvas == null) return;
+
+        var textBox = PageElementsCanvas.GetVisualDescendants()
+            .OfType<TextBox>()
+            .FirstOrDefault(tb => tb.DataContext == elementVm && tb.IsVisible);
+
+        if (textBox != null)
+        {
+            textBox.Focus();
+            textBox.CaretIndex = textBox.Text?.Length ?? 0;
+            textBox.SelectAll();
+        }
+    }
+
+    private void OnInPlaceTextBoxAttached(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is TextBox textBox)
+        {
+            textBox.GotFocus += (s, args) =>
+            {
+                if (textBox.DataContext is ElementViewModelBase el)
+                {
+                    _initialEditContents[el.Id] = textBox.Text ?? "";
+                }
+            };
+
+            textBox.PropertyChanged += (s, args) =>
+            {
+                if (args.Property == Visual.IsVisibleProperty && textBox.IsVisible)
+                {
+                    if (textBox.DataContext is ElementViewModelBase el)
+                    {
+                        _initialEditContents[el.Id] = textBox.Text ?? "";
+                    }
+
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        textBox.Focus();
+                        textBox.CaretIndex = textBox.Text?.Length ?? 0;
+                        textBox.SelectAll();
+                    }, Avalonia.Threading.DispatcherPriority.Input);
+                }
+            };
+
+            if (textBox.IsVisible)
+            {
+                if (textBox.DataContext is ElementViewModelBase el)
+                {
+                    _initialEditContents[el.Id] = textBox.Text ?? "";
+                }
+
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    textBox.Focus();
+                    textBox.CaretIndex = textBox.Text?.Length ?? 0;
+                    textBox.SelectAll();
+                }, Avalonia.Threading.DispatcherPriority.Input);
+            }
+        }
+    }
+
     private void OnTextElementDoubleTapped(object? sender, TappedEventArgs e)
     {
         if (sender is Control control && control.DataContext is TextElementViewModel textVm)
         {
-            _initialTextEditContent = textVm.Text;
             textVm.IsInEditMode = true;
             e.Handled = true;
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                FocusInPlaceTextBox(textVm);
+            }, Avalonia.Threading.DispatcherPriority.Input);
         }
     }
 
@@ -452,25 +603,64 @@ public partial class DocumentCanvasView : UserControl
     {
         if (sender is Control control && control.DataContext is TextElementViewModel textVm)
         {
-            if (textVm.Text != _initialTextEditContent)
+            if (_initialEditContents.TryGetValue(textVm.Id, out var oldTxt) && textVm.Text != oldTxt)
             {
-                string oldTxt = _initialTextEditContent;
                 string newTxt = textVm.Text;
+                _initialEditContents[textVm.Id] = newTxt;
                 ViewModel?.UndoRedo.RecordAction(
                     "Edit Text",
                     () => textVm.Text = oldTxt,
                     () => textVm.Text = newTxt
                 );
             }
-            textVm.IsInEditMode = false;
         }
+    }
+
+    private void OnShapeElementDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (sender is Control control && control.DataContext is ShapeElementViewModel shapeVm)
+        {
+            shapeVm.IsInEditMode = true;
+            e.Handled = true;
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                FocusInPlaceTextBox(shapeVm);
+            }, Avalonia.Threading.DispatcherPriority.Input);
+        }
+    }
+
+    private void OnShapeTextBoxLostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Control control && control.DataContext is ShapeElementViewModel shapeVm)
+        {
+            string currentLabel = shapeVm.Label ?? "";
+            if (_initialEditContents.TryGetValue(shapeVm.Id, out var oldTxt) && currentLabel != oldTxt)
+            {
+                _initialEditContents[shapeVm.Id] = currentLabel;
+                ViewModel?.UndoRedo.RecordAction(
+                    "Edit Shape Label",
+                    () => shapeVm.Label = oldTxt,
+                    () => shapeVm.Label = currentLabel
+                );
+            }
+        }
+    }
+
+    private void OnTableCellLostFocus(object? sender, RoutedEventArgs e)
+    {
+        // Table cells have two-way binding directly to TableHeaderItem/TableCellItem
+    }
+
+    private void OnStickyNoteTextBoxLostFocus(object? sender, RoutedEventArgs e)
+    {
+        // Sticky note text has two-way binding directly to NoteText
     }
 
     private void OnMathElementDoubleTapped(object? sender, TappedEventArgs e)
     {
         if (sender is Control control && control.DataContext is MathElementViewModel mathVm)
         {
-            _initialTextEditContent = mathVm.Formula;
             ViewModel?.OpenMathStudioCommand.Execute(mathVm);
             e.Handled = true;
         }
@@ -480,10 +670,10 @@ public partial class DocumentCanvasView : UserControl
     {
         if (sender is Control control && control.DataContext is MathElementViewModel mathVm)
         {
-            if (mathVm.Formula != _initialTextEditContent)
+            if (_initialEditContents.TryGetValue(mathVm.Id, out var oldFormula) && mathVm.Formula != oldFormula)
             {
-                string oldFormula = _initialTextEditContent;
                 string newFormula = mathVm.Formula;
+                _initialEditContents[mathVm.Id] = newFormula;
                 ViewModel?.UndoRedo.RecordAction(
                     "Edit Formula",
                     () => { mathVm.Formula = oldFormula; mathVm.RenderSvg(); },
@@ -544,6 +734,37 @@ public partial class DocumentCanvasView : UserControl
             return;
         }
 
+        if (_isPotentialDrag && !_isDraggingElement && PageElementsCanvas != null && ViewModel?.CurrentPage != null)
+        {
+            var curPos = e.GetPosition(PageElementsCanvas);
+            double distSq = Math.Pow(curPos.X - _potentialDragStartPos.X, 2) + Math.Pow(curPos.Y - _potentialDragStartPos.Y, 2);
+            if (distSq > 9.0) // 3px drag threshold
+            {
+                _isDraggingElement = true;
+                _draggedElement = _potentialDragElement;
+                _draggedElements = ViewModel.CurrentPage.SelectedElements.Where(el => !el.IsLocked).ToList();
+                if (_draggedElement != null && !_draggedElements.Contains(_draggedElement)) _draggedElements.Add(_draggedElement);
+
+                if (_draggedElement != null && !string.IsNullOrEmpty(_draggedElement.GroupId))
+                {
+                    var groupMembers = ViewModel.CurrentPage.Elements.Where(el => el.GroupId == _draggedElement.GroupId && !el.IsLocked);
+                    foreach (var gm in groupMembers)
+                    {
+                        if (!_draggedElements.Contains(gm)) _draggedElements.Add(gm);
+                    }
+                }
+
+                _dragStartPositions = _draggedElements.Select(el => (Element: el, el.X, el.Y)).ToList();
+                if (_draggedElement != null)
+                {
+                    _dragStartElementX = _draggedElement.X;
+                    _dragStartElementY = _draggedElement.Y;
+                }
+                _lastPointerPosition = curPos;
+                e.Pointer.Capture(this);
+            }
+        }
+
         if (PageElementsCanvas == null || ViewModel?.CurrentPage == null) return;
         if (!_isResizingHandle && !_isDraggingElement) return;
 
@@ -579,6 +800,27 @@ public partial class DocumentCanvasView : UserControl
 
     private void OnGlobalPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
+        if (_isPotentialDrag && !_isDraggingElement && !_isResizingHandle && !_isMarqueeSelecting)
+        {
+            // Click without drag occurred!
+            if (_wasAlreadySelectedOnPress && _potentialDragElement != null && !_potentialDragElement.IsInEditMode)
+            {
+                // Second click on already selected element enters in-place edit mode!
+                if (_potentialDragElement is TextElementViewModel textVm)
+                {
+                    textVm.IsInEditMode = true;
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => FocusInPlaceTextBox(textVm), Avalonia.Threading.DispatcherPriority.Input);
+                }
+                else if (_potentialDragElement is ShapeElementViewModel shapeVm)
+                {
+                    shapeVm.IsInEditMode = true;
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => FocusInPlaceTextBox(shapeVm), Avalonia.Threading.DispatcherPriority.Input);
+                }
+            }
+        }
+        _isPotentialDrag = false;
+        _potentialDragElement = null;
+
         if (_isMarqueeSelecting)
         {
             if (MarqueeSelectionBox != null) MarqueeSelectionBox.IsVisible = false;
@@ -655,7 +897,10 @@ public partial class DocumentCanvasView : UserControl
             }
         }
 
-        e.Pointer.Capture(null);
+        if (e.Pointer.Captured == this)
+        {
+            e.Pointer.Capture(null);
+        }
         _isDraggingElement = false;
         _isResizingHandle = false;
         _activeResizeHandle = null;
@@ -692,16 +937,46 @@ public partial class DocumentCanvasView : UserControl
     {
         if (ViewModel?.CurrentPage == null) return;
 
+        // Ignore keystrokes originating inside overlays (CanvasTextHudView, FindReplaceBarView)
+        if (e.Source is Visual v && (v.FindAncestorOfType<CanvasTextHudView>() != null || v.FindAncestorOfType<FindReplaceBarView>() != null))
+        {
+            return;
+        }
+
         var selected = ViewModel.CurrentPage.SelectedElement;
 
-        // If user is actively typing inside a TextBox, don't intercept typing keys
-        if (e.Source is TextBox)
+        // Check if user is actively typing inside any TextBox / TextPresenter
+        var topLevel = TopLevel.GetTopLevel(this);
+        var focused = topLevel?.FocusManager?.GetFocusedElement();
+        bool isFocusedInTextBox = focused is TextBox ||
+                                  focused is Avalonia.Controls.Presenters.TextPresenter ||
+                                  (focused is Control ctrl && ctrl.FindAncestorOfType<TextBox>() != null);
+
+        bool isSourceTextBox = e.Source is TextBox ||
+                               e.Source is Avalonia.Controls.Presenters.TextPresenter ||
+                               (e.Source is Control sCtrl && sCtrl.FindAncestorOfType<TextBox>() != null);
+
+        bool isEditingText = isFocusedInTextBox || isSourceTextBox || (selected != null && selected.IsInEditMode);
+
+        if (isEditingText)
         {
-            if (e.Key == Key.Escape && selected is TextElementViewModel textVm)
+            if (e.Key == Key.Escape)
             {
-                textVm.IsInEditMode = false;
+                if (selected != null)
+                {
+                    selected.IsInEditMode = false;
+                }
                 e.Handled = true;
             }
+            else if (e.Key == Key.Enter && (e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
+            {
+                if (selected != null)
+                {
+                    selected.IsInEditMode = false;
+                }
+                e.Handled = true;
+            }
+            // Allow all typing, backspace, delete, arrows, and shortcuts to flow to the TextBox
             return;
         }
 
@@ -793,8 +1068,49 @@ public partial class DocumentCanvasView : UserControl
         }
         else if (selected != null)
         {
+            // If user starts typing any alphanumeric or punctuation character while a text element is selected,
+            // immediately enter in-place edit mode and route focus to the TextBox!
+            if (selected is TextElementViewModel textEl && !textEl.IsInEditMode && !isCtrlOrCmd && !e.KeyModifiers.HasFlag(KeyModifiers.Alt))
+            {
+                bool isPrintable = (e.Key >= Key.A && e.Key <= Key.Z) ||
+                                   (e.Key >= Key.D0 && e.Key <= Key.D9) ||
+                                   (e.Key >= Key.NumPad0 && e.Key <= Key.NumPad9) ||
+                                   e.Key == Key.Space || e.Key == Key.Enter || e.Key == Key.F2 ||
+                                   e.Key == Key.OemPeriod || e.Key == Key.OemComma || e.Key == Key.OemMinus || e.Key == Key.OemPlus;
+
+                if (isPrintable)
+                {
+                    textEl.IsInEditMode = true;
+
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        FocusInPlaceTextBox(textEl);
+                    }, Avalonia.Threading.DispatcherPriority.Input);
+
+                    if (e.Key == Key.Enter || e.Key == Key.F2)
+                    {
+                        e.Handled = true;
+                        return;
+                    }
+                    return;
+                }
+            }
+            else if (selected is ShapeElementViewModel shapeEl && !shapeEl.IsInEditMode && !isCtrlOrCmd && !e.KeyModifiers.HasFlag(KeyModifiers.Alt))
+            {
+                if (e.Key == Key.Enter || e.Key == Key.F2)
+                {
+                    shapeEl.IsInEditMode = true;
+                    e.Handled = true;
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => FocusInPlaceTextBox(shapeEl), Avalonia.Threading.DispatcherPriority.Input);
+                    return;
+                }
+            }
+
             switch (e.Key)
             {
+                case Key.Enter:
+                case Key.F2:
+                    break;
                 case Key.Delete:
                 case Key.Back:
                     ViewModel.Inspector.DeleteSelectedElementCommand.Execute(null);

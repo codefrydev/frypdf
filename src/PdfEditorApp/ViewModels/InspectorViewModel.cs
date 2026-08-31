@@ -1813,6 +1813,55 @@ public partial class InspectorViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void IncreaseFontSize()
+    {
+        if (TextElement != null)
+        {
+            double step = TextElement.FontSize < 24 ? 1.0 : (TextElement.FontSize < 48 ? 2.0 : 4.0);
+            double newSize = Math.Min(288, Math.Round(TextElement.FontSize + step));
+            SelectedFontSize = newSize;
+        }
+    }
+
+    [RelayCommand]
+    public void DecreaseFontSize()
+    {
+        if (TextElement != null)
+        {
+            double step = TextElement.FontSize <= 24 ? 1.0 : (TextElement.FontSize <= 48 ? 2.0 : 4.0);
+            double newSize = Math.Max(4, Math.Round(TextElement.FontSize - step));
+            SelectedFontSize = newSize;
+        }
+    }
+
+    [RelayCommand]
+    public void StartEditMode()
+    {
+        if (SelectedElement != null)
+        {
+            SelectedElement.IsInEditMode = true;
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleEditMode()
+    {
+        if (SelectedElement != null)
+        {
+            SelectedElement.IsInEditMode = !SelectedElement.IsInEditMode;
+        }
+    }
+
+    [RelayCommand]
+    public void FinishEditMode()
+    {
+        if (SelectedElement != null)
+        {
+            SelectedElement.IsInEditMode = false;
+        }
+    }
+
+    [RelayCommand]
     public void ResetTextTransforms()
     {
         if (TextElement != null)

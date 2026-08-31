@@ -31,10 +31,20 @@ public class HtmlToPdfToolTests : IClassFixture<ToolTestFixture>
         var vm = (HtmlToPdfToolViewModel)_fixture.Factory.Create(PdfToolId.HtmlToPdf);
         vm.HtmlContentOrUrl = "<html><body><h1>Sample Document</h1><p>Test HTML body content.</p></body></html>";
 
-        await vm.ExecuteToolCommand.ExecuteAsync(null);
+        try
+        {
+            await vm.ExecuteToolCommand.ExecuteAsync(null);
 
-        Assert.True(vm.IsComplete);
-        Assert.False(vm.HasError);
-        Assert.True(File.Exists(vm.LastOutputFilePath));
+            Assert.True(vm.IsComplete, $"Error: {vm.ErrorMessage}");
+            Assert.False(vm.HasError);
+            Assert.True(File.Exists(vm.LastOutputFilePath));
+        }
+        finally
+        {
+            if (!string.IsNullOrEmpty(vm.LastOutputFilePath) && File.Exists(vm.LastOutputFilePath))
+            {
+                try { File.Delete(vm.LastOutputFilePath); } catch { }
+            }
+        }
     }
 }

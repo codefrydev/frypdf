@@ -19,7 +19,6 @@ public class PdfExportService : IPdfExportService
 {
     static PdfExportService()
     {
-        QuestPDF.Settings.License = LicenseType.Community;
         RegisterEmbeddedFonts();
     }
 

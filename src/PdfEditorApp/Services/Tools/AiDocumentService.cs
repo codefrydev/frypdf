@@ -60,7 +60,7 @@ public class AiDocumentService : IAiDocumentService
             var summary = GenerateExtractiveSummary(fullDocText, options.MaxBulletPoints, options.IncludeExecutiveSummary, options.IncludeActionItems);
             progress?.Report(95.0);
 
-            string outDir = Path.GetDirectoryName(options.InputFilePath) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string outDir = Path.GetDirectoryName(options.InputFilePath) ?? Path.GetTempPath();
             string outPath = Path.Combine(outDir, $"{Path.GetFileNameWithoutExtension(options.InputFilePath)}_Summary.md");
             File.WriteAllText(outPath, summary, Encoding.UTF8);
 

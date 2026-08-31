@@ -311,8 +311,8 @@
                                                                                 </ItemsPanelTemplate>
                                                                             </ItemsControl.ItemsPanel>
                                                                             <ItemsControl.ItemTemplate>
-                                                                                <DataTemplate DataType="x:String">
-                                                                                    <TextBlock Text="{Binding}" FontWeight="Bold" FontSize="10.5" Foreground="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).HeaderTextHex, Converter={StaticResource HexToBrushConverter}}" VerticalAlignment="Center" />
+                                                                                <DataTemplate DataType="elvm:TableHeaderItem">
+                                                                                    <TextBlock Text="{Binding Text}" FontWeight="Bold" FontSize="10.5" Foreground="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).HeaderTextHex, Converter={StaticResource HexToBrushConverter}}" VerticalAlignment="Center" />
                                                                                 </DataTemplate>
                                                                             </ItemsControl.ItemTemplate>
                                                                         </ItemsControl>
@@ -328,8 +328,8 @@
                                                                                             </ItemsPanelTemplate>
                                                                                         </ItemsControl.ItemsPanel>
                                                                                         <ItemsControl.ItemTemplate>
-                                                                                            <DataTemplate DataType="x:String">
-                                                                                                <TextBlock Text="{Binding}" FontSize="10" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                                                                            <DataTemplate DataType="elvm:TableCellItem">
+                                                                                                <TextBlock Text="{Binding Text}" FontSize="10" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                                                                             </DataTemplate>
                                                                                         </ItemsControl.ItemTemplate>
                                                                                     </ItemsControl>
@@ -580,26 +580,26 @@
                                                                                         </ItemsPanelTemplate>
                                                                                     </ItemsControl.ItemsPanel>
                                                                                     <ItemsControl.ItemTemplate>
-                                                                                        <DataTemplate DataType="x:String">
-                                                                                            <TextBlock Text="{Binding}" FontWeight="Bold" FontSize="10.5" Foreground="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).HeaderTextHex, Converter={StaticResource HexToBrushConverter}}" VerticalAlignment="Center" />
+                                                                                        <DataTemplate DataType="elvm:TableHeaderItem">
+                                                                                            <TextBlock Text="{Binding Text}" FontWeight="Bold" FontSize="10.5" Foreground="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).HeaderTextHex, Converter={StaticResource HexToBrushConverter}}" VerticalAlignment="Center" />
                                                                                         </DataTemplate>
                                                                                     </ItemsControl.ItemTemplate>
                                                                                 </ItemsControl>
                                                                             </Border>
                                                                             <ItemsControl Grid.Row="1" ItemsSource="{Binding Rows}">
-                                                                                <ItemsControl.ItemTemplate>
-                                                                                    <DataTemplate DataType="elvm:TableRowItem">
-                                                                                        <Border BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="8,5">
-                                                                                            <ItemsControl ItemsSource="{Binding Cells}">
-                                                                                                <ItemsControl.ItemsPanel>
-                                                                                                    <ItemsPanelTemplate>
-                                                                                                        <UniformGrid Rows="1" />
-                                                                                                    </ItemsPanelTemplate>
-                                                                                                </ItemsControl.ItemsPanel>
-                                                                                                <ItemsControl.ItemTemplate>
-                                                                                                    <DataTemplate DataType="x:String">
-                                                                                                        <TextBlock Text="{Binding}" FontSize="10" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                                                                                    </DataTemplate>
+                                                                                 <ItemsControl.ItemTemplate>
+                                                                                     <DataTemplate DataType="elvm:TableRowItem">
+                                                                                         <Border BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="8,5">
+                                                                                             <ItemsControl ItemsSource="{Binding Cells}">
+                                                                                                 <ItemsControl.ItemsPanel>
+                                                                                                     <ItemsPanelTemplate>
+                                                                                                         <UniformGrid Rows="1" />
+                                                                                                     </ItemsPanelTemplate>
+                                                                                                 </ItemsControl.ItemsPanel>
+                                                                                                 <ItemsControl.ItemTemplate>
+                                                                                                     <DataTemplate DataType="elvm:TableCellItem">
+                                                                                                         <TextBlock Text="{Binding Text}" FontSize="10" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                                                                                     </DataTemplate>
                                                                                                 </ItemsControl.ItemTemplate>
                                                                                             </ItemsControl>
                                                                                         </Border>

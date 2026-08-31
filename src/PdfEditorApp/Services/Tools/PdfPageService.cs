@@ -65,7 +65,7 @@ public class PdfPageService : IPdfPageService
             string outPath = options.OutputFilePath;
             if (string.IsNullOrWhiteSpace(outPath))
             {
-                string dir = Path.GetDirectoryName(options.InputFiles[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string dir = Path.GetDirectoryName(options.InputFiles[0]) ?? Path.GetTempPath();
                 outPath = Path.Combine(dir, "Merged_Document.pdf");
             }
 

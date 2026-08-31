@@ -703,7 +703,7 @@ public class PdfConversionService : IPdfConversionService
             string outPath = options.OutputFilePath;
             if (string.IsNullOrWhiteSpace(outPath))
             {
-                string dir = Path.GetDirectoryName(options.ImageFiles[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string dir = Path.GetDirectoryName(options.ImageFiles[0]) ?? Path.GetTempPath();
                 outPath = Path.Combine(dir, "Images_Document.pdf");
             }
 
@@ -796,11 +796,7 @@ public class PdfConversionService : IPdfConversionService
             string outPath = options.OutputFilePath;
             if (string.IsNullOrWhiteSpace(outPath))
             {
-                string dir = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
-                {
-                    dir = Path.GetTempPath();
-                }
+                string dir = Path.GetTempPath();
                 outPath = Path.Combine(dir, $"Webpage_Export_{Guid.NewGuid():N}.pdf");
             }
 

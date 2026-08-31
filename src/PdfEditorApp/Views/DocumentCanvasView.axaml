@@ -19,6 +19,10 @@
 
         <!-- Rich Element Right-Click Context Menu -->
         <ContextMenu x:Key="ElementContextMenu" x:DataType="elvm:ElementViewModelBase">
+            <MenuItem Header="Edit In-Place" InputGesture="F2" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.StartEditModeCommand}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="PencilOutline" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
+            </MenuItem>
+            <Separator />
             <MenuItem Header="Cut" InputGesture="Ctrl+X" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).CutCommand}">
                 <MenuItem.Icon><materialIcons:MaterialIcon Kind="ContentCut" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" /></MenuItem.Icon>
             </MenuItem>
@@ -255,50 +259,65 @@
                                                  FontWeight="{Binding IsBold, Converter={x:Static converters:BooleanToFontWeightConverter.Instance}}"
                                                  FontStyle="{Binding IsItalic, Converter={x:Static converters:BooleanToFontStyleConverter.Instance}}"
                                                  Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                 CaretBrush="{DynamicResource WinAccentBrush}"
+                                                 FocusAdorner="{x:Null}"
+                                                 MinHeight="0"
+                                                 MinWidth="0"
+                                                 HorizontalAlignment="Stretch"
+                                                 VerticalAlignment="Stretch"
+                                                 VerticalContentAlignment="Top"
+                                                 Background="Transparent"
+                                                 BorderThickness="1"
+                                                 BorderBrush="{DynamicResource WinAccentBrush}"
+                                                 CornerRadius="2"
                                                  AcceptsReturn="True"
                                                  TextWrapping="Wrap"
+                                                 TextAlignment="{Binding Alignment, Converter={StaticResource TextAlignmentConverter}}"
                                                  Padding="{Binding Padding, Converter={StaticResource DoubleToThickness}}"
                                                  IsVisible="{Binding IsInEditMode}"
+                                                 AttachedToVisualTree="OnInPlaceTextBoxAttached"
                                                  LostFocus="OnTextBoxLostFocus" />
 
                                         <!-- Selection Adorner & Resize Handles -->
-                                        <Grid IsVisible="{Binding IsSelected}" IsHitTestVisible="True">
+                                        <Grid IsVisible="{Binding IsSelected}" IsHitTestVisible="{Binding !IsInEditMode}">
                                             <!-- Blue Bounding Box -->
                                             <Border BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
 
                                             <!-- 8 Resize Handles -->
-                                            <!-- Top Left -->
-                                            <Border Tag="topleft" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
-                                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-4,-4,0,0" Cursor="TopLeftCorner"
-                                                    PointerPressed="OnHandlePointerPressed" />
-                                            <!-- Top Middle -->
-                                            <Border Tag="top" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
-                                                    CornerRadius="1.5" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-4,0,0" Cursor="SizeNorthSouth"
-                                                    PointerPressed="OnHandlePointerPressed" />
-                                            <!-- Top Right -->
-                                            <Border Tag="topright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
-                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-4,-4,0" Cursor="TopRightCorner"
-                                                    PointerPressed="OnHandlePointerPressed" />
-                                            <!-- Left Middle -->
-                                            <Border Tag="left" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
-                                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-4,0,0,0" Cursor="SizeWestEast"
-                                                    PointerPressed="OnHandlePointerPressed" />
-                                            <!-- Right Middle -->
-                                            <Border Tag="right" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
-                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-4,0" Cursor="SizeWestEast"
-                                                    PointerPressed="OnHandlePointerPressed" />
-                                            <!-- Bottom Left -->
-                                            <Border Tag="bottomleft" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
-                                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-4,0,0,-4" Cursor="BottomLeftCorner"
-                                                    PointerPressed="OnHandlePointerPressed" />
-                                            <!-- Bottom Middle -->
-                                            <Border Tag="bottom" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
-                                                    CornerRadius="1.5" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-4" Cursor="SizeNorthSouth"
-                                                    PointerPressed="OnHandlePointerPressed" />
-                                            <!-- Bottom Right -->
-                                            <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
-                                                    CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
-                                                    PointerPressed="OnHandlePointerPressed" />
+                                            <Panel IsVisible="{Binding !IsInEditMode}">
+                                                <!-- Top Left -->
+                                                <Border Tag="topleft" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
+                                                        CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-4,-4,0,0" Cursor="TopLeftCorner"
+                                                        PointerPressed="OnHandlePointerPressed" />
+                                                <!-- Top Middle -->
+                                                <Border Tag="top" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
+                                                        CornerRadius="1.5" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-4,0,0" Cursor="SizeNorthSouth"
+                                                        PointerPressed="OnHandlePointerPressed" />
+                                                <!-- Top Right -->
+                                                <Border Tag="topright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
+                                                        CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-4,-4,0" Cursor="TopRightCorner"
+                                                        PointerPressed="OnHandlePointerPressed" />
+                                                <!-- Left Middle -->
+                                                <Border Tag="left" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
+                                                        CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-4,0,0,0" Cursor="SizeWestEast"
+                                                        PointerPressed="OnHandlePointerPressed" />
+                                                <!-- Right Middle -->
+                                                <Border Tag="right" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
+                                                        CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-4,0" Cursor="SizeWestEast"
+                                                        PointerPressed="OnHandlePointerPressed" />
+                                                <!-- Bottom Left -->
+                                                <Border Tag="bottomleft" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
+                                                        CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-4,0,0,-4" Cursor="BottomLeftCorner"
+                                                        PointerPressed="OnHandlePointerPressed" />
+                                                <!-- Bottom Middle -->
+                                                <Border Tag="bottom" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
+                                                        CornerRadius="1.5" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-4" Cursor="SizeNorthSouth"
+                                                        PointerPressed="OnHandlePointerPressed" />
+                                                <!-- Bottom Right -->
+                                                <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
+                                                        CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
+                                                        PointerPressed="OnHandlePointerPressed" />
+                                            </Panel>
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -306,7 +325,7 @@
                                 <!-- 2. SHAPE ELEMENT TEMPLATE -->
                                 <DataTemplate DataType="elvm:ShapeElementViewModel">
                                     <Grid Width="{Binding Width}" Height="{Binding Height}">
-                                        <Panel PointerPressed="OnElementPointerPressed">
+                                        <Panel PointerPressed="OnElementPointerPressed" DoubleTapped="OnShapeElementDoubleTapped">
                                             <!-- Vector Geometry Shape -->
                                             <Path Data="{Binding PathData}"
                                                   Fill="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
@@ -317,22 +336,44 @@
                                                   StrokeJoin="Round"
                                                   Stretch="Fill" />
 
-                                            <!-- Optional Centered Label / Stamp Text -->
+                                            <!-- Centered Label / Stamp Text (Visible when NOT in edit mode) -->
                                             <TextBlock Text="{Binding Label}"
                                                        FontSize="{Binding LabelFontSize}"
                                                        FontWeight="Bold"
                                                        Foreground="{Binding LabelColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"
-                                                       IsVisible="{Binding Label, Converter={StaticResource NullToBooleanConverter}}" />
+                                                       TextWrapping="Wrap"
+                                                       TextAlignment="Center"
+                                                       Margin="8,4"
+                                                       IsVisible="{Binding !IsInEditMode}" />
+
+                                            <!-- In-Place Shape Label Editor (Visible when in edit mode) -->
+                                            <TextBox Text="{Binding Label, Mode=TwoWay}"
+                                                     FontSize="{Binding LabelFontSize}"
+                                                     FontWeight="Bold"
+                                                     Foreground="{Binding LabelColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                     Background="#40FFFFFF"
+                                                     BorderBrush="{DynamicResource WinAccentBrush}"
+                                                     BorderThickness="1"
+                                                     CornerRadius="3"
+                                                     HorizontalAlignment="Center"
+                                                     VerticalAlignment="Center"
+                                                     TextAlignment="Center"
+                                                     Padding="6,2"
+                                                     MinWidth="60"
+                                                     MaxWidth="{Binding Width}"
+                                                     IsVisible="{Binding IsInEditMode}"
+                                                     AttachedToVisualTree="OnInPlaceTextBoxAttached"
+                                                     LostFocus="OnShapeTextBoxLostFocus" />
                                         </Panel>
 
                                         <!-- Selection Adorner -->
-                                        <Grid IsVisible="{Binding IsSelected}">
+                                        <Grid IsVisible="{Binding IsSelected}" IsHitTestVisible="{Binding !IsInEditMode}">
                                             <Border BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5" CornerRadius="2" IsHitTestVisible="False" />
                                             <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
-                                                    PointerPressed="OnHandlePointerPressed" />
+                                                    PointerPressed="OnHandlePointerPressed" IsVisible="{Binding !IsInEditMode}" />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -369,7 +410,7 @@
                                                 PointerPressed="OnElementPointerPressed">
                                             <Grid RowDefinitions="Auto,*">
                                                 <!-- Table Header Row -->
-                                                <Border Grid.Row="0" Background="{Binding HeaderBackgroundHex, Converter={StaticResource HexToBrushConverter}}" Padding="8,6">
+                                                <Border Grid.Row="0" Background="{Binding HeaderBackgroundHex, Converter={StaticResource HexToBrushConverter}}" Padding="6,4">
                                                     <ItemsControl ItemsSource="{Binding Headers}">
                                                         <ItemsControl.ItemsPanel>
                                                             <ItemsPanelTemplate>
@@ -377,12 +418,16 @@
                                                             </ItemsPanelTemplate>
                                                         </ItemsControl.ItemsPanel>
                                                         <ItemsControl.ItemTemplate>
-                                                            <DataTemplate DataType="x:String">
-                                                                <TextBlock Text="{Binding}"
-                                                                           FontWeight="Bold"
-                                                                           FontSize="10.5"
-                                                                           Foreground="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).HeaderTextHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                           VerticalAlignment="Center" />
+                                                            <DataTemplate DataType="elvm:TableHeaderItem">
+                                                                <TextBox Text="{Binding Text, Mode=TwoWay}"
+                                                                         FontWeight="Bold"
+                                                                         FontSize="10.5"
+                                                                         Foreground="{Binding $parent[Border].((elvm:TableElementViewModel)DataContext).HeaderTextHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                         Background="Transparent"
+                                                                         BorderThickness="0"
+                                                                         Padding="4,2"
+                                                                         VerticalAlignment="Center"
+                                                                         LostFocus="OnTableCellLostFocus" />
                                                             </DataTemplate>
                                                         </ItemsControl.ItemTemplate>
                                                     </ItemsControl>
@@ -393,7 +438,7 @@
                                                     <ItemsControl ItemsSource="{Binding Rows}">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate DataType="elvm:TableRowItem">
-                                                                <Border BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="8,5">
+                                                                <Border BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="6,4">
                                                                     <ItemsControl ItemsSource="{Binding Cells}">
                                                                         <ItemsControl.ItemsPanel>
                                                                             <ItemsPanelTemplate>
@@ -401,8 +446,15 @@
                                                                             </ItemsPanelTemplate>
                                                                         </ItemsControl.ItemsPanel>
                                                                         <ItemsControl.ItemTemplate>
-                                                                            <DataTemplate DataType="x:String">
-                                                                                <TextBlock Text="{Binding}" FontSize="10" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                                                            <DataTemplate DataType="elvm:TableCellItem">
+                                                                                <TextBox Text="{Binding Text, Mode=TwoWay}"
+                                                                                         FontSize="10"
+                                                                                         Foreground="{DynamicResource WinTextBrush}"
+                                                                                         Background="Transparent"
+                                                                                         BorderThickness="0"
+                                                                                         Padding="4,2"
+                                                                                         VerticalAlignment="Center"
+                                                                                         LostFocus="OnTableCellLostFocus" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
@@ -750,7 +802,8 @@
                                                 </Grid>
                                                 <TextBox Grid.Row="1" Text="{Binding NoteText, Mode=TwoWay}"
                                                          FontSize="10.5" Foreground="#78350F" Background="Transparent"
-                                                         BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" />
+                                                         BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True"
+                                                         LostFocus="OnStickyNoteTextBoxLostFocus" />
                                                 <Border Grid.Row="2" Background="#FEF3C7" CornerRadius="3" Padding="4,2" HorizontalAlignment="Left" Margin="0,4,0,0">
                                                     <TextBlock Text="{Binding Status}" FontSize="9" FontWeight="SemiBold" Foreground="#B45309" />
                                                 </Border>
@@ -846,6 +899,7 @@
                                                          TextWrapping="Wrap"
                                                          Padding="4"
                                                          IsVisible="{Binding IsInEditMode}"
+                                                         AttachedToVisualTree="OnInPlaceTextBoxAttached"
                                                          LostFocus="OnMathTextBoxLostFocus" />
                                             </Grid>
                                         </Border>
@@ -946,6 +1000,12 @@
             <TextBlock Text="{Binding CurrentPage.SelectionCount, StringFormat='{}{0} Elements Selected'}" Foreground="White" FontWeight="SemiBold" FontSize="12" />
         </StackPanel>
     </Border>
+
+    <!-- Floating In-Canvas Text Formatting HUD Bar (Contextual when Text Element is Selected) -->
+    <views:CanvasTextHudView HorizontalAlignment="Center"
+                             VerticalAlignment="Top"
+                             Margin="0,16,0,0"
+                             IsVisible="{Binding Inspector.IsTextElement}" />
 
     <!-- Floating In-Canvas Find & Replace HUD Bar -->
     <views:FindReplaceBarView HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,16,24,0" IsVisible="{Binding IsFindReplaceOpen}" />

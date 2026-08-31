@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
@@ -8,11 +9,42 @@ using PdfEditorApp.Models.Elements;
 
 namespace PdfEditorApp.ViewModels.ElementViewModels;
 
+public partial class TableHeaderItem : ObservableObject
+{
+    [ObservableProperty]
+    private string _text = "";
+
+    public TableHeaderItem(string text = "")
+    {
+        _text = text;
+    }
+
+    public override string ToString() => Text;
+}
+
+public partial class TableCellItem : ObservableObject
+{
+    [ObservableProperty]
+    private string _text = "";
+
+    public TableCellItem(string text = "")
+    {
+        _text = text;
+    }
+
+    public override string ToString() => Text;
+}
+
 public class TableRowItem : ObservableObject
 {
-    public ObservableCollection<string> Cells { get; } = new();
+    public ObservableCollection<TableCellItem> Cells { get; } = new();
 
     public TableRowItem(IEnumerable<string> cells)
+    {
+        foreach (var c in cells) Cells.Add(new TableCellItem(c));
+    }
+
+    public TableRowItem(IEnumerable<TableCellItem> cells)
     {
         foreach (var c in cells) Cells.Add(c);
     }
@@ -32,7 +64,7 @@ public partial class TableElementViewModel : ElementViewModelBase
     [ObservableProperty]
     private string _borderColorHex = "#E1DFDD";
 
-    public ObservableCollection<string> Headers { get; } = new();
+    public ObservableCollection<TableHeaderItem> Headers { get; } = new();
     public ObservableCollection<TableRowItem> Rows { get; } = new();
 
     public override ElementKind Kind => ElementKind.Table;
@@ -40,10 +72,10 @@ public partial class TableElementViewModel : ElementViewModelBase
 
     public TableElementViewModel()
     {
-        Headers.Add("Item Description");
-        Headers.Add("Qty");
-        Headers.Add("Rate");
-        Headers.Add("Amount");
+        Headers.Add(new TableHeaderItem("Item Description"));
+        Headers.Add(new TableHeaderItem("Qty"));
+        Headers.Add(new TableHeaderItem("Rate"));
+        Headers.Add(new TableHeaderItem("Amount"));
 
         Rows.Add(new TableRowItem(new[] { "Cloud Architecture Consulting", "40 hrs", "$150.00", "$6,000.00" }));
         Rows.Add(new TableRowItem(new[] { "Avalonia Desktop UI Engineering", "60 hrs", "$140.00", "$8,400.00" }));
@@ -77,10 +109,10 @@ public partial class TableElementViewModel : ElementViewModelBase
     public void AddColumn()
     {
         string headerName = $"Col {Headers.Count + 1}";
-        Headers.Add(headerName);
+        Headers.Add(new TableHeaderItem(headerName));
         foreach (var r in Rows)
         {
-            r.Cells.Add("---");
+            r.Cells.Add(new TableCellItem("---"));
         }
         OnPropertyChanged(nameof(DisplayName));
     }
@@ -179,14 +211,9 @@ public partial class TableElementViewModel : ElementViewModelBase
             HeaderTextHex = HeaderTextHex,
             AlternateRowBackgroundHex = AlternateRowBackgroundHex,
             BorderColorHex = BorderColorHex,
-            Headers = new List<string>(Headers),
-            Rows = new List<List<string>>()
+            Headers = Headers.Select(h => h.Text).ToList(),
+            Rows = Rows.Select(r => r.Cells.Select(c => c.Text).ToList()).ToList()
         };
-
-        foreach (var row in Rows)
-        {
-            model.Rows.Add(new List<string>(row.Cells));
-        }
 
         return model;
     }
@@ -211,7 +238,7 @@ public partial class TableElementViewModel : ElementViewModelBase
             BorderColorHex = table.BorderColorHex;
 
             Headers.Clear();
-            foreach (var h in table.Headers) Headers.Add(h);
+            foreach (var h in table.Headers) Headers.Add(new TableHeaderItem(h));
 
             Rows.Clear();
             foreach (var r in table.Rows) Rows.Add(new TableRowItem(r));

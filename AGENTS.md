@@ -60,8 +60,6 @@ PDFCreator/
 ├── tests/
 │   └── PdfEditorApp.Tests/         # Comprehensive xUnit test suite & visual verification tests
 ├── docs/                           # Architecture, contributing, and PDF deconstruction manuals
-├── sample1.pdf                     # Standard test fixture: Government ID Card (Images + Hindi)
-├── Class_6_Math_Chapter_1...pdf    # Standard test fixture: Textbook Chapter (Multi-paragraph + Watermark)
 ├── AGENTS.md                       # This operating guide
 └── README.md                       # Repository overview
 ```
@@ -177,12 +175,12 @@ To maintain high responsiveness and prevent memory leaks during long editing ses
 
 When adding support for a new or complex PDF type:
 
-1. **Place Sample PDF**: Save the test PDF in the project root or test directory.
+1. **Place Sample PDF Locally**: Save the test PDF in the project root or test directory. Ensure it matches `.gitignore` patterns (`*.pdf`, `sample*.pdf`) and is **never** staged or committed to Git.
 2. **Run Visual Verification Test**:
    ```bash
    dotnet test --filter "FullyQualifiedName~GenerateVisualComparison_SideBySide"
    ```
-3. **Inspect Output Bitmaps**: Open `<sample_name>_side_by_side.png` to compare original PDF ground truth against the deconstructed canvas.
+3. **Inspect Output Bitmaps**: Open the generated side-by-side PNG in `VisualArtifacts/` (automatically ignored by Git) to compare original PDF ground truth against the deconstructed canvas.
 4. **Tune Algorithms**: Adjust clustering, Z-indexing, or shape heuristics in `PdfDeconstructionEngine` or `PdfLayoutAnalyzer`.
 5. **Enforce Regression Invariance**: Run `dotnet test` and confirm all 450+ unit tests pass.
 
@@ -194,3 +192,25 @@ When adding support for a new or complex PDF type:
 - **Treat Warnings As Errors**: All builds must be 100% warning-free.
 - **Unit Testing**: Every new service, converter, or deconstruction heuristic must include unit tests with deterministic assertions.
 - **Documentation**: Keep [`docs/PDF_DECONSTRUCTION_AND_EDITING.md`](docs/PDF_DECONSTRUCTION_AND_EDITING.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) updated when making structural changes.
+
+---
+
+## 7. Security, Privacy & Zero PII Policy (STRICT)
+
+**CRITICAL RULE**: Under no circumstances should sensitive data, credentials, or Personally Identifiable Information (PII) ever be written, hardcoded, or committed to this repository.
+
+1. **Zero PII in Source Code and Tests**:
+   - **Never** hardcode real personal names, private addresses, real phone numbers, real email addresses, or personal biometric/signature records in source code, unit test assertions, docstrings, or template defaults.
+   - **Never** write real government identification numbers (e.g. Aadhaar numbers, SSNs, PANs, Passport numbers, Driver's License IDs).
+   - In test cases, always use **structural assertions** (e.g. element count, dimension bounds, non-empty text) or **generic regular expressions** (e.g. `\b\d{4}\s\d{4}\s\d{4}\b`) rather than asserting specific personal data.
+
+2. **No Credentials, Keys, or Secrets**:
+   - **Never** commit API keys, access tokens, passwords, private certificates, or user credentials.
+   - Use environment variables or configuration providers for external services where needed.
+
+3. **Synthetic & Dummy Data Only**:
+   - When building mock templates, demonstrations, or test fixtures, use only standard synthetic dummy data (e.g. `Jane Doe`, `555-0199`, `user@example.com`, `ACME Corp`, generic sample logos).
+
+4. **Local Artifact & PDF Exclusion**:
+   - All real-world test PDFs, generated side-by-side visual comparison bitmaps, and test exports must be excluded via `.gitignore` (`*.pdf`, `VisualArtifacts/`, `*_side_by_side.png`).
+   - Prior to making commits or pushing to remote, always verify with `git status` and `git diff` that no untracked PDFs or sensitive data are being introduced.

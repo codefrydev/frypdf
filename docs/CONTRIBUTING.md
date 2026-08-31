@@ -42,6 +42,7 @@ dotnet run --project src/PdfEditorApp/PdfEditorApp.csproj
 - Follow MVVM design patterns with `CommunityToolkit.Mvvm`.
 - Ensure all business logic in `Services` has corresponding unit tests in `tests/PdfEditorApp.Tests/`.
 - Ensure no warnings or build errors are introduced (`<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`).
+- **Security & Privacy (Strict)**: Never commit credentials, secrets, or Personally Identifiable Information (PII) — including real government IDs, personal names, phone numbers, or addresses. Always use synthetic/dummy test data.
 
 ---
 

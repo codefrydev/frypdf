@@ -255,7 +255,8 @@
                                 <TextBlock Text="Text Content" Classes="inspector-label" />
                                 <TextBox Text="{Binding TextElement.Text, Mode=TwoWay}"
                                          AcceptsReturn="True" TextWrapping="Wrap"
-                                         Height="54" FontSize="12" CornerRadius="5" Padding="6,4" />
+                                         Height="54" FontSize="12" CornerRadius="5" Padding="6,4"
+                                         AttachedToVisualTree="OnSidebarTextBoxAttached" />
                             </StackPanel>
 
                             <!-- Font Family & Font Size -->
@@ -285,31 +286,31 @@
                             <StackPanel Spacing="3">
                                 <TextBlock Text="Style, Underline &amp; Alignment" Classes="inspector-label" />
                                 <WrapPanel Orientation="Horizontal">
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1" Focusable="False"
                                             Classes.active="{Binding TextElement.IsBold, FallbackValue=False}"
                                             Command="{Binding ToggleBoldCommand}" ToolTip.Tip="Bold (Ctrl+B)">
                                         <materialIcons:MaterialIcon Kind="FormatBold" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1" Focusable="False"
                                             Classes.active="{Binding TextElement.IsItalic, FallbackValue=False}"
                                             Command="{Binding ToggleItalicCommand}" ToolTip.Tip="Italic (Ctrl+I)">
                                         <materialIcons:MaterialIcon Kind="FormatItalic" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1" Focusable="False"
                                             Classes.active="{Binding TextElement.IsUnderline, FallbackValue=False}"
                                             Command="{Binding ToggleUnderlineCommand}" ToolTip.Tip="Single Underline (Ctrl+U)">
                                         <materialIcons:MaterialIcon Kind="FormatUnderline" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1" Focusable="False"
                                             Classes.active="{Binding TextElement.IsDoubleUnderline, FallbackValue=False}"
                                             Command="{Binding ToggleDoubleUnderlineCommand}" ToolTip.Tip="Double Underline">
                                         <materialIcons:MaterialIcon Kind="FormatUnderline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1" Focusable="False"
                                             Classes.active="{Binding TextElement.IsStrikethrough, FallbackValue=False}"
                                             Command="{Binding ToggleStrikethroughCommand}" ToolTip.Tip="Strikethrough">
                                         <materialIcons:MaterialIcon Kind="FormatStrikethrough" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
@@ -317,12 +318,12 @@
 
                                     <Rectangle Width="1" Height="18" Fill="{DynamicResource WinBorderBrush}" Margin="3,0" />
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1" Focusable="False"
                                             Command="{Binding ToggleBulletsCommand}" ToolTip.Tip="Bullet List">
                                         <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1" Focusable="False"
                                             Command="{Binding ToggleNumberingCommand}" ToolTip.Tip="Numbered List">
                                         <materialIcons:MaterialIcon Kind="FormatListNumbered" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                     </Button>
@@ -330,25 +331,25 @@
                                     <Rectangle Width="1" Height="18" Fill="{DynamicResource WinBorderBrush}" Margin="3,0" />
 
                                     <!-- Horizontal Alignment -->
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1" Focusable="False"
                                             Classes.active="{Binding TextElement.Alignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Left}"
                                             Command="{Binding SetAlignmentCommand}" CommandParameter="Left" ToolTip.Tip="Align Left">
                                         <materialIcons:MaterialIcon Kind="FormatAlignLeft" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1" Focusable="False"
                                             Classes.active="{Binding TextElement.Alignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Center}"
                                             Command="{Binding SetAlignmentCommand}" CommandParameter="Center" ToolTip.Tip="Align Center">
                                         <materialIcons:MaterialIcon Kind="FormatAlignCenter" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1" Focusable="False"
                                             Classes.active="{Binding TextElement.Alignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Right}"
                                             Command="{Binding SetAlignmentCommand}" CommandParameter="Right" ToolTip.Tip="Align Right">
                                         <materialIcons:MaterialIcon Kind="FormatAlignRight" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                     </Button>
 
-                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1"
+                                    <Button Classes="mini-tool-btn" Width="28" Height="28" Margin="1" Focusable="False"
                                             Classes.active="{Binding TextElement.Alignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Justify}"
                                             Command="{Binding SetAlignmentCommand}" CommandParameter="Justify" ToolTip.Tip="Justify">
                                         <materialIcons:MaterialIcon Kind="FormatAlignJustify" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />

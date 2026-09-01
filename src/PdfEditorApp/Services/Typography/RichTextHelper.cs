@@ -66,6 +66,7 @@ public static class RichTextHelper
     {
         return text.Contains("**") || text.Contains('*') ||
                text.Contains("~~") || text.Contains("<u>") || text.Contains("<color") ||
+               text.Contains("<size") || text.Contains("<font") ||
                text.Contains('^') || text.Contains('~') || (text.Contains('[') && text.Contains('('));
     }
 
@@ -166,6 +167,57 @@ public static class RichTextHelper
                         ParseFormattedString(inner, output, baseStyle, nextStyle);
                         pos = endTag + closeTagName.Length;
                         continue;
+                    }
+                }
+            }
+
+            // 1c. Font size tag <size=14>...</size>
+            if (text.AsSpan(pos).StartsWith("<size", StringComparison.OrdinalIgnoreCase))
+            {
+                int tagClose = text.IndexOf('>', pos);
+                if (tagClose > pos)
+                {
+                    string openTag = text.Substring(pos, tagClose - pos + 1);
+                    int eq = openTag.IndexOf('=');
+                    if (eq > 0 && double.TryParse(openTag.Substring(eq + 1).Trim(' ', '>', '"', '\''), CultureInfo.InvariantCulture, out double sz))
+                    {
+                        int endTag = text.IndexOf("</size>", tagClose + 1, StringComparison.OrdinalIgnoreCase);
+                        if (endTag > tagClose)
+                        {
+                            FlushBuffer();
+                            string inner = text.Substring(tagClose + 1, endTag - tagClose - 1);
+                            var nextStyle = currentStyle.Clone();
+                            nextStyle.FontSize = sz;
+                            ParseFormattedString(inner, output, baseStyle, nextStyle);
+                            pos = endTag + "</size>".Length;
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            // 1d. Font family tag <font=Arial>...</font>
+            if (text.AsSpan(pos).StartsWith("<font", StringComparison.OrdinalIgnoreCase))
+            {
+                int tagClose = text.IndexOf('>', pos);
+                if (tagClose > pos)
+                {
+                    string openTag = text.Substring(pos, tagClose - pos + 1);
+                    int eq = openTag.IndexOf('=');
+                    if (eq > 0)
+                    {
+                        string family = openTag.Substring(eq + 1).Trim(' ', '>', '"', '\'');
+                        int endTag = text.IndexOf("</font>", tagClose + 1, StringComparison.OrdinalIgnoreCase);
+                        if (endTag > tagClose)
+                        {
+                            FlushBuffer();
+                            string inner = text.Substring(tagClose + 1, endTag - tagClose - 1);
+                            var nextStyle = currentStyle.Clone();
+                            nextStyle.FontFamily = family;
+                            ParseFormattedString(inner, output, baseStyle, nextStyle);
+                            pos = endTag + "</font>".Length;
+                            continue;
+                        }
                     }
                 }
             }
@@ -381,6 +433,19 @@ public static class RichTextHelper
                 fragment = $"<color={span.TextColorHex}>{fragment}</color>";
             }
 
+            // Check custom font size
+            if (span.FontSize.HasValue && baseStyle?.FontSize != null && Math.Abs(span.FontSize.Value - baseStyle.FontSize) > 0.1)
+            {
+                fragment = string.Format(CultureInfo.InvariantCulture, "<size={0:0.#}>{1}</size>", span.FontSize.Value, fragment);
+            }
+
+            // Check custom font family
+            if (!string.IsNullOrEmpty(span.FontFamily) &&
+                !string.Equals(span.FontFamily, baseStyle?.FontFamily, StringComparison.OrdinalIgnoreCase))
+            {
+                fragment = $"<font={span.FontFamily}>{fragment}</font>";
+            }
+
             // Check hyperlink
             if (!string.IsNullOrEmpty(span.LinkUrl))
             {
@@ -459,4 +524,209 @@ public static class RichTextHelper
                a.Script == b.Script &&
                string.Equals(a.LinkUrl, b.LinkUrl, StringComparison.OrdinalIgnoreCase);
     }
+
+    /// <summary>
+    /// Intelligently wraps or unwraps formatting tokens around a selected text range.
+    /// Handles whitespace trimming and toggles existing tags on and off cleanly.
+    /// </summary>
+    public static InlineFormatResult ToggleInlineFormatting(
+        string fullText,
+        int selectionStart,
+        int selectionLength,
+        InlineFormatType formatType,
+        string? argument = null)
+    {
+        if (string.IsNullOrEmpty(fullText) || selectionLength <= 0)
+        {
+            return new InlineFormatResult(fullText ?? string.Empty, selectionStart, selectionLength);
+        }
+
+        int start = Math.Clamp(selectionStart, 0, fullText.Length);
+        int length = Math.Clamp(selectionLength, 0, fullText.Length - start);
+        if (length <= 0)
+        {
+            return new InlineFormatResult(fullText, start, 0);
+        }
+
+        string rawSelected = fullText.Substring(start, length);
+
+        // Separate any leading or trailing whitespace so users double-clicking words don't format whitespace
+        int leadingWsCount = 0;
+        while (leadingWsCount < rawSelected.Length && char.IsWhiteSpace(rawSelected[leadingWsCount]))
+        {
+            leadingWsCount++;
+        }
+
+        int trailingWsCount = 0;
+        while (trailingWsCount < (rawSelected.Length - leadingWsCount) && char.IsWhiteSpace(rawSelected[rawSelected.Length - 1 - trailingWsCount]))
+        {
+            trailingWsCount++;
+        }
+
+        string leadingWs = rawSelected.Substring(0, leadingWsCount);
+        string trailingWs = rawSelected.Substring(rawSelected.Length - trailingWsCount);
+        string core = rawSelected.Substring(leadingWsCount, rawSelected.Length - leadingWsCount - trailingWsCount);
+        int coreStart = start + leadingWsCount;
+        int coreLength = core.Length;
+
+        if (coreLength == 0)
+        {
+            return new InlineFormatResult(fullText, start, length);
+        }
+
+        string beforeCore = fullText.Substring(0, coreStart);
+        string afterCore = fullText.Substring(coreStart + coreLength);
+
+        string openTag;
+        string closeTag;
+        bool isColor = formatType == InlineFormatType.Color;
+        bool isSize = formatType == InlineFormatType.Size;
+        bool isFont = formatType == InlineFormatType.Font;
+
+        switch (formatType)
+        {
+            case InlineFormatType.Bold:
+                openTag = "**";
+                closeTag = "**";
+                break;
+            case InlineFormatType.Italic:
+                openTag = "*";
+                closeTag = "*";
+                break;
+            case InlineFormatType.Underline:
+                openTag = "<u>";
+                closeTag = "</u>";
+                break;
+            case InlineFormatType.Strikethrough:
+                openTag = "~~";
+                closeTag = "~~";
+                break;
+            case InlineFormatType.Color:
+                openTag = $"<color={argument ?? "#0F6CBD"}>";
+                closeTag = "</color>";
+                break;
+            case InlineFormatType.Size:
+                openTag = $"<size={argument ?? "14"}>";
+                closeTag = "</size>";
+                break;
+            case InlineFormatType.Font:
+                openTag = $"<font={argument ?? "Arial"}>";
+                closeTag = "</font>";
+                break;
+            default:
+                return new InlineFormatResult(fullText, start, length);
+        }
+
+        // 1. Check if core itself is wrapped with the tags
+        if (isColor)
+        {
+            if (core.StartsWith("<color=", StringComparison.OrdinalIgnoreCase) && core.EndsWith("</color>", StringComparison.OrdinalIgnoreCase))
+            {
+                int closeTagIndex = core.IndexOf('>');
+                if (closeTagIndex > 0)
+                {
+                    string inner = core.Substring(closeTagIndex + 1, core.Length - closeTagIndex - 1 - "</color>".Length);
+                    string updated = $"{openTag}{inner}{closeTag}";
+                    string resultText = beforeCore + updated + afterCore;
+                    return new InlineFormatResult(resultText, coreStart - leadingWsCount, leadingWs.Length + updated.Length + trailingWs.Length);
+                }
+            }
+        }
+        else if (isSize)
+        {
+            if (core.StartsWith("<size=", StringComparison.OrdinalIgnoreCase) && core.EndsWith("</size>", StringComparison.OrdinalIgnoreCase))
+            {
+                int closeTagIndex = core.IndexOf('>');
+                if (closeTagIndex > 0)
+                {
+                    string inner = core.Substring(closeTagIndex + 1, core.Length - closeTagIndex - 1 - "</size>".Length);
+                    string updated = $"{openTag}{inner}{closeTag}";
+                    string resultText = beforeCore + updated + afterCore;
+                    return new InlineFormatResult(resultText, coreStart - leadingWsCount, leadingWs.Length + updated.Length + trailingWs.Length);
+                }
+            }
+        }
+        else if (isFont)
+        {
+            if (core.StartsWith("<font=", StringComparison.OrdinalIgnoreCase) && core.EndsWith("</font>", StringComparison.OrdinalIgnoreCase))
+            {
+                int closeTagIndex = core.IndexOf('>');
+                if (closeTagIndex > 0)
+                {
+                    string inner = core.Substring(closeTagIndex + 1, core.Length - closeTagIndex - 1 - "</font>".Length);
+                    string updated = $"{openTag}{inner}{closeTag}";
+                    string resultText = beforeCore + updated + afterCore;
+                    return new InlineFormatResult(resultText, coreStart - leadingWsCount, leadingWs.Length + updated.Length + trailingWs.Length);
+                }
+            }
+        }
+        else
+        {
+            // For markdown tokens (**, *, <u>, ~~)
+            if (formatType == InlineFormatType.Italic)
+            {
+                if (core.StartsWith("*") && !core.StartsWith("**") && core.EndsWith("*") && !core.EndsWith("**") && core.Length >= 2)
+                {
+                    string unwrapped = core.Substring(1, core.Length - 2);
+                    string resultText = beforeCore + unwrapped + afterCore;
+                    return new InlineFormatResult(resultText, coreStart - leadingWsCount, leadingWs.Length + unwrapped.Length + trailingWs.Length);
+                }
+            }
+            else if (core.StartsWith(openTag) && core.EndsWith(closeTag) && core.Length >= (openTag.Length + closeTag.Length))
+            {
+                string unwrapped = core.Substring(openTag.Length, core.Length - openTag.Length - closeTag.Length);
+                string resultText = beforeCore + unwrapped + afterCore;
+                return new InlineFormatResult(resultText, coreStart - leadingWsCount, leadingWs.Length + unwrapped.Length + trailingWs.Length);
+            }
+        }
+
+        // 2. Check if the text surrounding core is wrapped with the tags
+        if (formatType == InlineFormatType.Italic)
+        {
+            if (beforeCore.EndsWith("*") && !beforeCore.EndsWith("**") && afterCore.StartsWith("*") && !afterCore.StartsWith("**"))
+            {
+                string newBefore = beforeCore.Substring(0, beforeCore.Length - 1);
+                string newAfter = afterCore.Substring(1);
+                string resultText = newBefore + core + newAfter;
+                return new InlineFormatResult(resultText, newBefore.Length - leadingWsCount, leadingWs.Length + core.Length + trailingWs.Length);
+            }
+        }
+        else if (isColor && beforeCore.Contains("<color=") && afterCore.StartsWith("</color>"))
+        {
+            int lastOpen = beforeCore.LastIndexOf("<color=", StringComparison.OrdinalIgnoreCase);
+            int closeOfOpen = beforeCore.IndexOf('>', lastOpen);
+            if (lastOpen >= 0 && closeOfOpen > lastOpen && closeOfOpen == beforeCore.Length - 1)
+            {
+                string newBefore = beforeCore.Substring(0, lastOpen) + openTag;
+                string newAfter = afterCore.Substring("</color>".Length) + closeTag;
+                string resultText = newBefore + core + newAfter;
+                return new InlineFormatResult(resultText, newBefore.Length - leadingWsCount, leadingWs.Length + core.Length + trailingWs.Length);
+            }
+        }
+        else if (beforeCore.EndsWith(openTag) && afterCore.StartsWith(closeTag))
+        {
+            string newBefore = beforeCore.Substring(0, beforeCore.Length - openTag.Length);
+            string newAfter = afterCore.Substring(closeTag.Length);
+            string resultText = newBefore + core + newAfter;
+            return new InlineFormatResult(resultText, newBefore.Length - leadingWsCount, leadingWs.Length + core.Length + trailingWs.Length);
+        }
+
+        // 3. Otherwise: Wrap core
+        string wrappedCore = openTag + core + closeTag;
+        string finalResultText = beforeCore + wrappedCore + afterCore;
+        return new InlineFormatResult(finalResultText, start, leadingWs.Length + wrappedCore.Length + trailingWs.Length);
+    }
 }
+
+public enum InlineFormatType
+{
+    Bold,
+    Italic,
+    Underline,
+    Strikethrough,
+    Color,
+    Size,
+    Font
+}
+
+public readonly record struct InlineFormatResult(string NewText, int NewSelectionStart, int NewSelectionLength);

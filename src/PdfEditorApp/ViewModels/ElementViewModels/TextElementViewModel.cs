@@ -548,6 +548,88 @@ public partial class TextElementViewModel : ElementViewModelBase
         Spans = null;
     }
 
+    [ObservableProperty]
+    private int _activeSelectionStart;
+
+    [ObservableProperty]
+    private int _activeSelectionLength;
+
+    [ObservableProperty]
+    private string _activeSelectedText = string.Empty;
+
+    public bool HasTextSelection => !string.IsNullOrEmpty(ActiveSelectedText) && ActiveSelectionLength > 0;
+
+    public void UpdateTextSelection(int start, int length, string selectedText)
+    {
+        ActiveSelectionStart = start;
+        ActiveSelectionLength = length;
+        ActiveSelectedText = selectedText ?? string.Empty;
+        OnPropertyChanged(nameof(HasTextSelection));
+    }
+
+    public void ClearTextSelection()
+    {
+        ActiveSelectionStart = 0;
+        ActiveSelectionLength = 0;
+        ActiveSelectedText = string.Empty;
+        OnPropertyChanged(nameof(HasTextSelection));
+    }
+
+    public bool ApplyInlineFormatting(InlineFormatType formatType, string? argument = null)
+    {
+        if (!HasTextSelection || string.IsNullOrEmpty(Text)) return false;
+
+        var result = RichTextHelper.ToggleInlineFormatting(
+            Text,
+            ActiveSelectionStart,
+            ActiveSelectionLength,
+            formatType,
+            argument);
+
+        if (result.NewText == Text) return false;
+
+        Text = result.NewText;
+        ActiveSelectionStart = result.NewSelectionStart;
+        ActiveSelectionLength = result.NewSelectionLength;
+        ActiveSelectedText = result.NewSelectionLength > 0 && result.NewSelectionStart + result.NewSelectionLength <= Text.Length
+            ? Text.Substring(result.NewSelectionStart, result.NewSelectionLength)
+            : string.Empty;
+        OnPropertyChanged(nameof(HasTextSelection));
+
+        // Update parsed spans in real-time
+        var model = (PdfTextElement)ToModel();
+        var parsed = RichTextHelper.ParseMarkdownToSpans(Text, model);
+        Spans = (parsed.Count > 1 || parsed.Any(s => s.IsBold == true || s.IsItalic == true || s.IsUnderline == true || s.IsStrikethrough == true || !string.IsNullOrEmpty(s.TextColorHex) || s.Script != TextScriptMode.Normal))
+            ? parsed
+            : null;
+
+        if (!IsInEditMode && Spans != null && Spans.Count > 0)
+        {
+            Text = RichTextHelper.SpansToPlainText(Spans);
+        }
+
+        return true;
+    }
+
+    protected override void OnEditModeChanged(bool isInEditMode)
+    {
+        if (isInEditMode)
+        {
+            if (Spans != null && Spans.Count > 0)
+            {
+                Text = GetMarkdownText();
+            }
+        }
+        else
+        {
+            ClearTextSelection();
+            if (!string.IsNullOrEmpty(Text))
+            {
+                SetMarkdownText(Text);
+            }
+        }
+    }
+
     public override PdfElementBase ToModel()
     {
         var el = new PdfTextElement

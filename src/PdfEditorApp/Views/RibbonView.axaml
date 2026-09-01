@@ -314,26 +314,26 @@
                                                   SelectedItem="{Binding Inspector.SelectedFontSize, Mode=TwoWay}" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="2">
-                                        <Button Classes="mini-tool-btn" Classes.active="{Binding Inspector.TextElement.IsBold, FallbackValue=False}" Command="{Binding Inspector.ToggleBoldCommand}" ToolTip.Tip="Bold">
+                                        <Button Classes="mini-tool-btn" Focusable="False" Classes.active="{Binding Inspector.TextElement.IsBold, FallbackValue=False}" Command="{Binding Inspector.ToggleBoldCommand}" ToolTip.Tip="Bold">
                                             <materialIcons:MaterialIcon Kind="FormatBold" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
-                                        <Button Classes="mini-tool-btn" Classes.active="{Binding Inspector.TextElement.IsItalic, FallbackValue=False}" Command="{Binding Inspector.ToggleItalicCommand}" ToolTip.Tip="Italic">
+                                        <Button Classes="mini-tool-btn" Focusable="False" Classes.active="{Binding Inspector.TextElement.IsItalic, FallbackValue=False}" Command="{Binding Inspector.ToggleItalicCommand}" ToolTip.Tip="Italic">
                                             <materialIcons:MaterialIcon Kind="FormatItalic" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
-                                        <Button Classes="mini-tool-btn" Classes.active="{Binding Inspector.TextElement.IsUnderline, FallbackValue=False}" Command="{Binding Inspector.ToggleUnderlineCommand}" ToolTip.Tip="Underline">
+                                        <Button Classes="mini-tool-btn" Focusable="False" Classes.active="{Binding Inspector.TextElement.IsUnderline, FallbackValue=False}" Command="{Binding Inspector.ToggleUnderlineCommand}" ToolTip.Tip="Underline">
                                             <materialIcons:MaterialIcon Kind="FormatUnderline" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
-                                        <Button Classes="mini-tool-btn" Classes.active="{Binding Inspector.TextElement.IsStrikethrough, FallbackValue=False}" Command="{Binding Inspector.ToggleStrikethroughCommand}" ToolTip.Tip="Strikethrough">
+                                        <Button Classes="mini-tool-btn" Focusable="False" Classes.active="{Binding Inspector.TextElement.IsStrikethrough, FallbackValue=False}" Command="{Binding Inspector.ToggleStrikethroughCommand}" ToolTip.Tip="Strikethrough">
                                             <materialIcons:MaterialIcon Kind="FormatStrikethrough" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                         <Rectangle Width="1" Height="16" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
-                                        <Button Classes="mini-tool-btn" Command="{Binding Inspector.ToggleBulletsCommand}" ToolTip.Tip="Bullet List">
+                                        <Button Classes="mini-tool-btn" Focusable="False" Command="{Binding Inspector.ToggleBulletsCommand}" ToolTip.Tip="Bullet List">
                                             <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
-                                        <Button Classes="mini-tool-btn" Command="{Binding Inspector.ToggleNumberingCommand}" ToolTip.Tip="Numbered List">
+                                        <Button Classes="mini-tool-btn" Focusable="False" Command="{Binding Inspector.ToggleNumberingCommand}" ToolTip.Tip="Numbered List">
                                             <materialIcons:MaterialIcon Kind="FormatListNumbered" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
-                                        <Button Classes="mini-tool-btn" Command="{Binding Inspector.TransformTextCaseCommand}" CommandParameter="Upper" ToolTip.Tip="UPPERCASE">
+                                        <Button Classes="mini-tool-btn" Focusable="False" Command="{Binding Inspector.TransformTextCaseCommand}" CommandParameter="Upper" ToolTip.Tip="UPPERCASE">
                                             <materialIcons:MaterialIcon Kind="FormatLetterCaseUpper" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
                                         </Button>
                                     </StackPanel>

@@ -353,9 +353,20 @@ public class AdvancedTextControl : Control
             Padding
         );
 
+        int docIndex = 0;
+        string docText = Text ?? "";
+
         foreach (var line in layout.Lines)
         {
-            if (string.IsNullOrEmpty(line.Text)) continue;
+            if (string.IsNullOrEmpty(line.Text))
+            {
+                docIndex++;
+                continue;
+            }
+
+            int lineOffset = docText.IndexOf(line.Text, Math.Min(docIndex, docText.Length), StringComparison.Ordinal);
+            if (lineOffset < 0) lineOffset = docIndex;
+            docIndex = lineOffset + line.Text.Length;
 
             // Draw Shadow
             if (HasShadow && shadowBrush != null)
@@ -369,7 +380,7 @@ public class AdvancedTextControl : Control
                         typeface,
                         FontSize,
                         shadowBrush);
-                    ApplySpanTypography(shadowFt, line.Text, shadowBrush);
+                    ApplySpanTypography(shadowFt, line.Text, shadowBrush, lineOffset);
                     context.DrawText(shadowFt, new Point(line.X + ShadowOffsetX, line.Y + ShadowOffsetY));
                 }
             }
@@ -381,7 +392,7 @@ public class AdvancedTextControl : Control
                 typeface,
                 FontSize,
                 fillBrush);
-            ApplySpanTypography(ft, line.Text, null);
+            ApplySpanTypography(ft, line.Text, null, lineOffset);
 
             // Draw Stroke Outline
             if (strokePen != null)
@@ -408,22 +419,27 @@ public class AdvancedTextControl : Control
         }
     }
 
-    private void ApplySpanTypography(FormattedText ft, string lineText, IBrush? forceBrush)
+    private void ApplySpanTypography(FormattedText ft, string lineText, IBrush? forceBrush, int lineOffset)
     {
         if (Spans == null || Spans.Count == 0 || string.IsNullOrEmpty(lineText)) return;
 
-        int currentIndex = 0;
+        int spanStartInDoc = 0;
+        int lineEndInDoc = lineOffset + lineText.Length;
+
         foreach (var span in Spans)
         {
             if (string.IsNullOrEmpty(span.Text)) continue;
             int spanLength = span.Text.Length;
-            if (currentIndex + spanLength > lineText.Length)
-            {
-                spanLength = Math.Max(0, lineText.Length - currentIndex);
-            }
+            int spanEndInDoc = spanStartInDoc + spanLength;
 
-            if (spanLength > 0)
+            int overlapStartInDoc = Math.Max(spanStartInDoc, lineOffset);
+            int overlapEndInDoc = Math.Min(spanEndInDoc, lineEndInDoc);
+
+            if (overlapEndInDoc > overlapStartInDoc)
             {
+                int localIndex = overlapStartInDoc - lineOffset;
+                int localLength = overlapEndInDoc - overlapStartInDoc;
+
                 // 1. Font family, weight, italic
                 bool spanBold = span.IsBold ?? IsBold;
                 bool spanItalic = span.IsItalic ?? IsItalic;
@@ -433,15 +449,15 @@ public class AdvancedTextControl : Control
                 {
                     if (spanFamily != FontFamilyName)
                     {
-                        ft.SetFontFamily(FontHelper.CreateFontFamily(spanFamily), currentIndex, spanLength);
+                        ft.SetFontFamily(FontHelper.CreateFontFamily(spanFamily), localIndex, localLength);
                     }
                     if (spanBold != IsBold)
                     {
-                        ft.SetFontWeight(spanBold ? FontWeight.Bold : FontWeight.Normal, currentIndex, spanLength);
+                        ft.SetFontWeight(spanBold ? FontWeight.Bold : FontWeight.Normal, localIndex, localLength);
                     }
                     if (spanItalic != IsItalic)
                     {
-                        ft.SetFontStyle(spanItalic ? FontStyle.Italic : FontStyle.Normal, currentIndex, spanLength);
+                        ft.SetFontStyle(spanItalic ? FontStyle.Italic : FontStyle.Normal, localIndex, localLength);
                     }
                 }
 
@@ -454,7 +470,7 @@ public class AdvancedTextControl : Control
 
                 if (Math.Abs(spanSize - FontSize) > 0.01)
                 {
-                    ft.SetFontSize(spanSize, currentIndex, spanLength);
+                    ft.SetFontSize(spanSize, localIndex, localLength);
                 }
 
                 // 3. Foreground Brush (if not overriding with shadow brush)
@@ -462,7 +478,7 @@ public class AdvancedTextControl : Control
                 {
                     if (Color.TryParse(span.TextColorHex, out var col))
                     {
-                        ft.SetForegroundBrush(new SolidColorBrush(col), currentIndex, spanLength);
+                        ft.SetForegroundBrush(new SolidColorBrush(col), localIndex, localLength);
                     }
                 }
 
@@ -474,12 +490,11 @@ public class AdvancedTextControl : Control
                     var decs = new TextDecorationCollection();
                     if (spanUnderline) foreach (var d in Avalonia.Media.TextDecorations.Underline) decs.Add(d);
                     if (spanStrikethrough) foreach (var d in Avalonia.Media.TextDecorations.Strikethrough) decs.Add(d);
-                    ft.SetTextDecorations(decs, currentIndex, spanLength);
+                    ft.SetTextDecorations(decs, localIndex, localLength);
                 }
-
-                currentIndex += spanLength;
-                if (currentIndex >= lineText.Length) break;
             }
+
+            spanStartInDoc = spanEndInDoc;
         }
     }
 

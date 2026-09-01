@@ -39,6 +39,15 @@ public abstract partial class ElementViewModelBase : ViewModelBase
     [ObservableProperty]
     private bool _isInEditMode;
 
+    partial void OnIsInEditModeChanged(bool value)
+    {
+        OnEditModeChanged(value);
+    }
+
+    protected virtual void OnEditModeChanged(bool isInEditMode)
+    {
+    }
+
     [ObservableProperty]
     private bool _isLocked;
 

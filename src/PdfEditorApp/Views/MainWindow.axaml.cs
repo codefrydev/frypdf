@@ -43,6 +43,25 @@ public partial class MainWindow : Window
 
             if (isSourceTextBox || isFocusedTextBox || isInEditMode)
             {
+                bool isTextModifier = e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
+                if (isTextModifier)
+                {
+                    switch (e.Key)
+                    {
+                        case Key.B:
+                            vm.Inspector.ToggleBoldCommand.Execute(null);
+                            e.Handled = true;
+                            return;
+                        case Key.I:
+                            vm.Inspector.ToggleItalicCommand.Execute(null);
+                            e.Handled = true;
+                            return;
+                        case Key.U:
+                            vm.Inspector.ToggleUnderlineCommand.Execute(null);
+                            e.Handled = true;
+                            return;
+                    }
+                }
                 return;
             }
 

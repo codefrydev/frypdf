@@ -369,4 +369,90 @@ public class RichTextEngineTests
         Assert.NotNull(pdfBytes);
         Assert.True(pdfBytes.Length > 1000);
     }
+
+    [Fact]
+    public void ToggleInlineFormatting_Bold_WrapsSelectedText()
+    {
+        string fullText = "normative period of rec\nmacro environment,\nd top-line revenue";
+        int start = 24;
+        int length = 18; // "macro environment,"
+
+        var result = RichTextHelper.ToggleInlineFormatting(fullText, start, length, InlineFormatType.Bold);
+
+        Assert.Equal("normative period of rec\n**macro environment,**\nd top-line revenue", result.NewText);
+        Assert.Equal(24, result.NewSelectionStart);
+        Assert.Equal(22, result.NewSelectionLength);
+    }
+
+    [Fact]
+    public void ToggleInlineFormatting_Bold_TogglesOffWhenAlreadyWrapped()
+    {
+        string fullText = "normative period of rec\n**macro environment,**\nd top-line revenue";
+        int start = 24;
+        int length = 22; // "**macro environment,**"
+
+        var result = RichTextHelper.ToggleInlineFormatting(fullText, start, length, InlineFormatType.Bold);
+
+        Assert.Equal("normative period of rec\nmacro environment,\nd top-line revenue", result.NewText);
+        Assert.Equal(24, result.NewSelectionStart);
+        Assert.Equal(18, result.NewSelectionLength);
+    }
+
+    [Fact]
+    public void ToggleInlineFormatting_ItalicAndUnderline_WrapsAndUnwraps()
+    {
+        string text = "Hello World";
+        // Italic on "World"
+        var italicResult = RichTextHelper.ToggleInlineFormatting(text, 6, 5, InlineFormatType.Italic);
+        Assert.Equal("Hello *World*", italicResult.NewText);
+
+        // Unwrap Italic
+        var unitalicResult = RichTextHelper.ToggleInlineFormatting(italicResult.NewText, italicResult.NewSelectionStart, italicResult.NewSelectionLength, InlineFormatType.Italic);
+        Assert.Equal("Hello World", unitalicResult.NewText);
+
+        // Underline on "World"
+        var underlineResult = RichTextHelper.ToggleInlineFormatting(text, 6, 5, InlineFormatType.Underline);
+        Assert.Equal("Hello <u>World</u>", underlineResult.NewText);
+
+        // Unwrap Underline
+        var unwrapUnderline = RichTextHelper.ToggleInlineFormatting(underlineResult.NewText, underlineResult.NewSelectionStart, underlineResult.NewSelectionLength, InlineFormatType.Underline);
+        Assert.Equal("Hello World", unwrapUnderline.NewText);
+    }
+
+    [Fact]
+    public void ToggleInlineFormatting_Color_WrapsAndUpdatesHex()
+    {
+        string text = "Hello World";
+        var colorResult = RichTextHelper.ToggleInlineFormatting(text, 6, 5, InlineFormatType.Color, "#0F6CBD");
+        Assert.Equal("Hello <color=#0F6CBD>World</color>", colorResult.NewText);
+
+        // Change color to #DC2626
+        var changeColor = RichTextHelper.ToggleInlineFormatting(colorResult.NewText, colorResult.NewSelectionStart, colorResult.NewSelectionLength, InlineFormatType.Color, "#DC2626");
+        Assert.Equal("Hello <color=#DC2626>World</color>", changeColor.NewText);
+    }
+
+    [Fact]
+    public void ToggleInlineFormatting_HandlesLeadingAndTrailingWhitespace()
+    {
+        string text = "Hello World Today";
+        // Selected " World " with whitespace around it
+        var result = RichTextHelper.ToggleInlineFormatting(text, 5, 7, InlineFormatType.Bold);
+        Assert.Equal("Hello **World** Today", result.NewText);
+    }
+
+    [Fact]
+    public void RichTextHelper_ParsesAndSerializesSizeAndFontTags()
+    {
+        string input = "Start <size=18>Big Text</size> and <font=Poppins>Modern Font</font> end.";
+        var spans = RichTextHelper.ParseMarkdownToSpans(input);
+
+        Assert.NotNull(spans);
+        var sizeSpan = spans.FirstOrDefault(s => s.Text == "Big Text");
+        Assert.NotNull(sizeSpan);
+        Assert.Equal(18, sizeSpan.FontSize);
+
+        var fontSpan = spans.FirstOrDefault(s => s.Text == "Modern Font");
+        Assert.NotNull(fontSpan);
+        Assert.Equal("Poppins", fontSpan.FontFamily);
+    }
 }

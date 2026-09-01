@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -8,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
+using PdfEditorApp.Services.Typography;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
 namespace PdfEditorApp.ViewModels;
@@ -21,6 +23,8 @@ public class ColorSwatchItem
 public partial class InspectorViewModel : ViewModelBase
 {
     public UndoRedoService? UndoRedo { get; set; }
+
+    public static Action<TextElementViewModel>? OnActiveTextFormattingApplied { get; set; }
 
     [ObservableProperty]
     private ElementViewModelBase? _selectedElement;
@@ -194,16 +198,21 @@ public partial class InspectorViewModel : ViewModelBase
 
     partial void OnSelectedFontFamilyChanged(string value)
     {
-        if (TextElement != null && !string.IsNullOrEmpty(value) && TextElement.FontFamily != value)
+        if (TextElement != null && !string.IsNullOrEmpty(value))
         {
-            var el = TextElement;
-            string oldFont = el.FontFamily;
-            el.FontFamily = value;
-            UndoRedo?.RecordAction(
-                $"Font: {value}",
-                () => { el.FontFamily = oldFont; SelectedFontFamily = oldFont; },
-                () => { el.FontFamily = value; SelectedFontFamily = value; }
-            );
+            if (TryApplyInlineFormatting(InlineFormatType.Font, $"Font: {value}", value)) return;
+
+            if (TextElement.FontFamily != value)
+            {
+                var el = TextElement;
+                string oldFont = el.FontFamily;
+                el.FontFamily = value;
+                UndoRedo?.RecordAction(
+                    $"Font: {value}",
+                    () => { el.FontFamily = oldFont; SelectedFontFamily = oldFont; },
+                    () => { el.FontFamily = value; SelectedFontFamily = value; }
+                );
+            }
         }
     }
 
@@ -212,16 +221,21 @@ public partial class InspectorViewModel : ViewModelBase
 
     partial void OnSelectedFontSizeChanged(double value)
     {
-        if (TextElement != null && value > 0 && Math.Abs(TextElement.FontSize - value) > 0.1)
+        if (TextElement != null && value > 0)
         {
-            var el = TextElement;
-            double oldSize = el.FontSize;
-            el.FontSize = value;
-            UndoRedo?.RecordAction(
-                $"Font Size: {value}pt",
-                () => { el.FontSize = oldSize; SelectedFontSize = oldSize; },
-                () => { el.FontSize = value; SelectedFontSize = value; }
-            );
+            if (TryApplyInlineFormatting(InlineFormatType.Size, $"Font Size: {value}pt", value.ToString("0.#", CultureInfo.InvariantCulture))) return;
+
+            if (Math.Abs(TextElement.FontSize - value) > 0.1)
+            {
+                var el = TextElement;
+                double oldSize = el.FontSize;
+                el.FontSize = value;
+                UndoRedo?.RecordAction(
+                    $"Font Size: {value}pt",
+                    () => { el.FontSize = oldSize; SelectedFontSize = oldSize; },
+                    () => { el.FontSize = value; SelectedFontSize = value; }
+                );
+            }
         }
     }
 
@@ -433,10 +447,53 @@ public partial class InspectorViewModel : ViewModelBase
         OnPropertyChanged(nameof(ActiveCategoryName));
     }
 
+    private bool TryApplyInlineFormatting(InlineFormatType formatType, string actionName, string? argument = null)
+    {
+        if (TextElement != null && TextElement.HasTextSelection)
+        {
+            var el = TextElement;
+            string oldText = el.Text;
+            int oldSelStart = el.ActiveSelectionStart;
+            int oldSelLen = el.ActiveSelectionLength;
+            if (el.ApplyInlineFormatting(formatType, argument))
+            {
+                string newText = el.Text;
+                int newSelStart = el.ActiveSelectionStart;
+                int newSelLen = el.ActiveSelectionLength;
+                OnActiveTextFormattingApplied?.Invoke(el);
+                UndoRedo?.RecordAction(
+                    actionName,
+                    () =>
+                    {
+                        el.Text = oldText;
+                        int s = Math.Min(oldSelStart, el.Text.Length);
+                        int l = Math.Min(oldSelLen, el.Text.Length - s);
+                        el.UpdateTextSelection(s, l, el.Text.Substring(s, l));
+                        OnActiveTextFormattingApplied?.Invoke(el);
+                    },
+                    () =>
+                    {
+                        el.Text = newText;
+                        int s = Math.Min(newSelStart, el.Text.Length);
+                        int l = Math.Min(newSelLen, el.Text.Length - s);
+                        el.UpdateTextSelection(s, l, el.Text.Substring(s, l));
+                        OnActiveTextFormattingApplied?.Invoke(el);
+                    }
+                );
+                return true;
+            }
+        }
+        return false;
+    }
+
     [RelayCommand]
     public void SetTextColor(string hex)
     {
-        if (TextElement != null && TextElement.TextColorHex != hex)
+        if (string.IsNullOrEmpty(hex) || TextElement == null) return;
+
+        if (TryApplyInlineFormatting(InlineFormatType.Color, "Format Color Selection", hex)) return;
+
+        if (TextElement.TextColorHex != hex)
         {
             var el = TextElement;
             string oldHex = el.TextColorHex;
@@ -502,6 +559,8 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (TextElement != null)
         {
+            if (TryApplyInlineFormatting(InlineFormatType.Bold, "Format Bold Selection")) return;
+
             var el = TextElement;
             bool oldVal = el.IsBold;
             bool newVal = !oldVal;
@@ -519,6 +578,8 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (TextElement != null)
         {
+            if (TryApplyInlineFormatting(InlineFormatType.Italic, "Format Italic Selection")) return;
+
             var el = TextElement;
             bool oldVal = el.IsItalic;
             bool newVal = !oldVal;
@@ -536,6 +597,8 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (TextElement != null)
         {
+            if (TryApplyInlineFormatting(InlineFormatType.Underline, "Format Underline Selection")) return;
+
             var el = TextElement;
             bool oldVal = el.IsUnderline;
             bool newVal = !oldVal;
@@ -1481,6 +1544,8 @@ public partial class InspectorViewModel : ViewModelBase
     {
         if (TextElement != null)
         {
+            if (TryApplyInlineFormatting(InlineFormatType.Strikethrough, "Format Strikethrough Selection")) return;
+
             var el = TextElement;
             bool oldVal = el.IsStrikethrough;
             bool newVal = !oldVal;

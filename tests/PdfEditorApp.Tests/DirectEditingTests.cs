@@ -287,5 +287,84 @@ public class DirectEditingTests
         Assert.Contains(el2, page.Elements);
         Assert.Contains(el3, page.Elements);
     }
+
+    [Fact]
+    public void InspectorViewModel_ToggleBold_WithTextSelection_FormatsOnlySelection_AndSupportsUndo()
+    {
+        var undoRedo = new UndoRedoService();
+        var inspector = new InspectorViewModel { UndoRedo = undoRedo };
+        var page = new PageViewModel();
+        var textEl = new TextElementViewModel
+        {
+            Text = "normative period of rec\nmacro environment,\nd top-line revenue"
+        };
+        page.AddElement(textEl);
+        inspector.UpdateSelection(textEl, page);
+
+        // Enter edit mode and select "macro environment,"
+        textEl.IsInEditMode = true;
+        textEl.UpdateTextSelection(24, 18, "macro environment,");
+        Assert.True(textEl.HasTextSelection);
+
+        // Execute ToggleBold
+        inspector.ToggleBoldCommand.Execute(null);
+
+        Assert.Equal("normative period of rec\n**macro environment,**\nd top-line revenue", textEl.Text);
+        Assert.False(textEl.IsBold); // Element-wide property remains false!
+        Assert.NotNull(textEl.Spans); // Spans are generated
+        Assert.True(undoRedo.CanUndo);
+
+        // Undo
+        undoRedo.Undo();
+        Assert.Equal("normative period of rec\nmacro environment,\nd top-line revenue", textEl.Text);
+
+        // Redo
+        undoRedo.Redo();
+        Assert.Equal("normative period of rec\n**macro environment,**\nd top-line revenue", textEl.Text);
+    }
+
+    [Fact]
+    public void InspectorViewModel_ToggleBold_WithoutTextSelection_TogglesElementProperty()
+    {
+        var undoRedo = new UndoRedoService();
+        var inspector = new InspectorViewModel { UndoRedo = undoRedo };
+        var page = new PageViewModel();
+        var textEl = new TextElementViewModel { Text = "Sample Heading", IsBold = false };
+        page.AddElement(textEl);
+        inspector.UpdateSelection(textEl, page);
+
+        Assert.False(textEl.IsBold);
+        Assert.False(textEl.HasTextSelection);
+
+        // Execute ToggleBold
+        inspector.ToggleBoldCommand.Execute(null);
+        Assert.True(textEl.IsBold);
+
+        // Toggle again
+        inspector.ToggleBoldCommand.Execute(null);
+        Assert.False(textEl.IsBold);
+    }
+
+    [Fact]
+    public void InspectorViewModel_SetTextColor_WithTextSelection_FormatsOnlySelection()
+    {
+        var undoRedo = new UndoRedoService();
+        var inspector = new InspectorViewModel { UndoRedo = undoRedo };
+        var page = new PageViewModel();
+        var textEl = new TextElementViewModel { Text = "Hello World" };
+        page.AddElement(textEl);
+        inspector.UpdateSelection(textEl, page);
+
+        textEl.IsInEditMode = true;
+        textEl.UpdateTextSelection(6, 5, "World");
+
+        inspector.SetTextColorCommand.Execute("#0F6CBD");
+
+        Assert.Equal("Hello <color=#0F6CBD>World</color>", textEl.Text);
+        Assert.NotNull(textEl.Spans);
+        var coloredSpan = textEl.Spans.FirstOrDefault(s => s.TextColorHex == "#0F6CBD");
+        Assert.NotNull(coloredSpan);
+        Assert.Equal("World", coloredSpan.Text);
+    }
 }
 

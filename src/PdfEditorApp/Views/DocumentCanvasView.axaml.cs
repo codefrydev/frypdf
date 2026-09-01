@@ -65,6 +65,17 @@ public partial class DocumentCanvasView : UserControl
         AddHandler(DoubleTappedEvent, OnCanvasDoubleTapped, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, OnCanvasKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnCanvasKeyUp, RoutingStrategies.Tunnel);
+
+        InspectorViewModel.OnActiveTextFormattingApplied = textVm =>
+        {
+            if (ActiveInPlaceTextBox != null && ActiveInPlaceTextBox.DataContext == textVm)
+            {
+                ActiveInPlaceTextBox.Text = textVm.Text;
+                ActiveInPlaceTextBox.SelectionStart = textVm.ActiveSelectionStart;
+                ActiveInPlaceTextBox.SelectionEnd = textVm.ActiveSelectionStart + textVm.ActiveSelectionLength;
+                ActiveInPlaceTextBox.Focus();
+            }
+        };
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -545,15 +556,58 @@ public partial class DocumentCanvasView : UserControl
         }
     }
 
+    public static TextBox? ActiveInPlaceTextBox { get; private set; }
+
+    private static void UpdateSelectionFromTextBox(TextBox textBox)
+    {
+        if (textBox.DataContext is TextElementViewModel textVm)
+        {
+            int start = Math.Min(textBox.SelectionStart, textBox.SelectionEnd);
+            int end = Math.Max(textBox.SelectionStart, textBox.SelectionEnd);
+            int len = end - start;
+
+            // If TextBox temporarily lost focus and reports 0 length while ViewModel already has a selection,
+            // preserve the selection so toolbar/HUD commands can format it!
+            if (!textBox.IsFocused && len == 0 && textVm.HasTextSelection)
+            {
+                return;
+            }
+
+            string text = textBox.Text ?? "";
+            string sel = len > 0 && start + len <= text.Length
+                ? text.Substring(start, len)
+                : string.Empty;
+
+            textVm.UpdateTextSelection(start, len, sel);
+        }
+    }
+
     private void OnInPlaceTextBoxAttached(object? sender, VisualTreeAttachmentEventArgs e)
     {
         if (sender is TextBox textBox)
         {
             textBox.GotFocus += (s, args) =>
             {
+                ActiveInPlaceTextBox = textBox;
+                UpdateSelectionFromTextBox(textBox);
                 if (textBox.DataContext is ElementViewModelBase el)
                 {
                     _initialEditContents[el.Id] = textBox.Text ?? "";
+                }
+            };
+
+            textBox.LostFocus += (s, args) =>
+            {
+                if (textBox.DataContext is TextElementViewModel textVm && textVm.IsInEditMode)
+                {
+                    // User is still in edit mode (e.g. interacting with HUD, Ribbon, or Sidebar).
+                    // Keep ActiveInPlaceTextBox assigned so inline formatting commands continue working!
+                    return;
+                }
+
+                if (ActiveInPlaceTextBox == textBox)
+                {
+                    ActiveInPlaceTextBox = null;
                 }
             };
 
@@ -561,6 +615,7 @@ public partial class DocumentCanvasView : UserControl
             {
                 if (args.Property == Visual.IsVisibleProperty && textBox.IsVisible)
                 {
+                    ActiveInPlaceTextBox = textBox;
                     if (textBox.DataContext is ElementViewModelBase el)
                     {
                         _initialEditContents[el.Id] = textBox.Text ?? "";
@@ -571,12 +626,28 @@ public partial class DocumentCanvasView : UserControl
                         textBox.Focus();
                         textBox.CaretIndex = textBox.Text?.Length ?? 0;
                         textBox.SelectAll();
+                        UpdateSelectionFromTextBox(textBox);
                     }, Avalonia.Threading.DispatcherPriority.Input);
                 }
+                else if (args.Property == TextBox.SelectionStartProperty || args.Property == TextBox.SelectionEndProperty || args.Property == TextBox.TextProperty)
+                {
+                    UpdateSelectionFromTextBox(textBox);
+                }
+            };
+
+            textBox.PointerReleased += (s, args) =>
+            {
+                UpdateSelectionFromTextBox(textBox);
+            };
+
+            textBox.KeyUp += (s, args) =>
+            {
+                UpdateSelectionFromTextBox(textBox);
             };
 
             if (textBox.IsVisible)
             {
+                ActiveInPlaceTextBox = textBox;
                 if (textBox.DataContext is ElementViewModelBase el)
                 {
                     _initialEditContents[el.Id] = textBox.Text ?? "";
@@ -587,6 +658,7 @@ public partial class DocumentCanvasView : UserControl
                     textBox.Focus();
                     textBox.CaretIndex = textBox.Text?.Length ?? 0;
                     textBox.SelectAll();
+                    UpdateSelectionFromTextBox(textBox);
                 }, Avalonia.Threading.DispatcherPriority.Input);
             }
         }
@@ -596,6 +668,8 @@ public partial class DocumentCanvasView : UserControl
     {
         if (sender is Control control && control.DataContext is TextElementViewModel textVm)
         {
+            if (textVm.IsLocked) return;
+
             if (textVm.Spans != null && textVm.Spans.Count > 0)
             {
                 textVm.Text = textVm.GetMarkdownText();
@@ -615,15 +689,18 @@ public partial class DocumentCanvasView : UserControl
     {
         if (sender is Control control && control.DataContext is TextElementViewModel textVm)
         {
-            string currentEditText = textVm.Text ?? "";
+            // If the element is still in edit mode (e.g. interacting with HUD, Ribbon, or Sidebar),
+            // DO NOT exit edit mode or wipe spans!
+            if (textVm.IsInEditMode)
+            {
+                return;
+            }
+
             _initialEditContents.TryGetValue(textVm.Id, out var oldTxt);
-
-            textVm.SetMarkdownText(currentEditText);
-
             string finalPlain = textVm.Text ?? "";
             var finalSpans = textVm.Spans?.Select(s => s.Clone()).ToList();
 
-            if (currentEditText != oldTxt)
+            if (finalPlain != oldTxt)
             {
                 _initialEditContents[textVm.Id] = finalPlain;
                 var savedSpans = finalSpans;

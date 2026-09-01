@@ -639,5 +639,87 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
         return true;
     }
 
+    /// <summary>
+    /// Runs the tool once per file in <see cref="SelectedFiles"/> via the standard
+    /// PdfToolId dispatch, instead of silently processing only <see cref="PrimaryInputFile"/>.
+    /// One failing file does not abort the rest; the aggregated result reports exactly
+    /// how many files succeeded/failed instead of a blanket success.
+    /// </summary>
+    protected async Task<ToolExecutionResult> ExecuteBatchAsync(
+        Func<string, object> buildOptions,
+        IProgress<double> progress,
+        CancellationToken ct)
+    {
+        var files = SelectedFiles.ToList();
+        var results = new List<(string File, ToolExecutionResult Result)>();
+
+        for (int i = 0; i < files.Count; i++)
+        {
+            ct.ThrowIfCancellationRequested();
+            string file = files[i];
+            int index = i;
+            int total = files.Count;
+            var fileProgress = new Progress<double>(p =>
+                progress.Report((index + Math.Clamp(p, 0, 100) / 100.0) / total * 100.0));
+
+            ToolExecutionResult result;
+            try
+            {
+                result = await OperationsService.ExecuteToolAsync(Tool.Id, buildOptions(file), fileProgress, ct);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                result = new ToolExecutionResult { Success = false, ErrorMessage = ex.Message };
+            }
+
+            results.Add((file, result));
+        }
+
+        progress.Report(100);
+
+        // Single file: return the underlying result untouched so existing single-file
+        // behavior (messages, ExtraData, etc.) is unaffected.
+        if (results.Count == 1)
+        {
+            return results[0].Result;
+        }
+
+        var succeeded = results.Where(r => r.Result.Success).ToList();
+        var failed = results.Where(r => !r.Result.Success).ToList();
+        string DescribeFailure((string File, ToolExecutionResult Result) f) =>
+            $"{Path.GetFileName(f.File)} ({f.Result.ErrorMessage ?? "failed"})";
+
+        if (succeeded.Count == 0)
+        {
+            return new ToolExecutionResult
+            {
+                Success = false,
+                ErrorMessage = $"All {results.Count} files failed: {string.Join("; ", failed.Select(DescribeFailure))}"
+            };
+        }
+
+        string message = failed.Count == 0
+            ? $"Successfully processed {succeeded.Count} of {results.Count} files."
+            : $"Processed {succeeded.Count} of {results.Count} files. Failed: {string.Join("; ", failed.Select(DescribeFailure))}";
+
+        return new ToolExecutionResult
+        {
+            Success = true,
+            OutputFilePath = succeeded[^1].Result.OutputFilePath,
+            OutputFiles = succeeded
+                .Select(s => s.Result.OutputFilePath)
+                .Where(p => !string.IsNullOrEmpty(p))
+                .Select(p => p!)
+                .ToList(),
+            Message = message,
+            OriginalSizeBytes = succeeded.Sum(s => s.Result.OriginalSizeBytes),
+            OutputSizeBytes = succeeded.Sum(s => s.Result.OutputSizeBytes)
+        };
+    }
+
     protected abstract Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct);
 }

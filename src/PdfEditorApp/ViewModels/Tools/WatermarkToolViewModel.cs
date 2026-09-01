@@ -40,9 +40,9 @@ public partial class WatermarkToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new WatermarkToolOptions
+        return await ExecuteBatchAsync(file => new WatermarkToolOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             Text = WatermarkText,
             Opacity = Opacity,
             RotationAngle = RotationAngle,
@@ -51,8 +51,6 @@ public partial class WatermarkToolViewModel : PdfToolViewModelBase
             FontSize = FontSize,
             TargetPages = TargetPages,
             CustomRange = CustomRange
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.Watermark, options, progress, ct);
+        }, progress, ct);
     }
 }

@@ -43,9 +43,9 @@ public partial class PageNumbersToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new PageNumberToolOptions
+        return await ExecuteBatchAsync(file => new PageNumberToolOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             Position = Position,
             Template = Template,
             StartingNumber = StartingNumber,
@@ -55,8 +55,6 @@ public partial class PageNumbersToolViewModel : PdfToolViewModelBase
             TargetPages = TargetPages,
             CustomRange = CustomRange,
             MarginPoints = MarginPoints
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.PageNumbers, options, progress, ct);
+        }, progress, ct);
     }
 }

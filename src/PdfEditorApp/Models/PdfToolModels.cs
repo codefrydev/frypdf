@@ -395,6 +395,26 @@ public class RedactionRegion
     public string FillColorHex { get; set; } = "#000000";
 }
 
+/// <summary>
+/// UI-facing wrapper around a <see cref="RedactionRegion"/> shown in a "Marked for
+/// redaction" review list — carries a human-readable label in addition to the raw
+/// region geometry the backend needs.
+/// </summary>
+public class RedactionMarkItem
+{
+    public required RedactionRegion Region { get; init; }
+    public required string Label { get; init; }
+    public string PageLabel => $"Page {Region.PageIndex + 1}";
+
+    // On-screen highlight position/size in display pixels, computed by the ViewModel
+    // for the currently rendered page (Region stays in PDF-point space; these are
+    // derived purely for XAML Canvas.Left/Top/Width/Height binding).
+    public double DisplayX { get; set; }
+    public double DisplayY { get; set; }
+    public double DisplayWidth { get; set; }
+    public double DisplayHeight { get; set; }
+}
+
 public class RedactionToolOptions
 {
     public string InputFilePath { get; set; } = string.Empty;

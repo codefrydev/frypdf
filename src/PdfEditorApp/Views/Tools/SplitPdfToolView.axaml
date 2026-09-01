@@ -258,19 +258,29 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Spacing="16">
                         
+                        <!-- Split Mode -->
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Split Mode" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" />
+                                <RadioButton GroupName="SplitMode" Content="Split Every N Pages" FontSize="12.5" IsChecked="{Binding SplitMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SplitEveryNPages}" />
+                                <RadioButton GroupName="SplitMode" Content="Split by Page Ranges" FontSize="12.5" IsChecked="{Binding SplitMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SplitByPageRanges}" />
+                            </StackPanel>
+                        </Border>
+
                         <!-- Split Settings -->
                         <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
                             <StackPanel Spacing="10">
                                 <TextBlock Text="Split Range Expression" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" />
-                                <TextBox Text="{Binding SplitRangeExpression, Mode=TwoWay}" PlaceholderText="e.g. 1-3, 5, 7-10" FontSize="12" />
-                                <TextBlock Text="Separate distinct documents with commas, use hyphens for ranges." FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" />
+                                <TextBox Text="{Binding SplitRangeExpression, Mode=TwoWay}" PlaceholderText="e.g. 1-3, 5, 7-10" FontSize="12" IsEnabled="{Binding SplitMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SplitByPageRanges}" />
+                                <TextBlock Text="Separate distinct documents with commas, use hyphens for ranges. Only applies in &quot;Split by Page Ranges&quot; mode." FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" />
 
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
                                     <TextBlock Grid.Column="0" Text="Pages Per Document Interval:" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
-                                    <NumericUpDown Grid.Column="1" Value="{Binding SplitPagesInterval}" Minimum="1" Maximum="100" Width="90" />
+                                    <NumericUpDown Grid.Column="1" Value="{Binding SplitPagesInterval}" Minimum="1" Maximum="100" Width="90" IsEnabled="{Binding SplitMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SplitEveryNPages}" />
                                 </Grid>
 
                                 <CheckBox Content="Separate Odd and Even Pages" IsChecked="{Binding SplitOddEven}" FontSize="12" Margin="0,6,0,0" />
+                                <TextBlock Text="Overrides the mode above when checked." FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" />
                             </StackPanel>
                         </Border>
 

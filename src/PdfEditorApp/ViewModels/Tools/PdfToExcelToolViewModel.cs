@@ -22,13 +22,11 @@ public partial class PdfToExcelToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new ExcelConversionOptions
+        return await ExecuteBatchAsync(file => new ExcelConversionOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             DetectAllTables = DetectAllTables,
             SeparateSheetsPerPage = SeparateSheetsPerPage
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.PdfToExcel, options, progress, ct);
+        }, progress, ct);
     }
 }

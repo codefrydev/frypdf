@@ -23,6 +23,18 @@ public partial class OrganizePdfToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
+        // This standalone view has no reorder/delete/rotate controls yet, so PageOrder and
+        // PagesToDelete can never be populated here — calling through would silently save an
+        // unchanged copy while claiming success. Say so honestly instead of faking a result.
+        if (PageOrder.Count == 0 && PagesToDelete.Count == 0)
+        {
+            return new ToolExecutionResult
+            {
+                Success = false,
+                ErrorMessage = "This standalone tool doesn't have page reorder/delete/rotate controls yet, so there's nothing to apply. Use the FryPDF Pages Sidebar in the Editor for visual drag-and-drop reordering, rotation, and deletion."
+            };
+        }
+
         var options = new OrganizeToolOptions
         {
             InputFilePath = PrimaryInputFile,

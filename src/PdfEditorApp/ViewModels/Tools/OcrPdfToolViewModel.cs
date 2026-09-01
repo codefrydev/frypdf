@@ -25,14 +25,12 @@ public partial class OcrPdfToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new OcrToolOptions
+        return await ExecuteBatchAsync(file => new OcrToolOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             Language = Language,
             GenerateSearchablePdf = GenerateSearchablePdf,
             ExtractTextOnly = ExtractTextOnly
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.OcrPdf, options, progress, ct);
+        }, progress, ct);
     }
 }

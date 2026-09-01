@@ -1,13 +1,14 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:PdfEditorApp.ViewModels.Tools"
+             xmlns:models="using:PdfEditorApp.Models"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.Views.Tools.RedactPdfToolView"
              x:DataType="vm:RedactPdfToolViewModel">
 
     <Grid ColumnDefinitions="*,380" Margin="0,4,0,0">
 
-        <!-- LEFT: File Workspace -->
+        <!-- LEFT: File Workspace + Live Preview -->
         <ScrollViewer Grid.Column="0" Margin="0,0,20,0" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="16">
 
@@ -82,26 +83,88 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Loaded Documents -->
+                <!-- Loaded Document + Live Preview -->
                 <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" IsVisible="{Binding HasSelectedFiles}">
-                    <StackPanel Spacing="12">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="Document to Redact" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <Button Command="{Binding AddFilesCommand}" Background="#F0F9FF" Foreground="#0284C7" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="6" Padding="12,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand">
+                    <StackPanel Spacing="14">
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <TextBlock Grid.Column="0" Text="{Binding PrimaryInputFile}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+
+                            <!-- Zoom controls -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="0,0,10,0" VerticalAlignment="Center">
+                                <Button Command="{Binding ZoomOutCommand}" IsEnabled="{Binding CanZoomOut}" Background="{DynamicResource WinHoverBrush}" BorderThickness="0" CornerRadius="6,0,0,6" Padding="8,6" Cursor="Hand">
+                                    <materialIcons:MaterialIcon Kind="Minus" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
+                                </Button>
+                                <Border Background="{DynamicResource WinHoverBrush}" Padding="8,6" MinWidth="48" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding ZoomPercentText}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
+                                </Border>
+                                <Button Command="{Binding ZoomInCommand}" IsEnabled="{Binding CanZoomIn}" Background="{DynamicResource WinHoverBrush}" BorderThickness="0" CornerRadius="0,6,6,0" Padding="8,6" Cursor="Hand">
+                                    <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
+                                </Button>
+                            </StackPanel>
+
+                            <Button Grid.Column="2" Command="{Binding ClearFilesCommand}" Background="#F0F9FF" Foreground="#0284C7" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="6" Padding="12,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand">
                                 Change File
                             </Button>
                         </Grid>
-                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,12">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Border Grid.Column="0" Width="36" Height="36" Background="#F0F9FF" CornerRadius="8" Margin="0,0,12,0">
-                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                </Border>
-                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                <Button Grid.Column="2" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Padding="6" Cursor="Hand">
-                                    <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" />
-                                </Button>
-                            </Grid>
-                        </Border>
+
+                        <!-- Rendered page with redaction-mark highlight overlay. Scrolls in
+                             both directions once zoomed beyond the viewport. -->
+                        <ScrollViewer MaxHeight="560" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                            <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" HorizontalAlignment="Center" Padding="2">
+                                <Panel Width="{Binding DisplayPageWidth}" Height="{Binding DisplayPageHeight}">
+                                    <Image Source="{Binding PageBitmap}" Width="{Binding DisplayPageWidth}" Height="{Binding DisplayPageHeight}" Stretch="Fill" />
+
+                                    <Canvas Width="{Binding DisplayPageWidth}" Height="{Binding DisplayPageHeight}">
+                                        <ItemsControl ItemsSource="{Binding CurrentPageMarks}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <Canvas />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="models:RedactionMarkItem">
+                                                    <Border Background="#B3DC2626" BorderBrush="#DC2626" BorderThickness="1.5" CornerRadius="1"
+                                                            Canvas.Left="{Binding DisplayX}" Canvas.Top="{Binding DisplayY}"
+                                                            Width="{Binding DisplayWidth}" Height="{Binding DisplayHeight}"
+                                                            ToolTip.Tip="{Binding Label}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Canvas>
+
+                                    <!-- Catches drag gestures for manual marking; Background must be
+                                         non-null to be hit-testable across its whole area, not just
+                                         where child content is drawn. -->
+                                    <Canvas Width="{Binding DisplayPageWidth}" Height="{Binding DisplayPageHeight}" Background="Transparent" Cursor="IBeam"
+                                            PointerPressed="OnPreviewPointerPressed" PointerMoved="OnPreviewPointerMoved" PointerReleased="OnPreviewPointerReleased" PointerWheelChanged="OnPreviewPointerWheelChanged">
+                                        <Border x:Name="LiveSelectionBox" Background="#4D2563EB" BorderBrush="#2563EB" BorderThickness="1.5" IsVisible="False" IsHitTestVisible="False" />
+                                    </Canvas>
+
+                                    <Border Background="#66000000" IsVisible="{Binding IsLoadingPreview}" IsHitTestVisible="False">
+                                        <TextBlock Text="Loading preview..." Foreground="White" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Panel>
+                            </Border>
+                        </ScrollViewer>
+
+                        <TextBlock Text="Drag on the page to select text for redaction, like in the PDF Reader. Hold Alt while dragging to draw a box instead, for images or signatures. Ctrl/Cmd + scroll to zoom." FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" TextWrapping="Wrap" />
+
+                        <!-- Page navigation -->
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Button Grid.Column="0" Command="{Binding PreviousPageCommand}" IsEnabled="{Binding CanGoToPreviousPage}" Background="{DynamicResource WinHoverBrush}" Foreground="{DynamicResource WinTextBrush}" BorderThickness="0" CornerRadius="6" Padding="10,6" FontSize="12" Cursor="Hand">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <materialIcons:MaterialIcon Kind="ChevronLeft" Width="15" Height="15" />
+                                    <TextBlock Text="Prev" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Grid.Column="1" Text="{Binding PageIndicatorText}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Button Grid.Column="2" Command="{Binding NextPageCommand}" IsEnabled="{Binding CanGoToNextPage}" Background="{DynamicResource WinHoverBrush}" Foreground="{DynamicResource WinTextBrush}" BorderThickness="0" CornerRadius="6" Padding="10,6" FontSize="12" Cursor="Hand">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="Next" VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Kind="ChevronRight" Width="15" Height="15" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
                     </StackPanel>
                 </Border>
 
@@ -114,7 +177,7 @@
                 <Border DockPanel.Dock="Top" Margin="0,0,0,16">
                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                         <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#0284C7" />
-                        <TextBlock Text="Redaction Pattern" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="Redact PDF" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
 
@@ -122,23 +185,69 @@
                     <Button Command="{Binding ExecuteToolCommand}" Background="#0284C7" Foreground="White" CornerRadius="10" Padding="24,14" FontWeight="Bold" FontSize="14" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsEnabled="{Binding !IsRunning}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <materialIcons:MaterialIcon Kind="SelectRemove" Width="18" Height="18" />
-                            <TextBlock Text="Redact &amp; Sanitize" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Marks.Count, StringFormat='Redact {0} Marked Region(s)'}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Spacing="14">
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Text Pattern / Keyword to Scrub" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Search text to find &amp; mark" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                             <TextBox Text="{Binding SearchPattern}" FontSize="12" PlaceholderText="e.g. CONFIDENTIAL, SSN, Secret..." />
+                            <Button Command="{Binding FindAndMarkCommand}" Background="#F0F9FF" Foreground="#0284C7" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="8" Padding="12,8" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Cursor="Hand" IsEnabled="{Binding !IsSearching}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="Magnify" Width="15" Height="15" />
+                                    <TextBlock Text="Find &amp; Mark Matches" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Text="{Binding SearchStatusMessage}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" IsVisible="{Binding HasSearchStatusMessage}" />
                         </StackPanel>
 
                         <CheckBox Content="Match Exact Case" IsChecked="{Binding CaseSensitive}" FontSize="12" />
+
+                        <!-- Marked for Redaction list -->
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="Marked for Redaction" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                                    <Border Background="#F0F9FF" CornerRadius="10" Padding="7,1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Marks.Count}" FontSize="10.5" FontWeight="Bold" Foreground="#0284C7" />
+                                    </Border>
+                                </StackPanel>
+                                <Button Grid.Column="1" Command="{Binding ClearMarksCommand}" Background="Transparent" BorderThickness="0" Foreground="#EF4444" FontSize="11.5" Padding="4" Cursor="Hand" IsVisible="{Binding HasMarks}">
+                                    Clear All
+                                </Button>
+                            </Grid>
+
+                            <TextBlock Text="Nothing marked yet — search above to find matches, review them here, then redact." FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" TextWrapping="Wrap" IsVisible="{Binding !HasMarks}" />
+
+                            <ItemsControl ItemsSource="{Binding Marks}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="models:RedactionMarkItem">
+                                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,6">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                    <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" MaxWidth="220" />
+                                                    <TextBlock Text="{Binding PageLabel}" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="1" Command="{Binding $parent[UserControl].((vm:RedactPdfToolViewModel)DataContext).RemoveMarkCommand}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Padding="4" Cursor="Hand" ToolTip.Tip="Remove this mark">
+                                                    <materialIcons:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
                         <CheckBox Content="Permanent Deep Content Sanitization" IsChecked="{Binding PermanentScrubText}" FontSize="12" />
 
-                        <Border Background="#F0F9FF" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="8" Padding="12">
-                            <TextBlock Text="Redaction irrevocably removes text streams, font mappings, and vector paths so data cannot be recovered." FontSize="11.5" Foreground="#0369A1" TextWrapping="Wrap" />
+                        <Border Background="#F0F9FF" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="8" Padding="12" IsVisible="{Binding PermanentScrubText}">
+                            <TextBlock Text="Marked pages are rendered to flattened images before saving, so the underlying text is genuinely removed — not just covered." FontSize="11.5" Foreground="#0369A1" TextWrapping="Wrap" />
+                        </Border>
+                        <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="8" Padding="12" IsVisible="{Binding !PermanentScrubText}">
+                            <TextBlock Text="Visual overlay only: a black box is drawn over each mark, but the underlying text stays in the PDF and can be recovered by removing the overlay." FontSize="11.5" Foreground="#92400E" TextWrapping="Wrap" />
                         </Border>
                     </StackPanel>
                 </ScrollViewer>

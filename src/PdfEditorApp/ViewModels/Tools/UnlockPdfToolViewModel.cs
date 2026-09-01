@@ -19,12 +19,10 @@ public partial class UnlockPdfToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new UnlockToolOptions
+        return await ExecuteBatchAsync(file => new UnlockToolOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             Password = Password
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.UnlockPdf, options, progress, ct);
+        }, progress, ct);
     }
 }

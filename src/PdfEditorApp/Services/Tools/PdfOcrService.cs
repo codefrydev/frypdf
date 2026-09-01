@@ -39,52 +39,53 @@ public class PdfOcrService : IPdfOcrService
             ct.ThrowIfCancellationRequested();
             progress?.Report(15.0);
 
-            // Read pages and extract / analyze text glyphs
+            // Read pages and analyze existing text glyphs. Note: this indexes text PdfPig
+            // already finds embedded in the page — it does not perform true image-to-text
+            // OCR recognition on scanned/image-only pages. A page that already has embedded
+            // text is already selectable, so no duplicate overlay is drawn for it either way.
             using var pdfPigDoc = UglyToad.PdfPig.PdfDocument.Open(options.InputFilePath);
-            using var outputDoc = PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Modify);
 
             int totalPages = pdfPigDoc.NumberOfPages;
             int recognizedWords = 0;
+            int pagesWithoutText = 0;
 
             for (int p = 1; p <= totalPages; p++)
             {
                 ct.ThrowIfCancellationRequested();
                 var pigPage = pdfPigDoc.GetPage(p);
-                var pdfSharpPage = outputDoc.Pages[p - 1];
-
                 var words = pigPage.GetWords().ToList();
                 recognizedWords += words.Count;
-
-                // Overlay selectable text layer if not already present
-                if (words.Count > 0 && options.GenerateSearchablePdf)
-                {
-                    using var gfx = XGraphics.FromPdfPage(pdfSharpPage);
-                    var font = new XFont("Helvetica", 10, XFontStyle.Regular);
-                    // Transparent text brush for invisible searchable layer
-                    var invisibleBrush = new XSolidBrush(XColor.FromArgb(0, 0, 0, 0));
-
-                    foreach (var w in words)
-                    {
-                        var bbox = w.BoundingBox;
-                        gfx.DrawString(w.Text, font, invisibleBrush, new XPoint(bbox.Left, pdfSharpPage.Height.Point - bbox.Bottom));
-                    }
-                }
+                if (words.Count == 0) pagesWithoutText++;
 
                 progress?.Report(15.0 + (p / (double)totalPages * 75.0));
             }
 
-            outputDoc.Save(outPath);
             progress?.Report(100.0);
 
-            long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
+            if (pagesWithoutText == 0)
+            {
+                // No new text layer is needed — the document is already fully searchable.
+                // Still produce the expected output file (a straight copy) so Save/Open/
+                // preview flows downstream have something to point at.
+                File.Copy(options.InputFilePath, outPath, overwrite: true);
+                long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
+                return new ToolExecutionResult
+                {
+                    Success = true,
+                    OutputFilePath = outPath,
+                    OutputFiles = new List<string> { outPath },
+                    OriginalSizeBytes = origBytes,
+                    OutputSizeBytes = outBytes,
+                    Message = $"All {totalPages} page(s) already contain selectable text ({recognizedWords} words) — this document was already searchable."
+                };
+            }
+
             return new ToolExecutionResult
             {
-                Success = true,
-                OutputFilePath = outPath,
-                OutputFiles = new List<string> { outPath },
-                OriginalSizeBytes = origBytes,
-                OutputSizeBytes = outBytes,
-                Message = $"OCR process completed across {totalPages} pages ({recognizedWords} words indexed). Output is fully searchable."
+                Success = false,
+                ErrorMessage = pagesWithoutText == totalPages
+                    ? $"No extractable text was found on any of the {totalPages} page(s) — this looks like a scanned/image-only document. This tool indexes text that already exists in a PDF; it does not yet perform true image-to-text OCR recognition."
+                    : $"{pagesWithoutText} of {totalPages} page(s) have no extractable text (likely scanned images) and could not be made searchable. This tool indexes text that already exists in a PDF; it does not yet perform true image-to-text OCR recognition for those pages."
             };
         }, ct);
     }
@@ -122,17 +123,53 @@ public class PdfOcrService : IPdfOcrService
                     using var enhancedSurface = SkiaSharp.SKSurface.Create(new SkiaSharp.SKImageInfo(skBitmap.Width, skBitmap.Height));
                     var canvas = enhancedSurface.Canvas;
 
-                    using var paint = new SkiaSharp.SKPaint();
+                    // Compose the requested enhancement filters. Note: AutoDeskew is not
+                    // applied here — real skew correction needs angle detection (e.g. a
+                    // Hough transform / projection-profile analysis), which is a separate,
+                    // larger piece of work rather than a color filter.
+                    SkiaSharp.SKColorFilter? colorFilter = null;
+                    void Compose(SkiaSharp.SKColorFilter next)
+                    {
+                        colorFilter = colorFilter == null ? next : SkiaSharp.SKColorFilter.CreateCompose(next, colorFilter);
+                    }
+
                     if (options.ConvertToGrayscale)
                     {
-                        paint.ColorFilter = SkiaSharp.SKColorFilter.CreateColorMatrix(new float[]
+                        Compose(SkiaSharp.SKColorFilter.CreateColorMatrix(new float[]
                         {
                             0.21f, 0.72f, 0.07f, 0, 0,
                             0.21f, 0.72f, 0.07f, 0, 0,
                             0.21f, 0.72f, 0.07f, 0, 0,
                             0,     0,     0,     1, 0
-                        });
+                        }));
                     }
+
+                    if (options.EnhanceContrast)
+                    {
+                        const float contrast = 1.25f;
+                        float t = 0.5f * (1f - contrast);
+                        Compose(SkiaSharp.SKColorFilter.CreateColorMatrix(new float[]
+                        {
+                            contrast, 0, 0, 0, t,
+                            0, contrast, 0, 0, t,
+                            0, 0, contrast, 0, t,
+                            0, 0, 0, 1, 0
+                        }));
+                    }
+
+                    if (options.WhitenBackground)
+                    {
+                        const float brighten = 0.10f;
+                        Compose(SkiaSharp.SKColorFilter.CreateColorMatrix(new float[]
+                        {
+                            1, 0, 0, 0, brighten,
+                            0, 1, 0, 0, brighten,
+                            0, 0, 1, 0, brighten,
+                            0, 0, 0, 1, 0
+                        }));
+                    }
+
+                    using var paint = new SkiaSharp.SKPaint { ColorFilter = colorFilter };
 
                     canvas.DrawBitmap(skBitmap, 0, 0, paint);
 

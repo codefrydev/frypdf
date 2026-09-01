@@ -25,14 +25,12 @@ public partial class PdfToWordToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new WordConversionOptions
+        return await ExecuteBatchAsync(file => new WordConversionOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             ExtractTables = ExtractTables,
             ExtractImages = ExtractImages,
             OcrFallback = OcrFallback
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.PdfToWord, options, progress, ct);
+        }, progress, ct);
     }
 }

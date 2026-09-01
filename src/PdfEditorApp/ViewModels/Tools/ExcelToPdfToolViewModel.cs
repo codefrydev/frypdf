@@ -19,12 +19,10 @@ public partial class ExcelToPdfToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new OfficeToPdfOptions
+        return await ExecuteBatchAsync(file => new OfficeToPdfOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             Orientation = Orientation
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.ExcelToPdf, options, progress, ct);
+        }, progress, ct);
     }
 }

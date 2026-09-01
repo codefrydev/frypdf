@@ -25,14 +25,12 @@ public partial class PdfToMarkdownToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new MarkdownConversionOptions
+        return await ExecuteBatchAsync(file => new MarkdownConversionOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             IncludeTables = IncludeTables,
             IncludeImages = IncludeImages,
             IncludeMetadataHeader = IncludeMetadataHeader
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.PdfToMarkdown, options, progress, ct);
+        }, progress, ct);
     }
 }

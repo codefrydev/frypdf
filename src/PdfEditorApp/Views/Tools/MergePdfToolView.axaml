@@ -380,8 +380,8 @@
 
                         <StackPanel Spacing="8">
                             <TextBlock Text="Merge Options" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                            <CheckBox Content="Preserve Bookmarks &amp; Outlines" IsChecked="{Binding PreserveBookmarks}" FontSize="12" />
-                            <CheckBox Content="Normalize Page Dimensions (A4 standard)" IsChecked="{Binding NormalizePageSizes}" FontSize="12" />
+                            <CheckBox Content="Preserve Bookmarks &amp; Outlines (Coming Soon)" IsChecked="{Binding PreserveBookmarks}" IsEnabled="False" FontSize="12" />
+                            <CheckBox Content="Normalize Page Dimensions (Coming Soon)" IsChecked="{Binding NormalizePageSizes}" IsEnabled="False" FontSize="12" />
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>

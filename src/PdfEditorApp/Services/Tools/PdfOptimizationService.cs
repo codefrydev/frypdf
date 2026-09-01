@@ -505,7 +505,11 @@ public class PdfOptimizationService : IPdfOptimizationService
             using var inputDoc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Import);
             using var outputDoc = new PdfSharpDoc();
 
-            // Set PDF/A compliance markers
+            // Note: this labels the document as the requested standard but does not (yet)
+            // produce real PDF/A-conformant output — that additionally requires embedded
+            // XMP metadata with the pdfaid schema, an /OutputIntent ICC profile, full font
+            // embedding, and no encryption, none of which are implemented here. The label
+            // below reflects intent, not verified conformance.
             string standardLabel = options.Standard switch
             {
                 PdfAStandard.PdfA1b => "PDF/A-1b (ISO 19005-1)",
@@ -515,7 +519,7 @@ public class PdfOptimizationService : IPdfOptimizationService
 
             outputDoc.Info.Title = inputDoc.Info.Title;
             outputDoc.Info.Author = inputDoc.Info.Author;
-            outputDoc.Info.Subject = $"Archived under {standardLabel}";
+            outputDoc.Info.Subject = $"Prepared for archiving (targeting {standardLabel})";
             PdfFileHelper.SetFryPdfMetadata(outputDoc);
             outputDoc.Options.CompressContentStreams = true;
 
@@ -546,7 +550,7 @@ public class PdfOptimizationService : IPdfOptimizationService
                 OutputFiles = new System.Collections.Generic.List<string> { outPath },
                 OriginalSizeBytes = origBytes,
                 OutputSizeBytes = outBytes,
-                Message = $"Standardized document to {standardLabel} with archival compliance."
+                Message = $"Prepared document targeting {standardLabel}. Note: this does not yet produce verified PDF/A-conformant output (no embedded XMP/pdfaid metadata, ICC output intent, or font-embedding/encryption checks) — do not rely on this for formal archival compliance."
             };
         }, ct);
     }

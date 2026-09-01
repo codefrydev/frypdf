@@ -19,12 +19,10 @@ public partial class PdfToPowerPointToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new PptxConversionOptions
+        return await ExecuteBatchAsync(file => new PptxConversionOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             EditableText = EditableText
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.PdfToPowerPoint, options, progress, ct);
+        }, progress, ct);
     }
 }

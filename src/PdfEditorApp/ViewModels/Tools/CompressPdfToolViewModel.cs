@@ -183,9 +183,9 @@ public partial class CompressPdfToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new CompressToolOptions
+        return await ExecuteBatchAsync(file => new CompressToolOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             Level = CompressionLevel,
             ImageQualityDpi = Math.Clamp(ImageQualityDpi, 50, 600),
             JpegQuality = Math.Clamp(JpegQuality, 20, 100),
@@ -193,8 +193,6 @@ public partial class CompressPdfToolViewModel : PdfToolViewModelBase
             RemoveMetadata = RemoveMetadata,
             RemoveDuplicateObjects = RemoveDuplicateObjects,
             CompressStreams = CompressStreams
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.CompressPdf, options, progress, ct);
+        }, progress, ct);
     }
 }

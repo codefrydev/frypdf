@@ -15,11 +15,9 @@ public partial class RepairPdfToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new RepairToolOptions
+        return await ExecuteBatchAsync(file => new RepairToolOptions
         {
-            InputFilePath = PrimaryInputFile
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.RepairPdf, options, progress, ct);
+            InputFilePath = file
+        }, progress, ct);
     }
 }

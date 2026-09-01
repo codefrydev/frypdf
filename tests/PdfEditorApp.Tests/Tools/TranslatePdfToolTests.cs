@@ -47,4 +47,30 @@ public class TranslatePdfToolTests : IClassFixture<ToolTestFixture>
             if (File.Exists(sample)) File.Delete(sample);
         }
     }
+
+    [Fact]
+    public async Task TranslatePdfTool_UnsupportedLanguage_ReportsHonestFailure_NotSilentNoOp()
+    {
+        // Regression guard: only Spanish/French/German have a glossary. Before the fix,
+        // any other language (e.g. Japanese, suggested by the tool's own UI placeholder)
+        // silently passed every line through unchanged while still reporting success.
+        string sample = ToolTestFixture.CreateSamplePdf("TranslateUnsupported", 1);
+        try
+        {
+            var vm = (TranslatePdfToolViewModel)_fixture.Factory.Create(PdfToolId.TranslatePdf);
+            vm.SelectedFiles.Add(sample);
+            vm.SyncPreviewItems();
+            vm.TargetLanguage = "Japanese";
+
+            await vm.ExecuteToolCommand.ExecuteAsync(null);
+
+            Assert.True(vm.HasError);
+            Assert.False(vm.IsComplete);
+            Assert.Contains("not supported yet", vm.ErrorMessage);
+        }
+        finally
+        {
+            if (File.Exists(sample)) File.Delete(sample);
+        }
+    }
 }

@@ -169,11 +169,15 @@ public class PdfConversionService : IPdfConversionService
                     foreach (var cellVal in cells)
                     {
                         string cleanVal = cellVal.Trim();
+                        string numericCandidate = cleanVal.Replace("$", "").Replace(",", "");
+                        bool isNumber = double.TryParse(numericCandidate, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double numericValue);
                         var cell = new Cell
                         {
                             CellReference = $"{GetExcelColumnName(colIndex)}{rowIndex}",
-                            DataType = double.TryParse(cleanVal.Replace("$", "").Replace(",", ""), out _) ? CellValues.Number : CellValues.String,
-                            CellValue = new CellValue(cleanVal)
+                            DataType = isNumber ? CellValues.Number : CellValues.String,
+                            CellValue = new CellValue(isNumber
+                                ? numericValue.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                                : cleanVal)
                         };
                         row.Append(cell);
                         colIndex++;
@@ -312,6 +316,9 @@ public class PdfConversionService : IPdfConversionService
             if (!File.Exists(options.InputFilePath))
                 return new ToolExecutionResult { Success = false, ErrorMessage = "Input Word document does not exist." };
 
+            if (IsLegacyOfficeBinaryFormat(options.InputFilePath))
+                return new ToolExecutionResult { Success = false, ErrorMessage = "This is a legacy .doc (binary) file, which isn't supported yet. Please save it as .docx in Word and try again." };
+
             long origBytes = new FileInfo(options.InputFilePath).Length;
             string outPath = options.OutputFilePath;
             if (string.IsNullOrWhiteSpace(outPath))
@@ -331,7 +338,8 @@ public class PdfConversionService : IPdfConversionService
                 var body = wordDoc.MainDocumentPart?.Document?.Body;
                 if (body != null)
                 {
-                    foreach (var para in body.Elements<DocumentFormat.OpenXml.Wordprocessing.Paragraph>())
+                    // Descendants (not Elements) so paragraphs nested inside tables are included too.
+                    foreach (var para in body.Descendants<DocumentFormat.OpenXml.Wordprocessing.Paragraph>())
                     {
                         string txt = para.InnerText;
                         if (!string.IsNullOrWhiteSpace(txt)) paragraphs.Add(txt);
@@ -399,6 +407,9 @@ public class PdfConversionService : IPdfConversionService
             if (!File.Exists(options.InputFilePath))
                 return new ToolExecutionResult { Success = false, ErrorMessage = "Input Excel document does not exist." };
 
+            if (IsLegacyOfficeBinaryFormat(options.InputFilePath))
+                return new ToolExecutionResult { Success = false, ErrorMessage = "This is a legacy .xls (binary) file, which isn't supported yet. Please save it as .xlsx in Excel and try again." };
+
             long origBytes = new FileInfo(options.InputFilePath).Length;
             string outPath = options.OutputFilePath;
             if (string.IsNullOrWhiteSpace(outPath))
@@ -418,6 +429,7 @@ public class PdfConversionService : IPdfConversionService
                 var workbookPart = spreadsheet.WorkbookPart;
                 if (workbookPart != null)
                 {
+                    var sharedStrings = workbookPart.SharedStringTablePart?.SharedStringTable;
                     var sheetsEnum = workbookPart.Workbook!.Sheets?.Elements<Sheet>() ?? Enumerable.Empty<Sheet>();
                     foreach (var sheet in sheetsEnum)
                     {
@@ -434,7 +446,19 @@ public class PdfConversionService : IPdfConversionService
                                 var cellValues = new List<string>();
                                 foreach (var cell in row.Elements<Cell>())
                                 {
-                                    string val = cell.CellValue?.Text ?? cell.InnerText ?? "";
+                                    string val;
+                                    if (cell.DataType?.Value == CellValues.SharedString
+                                        && cell.CellValue != null
+                                        && int.TryParse(cell.CellValue.Text, out int sharedIndex)
+                                        && sharedStrings != null
+                                        && sharedIndex >= 0 && sharedIndex < sharedStrings.ChildElements.Count)
+                                    {
+                                        val = sharedStrings.ElementAt(sharedIndex).InnerText;
+                                    }
+                                    else
+                                    {
+                                        val = cell.CellValue?.Text ?? cell.InnerText ?? "";
+                                    }
                                     cellValues.Add(val);
                                 }
                                 if (cellValues.Count > 0) rowsList.Add(cellValues);
@@ -527,6 +551,9 @@ public class PdfConversionService : IPdfConversionService
         {
             if (!File.Exists(options.InputFilePath))
                 return new ToolExecutionResult { Success = false, ErrorMessage = "Input PowerPoint presentation does not exist." };
+
+            if (IsLegacyOfficeBinaryFormat(options.InputFilePath))
+                return new ToolExecutionResult { Success = false, ErrorMessage = "This is a legacy .ppt (binary) file, which isn't supported yet. Please save it as .pptx in PowerPoint and try again." };
 
             long origBytes = new FileInfo(options.InputFilePath).Length;
             string outPath = options.OutputFilePath;
@@ -639,47 +666,62 @@ public class PdfConversionService : IPdfConversionService
             if (!Directory.Exists(outDir)) Directory.CreateDirectory(outDir);
 
             ct.ThrowIfCancellationRequested();
-            using var doc = PdfSharpCore.Pdf.IO.PdfReader.Open(options.InputFilePath, PdfSharpCore.Pdf.IO.PdfDocumentOpenMode.Import);
-            int totalPages = doc.PageCount;
+
+            // Render actual page content via the same PdfPig+Skia path used for on-screen
+            // preview (PdfViewerViewModel.RenderPageBytesAtScale), instead of a blank canvas.
+            using var pdfPigDoc = UglyToad.PdfPig.PdfDocument.Open(options.InputFilePath);
+            try { UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.AddSkiaPageFactory(pdfPigDoc); } catch { }
+
+            int totalPages = pdfPigDoc.NumberOfPages;
             var createdFiles = new List<string>();
             string baseName = Path.GetFileNameWithoutExtension(options.InputFilePath);
             string ext = options.OutputFormat.ToLowerInvariant().Contains("png") ? "png" : "jpg";
+            float scale = (float)(options.Dpi / 72.0);
 
-            for (int p = 0; p < totalPages; p++)
+            for (int p = 1; p <= totalPages; p++)
             {
                 ct.ThrowIfCancellationRequested();
-                var page = doc.Pages[p];
+                string imgPath = Path.Combine(outDir, $"{baseName}_page_{p:D3}.{ext}");
 
-                // Rasterize / Export page representation to bitmap
-                int widthPx = (int)(page.Width.Point * (options.Dpi / 72.0));
-                int heightPx = (int)(page.Height.Point * (options.Dpi / 72.0));
-                if (widthPx <= 0) widthPx = 800;
-                if (heightPx <= 0) heightPx = 1131;
-
-                string imgPath = Path.Combine(outDir, $"{baseName}_page_{p + 1:D3}.{ext}");
-
-                // Generate clean page bitmap using SkiaSharp
-                using var surface = SkiaSharp.SKSurface.Create(new SkiaSharp.SKImageInfo(widthPx, heightPx));
-                var canvas = surface.Canvas;
-                canvas.Clear(SkiaSharp.SKColors.White);
-
-                // Draw border and document representation
-                using var paint = new SkiaSharp.SKPaint
+                using var pngStream = UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.GetPageAsPng(pdfPigDoc, p, scale, 100);
+                if (pngStream == null || pngStream.Length == 0)
                 {
-                    Color = SkiaSharp.SKColors.Black,
-                    IsAntialias = true
-                };
+                    progress?.Report(p / (double)totalPages * 90.0);
+                    continue;
+                }
 
-                using var skImage = surface.Snapshot();
-                using var data = skImage.Encode(ext == "png" ? SkiaSharp.SKEncodedImageFormat.Png : SkiaSharp.SKEncodedImageFormat.Jpeg, options.JpgQuality);
-                using var fs = File.OpenWrite(imgPath);
-                data.SaveTo(fs);
+                if (ext == "png")
+                {
+                    pngStream.Position = 0;
+                    using var fs = File.Create(imgPath);
+                    pngStream.CopyTo(fs);
+                }
+                else
+                {
+                    pngStream.Position = 0;
+                    using var skBitmap = SkiaSharp.SKBitmap.Decode(pngStream);
+                    if (skBitmap == null)
+                    {
+                        progress?.Report(p / (double)totalPages * 90.0);
+                        continue;
+                    }
+                    using var skImage = SkiaSharp.SKImage.FromBitmap(skBitmap);
+                    using var jpegData = skImage.Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, options.JpgQuality);
+                    using var fs = File.Create(imgPath);
+                    jpegData.SaveTo(fs);
+                }
 
                 createdFiles.Add(imgPath);
-                progress?.Report((p + 1) / (double)totalPages * 90.0);
+                progress?.Report(p / (double)totalPages * 90.0);
             }
 
             progress?.Report(100.0);
+
+            if (createdFiles.Count == 0)
+            {
+                return new ToolExecutionResult { Success = false, ErrorMessage = "No pages could be rendered from this PDF." };
+            }
+
             return new ToolExecutionResult
             {
                 Success = true,
@@ -710,55 +752,90 @@ public class PdfConversionService : IPdfConversionService
             ct.ThrowIfCancellationRequested();
             using var pdfDoc = new PdfSharpCore.Pdf.PdfDocument();
             int total = options.ImageFiles.Count;
+            var skipped = new List<string>();
+            int addedCount = 0;
 
             for (int i = 0; i < total; i++)
             {
                 ct.ThrowIfCancellationRequested();
                 string imgFile = options.ImageFiles[i];
-                if (!File.Exists(imgFile)) continue;
-
-                var page = pdfDoc.AddPage();
-                var xImage = XImage.FromFile(imgFile);
-
-                if (options.AutoOrientation && xImage.PixelWidth > xImage.PixelHeight)
+                if (!File.Exists(imgFile))
                 {
-                    page.Orientation = PdfSharpCore.PageOrientation.Landscape;
-                }
-                else
-                {
-                    page.Orientation = options.Orientation == PageOrientation.Landscape
-                        ? PdfSharpCore.PageOrientation.Landscape
-                        : PdfSharpCore.PageOrientation.Portrait;
+                    skipped.Add($"{Path.GetFileName(imgFile)} (not found)");
+                    continue;
                 }
 
-                using var gfx = XGraphics.FromPdfPage(page);
-
-                if (options.FitToPage)
+                XImage xImage;
+                try
                 {
-                    double margin = options.MarginPoints;
-                    double maxW = page.Width.Point - (margin * 2);
-                    double maxH = page.Height.Point - (margin * 2);
-
-                    double scale = Math.Min(maxW / xImage.PixelWidth, maxH / xImage.PixelHeight);
-                    double drawW = xImage.PixelWidth * scale;
-                    double drawH = xImage.PixelHeight * scale;
-                    double posX = margin + ((maxW - drawW) / 2.0);
-                    double posY = margin + ((maxH - drawH) / 2.0);
-
-                    gfx.DrawImage(xImage, posX, posY, drawW, drawH);
+                    xImage = XImage.FromFile(imgFile);
                 }
-                else
+                catch (Exception ex)
                 {
-                    gfx.DrawImage(xImage, options.MarginPoints, options.MarginPoints);
+                    // One corrupt/unsupported image must not abort the whole batch
+                    // (and must not leave an empty page behind for it).
+                    skipped.Add($"{Path.GetFileName(imgFile)} ({ex.Message})");
+                    continue;
                 }
 
+                using (xImage)
+                {
+                    var page = pdfDoc.AddPage();
+
+                    if (options.AutoOrientation && xImage.PixelWidth > xImage.PixelHeight)
+                    {
+                        page.Orientation = PdfSharpCore.PageOrientation.Landscape;
+                    }
+                    else
+                    {
+                        page.Orientation = options.Orientation == PageOrientation.Landscape
+                            ? PdfSharpCore.PageOrientation.Landscape
+                            : PdfSharpCore.PageOrientation.Portrait;
+                    }
+
+                    using var gfx = XGraphics.FromPdfPage(page);
+
+                    if (options.FitToPage)
+                    {
+                        double margin = options.MarginPoints;
+                        double maxW = page.Width.Point - (margin * 2);
+                        double maxH = page.Height.Point - (margin * 2);
+
+                        double scale = Math.Min(maxW / xImage.PixelWidth, maxH / xImage.PixelHeight);
+                        double drawW = xImage.PixelWidth * scale;
+                        double drawH = xImage.PixelHeight * scale;
+                        double posX = margin + ((maxW - drawW) / 2.0);
+                        double posY = margin + ((maxH - drawH) / 2.0);
+
+                        gfx.DrawImage(xImage, posX, posY, drawW, drawH);
+                    }
+                    else
+                    {
+                        gfx.DrawImage(xImage, options.MarginPoints, options.MarginPoints);
+                    }
+                }
+
+                addedCount++;
                 progress?.Report((i + 1) / (double)total * 90.0);
+            }
+
+            if (addedCount == 0)
+            {
+                return new ToolExecutionResult
+                {
+                    Success = false,
+                    ErrorMessage = $"No images could be converted: {string.Join("; ", skipped)}"
+                };
             }
 
             pdfDoc.Save(outPath);
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
+            string resultMessage = skipped.Count == 0
+                ? $"Converted {total} images into high-resolution PDF: {Path.GetFileName(outPath)}"
+                : $"Converted {addedCount} of {total} images into PDF: {Path.GetFileName(outPath)}. Skipped: {string.Join("; ", skipped)}";
+
             return new ToolExecutionResult
             {
                 Success = true,
@@ -766,7 +843,7 @@ public class PdfConversionService : IPdfConversionService
                 OutputFiles = new List<string> { outPath },
                 OriginalSizeBytes = totalOriginalBytes,
                 OutputSizeBytes = outBytes,
-                Message = $"Converted {total} images into high-resolution PDF: {Path.GetFileName(outPath)}"
+                Message = resultMessage
             };
         }, ct);
     }
@@ -780,8 +857,12 @@ public class PdfConversionService : IPdfConversionService
             {
                 try
                 {
-                    using var client = new System.Net.Http.HttpClient();
-                    htmlContent = client.GetStringAsync(options.HtmlContentOrUrl).GetAwaiter().GetResult();
+                    using var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+                    htmlContent = client.GetStringAsync(options.HtmlContentOrUrl, ct).GetAwaiter().GetResult();
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -966,5 +1047,26 @@ public class PdfConversionService : IPdfConversionService
             colIndex = (colIndex - mod) / 26;
         }
         return name;
+    }
+
+    /// <summary>
+    /// Detects the legacy OLE2 Compound File signature used by pre-2007 .doc/.xls/.ppt
+    /// binary formats, which DocumentFormat.OpenXml (ZIP/OOXML-only) cannot open.
+    /// </summary>
+    private static bool IsLegacyOfficeBinaryFormat(string path)
+    {
+        try
+        {
+            using var fs = File.OpenRead(path);
+            Span<byte> header = stackalloc byte[8];
+            int read = fs.Read(header);
+            if (read < 8) return false;
+            ReadOnlySpan<byte> ole2Signature = stackalloc byte[] { 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1 };
+            return header.SequenceEqual(ole2Signature);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

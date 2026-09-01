@@ -25,14 +25,12 @@ public partial class RotatePdfToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new RotateToolOptions
+        return await ExecuteBatchAsync(file => new RotateToolOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             RotationDegrees = RotationDegrees,
             TargetFilter = TargetFilter,
             CustomRange = CustomRange
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.RotatePdf, options, progress, ct);
+        }, progress, ct);
     }
 }

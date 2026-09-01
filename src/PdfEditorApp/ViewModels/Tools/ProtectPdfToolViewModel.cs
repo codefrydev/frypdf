@@ -49,9 +49,9 @@ public partial class ProtectPdfToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new SecurityToolOptions
+        return await ExecuteBatchAsync(file => new SecurityToolOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             UserPassword = UserPassword,
             OwnerPassword = OwnerPassword,
             AllowPrinting = AllowPrinting,
@@ -59,8 +59,6 @@ public partial class ProtectPdfToolViewModel : PdfToolViewModelBase
             AllowCopying = AllowCopying,
             AllowAnnotating = AllowAnnotating,
             AllowFormFilling = AllowFormFilling
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.ProtectPdf, options, progress, ct);
+        }, progress, ct);
     }
 }

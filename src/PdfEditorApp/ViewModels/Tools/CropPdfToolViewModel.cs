@@ -34,17 +34,15 @@ public partial class CropPdfToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new CropToolOptions
+        return await ExecuteBatchAsync(file => new CropToolOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             CropTopPoints = CropMarginTop,
             CropBottomPoints = CropMarginBottom,
             CropLeftPoints = CropMarginLeft,
             CropRightPoints = CropMarginRight,
             TargetPages = TargetPages,
             CustomRange = CustomRange
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.CropPdf, options, progress, ct);
+        }, progress, ct);
     }
 }

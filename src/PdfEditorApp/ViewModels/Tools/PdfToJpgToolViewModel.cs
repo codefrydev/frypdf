@@ -34,17 +34,15 @@ public partial class PdfToJpgToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new ImageConversionOptions
+        return await ExecuteBatchAsync(file => new ImageConversionOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             OutputFormat = OutputFormat,
             Dpi = Dpi,
             JpgQuality = JpgQuality,
             Grayscale = Grayscale,
             TargetPages = TargetPages,
             PageRange = PageRange
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.PdfToJpg, options, progress, ct);
+        }, progress, ct);
     }
 }

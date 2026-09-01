@@ -19,12 +19,10 @@ public partial class PdfToPdfAToolViewModel : PdfToolViewModelBase
 
     protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
     {
-        var options = new PdfAToolOptions
+        return await ExecuteBatchAsync(file => new PdfAToolOptions
         {
-            InputFilePath = PrimaryInputFile,
+            InputFilePath = file,
             Standard = Standard
-        };
-
-        return await OperationsService.ExecuteToolAsync(PdfToolId.PdfToPdfA, options, progress, ct);
+        }, progress, ct);
     }
 }

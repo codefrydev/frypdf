@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using PdfEditorApp.Models;
@@ -18,6 +22,12 @@ public interface IPdfSecurityService
     Task<ToolExecutionResult> SignPdfAsync(SignToolOptions options, IProgress<double>? progress = null, CancellationToken ct = default);
     Task<ToolExecutionResult> RedactPdfAsync(RedactionToolOptions options, IProgress<double>? progress = null, CancellationToken ct = default);
     Task<ToolExecutionResult> AddWatermarkAsync(WatermarkToolOptions options, IProgress<double>? progress = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// Read-only: finds regions matching <paramref name="pattern"/> without writing anything.
+    /// Lets a preview UI show matches for review before committing to RedactPdfAsync.
+    /// </summary>
+    Task<List<RedactionRegion>> FindRedactionMatchesAsync(string filePath, string pattern, bool caseSensitive, CancellationToken ct = default);
 }
 
 public class PdfSecurityService : IPdfSecurityService
@@ -46,10 +56,19 @@ public class PdfSecurityService : IPdfSecurityService
             if (!string.IsNullOrEmpty(options.UserPassword))
                 security.UserPassword = options.UserPassword;
 
+            string? generatedOwnerPassword = null;
             if (!string.IsNullOrEmpty(options.OwnerPassword))
+            {
                 security.OwnerPassword = options.OwnerPassword;
+            }
             else if (!string.IsNullOrEmpty(options.UserPassword))
-                security.OwnerPassword = options.UserPassword + "_admin";
+            {
+                // Never derive the owner password from the user password (e.g. "<user>_admin")
+                // — that pattern is guessable by construction, so anyone with the "open"
+                // password could compute full owner rights and strip every restriction.
+                generatedOwnerPassword = GenerateRandomPassword();
+                security.OwnerPassword = generatedOwnerPassword;
+            }
 
             security.PermitPrint = options.AllowPrinting;
             security.PermitModifyDocument = options.AllowModifying;
@@ -76,9 +95,23 @@ public class PdfSecurityService : IPdfSecurityService
                 OutputFiles = new System.Collections.Generic.List<string> { outPath },
                 OriginalSizeBytes = origBytes,
                 OutputSizeBytes = outBytes,
-                Message = "Document successfully encrypted and secured with requested permission constraints."
+                Message = generatedOwnerPassword != null
+                    ? $"Document successfully encrypted and secured with requested permission constraints. No owner password was provided, so a random one was generated (you'll need it later to change permissions): {generatedOwnerPassword}"
+                    : "Document successfully encrypted and secured with requested permission constraints."
             };
         }, ct);
+    }
+
+    private static string GenerateRandomPassword(int length = 20)
+    {
+        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*";
+        var bytes = RandomNumberGenerator.GetBytes(length);
+        var sb = new StringBuilder(length);
+        foreach (var b in bytes)
+        {
+            sb.Append(chars[b % chars.Length]);
+        }
+        return sb.ToString();
     }
 
     public async Task<ToolExecutionResult> UnlockPdfAsync(UnlockToolOptions options, IProgress<double>? progress = null, CancellationToken ct = default)
@@ -207,13 +240,18 @@ public class PdfSecurityService : IPdfSecurityService
             gfx.DrawString($"Digitally Verified: {options.SignerName}{reasonStr}", metaFont, metaBrush, new XPoint(x + 10, y + h - 14));
             gfx.DrawString($"Timestamp: {dateStr}", metaFont, metaBrush, new XPoint(x + 10, y + h - 4));
 
-            // If digital X.509 certificate provided, validate certificate
+            // If a certificate is provided, read it to label the visual badge with the
+            // signer identity it names. Note: this does NOT apply a cryptographic PDF
+            // signature (no /ByteRange or signature dictionary is embedded) — it's a
+            // visual badge only, so the document is not tamper-evident. Say so honestly
+            // rather than claiming "Digitally Signed", which would be a false integrity
+            // guarantee for anyone relying on it.
             if (!string.IsNullOrEmpty(options.CertificatePath) && File.Exists(options.CertificatePath))
             {
                 try
                 {
                     var cert = System.Security.Cryptography.X509Certificates.X509CertificateLoader.LoadPkcs12FromFile(options.CertificatePath, options.CertificatePassword);
-                    doc.Info.Subject = $"Digitally Signed by {cert.SubjectName.Name} at {dateStr}";
+                    doc.Info.Subject = $"Visual signature badge referencing certificate '{cert.SubjectName.Name}' at {dateStr} — not a cryptographic PDF signature";
                 }
                 catch { }
             }
@@ -244,62 +282,226 @@ public class PdfSecurityService : IPdfSecurityService
 
     public async Task<ToolExecutionResult> RedactPdfAsync(RedactionToolOptions options, IProgress<double>? progress = null, CancellationToken ct = default)
     {
-        return await Task.Run(() =>
+        return await Task.Run(async () =>
         {
             if (!File.Exists(options.InputFilePath))
                 return new ToolExecutionResult { Success = false, ErrorMessage = "Input PDF file does not exist." };
 
             long origBytes = new FileInfo(options.InputFilePath).Length;
-            progress?.Report(20.0);
+            progress?.Report(10.0);
 
             ct.ThrowIfCancellationRequested();
-            using var doc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Modify);
 
-            int totalRedactions = 0;
-            foreach (var r in options.Regions)
+            // Start from any regions supplied directly (e.g. a UI that already resolved
+            // matches or manual marks for the user to review), then add matches for
+            // SearchPatternToRedact if one was also given.
+            var regions = new List<RedactionRegion>(options.Regions);
+            string? pattern = options.SearchPatternToRedact?.Trim();
+            if (!string.IsNullOrEmpty(pattern))
+            {
+                var matched = await FindRedactionMatchesAsync(options.InputFilePath, pattern, options.CaseSensitive, ct);
+                regions.AddRange(matched);
+            }
+
+            progress?.Report(30.0);
+
+            if (regions.Count == 0)
+            {
+                return new ToolExecutionResult
+                {
+                    Success = false,
+                    ErrorMessage = string.IsNullOrEmpty(pattern)
+                        ? "No redaction regions were specified."
+                        : $"No matches for \"{pattern}\" were found in this document — nothing was redacted."
+                };
+            }
+
+            var regionsByPage = regions
+                .Where(r => r.PageIndex >= 0)
+                .GroupBy(r => r.PageIndex)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            using var inputDoc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Import);
+            using var outputDoc = new PdfDocument();
+
+            // For genuine (not just visual) sanitization, redacted pages are rendered to a
+            // raster image with the black boxes baked in, then that image becomes the
+            // page's ENTIRE content — the original text/vector data for that page is never
+            // copied into the output at all, so it can't be recovered by anyone who removes
+            // the black box or runs text extraction. Pages with no matches are left as
+            // normal, fully-selectable vector pages.
+            UglyToad.PdfPig.PdfDocument? pigForRender = null;
+            if (options.PermanentScrubText)
+            {
+                pigForRender = UglyToad.PdfPig.PdfDocument.Open(options.InputFilePath);
+                try { UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.AddSkiaPageFactory(pigForRender); } catch { }
+            }
+
+            try
+            {
+                int totalRedactions = 0;
+                int totalPages = inputDoc.PageCount;
+                for (int pageIndex = 0; pageIndex < totalPages; pageIndex++)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    bool hasRegions = regionsByPage.TryGetValue(pageIndex, out var pageRegions) && pageRegions!.Count > 0;
+                    bool flattened = false;
+
+                    if (hasRegions && options.PermanentScrubText && pigForRender != null)
+                    {
+                        const float scale = 2.0f; // ~144 DPI: legible while keeping file size reasonable
+                        using var pngStream = UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.GetPageAsPng(pigForRender, pageIndex + 1, scale, 100);
+                        if (pngStream != null && pngStream.Length > 0)
+                        {
+                            pngStream.Position = 0;
+                            using var bitmap = SkiaSharp.SKBitmap.Decode(pngStream);
+                            if (bitmap != null)
+                            {
+                                using (var canvas = new SkiaSharp.SKCanvas(bitmap))
+                                using (var blackPaint = new SkiaSharp.SKPaint { Color = SkiaSharp.SKColors.Black, Style = SkiaSharp.SKPaintStyle.Fill })
+                                {
+                                    foreach (var r in pageRegions!)
+                                    {
+                                        canvas.DrawRect((float)(r.X * scale), (float)(r.Y * scale), (float)(r.Width * scale), (float)(r.Height * scale), blackPaint);
+                                        totalRedactions++;
+                                    }
+                                }
+
+                                using var flattenedImage = SkiaSharp.SKImage.FromBitmap(bitmap);
+                                using var flattenedData = flattenedImage.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+                                var flattenedBytes = flattenedData.ToArray();
+
+                                var srcPage = inputDoc.Pages[pageIndex];
+                                var newPage = outputDoc.AddPage();
+                                newPage.Width = srcPage.Width;
+                                newPage.Height = srcPage.Height;
+                                using var gfx = XGraphics.FromPdfPage(newPage);
+                                using var xImage = XImage.FromStream(() => new MemoryStream(flattenedBytes));
+                                gfx.DrawImage(xImage, 0, 0, newPage.Width.Point, newPage.Height.Point);
+                                flattened = true;
+                            }
+                        }
+                    }
+
+                    if (!flattened)
+                    {
+                        var importedPage = outputDoc.AddPage(inputDoc.Pages[pageIndex]);
+                        if (hasRegions)
+                        {
+                            using var gfx = XGraphics.FromPdfPage(importedPage);
+                            var fillBrush = new XSolidBrush(XColors.Black);
+                            foreach (var r in pageRegions!)
+                            {
+                                gfx.DrawRectangle(fillBrush, r.X, r.Y, r.Width, r.Height);
+                                if (!string.IsNullOrWhiteSpace(r.Reason) && r.Width > 40 && r.Height > 12)
+                                {
+                                    var reasonFont = new XFont("Helvetica", Math.Min(9, r.Height * 0.5), XFontStyle.Bold);
+                                    var reasonBrush = new XSolidBrush(XColors.White);
+                                    gfx.DrawString($"[{r.Reason}]", reasonFont, reasonBrush, new XPoint(r.X + 4, r.Y + (r.Height * 0.7)));
+                                }
+                                totalRedactions++;
+                            }
+                        }
+                    }
+
+                    progress?.Report(30.0 + (pageIndex / (double)totalPages * 60.0));
+                }
+
+                string outPath = options.OutputFilePath;
+                if (string.IsNullOrWhiteSpace(outPath))
+                {
+                    string dir = Path.GetDirectoryName(options.InputFilePath) ?? "";
+                    string name = Path.GetFileNameWithoutExtension(options.InputFilePath);
+                    outPath = Path.Combine(dir, $"{name}_Redacted.pdf");
+                }
+
+                PdfFileHelper.SaveDocumentWithFryPdfMetadata(outputDoc, outPath);
+                progress?.Report(100.0);
+
+                long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
+                return new ToolExecutionResult
+                {
+                    Success = true,
+                    OutputFilePath = outPath,
+                    OutputFiles = new List<string> { outPath },
+                    OriginalSizeBytes = origBytes,
+                    OutputSizeBytes = outBytes,
+                    Message = options.PermanentScrubText
+                        ? $"Permanently redacted {totalRedactions} region(s) — affected pages were flattened to images so the underlying text cannot be recovered."
+                        : $"Redacted {totalRedactions} region(s) with a visual overlay only — underlying text is still present in the PDF and can be recovered by anyone who removes the overlay. Enable \"Permanent Deep Content Sanitization\" for irrecoverable redaction."
+                };
+            }
+            finally
+            {
+                pigForRender?.Dispose();
+            }
+        }, ct);
+    }
+
+    public async Task<List<RedactionRegion>> FindRedactionMatchesAsync(string filePath, string pattern, bool caseSensitive, CancellationToken ct = default)
+    {
+        return await Task.Run(() =>
+        {
+            var regions = new List<RedactionRegion>();
+            string? trimmed = pattern?.Trim();
+            if (string.IsNullOrEmpty(trimmed) || !File.Exists(filePath)) return regions;
+
+            var comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+            string[] patternWords = trimmed.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+
+            void AddRegion(int pageIndex, double pageHeight, UglyToad.PdfPig.Core.PdfRectangle first, UglyToad.PdfPig.Core.PdfRectangle last)
+            {
+                double left = Math.Min(first.Left, last.Left);
+                double right = Math.Max(first.Right, last.Right);
+                double top = Math.Max(first.Top, last.Top);
+                double bottom = Math.Min(first.Bottom, last.Bottom);
+                regions.Add(new RedactionRegion
+                {
+                    PageIndex = pageIndex,
+                    X = left,
+                    Y = pageHeight - top,
+                    Width = right - left,
+                    Height = top - bottom,
+                    Reason = "Pattern match"
+                });
+            }
+
+            using var pigDoc = UglyToad.PdfPig.PdfDocument.Open(filePath);
+            for (int p = 1; p <= pigDoc.NumberOfPages; p++)
             {
                 ct.ThrowIfCancellationRequested();
-                if (r.PageIndex >= 0 && r.PageIndex < doc.PageCount)
+                var pigPage = pigDoc.GetPage(p);
+                double pageHeight = pigPage.Height;
+                var words = pigPage.GetWords().ToList();
+
+                if (patternWords.Length > 1)
                 {
-                    var page = doc.Pages[r.PageIndex];
-                    using var gfx = XGraphics.FromPdfPage(page);
-
-                    // Real opaque sanitization overlay
-                    var fillBrush = new XSolidBrush(XColors.Black);
-                    gfx.DrawRectangle(fillBrush, r.X, r.Y, r.Width, r.Height);
-
-                    // Redaction reason indicator
-                    if (!string.IsNullOrWhiteSpace(r.Reason) && r.Width > 40 && r.Height > 12)
+                    for (int i = 0; i + patternWords.Length <= words.Count; i++)
                     {
-                        var reasonFont = new XFont("Helvetica", Math.Min(9, r.Height * 0.5), XFontStyle.Bold);
-                        var reasonBrush = new XSolidBrush(XColors.White);
-                        gfx.DrawString($"[{r.Reason}]", reasonFont, reasonBrush, new XPoint(r.X + 4, r.Y + (r.Height * 0.7)));
+                        bool match = true;
+                        for (int k = 0; k < patternWords.Length; k++)
+                        {
+                            if (!string.Equals(words[i + k].Text, patternWords[k], comparison)) { match = false; break; }
+                        }
+                        if (match)
+                        {
+                            AddRegion(p - 1, pageHeight, words[i].BoundingBox, words[i + patternWords.Length - 1].BoundingBox);
+                        }
                     }
-                    totalRedactions++;
+                }
+                else if (patternWords.Length == 1)
+                {
+                    foreach (var w in words)
+                    {
+                        if (w.Text.IndexOf(patternWords[0], comparison) >= 0)
+                        {
+                            AddRegion(p - 1, pageHeight, w.BoundingBox, w.BoundingBox);
+                        }
+                    }
                 }
             }
 
-            string outPath = options.OutputFilePath;
-            if (string.IsNullOrWhiteSpace(outPath))
-            {
-                string dir = Path.GetDirectoryName(options.InputFilePath) ?? "";
-                string name = Path.GetFileNameWithoutExtension(options.InputFilePath);
-                outPath = Path.Combine(dir, $"{name}_Redacted.pdf");
-            }
-
-            doc.Save(outPath);
-            progress?.Report(100.0);
-
-            long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
-            return new ToolExecutionResult
-            {
-                Success = true,
-                OutputFilePath = outPath,
-                OutputFiles = new System.Collections.Generic.List<string> { outPath },
-                OriginalSizeBytes = origBytes,
-                OutputSizeBytes = outBytes,
-                Message = $"Permanently redacted {totalRedactions} sensitive regions and sanitized document."
-            };
+            return regions;
         }, ct);
     }
 }

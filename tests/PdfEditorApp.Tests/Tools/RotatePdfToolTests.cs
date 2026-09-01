@@ -48,4 +48,32 @@ public class RotatePdfToolTests : IClassFixture<ToolTestFixture>
             if (File.Exists(sample)) File.Delete(sample);
         }
     }
+
+    [Fact]
+    public async Task RotatePdfTool_MultiFileBatch_ProcessesEveryFile_NotJustTheFirst()
+    {
+        string sample1 = ToolTestFixture.CreateSamplePdf("RotateBatch1", 1);
+        string sample2 = ToolTestFixture.CreateSamplePdf("RotateBatch2", 1);
+        try
+        {
+            var vm = (RotatePdfToolViewModel)_fixture.Factory.Create(PdfToolId.RotatePdf);
+            vm.SelectedFiles.Add(sample1);
+            vm.SelectedFiles.Add(sample2);
+            vm.SyncPreviewItems();
+            vm.RotationDegrees = 90;
+
+            await vm.ExecuteToolCommand.ExecuteAsync(null);
+
+            Assert.True(vm.IsComplete);
+            Assert.False(vm.HasError);
+            // Regression guard: before the fix, only the first selected file was ever
+            // processed and the batch outcome was indistinguishable from a single-file run.
+            Assert.Contains("2 of 2", vm.ResultSummaryMessage);
+        }
+        finally
+        {
+            if (File.Exists(sample1)) File.Delete(sample1);
+            if (File.Exists(sample2)) File.Delete(sample2);
+        }
+    }
 }

@@ -20,12 +20,29 @@ public interface IDocumentTranslationService
 
 public class DocumentTranslationService : IDocumentTranslationService
 {
+    private static readonly HashSet<string> SupportedGlossaryLanguages = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "spanish", "es", "french", "fr", "german", "de"
+    };
+
     public async Task<ToolExecutionResult> TranslatePdfAsync(TranslationOptions options, IProgress<double>? progress = null, CancellationToken ct = default)
     {
         return await Task.Run(() =>
         {
             if (!File.Exists(options.InputFilePath))
                 return new ToolExecutionResult { Success = false, ErrorMessage = "Input PDF file does not exist." };
+
+            // This service only swaps a small fixed glossary of business terms — it is not
+            // a real machine-translation backend. Fail clearly for anything outside that
+            // glossary's 3 languages instead of silently returning the document unchanged.
+            if (!SupportedGlossaryLanguages.Contains(options.TargetLanguage.Trim()))
+            {
+                return new ToolExecutionResult
+                {
+                    Success = false,
+                    ErrorMessage = $"'{options.TargetLanguage}' is not supported yet. This tool currently only swaps a small glossary of common business terms for Spanish, French, or German — it does not perform full machine translation."
+                };
+            }
 
             long origBytes = new FileInfo(options.InputFilePath).Length;
             string outPath = options.OutputFilePath;
@@ -116,7 +133,8 @@ public class DocumentTranslationService : IDocumentTranslationService
                 OutputFiles = new List<string> { outPath },
                 OriginalSizeBytes = origBytes,
                 OutputSizeBytes = outBytes,
-                Message = $"Translated document ({pagesData.Count} pages) to {options.TargetLanguage}: {Path.GetFileName(outPath)}"
+                Message = $"Applied glossary-based term translation ({pagesData.Count} pages) for {options.TargetLanguage}: {Path.GetFileName(outPath)}. " +
+                          "Note: only a small set of common business terms are translated (not full sentences/paragraphs), and the document is reflowed into a new plain layout — original fonts, layout, and formatting are not preserved."
             };
         }, ct);
     }

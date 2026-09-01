@@ -48,4 +48,38 @@ public class ComparePdfToolTests : IClassFixture<ToolTestFixture>
             if (File.Exists(docB)) File.Delete(docB);
         }
     }
+
+    [Fact]
+    public async Task ComparePdfTool_DetectsRealPageCountDifference_AndWritesReportFile()
+    {
+        // Regression guard: before the fix, the dispatcher was a stub that only compared
+        // file byte-sizes and never wrote an output file — a 2-page and a 5-page document
+        // would "succeed" identically with no indication anything differed.
+        string docA = ToolTestFixture.CreateSamplePdf("CompareRealA", 2);
+        string docB = ToolTestFixture.CreateSamplePdf("CompareRealB", 5);
+        string? reportPath = null;
+        try
+        {
+            var vm = (ComparePdfToolViewModel)_fixture.Factory.Create(PdfToolId.ComparePdf);
+            vm.DocumentAPath = docA;
+            vm.DocumentBPath = docB;
+
+            await vm.ExecuteToolCommand.ExecuteAsync(null);
+
+            Assert.True(vm.IsComplete);
+            Assert.False(vm.HasError);
+            reportPath = vm.LastOutputFilePath;
+            Assert.True(File.Exists(reportPath), "ComparePdf must produce a real report file, not a silent no-op.");
+
+            string reportContent = await File.ReadAllTextAsync(reportPath);
+            Assert.Contains("2 pages", reportContent);
+            Assert.Contains("5 pages", reportContent);
+        }
+        finally
+        {
+            if (File.Exists(docA)) File.Delete(docA);
+            if (File.Exists(docB)) File.Delete(docB);
+            if (reportPath != null && File.Exists(reportPath)) File.Delete(reportPath);
+        }
+    }
 }

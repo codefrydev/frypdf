@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using PdfEditorApp.Models;
@@ -154,19 +155,57 @@ public class PdfDocumentOperationsService : IPdfDocumentOperationsService
                     return await TranslationService.TranslatePdfAsync(transOpts, progress, ct);
 
                 case PdfToolId.ComparePdf when options is CompareToolOptions compOpts:
-                    return await Task.Run(() =>
-                    {
-                        if (!File.Exists(compOpts.DocumentAPath) || !File.Exists(compOpts.DocumentBPath))
-                            return new ToolExecutionResult { Success = false, ErrorMessage = "One or both comparison documents do not exist." };
+                {
+                    if (!File.Exists(compOpts.DocumentAPath) || !File.Exists(compOpts.DocumentBPath))
+                        return new ToolExecutionResult { Success = false, ErrorMessage = "One or both comparison documents do not exist." };
 
-                        long szA = new FileInfo(compOpts.DocumentAPath).Length;
-                        long szB = new FileInfo(compOpts.DocumentBPath).Length;
-                        return new ToolExecutionResult
+                    var importService = new PdfImportService();
+                    var compareService = new DocumentCompareService();
+
+                    var docA = await importService.ImportPdfAsync(compOpts.DocumentAPath);
+                    ct.ThrowIfCancellationRequested();
+                    progress?.Report(40.0);
+                    var docB = await importService.ImportPdfAsync(compOpts.DocumentBPath);
+                    ct.ThrowIfCancellationRequested();
+                    progress?.Report(70.0);
+
+                    var report = compareService.CompareDocuments(docA, docB);
+
+                    string outDir = Path.GetDirectoryName(compOpts.DocumentBPath) ?? Path.GetTempPath();
+                    string reportPath = Path.Combine(outDir, $"{Path.GetFileNameWithoutExtension(compOpts.DocumentBPath)}_comparison_report.txt");
+
+                    var sb = new StringBuilder();
+                    sb.AppendLine("Document Comparison Report");
+                    sb.AppendLine($"Base document:     {report.BaseDocumentTitle} ({report.BasePageCount} pages)");
+                    sb.AppendLine($"Compared document: {report.ComparedDocumentTitle} ({report.ComparedPageCount} pages)");
+                    sb.AppendLine($"Generated:         {report.ComparisonTimestamp:u}");
+                    sb.AppendLine();
+                    sb.AppendLine($"Total differences: {report.TotalDifferencesCount} (Added: {report.AdditionsCount}, Removed: {report.DeletionsCount}, Modified: {report.ModificationsCount})");
+                    sb.AppendLine();
+                    foreach (var diff in report.Differences)
+                    {
+                        sb.AppendLine($"[Page {diff.PageNumber}] {diff.DiffType}: {diff.Description}");
+                        if (!string.IsNullOrEmpty(diff.OldValue) || !string.IsNullOrEmpty(diff.NewValue))
                         {
-                            Success = true,
-                            Message = $"Comparison complete between '{Path.GetFileName(compOpts.DocumentAPath)}' ({szA} bytes) and '{Path.GetFileName(compOpts.DocumentBPath)}' ({szB} bytes)."
-                        };
-                    }, ct);
+                            sb.AppendLine($"    - Was: {diff.OldValue}");
+                            sb.AppendLine($"    + Now: {diff.NewValue}");
+                        }
+                    }
+
+                    await File.WriteAllTextAsync(reportPath, sb.ToString(), ct);
+                    progress?.Report(100.0);
+
+                    return new ToolExecutionResult
+                    {
+                        Success = true,
+                        OutputFilePath = reportPath,
+                        OutputFiles = new List<string> { reportPath },
+                        Message = report.TotalDifferencesCount == 0
+                            ? $"No differences found between '{Path.GetFileName(compOpts.DocumentAPath)}' and '{Path.GetFileName(compOpts.DocumentBPath)}'."
+                            : $"Found {report.TotalDifferencesCount} difference(s) between the two documents ({report.AdditionsCount} added, {report.DeletionsCount} removed, {report.ModificationsCount} modified). Report saved to {Path.GetFileName(reportPath)}.",
+                        ExtraData = new Dictionary<string, object> { ["ComparisonReport"] = report }
+                    };
+                }
 
                 case PdfToolId.WorkflowBuilder when options is WorkflowDefinition wfDef:
                     return await WorkflowEngine.ExecuteWorkflowAsync(wfDef, new string[0], null, ct);
@@ -181,11 +220,10 @@ public class PdfDocumentOperationsService : IPdfDocumentOperationsService
         }
         catch (OperationCanceledException)
         {
-            return new ToolExecutionResult
-            {
-                Success = false,
-                ErrorMessage = "Operation was cancelled by user."
-            };
+            // Let cancellation propagate so PdfToolViewModelBase's dedicated
+            // OperationCanceledException handler can show a neutral "cancelled" state
+            // instead of the generic failure path.
+            throw;
         }
         catch (Exception ex)
         {

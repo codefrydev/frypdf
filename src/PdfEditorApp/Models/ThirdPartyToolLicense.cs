@@ -29,6 +29,8 @@ public partial class ThirdPartyToolLicense : ObservableObject
         var l when l.Contains("APACHE") => "#0284C7",   // Blue
         var l when l.Contains("COMMUNITY") => "#8B5CF6", // Purple
         var l when l.Contains("MICROSOFT") => "#0078D4", // Microsoft Blue
+        var l when l.Contains("OFL") || l.Contains("SIL") => "#D946EF", // Fuchsia / Pink
+        var l when l.Contains("UBUNTU") => "#EA580C",   // Ubuntu Orange
         _ => "#6366F1"
     };
 
@@ -38,6 +40,8 @@ public partial class ThirdPartyToolLicense : ObservableObject
         var l when l.Contains("APACHE") => "#F0F9FF",
         var l when l.Contains("COMMUNITY") => "#F5F3FF",
         var l when l.Contains("MICROSOFT") => "#EFF6FF",
+        var l when l.Contains("OFL") || l.Contains("SIL") => "#FDF4FF",
+        var l when l.Contains("UBUNTU") => "#FFF7ED",
         _ => "#EEF2FF"
     };
 }

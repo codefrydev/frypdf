@@ -118,10 +118,14 @@ dotnet build -c Release
 - [Architecture & Technical Design](docs/ARCHITECTURE.md)
 - [Feature Catalog & Capabilities](docs/FEATURES.md)
 - [Contributing Guide](docs/CONTRIBUTING.md)
+- [Third-Party & Font Licenses](docs/THIRD_PARTY_LICENSES.md)
 
 ---
 
 ## 📄 License & Credits
 
+FryPDF Desktop Studio is licensed under the [MIT License](LICENSE).  
 Copyright © 2026 **Code Fry Dev**. All rights reserved.
+
+Third-party dependencies and font library attributions are documented in [docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md) and viewable in the app under **Licenses & Tools**.  
 Developed with ❤️ using Avalonia UI and QuestPDF.

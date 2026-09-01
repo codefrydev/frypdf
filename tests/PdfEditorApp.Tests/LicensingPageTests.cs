@@ -10,14 +10,14 @@ namespace PdfEditorApp.Tests;
 public class LicensingPageTests
 {
     [Fact]
-    public void LicensingPage_InitializesAll12ThirdPartyLibraries()
+    public void LicensingPage_InitializesAll17ThirdPartyLibraries()
     {
         // Arrange & Act
         var vm = new HomeViewModel();
 
         // Assert
         Assert.NotEmpty(vm.AllLicenses);
-        Assert.Equal(12, vm.AllLicenses.Count);
+        Assert.Equal(17, vm.AllLicenses.Count);
 
         var expectedPackages = new[]
         {
@@ -32,7 +32,12 @@ public class LicensingPageTests
             "CommunityToolkit.Mvvm",
             "QRCoder",
             "Microsoft.Extensions.DependencyInjection",
-            ".NET 10 Runtime & Base Libraries"
+            ".NET 10 Runtime & Base Libraries",
+            "LiveChartsCore & LiveChartsCore.SkiaSharpView",
+            "Microsoft.Extensions.Logging.Abstractions",
+            "SIL Open Font License (OFL 1.1) Typeface Collection",
+            "Roboto & Roboto Mono Font Family",
+            "Ubuntu Font Family"
         };
 
         foreach (var expected in expectedPackages)
@@ -66,10 +71,11 @@ public class LicensingPageTests
 
         // Act 2: Filter UI & Graphics Frameworks
         vm.SetLicenseCategoryCommand.Execute("UI & Graphics Frameworks");
-        Assert.Equal(3, vm.FilteredLicenses.Count);
+        Assert.Equal(4, vm.FilteredLicenses.Count);
         Assert.Contains(vm.FilteredLicenses, l => l.Name == "Avalonia UI");
         Assert.Contains(vm.FilteredLicenses, l => l.Name == "SkiaSharp");
         Assert.Contains(vm.FilteredLicenses, l => l.Name == "Material.Icons.Avalonia");
+        Assert.Contains(vm.FilteredLicenses, l => l.Name == "LiveChartsCore & LiveChartsCore.SkiaSharpView");
 
         // Act 3: Filter Office & Data Formats
         vm.SetLicenseCategoryCommand.Execute("Office & Data Formats");
@@ -80,14 +86,22 @@ public class LicensingPageTests
 
         // Act 4: Filter Architecture & Runtime
         vm.SetLicenseCategoryCommand.Execute("Architecture & Runtime");
-        Assert.Equal(3, vm.FilteredLicenses.Count);
+        Assert.Equal(4, vm.FilteredLicenses.Count);
         Assert.Contains(vm.FilteredLicenses, l => l.Name == "CommunityToolkit.Mvvm");
         Assert.Contains(vm.FilteredLicenses, l => l.Name == "Microsoft.Extensions.DependencyInjection");
         Assert.Contains(vm.FilteredLicenses, l => l.Name == ".NET 10 Runtime & Base Libraries");
+        Assert.Contains(vm.FilteredLicenses, l => l.Name == "Microsoft.Extensions.Logging.Abstractions");
 
-        // Act 5: Reset to All
+        // Act 5: Filter Typography & Typefaces
+        vm.SetLicenseCategoryCommand.Execute("Typography & Typefaces");
+        Assert.Equal(3, vm.FilteredLicenses.Count);
+        Assert.Contains(vm.FilteredLicenses, l => l.Name == "SIL Open Font License (OFL 1.1) Typeface Collection");
+        Assert.Contains(vm.FilteredLicenses, l => l.Name == "Roboto & Roboto Mono Font Family");
+        Assert.Contains(vm.FilteredLicenses, l => l.Name == "Ubuntu Font Family");
+
+        // Act 6: Reset to All
         vm.SetLicenseCategoryCommand.Execute("All");
-        Assert.Equal(12, vm.FilteredLicenses.Count);
+        Assert.Equal(17, vm.FilteredLicenses.Count);
     }
 
     [Fact]
@@ -103,19 +117,25 @@ public class LicensingPageTests
 
         // Act 2: Search by license type
         vm.SearchQuery = "Apache";
-        Assert.Single(vm.FilteredLicenses);
-        Assert.Equal("PdfPig & Skia Rendering", vm.FilteredLicenses[0].Name);
+        Assert.Equal(2, vm.FilteredLicenses.Count);
+        Assert.Contains(vm.FilteredLicenses, l => l.Name == "PdfPig & Skia Rendering");
+        Assert.Contains(vm.FilteredLicenses, l => l.Name == "Roboto & Roboto Mono Font Family");
 
         // Act 3: Search by maintainer
         vm.SearchQuery = "Microsoft";
-        Assert.True(vm.FilteredLicenses.Count >= 3);
+        Assert.True(vm.FilteredLicenses.Count >= 4);
         Assert.All(vm.FilteredLicenses, l => Assert.Contains("Microsoft", l.Maintainer + l.Name, StringComparison.OrdinalIgnoreCase));
 
-        // Act 4: Clear search
+        // Act 4: Search font license
+        vm.SearchQuery = "OFL";
+        Assert.Single(vm.FilteredLicenses);
+        Assert.Equal("SIL Open Font License (OFL 1.1) Typeface Collection", vm.FilteredLicenses[0].Name);
+
+        // Act 5: Clear search
         vm.ClearLicenseSearchCommand.Execute(null);
         Assert.Equal("", vm.SearchQuery);
         Assert.Equal("All", vm.SelectedLicenseCategory);
-        Assert.Equal(12, vm.FilteredLicenses.Count);
+        Assert.Equal(17, vm.FilteredLicenses.Count);
     }
 
     [Fact]

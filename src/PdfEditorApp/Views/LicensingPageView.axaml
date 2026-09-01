@@ -248,8 +248,9 @@
                     <Button Classes="category-filter-btn"
                             Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=All}"
                             Command="{Binding SetLicenseCategoryCommand}"
-                            CommandParameter="All"
-                            Content="All (12)" />
+                            CommandParameter="All">
+                        <TextBlock Text="{Binding AllLicenses.Count, StringFormat='All ({0})'}" />
+                    </Button>
 
                     <Button Classes="category-filter-btn"
                             Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=PDF &amp; Document Engines}"
@@ -274,6 +275,12 @@
                             Command="{Binding SetLicenseCategoryCommand}"
                             CommandParameter="Architecture &amp; Runtime"
                             Content="Runtime &amp; MVVM" />
+
+                    <Button Classes="category-filter-btn"
+                            Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Typography &amp; Typefaces}"
+                            Command="{Binding SetLicenseCategoryCommand}"
+                            CommandParameter="Typography &amp; Typefaces"
+                            Content="Typography &amp; Fonts" />
                 </StackPanel>
 
                 <!-- Count Badge -->

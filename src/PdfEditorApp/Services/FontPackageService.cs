@@ -17,10 +17,17 @@ namespace PdfEditorApp.Services;
 /// </summary>
 public class FontPackageService : IFontPackageService
 {
-    private static readonly HttpClient HttpClient = new()
+    private static readonly HttpClient HttpClient = CreateHttpClient();
+
+    private static HttpClient CreateHttpClient()
     {
-        Timeout = TimeSpan.FromMinutes(3)
-    };
+        var client = new HttpClient
+        {
+            Timeout = TimeSpan.FromMinutes(3)
+        };
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("FryPDF-FontDownloader/1.0");
+        return client;
+    }
 
     private readonly string _userFontDir;
     private readonly List<FontPackageInfo> _catalog;
@@ -336,6 +343,14 @@ public class FontPackageService : IFontPackageService
         catch { }
     }
 
+    /// <summary>
+    /// Base URL for the official FryPDF font repository on GitHub.
+    /// Eliminates Google Fonts CDN hash breakage and ensures 100% reliable downloads worldwide.
+    /// </summary>
+    public const string FontCdnBaseUrl = "https://raw.githubusercontent.com/codefrydev/PDFCreator-resources/refs/heads/main/fonts";
+
+    private static string CdnUrl(string fileName) => $"{FontCdnBaseUrl}/{fileName}";
+
     private static List<FontPackageInfo> BuildCatalog()
     {
         return new List<FontPackageInfo>
@@ -353,11 +368,11 @@ public class FontPackageService : IFontPackageService
                 SampleText = "创造世界一流的 PDF 编辑与文档处理体验。",
                 SupportedLanguages = new() { "Chinese (Simplified)", "Mandarin" },
                 IncludedFontFamilies = new() { "Noto Sans SC" },
-                TotalEstimatedSizeBytes = 20_971_520, // ~20 MB
+                TotalEstimatedSizeBytes = 21_071_052,
                 Files = new()
                 {
-                    new() { FileName = "NotoSansSC.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanssc/v36/k3kXo84MPvpKitbxOm7bN5WG.ttf", FontFamilyName = "Noto Sans SC", FileSizeBytes = 10_485_760 },
-                    new() { FileName = "NotoSansSC-Bold.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanssc/v36/k3kUo84MPvpKitbxOm7bN5WCT5tT.ttf", FontFamilyName = "Noto Sans SC", IsBold = true, FileSizeBytes = 10_485_760 }
+                    new() { FileName = "NotoSansSC.ttf", DownloadUrl = CdnUrl("NotoSansSC.ttf"), FontFamilyName = "Noto Sans SC", FileSizeBytes = 10_540_644 },
+                    new() { FileName = "NotoSansSC-Bold.ttf", DownloadUrl = CdnUrl("NotoSansSC-Bold.ttf"), FontFamilyName = "Noto Sans SC", IsBold = true, FileSizeBytes = 10_530_408 }
                 }
             },
 
@@ -374,11 +389,11 @@ public class FontPackageService : IFontPackageService
                 SampleText = "創造世界一流的 PDF 編輯與文件處理體驗。",
                 SupportedLanguages = new() { "Chinese (Traditional)", "Cantonese", "Taiwanese" },
                 IncludedFontFamilies = new() { "Noto Sans TC" },
-                TotalEstimatedSizeBytes = 14_260_633, // ~13.6 MB
+                TotalEstimatedSizeBytes = 14_176_420,
                 Files = new()
                 {
-                    new() { FileName = "NotoSansTC.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanstc/v35/-nF7OG829Oo296awhR075Upt.ttf", FontFamilyName = "Noto Sans TC", FileSizeBytes = 7_130_316 },
-                    new() { FileName = "NotoSansTC-Bold.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanstc/v35/-nF5OG829Oo296awhR075Uq9K6A-.ttf", FontFamilyName = "Noto Sans TC", IsBold = true, FileSizeBytes = 7_130_317 }
+                    new() { FileName = "NotoSansTC.ttf", DownloadUrl = CdnUrl("NotoSansTC.ttf"), FontFamilyName = "Noto Sans TC", FileSizeBytes = 7_090_820 },
+                    new() { FileName = "NotoSansTC-Bold.ttf", DownloadUrl = CdnUrl("NotoSansTC-Bold.ttf"), FontFamilyName = "Noto Sans TC", IsBold = true, FileSizeBytes = 7_085_600 }
                 }
             },
 
@@ -395,12 +410,12 @@ public class FontPackageService : IFontPackageService
                 SampleText = "世界最高峰のPDF編集およびドキュメント作成体験を提供します。",
                 SupportedLanguages = new() { "Japanese" },
                 IncludedFontFamilies = new() { "Noto Sans JP", "Noto Serif JP" },
-                TotalEstimatedSizeBytes = 17_825_792, // ~17 MB
+                TotalEstimatedSizeBytes = 18_121_784,
                 Files = new()
                 {
-                    new() { FileName = "NotoSansJP.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosansjp/v53/-F6jfjtqLzI2JPCgQBnw7HFQ.ttf", FontFamilyName = "Noto Sans JP", FileSizeBytes = 5_347_737 },
-                    new() { FileName = "NotoSansJP-Bold.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosansjp/v53/-F6hfjtqLzI2JPCgQBnw7HFY209E.ttf", FontFamilyName = "Noto Sans JP", IsBold = true, FileSizeBytes = 5_347_737 },
-                    new() { FileName = "NotoSerifJP.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notoserifjp/v30/xn71YHs72GKoTvER4Gn3b5eMRtWG.ttf", FontFamilyName = "Noto Serif JP", FileSizeBytes = 7_130_318 }
+                    new() { FileName = "NotoSansJP.ttf", DownloadUrl = CdnUrl("NotoSansJP.ttf"), FontFamilyName = "Noto Sans JP", FileSizeBytes = 5_324_144 },
+                    new() { FileName = "NotoSansJP-Bold.ttf", DownloadUrl = CdnUrl("NotoSansJP-Bold.ttf"), FontFamilyName = "Noto Sans JP", IsBold = true, FileSizeBytes = 5_319_680 },
+                    new() { FileName = "NotoSerifJP.ttf", DownloadUrl = CdnUrl("NotoSerifJP.ttf"), FontFamilyName = "Noto Serif JP", FileSizeBytes = 7_477_960 }
                 }
             },
 
@@ -417,12 +432,12 @@ public class FontPackageService : IFontPackageService
                 SampleText = "세계 최고 수준의 PDF 편집 및 문서 작성 경험을 선사합니다.",
                 SupportedLanguages = new() { "Korean" },
                 IncludedFontFamilies = new() { "Noto Sans KR", "Nanum Gothic" },
-                TotalEstimatedSizeBytes = 14_470_144, // ~13.8 MB
+                TotalEstimatedSizeBytes = 14_375_144,
                 Files = new()
                 {
-                    new() { FileName = "NotoSansKR.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanskr/v36/PbykFmXiEBPT4ITbgNA5Cgm2.ttf", FontFamilyName = "Noto Sans KR", FileSizeBytes = 6_186_598 },
-                    new() { FileName = "NotoSansKR-Bold.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanskr/v36/PbyiFmXiEBPT4ITbgNA5Cgmx0aU4.ttf", FontFamilyName = "Noto Sans KR", IsBold = true, FileSizeBytes = 6_186_598 },
-                    new() { FileName = "NanumGothic.ttf", DownloadUrl = "https://fonts.gstatic.com/s/nanumgothic/v23/PN_3Rfi-oW3hYwmKDpxS7F_z-7rVxCX9.ttf", FontFamilyName = "Nanum Gothic", FileSizeBytes = 2_096_948 }
+                    new() { FileName = "NotoSansKR.ttf", DownloadUrl = CdnUrl("NotoSansKR.ttf"), FontFamilyName = "Noto Sans KR", FileSizeBytes = 6_163_256 },
+                    new() { FileName = "NotoSansKR-Bold.ttf", DownloadUrl = CdnUrl("NotoSansKR-Bold.ttf"), FontFamilyName = "Noto Sans KR", IsBold = true, FileSizeBytes = 6_159_248 },
+                    new() { FileName = "NanumGothic.ttf", DownloadUrl = CdnUrl("NanumGothic.ttf"), FontFamilyName = "Nanum Gothic", FileSizeBytes = 2_052_640 }
                 }
             },
 
@@ -439,17 +454,17 @@ public class FontPackageService : IFontPackageService
                 SampleText = "भारत का सबसे तेज़ और सुरक्षित PDF एडिटर और क्रिएटर।",
                 SupportedLanguages = new() { "Hindi", "Marathi", "Sanskrit", "Tamil", "Telugu", "Bengali", "Gujarati", "Kannada", "Malayalam" },
                 IncludedFontFamilies = new() { "Noto Sans Devanagari", "Tiro Devanagari Hindi", "Noto Sans Tamil", "Noto Sans Telugu", "Noto Sans Bengali", "Noto Sans Gujarati", "Noto Sans Kannada", "Noto Sans Malayalam" },
-                TotalEstimatedSizeBytes = 3_984_588, // ~3.8 MB
+                TotalEstimatedSizeBytes = 1_414_088,
                 Files = new()
                 {
-                    new() { FileName = "NotoSansDevanagari.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosansdevanagari/v27/5aU69_m6W52OnE9uhPSc5BpmdTag7K_4.ttf", FontFamilyName = "Noto Sans Devanagari", FileSizeBytes = 647_168 },
-                    new() { FileName = "TiroDevanagariHindi.ttf", DownloadUrl = "https://fonts.gstatic.com/s/tirodevanagarihindi/v7/0ybuGDq4nOxJm8hT_7iTf8u84U15_V9T.ttf", FontFamilyName = "Tiro Devanagari Hindi", FileSizeBytes = 376_832 },
-                    new() { FileName = "NotoSansTamil.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanstamil/v27/ieVi2YdCLzn3FsNQDtpmCSWDZw.ttf", FontFamilyName = "Noto Sans Tamil", FileSizeBytes = 184_320 },
-                    new() { FileName = "NotoSansTelugu.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanstelugu/v25/0QI6MX5E4PnMG6qD4U3N7y4S.ttf", FontFamilyName = "Noto Sans Telugu", FileSizeBytes = 184_320 },
-                    new() { FileName = "NotoSansBengali.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosansbengali/v23/Cn-8JitSh7y11iWiaP3VnArZcw.ttf", FontFamilyName = "Noto Sans Bengali", FileSizeBytes = 184_320 },
-                    new() { FileName = "NotoSansGujarati.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosansgujarati/v25/nwpStKqkOQDViPby41pD6U0s.ttf", FontFamilyName = "Noto Sans Gujarati", FileSizeBytes = 184_320 },
-                    new() { FileName = "NotoSansKannada.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanskannada/v26/A2BEn5hXhN95j5-nUu3yY4w.ttf", FontFamilyName = "Noto Sans Kannada", FileSizeBytes = 184_320 },
-                    new() { FileName = "NotoSansMalayalam.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosansmalayalam/v26/92zqtSCy4qO9x2L6nEvv3e_V.ttf", FontFamilyName = "Noto Sans Malayalam", FileSizeBytes = 184_320 }
+                    new() { FileName = "NotoSansDevanagari.ttf", DownloadUrl = CdnUrl("NotoSansDevanagari.ttf"), FontFamilyName = "Noto Sans Devanagari", FileSizeBytes = 219_460 },
+                    new() { FileName = "TiroDevanagariHindi.ttf", DownloadUrl = CdnUrl("TiroDevanagariHindi.ttf"), FontFamilyName = "Tiro Devanagari Hindi", FileSizeBytes = 376_908 },
+                    new() { FileName = "NotoSansTamil.ttf", DownloadUrl = CdnUrl("NotoSansTamil.ttf"), FontFamilyName = "Noto Sans Tamil", FileSizeBytes = 77_724 },
+                    new() { FileName = "NotoSansTelugu.ttf", DownloadUrl = CdnUrl("NotoSansTelugu.ttf"), FontFamilyName = "Noto Sans Telugu", FileSizeBytes = 178_492 },
+                    new() { FileName = "NotoSansBengali.ttf", DownloadUrl = CdnUrl("NotoSansBengali.ttf"), FontFamilyName = "Noto Sans Bengali", FileSizeBytes = 138_780 },
+                    new() { FileName = "NotoSansGujarati.ttf", DownloadUrl = CdnUrl("NotoSansGujarati.ttf"), FontFamilyName = "Noto Sans Gujarati", FileSizeBytes = 173_540 },
+                    new() { FileName = "NotoSansKannada.ttf", DownloadUrl = CdnUrl("NotoSansKannada.ttf"), FontFamilyName = "Noto Sans Kannada", FileSizeBytes = 143_576 },
+                    new() { FileName = "NotoSansMalayalam.ttf", DownloadUrl = CdnUrl("NotoSansMalayalam.ttf"), FontFamilyName = "Noto Sans Malayalam", FileSizeBytes = 105_608 }
                 }
             },
 
@@ -466,12 +481,12 @@ public class FontPackageService : IFontPackageService
                 SampleText = "محرر ومُنشئ مستندات PDF الاحترافي والأكثر أماناً وسرعة.",
                 SupportedLanguages = new() { "Arabic", "Persian (Farsi)", "Urdu", "Pashto", "Kurdish" },
                 IncludedFontFamilies = new() { "Noto Sans Arabic", "Vazirmatn", "Noto Nastaliq Urdu" },
-                TotalEstimatedSizeBytes = 1_887_436, // ~1.8 MB
+                TotalEstimatedSizeBytes = 824_404,
                 Files = new()
                 {
-                    new() { FileName = "NotoSansArabic.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosansarabic/v28/nwpStKqkOQDViPby41pD6U0s.ttf", FontFamilyName = "Noto Sans Arabic", FileSizeBytes = 184_320 },
-                    new() { FileName = "Vazirmatn.ttf", DownloadUrl = "https://fonts.gstatic.com/s/vazirmatn/v13/D5Hzw-G0WmjD2hB2G1Te3A.ttf", FontFamilyName = "Vazirmatn", FileSizeBytes = 204_800 },
-                    new() { FileName = "NotoNastaliqUrdu.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notonastaliqurdu/v23/L0xoDF02iomPmqK9lP2m.ttf", FontFamilyName = "Noto Nastaliq Urdu", FileSizeBytes = 527_360 }
+                    new() { FileName = "NotoSansArabic.ttf", DownloadUrl = CdnUrl("NotoSansArabic.ttf"), FontFamilyName = "Noto Sans Arabic", FileSizeBytes = 192_144 },
+                    new() { FileName = "Vazirmatn.ttf", DownloadUrl = CdnUrl("Vazirmatn.ttf"), FontFamilyName = "Vazirmatn", FileSizeBytes = 104_640 },
+                    new() { FileName = "NotoNastaliqUrdu.ttf", DownloadUrl = CdnUrl("NotoNastaliqUrdu.ttf"), FontFamilyName = "Noto Nastaliq Urdu", FileSizeBytes = 527_620 }
                 }
             },
 
@@ -488,11 +503,11 @@ public class FontPackageService : IFontPackageService
                 SampleText = "עורך ומציג מסמכי ה-PDF המקצועי והמהיר ביותר.",
                 SupportedLanguages = new() { "Hebrew", "Yiddish" },
                 IncludedFontFamilies = new() { "Noto Sans Hebrew", "Heebo" },
-                TotalEstimatedSizeBytes = 409_600, // ~400 KB
+                TotalEstimatedSizeBytes = 90_452,
                 Files = new()
                 {
-                    new() { FileName = "NotoSansHebrew.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanshebrew/v38/nwpStKqkOQDViPby41pD6U0s.ttf", FontFamilyName = "Noto Sans Hebrew", FileSizeBytes = 184_320 },
-                    new() { FileName = "Heebo.ttf", DownloadUrl = "https://fonts.gstatic.com/s/heebo/v26/NGSpv5_NC0k9P_v6ZUCb.ttf", FontFamilyName = "Heebo", FileSizeBytes = 225_280 }
+                    new() { FileName = "NotoSansHebrew.ttf", DownloadUrl = CdnUrl("NotoSansHebrew.ttf"), FontFamilyName = "Noto Sans Hebrew", FileSizeBytes = 46_496 },
+                    new() { FileName = "Heebo.ttf", DownloadUrl = CdnUrl("Heebo.ttf"), FontFamilyName = "Heebo", FileSizeBytes = 43_956 }
                 }
             },
 
@@ -509,16 +524,16 @@ public class FontPackageService : IFontPackageService
                 SampleText = "โปรแกรมสร้างและแก้ไขไฟล์ PDF ระดับมืออาชีพที่ปลอดภัยที่สุด",
                 SupportedLanguages = new() { "Thai", "Burmese", "Khmer", "Lao", "Sinhala", "Vietnamese" },
                 IncludedFontFamilies = new() { "Noto Sans Thai", "Sarabun", "Noto Sans Myanmar", "Noto Sans Khmer", "Noto Sans Lao", "Noto Sans Sinhala", "Be Vietnam Pro" },
-                TotalEstimatedSizeBytes = 1_433_600, // ~1.4 MB
+                TotalEstimatedSizeBytes = 820_332,
                 Files = new()
                 {
-                    new() { FileName = "NotoSansThai.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosansthai/v27/ieVi2YdCLzn3FsNQDtpmCSWDZw.ttf", FontFamilyName = "Noto Sans Thai", FileSizeBytes = 184_320 },
-                    new() { FileName = "Sarabun.ttf", DownloadUrl = "https://fonts.gstatic.com/s/sarabun/v14/DtVkJxWL0Z6lFPW4.ttf", FontFamilyName = "Sarabun", FileSizeBytes = 184_320 },
-                    new() { FileName = "NotoSansMyanmar.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosansmyanmar/v26/A2BEn5hXhN95j5-nUu3yY4w.ttf", FontFamilyName = "Noto Sans Myanmar", FileSizeBytes = 184_320 },
-                    new() { FileName = "NotoSansKhmer.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanskhmer/v26/92zqtSCy4qO9x2L6nEvv3e_V.ttf", FontFamilyName = "Noto Sans Khmer", FileSizeBytes = 184_320 },
-                    new() { FileName = "NotoSansLao.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanslao/v26/nwpStKqkOQDViPby41pD6U0s.ttf", FontFamilyName = "Noto Sans Lao", FileSizeBytes = 184_320 },
-                    new() { FileName = "NotoSansSinhala.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosanssinhala/v26/0QI6MX5E4PnMG6qD4U3N7y4S.ttf", FontFamilyName = "Noto Sans Sinhala", FileSizeBytes = 235_520 },
-                    new() { FileName = "BeVietnamPro.ttf", DownloadUrl = "https://fonts.gstatic.com/s/bevietnampro/v11/FeVQS0BCb2974re5P5tKoQV3.ttf", FontFamilyName = "Be Vietnam Pro", FileSizeBytes = 276_480 }
+                    new() { FileName = "NotoSansThai.ttf", DownloadUrl = CdnUrl("NotoSansThai.ttf"), FontFamilyName = "Noto Sans Thai", FileSizeBytes = 45_660 },
+                    new() { FileName = "Sarabun.ttf", DownloadUrl = CdnUrl("Sarabun.ttf"), FontFamilyName = "Sarabun", FileSizeBytes = 81_516 },
+                    new() { FileName = "NotoSansMyanmar.ttf", DownloadUrl = CdnUrl("NotoSansMyanmar.ttf"), FontFamilyName = "Noto Sans Myanmar", FileSizeBytes = 181_864 },
+                    new() { FileName = "NotoSansKhmer.ttf", DownloadUrl = CdnUrl("NotoSansKhmer.ttf"), FontFamilyName = "Noto Sans Khmer", FileSizeBytes = 104_132 },
+                    new() { FileName = "NotoSansLao.ttf", DownloadUrl = CdnUrl("NotoSansLao.ttf"), FontFamilyName = "Noto Sans Lao", FileSizeBytes = 51_004 },
+                    new() { FileName = "NotoSansSinhala.ttf", DownloadUrl = CdnUrl("NotoSansSinhala.ttf"), FontFamilyName = "Noto Sans Sinhala", FileSizeBytes = 235_928 },
+                    new() { FileName = "BeVietnamPro.ttf", DownloadUrl = CdnUrl("BeVietnamPro.ttf"), FontFamilyName = "Be Vietnam Pro", FileSizeBytes = 120_228 }
                 }
             },
 
@@ -535,15 +550,15 @@ public class FontPackageService : IFontPackageService
                 SampleText = "Самый быстрый и безопасный редактор и создатель PDF документов.",
                 SupportedLanguages = new() { "Russian", "Ukrainian", "Bulgarian", "Greek", "Georgian", "Armenian", "Amharic" },
                 IncludedFontFamilies = new() { "Golos Text", "Russo One", "GFS Neohellenic", "Noto Sans Georgian", "Noto Sans Armenian", "Noto Sans Ethiopic" },
-                TotalEstimatedSizeBytes = 1_843_200, // ~1.8 MB
+                TotalEstimatedSizeBytes = 1_016_072,
                 Files = new()
                 {
-                    new() { FileName = "GolosText.ttf", DownloadUrl = "https://fonts.gstatic.com/s/golostext/v4/pe1rFNWeHI2R8wU03YtK.ttf", FontFamilyName = "Golos Text", FileSizeBytes = 194_560 },
-                    new() { FileName = "RussoOne.ttf", DownloadUrl = "https://fonts.gstatic.com/s/russoone/v16/Z9XUDmZqWgRLWhGzF18.ttf", FontFamilyName = "Russo One", FileSizeBytes = 122_880 },
-                    new() { FileName = "GFSNeohellenic.ttf", DownloadUrl = "https://fonts.gstatic.com/s/gfsneohellenic/v24/0QI6MX5E4PnMG6qD4U3N7y4S.ttf", FontFamilyName = "GFS Neohellenic", FileSizeBytes = 440_320 },
-                    new() { FileName = "NotoSansGeorgian.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosansgeorgian/v26/A2BEn5hXhN95j5-nUu3yY4w.ttf", FontFamilyName = "Noto Sans Georgian", FileSizeBytes = 184_320 },
-                    new() { FileName = "NotoSansArmenian.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosansarmenian/v26/92zqtSCy4qO9x2L6nEvv3e_V.ttf", FontFamilyName = "Noto Sans Armenian", FileSizeBytes = 184_320 },
-                    new() { FileName = "NotoSansEthiopic.ttf", DownloadUrl = "https://fonts.gstatic.com/s/notosansethiopic/v26/0QI6MX5E4PnMG6qD4U3N7y4S.ttf", FontFamilyName = "Noto Sans Ethiopic", FileSizeBytes = 368_640 }
+                    new() { FileName = "GolosText.ttf", DownloadUrl = CdnUrl("GolosText.ttf"), FontFamilyName = "Golos Text", FileSizeBytes = 64_240 },
+                    new() { FileName = "RussoOne.ttf", DownloadUrl = CdnUrl("RussoOne.ttf"), FontFamilyName = "Russo One", FileSizeBytes = 36_816 },
+                    new() { FileName = "GFSNeohellenic.ttf", DownloadUrl = CdnUrl("GFSNeohellenic.ttf"), FontFamilyName = "GFS Neohellenic", FileSizeBytes = 440_376 },
+                    new() { FileName = "NotoSansGeorgian.ttf", DownloadUrl = CdnUrl("NotoSansGeorgian.ttf"), FontFamilyName = "Noto Sans Georgian", FileSizeBytes = 60_888 },
+                    new() { FileName = "NotoSansArmenian.ttf", DownloadUrl = CdnUrl("NotoSansArmenian.ttf"), FontFamilyName = "Noto Sans Armenian", FileSizeBytes = 48_388 },
+                    new() { FileName = "NotoSansEthiopic.ttf", DownloadUrl = CdnUrl("NotoSansEthiopic.ttf"), FontFamilyName = "Noto Sans Ethiopic", FileSizeBytes = 365_364 }
                 }
             },
 
@@ -560,19 +575,19 @@ public class FontPackageService : IFontPackageService
                 SampleText = "Design stunning certificates, invoices, and branded documents.",
                 SupportedLanguages = new() { "All Latin Languages" },
                 IncludedFontFamilies = new() { "Poppins", "Lato", "Raleway", "Nunito", "Ubuntu", "Playfair Display", "Cinzel", "Orbitron", "Lobster", "Pacifico", "Dancing Script", "Titillium Web", "Exo 2", "Cabin" },
-                TotalEstimatedSizeBytes = 5_242_880, // ~5 MB
+                TotalEstimatedSizeBytes = 1_264_788,
                 Files = new()
                 {
-                    new() { FileName = "Poppins.ttf", DownloadUrl = "https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.ttf", FontFamilyName = "Poppins", FileSizeBytes = 163_840 },
-                    new() { FileName = "Poppins-Bold.ttf", DownloadUrl = "https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLCz7Z1xlFQ.ttf", FontFamilyName = "Poppins", IsBold = true, FileSizeBytes = 163_840 },
-                    new() { FileName = "Lato.ttf", DownloadUrl = "https://fonts.gstatic.com/s/lato/v24/S6uyw4BMUTPHjx4wXg.ttf", FontFamilyName = "Lato", FileSizeBytes = 655_360 },
-                    new() { FileName = "Lato-Bold.ttf", DownloadUrl = "https://fonts.gstatic.com/s/lato/v24/S6u9w4BMUTPHh6UVSwiPGQ.ttf", FontFamilyName = "Lato", IsBold = true, FileSizeBytes = 655_360 },
-                    new() { FileName = "Raleway.ttf", DownloadUrl = "https://fonts.gstatic.com/s/raleway/v28/1Crz2gBr3IWQqnJt63GDpQ.ttf", FontFamilyName = "Raleway", FileSizeBytes = 317_440 },
-                    new() { FileName = "Nunito.ttf", DownloadUrl = "https://fonts.gstatic.com/s/nunito/v26/XRXV3I6Li01BKofINeaB.ttf", FontFamilyName = "Nunito", FileSizeBytes = 276_480 },
-                    new() { FileName = "Ubuntu.ttf", DownloadUrl = "https://fonts.gstatic.com/s/ubuntu/v20/4iCs6KVjbNBYlgo6eA.ttf", FontFamilyName = "Ubuntu", FileSizeBytes = 358_400 },
-                    new() { FileName = "TitilliumWeb.ttf", DownloadUrl = "https://fonts.gstatic.com/s/titilliumweb/v17/NaPecZTIAOhVxoIx-40FFIH_VAc.ttf", FontFamilyName = "Titillium Web", FileSizeBytes = 184_320 },
-                    new() { FileName = "Exo2.ttf", DownloadUrl = "https://fonts.gstatic.com/s/exo2/v21/7cH1v4okm5zmbt6PFIFu.ttf", FontFamilyName = "Exo 2", FileSizeBytes = 184_320 },
-                    new() { FileName = "Cabin.ttf", DownloadUrl = "https://fonts.gstatic.com/s/cabin/v27/u-4X0qWljRw-PfU81xCK.ttf", FontFamilyName = "Cabin", FileSizeBytes = 184_320 }
+                    new() { FileName = "Poppins.ttf", DownloadUrl = CdnUrl("Poppins.ttf"), FontFamilyName = "Poppins", FileSizeBytes = 154_628 },
+                    new() { FileName = "Poppins-Bold.ttf", DownloadUrl = CdnUrl("Poppins-Bold.ttf"), FontFamilyName = "Poppins", IsBold = true, FileSizeBytes = 150_292 },
+                    new() { FileName = "Lato.ttf", DownloadUrl = CdnUrl("Lato.ttf"), FontFamilyName = "Lato", FileSizeBytes = 72_312 },
+                    new() { FileName = "Lato-Bold.ttf", DownloadUrl = CdnUrl("Lato-Bold.ttf"), FontFamilyName = "Lato", IsBold = true, FileSizeBytes = 70_576 },
+                    new() { FileName = "Raleway.ttf", DownloadUrl = CdnUrl("Raleway.ttf"), FontFamilyName = "Raleway", FileSizeBytes = 138_808 },
+                    new() { FileName = "Nunito.ttf", DownloadUrl = CdnUrl("Nunito.ttf"), FontFamilyName = "Nunito", FileSizeBytes = 125_528 },
+                    new() { FileName = "Ubuntu.ttf", DownloadUrl = CdnUrl("Ubuntu.ttf"), FontFamilyName = "Ubuntu", FileSizeBytes = 280_328 },
+                    new() { FileName = "TitilliumWeb.ttf", DownloadUrl = CdnUrl("TitilliumWeb.ttf"), FontFamilyName = "Titillium Web", FileSizeBytes = 53_980 },
+                    new() { FileName = "Exo2.ttf", DownloadUrl = CdnUrl("Exo2.ttf"), FontFamilyName = "Exo 2", FileSizeBytes = 143_780 },
+                    new() { FileName = "Cabin.ttf", DownloadUrl = CdnUrl("Cabin.ttf"), FontFamilyName = "Cabin", FileSizeBytes = 74_556 }
                 }
             }
         };

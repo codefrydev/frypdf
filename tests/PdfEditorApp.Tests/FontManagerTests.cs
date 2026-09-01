@@ -35,6 +35,47 @@ public class FontManagerTests
     }
 
     [Fact]
+    public void FontCatalog_AllFilesUseGitHubCdnUrlPattern()
+    {
+        var packages = _fontService.GetAllPackages();
+        Assert.NotEmpty(packages);
+
+        foreach (var pkg in packages)
+        {
+            Assert.NotEmpty(pkg.Files);
+            foreach (var file in pkg.Files)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(file.FileName));
+                Assert.StartsWith(FontPackageService.FontCdnBaseUrl, file.DownloadUrl);
+                Assert.EndsWith(file.FileName, file.DownloadUrl);
+                Assert.True(file.FileSizeBytes > 0, $"File size for {file.FileName} must be positive");
+            }
+        }
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task DownloadPackageAsync_DownloadsAndInstallsFromGitHubSuccessfully()
+    {
+        var packages = _fontService.GetAllPackages();
+        var hebrewPack = packages.First(p => p.Id == "hebrew");
+
+        // Clean any existing files first
+        await _fontService.DeletePackageAsync(hebrewPack);
+
+        var progressReported = false;
+        var progress = new Progress<double>(p => { if (p > 0) progressReported = true; });
+
+        var success = await _fontService.DownloadPackageAsync(hebrewPack, progress);
+
+        Assert.True(success, "Hebrew font package should download successfully from GitHub repository");
+        Assert.True(progressReported, "Progress should be reported during download");
+        Assert.True(_fontService.IsPackageInstalled(hebrewPack), "Package should be marked as installed");
+
+        // Cleanup after test
+        await _fontService.DeletePackageAsync(hebrewPack);
+    }
+
+    [Fact]
     public void FontPackageInfo_FormatBytes_ReturnsHumanReadableSize()
     {
         Assert.Equal("0 KB", FontPackageInfo.FormatBytes(0));

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels;
 using PdfEditorApp.ViewModels.ElementViewModels;
 using Xunit;
@@ -222,6 +223,69 @@ public class DirectEditingTests
         page.ClearSelection();
         Assert.False(el2.IsSelected);
         Assert.False(el2.IsInEditMode);
+    }
+
+    [Fact]
+    public void DeleteSelectedElement_SingleElement_DeletesAndSupportsUndo()
+    {
+        var undoRedo = new UndoRedoService();
+        var inspector = new InspectorViewModel { UndoRedo = undoRedo };
+        var page = new PageViewModel();
+        var textEl = new TextElementViewModel { Text = "Heading to delete" };
+        page.AddElement(textEl);
+        page.SelectElement(textEl);
+        inspector.UpdateSelection(textEl, page);
+
+        Assert.Single(page.Elements);
+        Assert.Equal(textEl, page.SelectedElement);
+
+        // Execute Delete
+        inspector.DeleteSelectedElementCommand.Execute(null);
+
+        Assert.Empty(page.Elements);
+        Assert.Null(page.SelectedElement);
+        Assert.Empty(page.SelectedElements);
+        Assert.True(undoRedo.CanUndo);
+
+        // Undo Delete
+        undoRedo.Undo();
+        Assert.Single(page.Elements);
+        Assert.Equal("Heading to delete", ((TextElementViewModel)page.Elements[0]).Text);
+    }
+
+    [Fact]
+    public void DeleteSelectedElement_MultiElement_DeletesAllAndSupportsUndo()
+    {
+        var undoRedo = new UndoRedoService();
+        var inspector = new InspectorViewModel { UndoRedo = undoRedo };
+        var page = new PageViewModel();
+        var el1 = new TextElementViewModel { Text = "Heading 1" };
+        var el2 = new TextElementViewModel { Text = "Paragraph 1" };
+        var el3 = new ShapeElementViewModel { Width = 100, Height = 50 };
+        page.AddElement(el1);
+        page.AddElement(el2);
+        page.AddElement(el3);
+
+        page.SelectElements(new[] { el1, el2 });
+        inspector.UpdateSelection(el2, page);
+
+        Assert.Equal(3, page.Elements.Count);
+        Assert.Equal(2, page.SelectedElements.Count);
+
+        // Execute Delete
+        inspector.DeleteSelectedElementCommand.Execute(null);
+
+        Assert.Single(page.Elements);
+        Assert.Contains(el3, page.Elements);
+        Assert.Empty(page.SelectedElements);
+        Assert.True(undoRedo.CanUndo);
+
+        // Undo Delete
+        undoRedo.Undo();
+        Assert.Equal(3, page.Elements.Count);
+        Assert.Contains(el1, page.Elements);
+        Assert.Contains(el2, page.Elements);
+        Assert.Contains(el3, page.Elements);
     }
 }
 

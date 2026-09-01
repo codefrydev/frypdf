@@ -331,6 +331,7 @@ public partial class DocumentCanvasView : UserControl
     private void OnCanvasBackgroundPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (ViewModel?.CurrentPage == null || PageElementsCanvas == null) return;
+        Focus();
 
         var pointerPoint = e.GetCurrentPoint(this);
 
@@ -481,6 +482,11 @@ public partial class DocumentCanvasView : UserControl
                 ViewModel?.CurrentPage?.SelectElement(elementVm);
             }
 
+            if (!elementVm.IsInEditMode)
+            {
+                Focus();
+            }
+
             if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed && PageElementsCanvas != null && ViewModel != null)
             {
                 var pos = e.GetPosition(PageElementsCanvas);
@@ -509,6 +515,7 @@ public partial class DocumentCanvasView : UserControl
     {
         if (sender is Control control && control.Tag is string handleName && control.DataContext is ElementViewModelBase elementVm)
         {
+            Focus();
             _isResizingHandle = true;
             _activeResizeHandle = handleName;
             _draggedElement = elementVm;
@@ -956,12 +963,6 @@ public partial class DocumentCanvasView : UserControl
     {
         if (ViewModel?.CurrentPage == null) return;
 
-        // Ignore keystrokes originating inside overlays (CanvasTextHudView, FindReplaceBarView)
-        if (e.Source is Visual v && (v.FindAncestorOfType<CanvasTextHudView>() != null || v.FindAncestorOfType<FindReplaceBarView>() != null))
-        {
-            return;
-        }
-
         var selected = ViewModel.CurrentPage.SelectedElement;
 
         // Check if user is actively typing inside any TextBox / TextPresenter
@@ -1085,7 +1086,7 @@ public partial class DocumentCanvasView : UserControl
                     break;
             }
         }
-        else if (selected != null)
+        else if (selected != null || (ViewModel.CurrentPage?.SelectedElements.Count ?? 0) > 0)
         {
             // If user starts typing any alphanumeric or punctuation character while a text element is selected,
             // immediately enter in-place edit mode and route focus to the TextBox!
@@ -1136,30 +1137,33 @@ public partial class DocumentCanvasView : UserControl
                     e.Handled = true;
                     break;
                 case Key.Escape:
-                    ViewModel.CurrentPage.ClearSelection();
+                    ViewModel.CurrentPage?.ClearSelection();
                     e.Handled = true;
                     break;
                 case Key.Left:
                 case Key.Right:
                 case Key.Up:
                 case Key.Down:
-                    double oldX = selected.X;
-                    double oldY = selected.Y;
+                    if (selected != null && ViewModel?.CurrentPage is { } page)
+                    {
+                        double oldX = selected.X;
+                        double oldY = selected.Y;
 
-                    if (e.Key == Key.Left) selected.X = Math.Max(0, selected.X - step);
-                    else if (e.Key == Key.Right) selected.X = Math.Min(ViewModel.CurrentPage.Width - selected.Width, selected.X + step);
-                    else if (e.Key == Key.Up) selected.Y = Math.Max(0, selected.Y - step);
-                    else if (e.Key == Key.Down) selected.Y = Math.Min(ViewModel.CurrentPage.Height - selected.Height, selected.Y + step);
+                        if (e.Key == Key.Left) selected.X = Math.Max(0, selected.X - step);
+                        else if (e.Key == Key.Right) selected.X = Math.Min(page.Width - selected.Width, selected.X + step);
+                        else if (e.Key == Key.Up) selected.Y = Math.Max(0, selected.Y - step);
+                        else if (e.Key == Key.Down) selected.Y = Math.Min(page.Height - selected.Height, selected.Y + step);
 
-                    double newX = selected.X;
-                    double newY = selected.Y;
-                    var el = selected;
-                    ViewModel.UndoRedo.RecordAction(
-                        $"Nudge {el.DisplayName}",
-                        () => { el.X = oldX; el.Y = oldY; },
-                        () => { el.X = newX; el.Y = newY; }
-                    );
-                    e.Handled = true;
+                        double newX = selected.X;
+                        double newY = selected.Y;
+                        var el = selected;
+                        ViewModel.UndoRedo.RecordAction(
+                            $"Nudge {el.DisplayName}",
+                            () => { el.X = oldX; el.Y = oldY; },
+                            () => { el.X = newX; el.Y = newY; }
+                        );
+                        e.Handled = true;
+                    }
                     break;
                 case Key.OemCloseBrackets:
                     ViewModel.Inspector.BringToFrontCommand.Execute(null);

@@ -7,7 +7,8 @@
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.Views.DocumentCanvasView"
-             x:DataType="vm:MainViewModel">
+             x:DataType="vm:MainViewModel"
+             Focusable="True">
 
     <UserControl.Resources>
         <converters:HexToBrushConverter x:Key="HexToBrushConverter" />

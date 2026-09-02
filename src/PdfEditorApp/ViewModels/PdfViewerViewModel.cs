@@ -2064,18 +2064,21 @@ public partial class PdfViewerViewModel : ViewModelBase
         }
 
         double availableWidth = Math.Max(100.0, viewportWidth - horizontalPadding - 8.0);
-        double targetWidth = page.WidthPoints;
+        double targetWidth = (page.RotationAngle % 180 == 0) ? page.WidthPoints : page.HeightPoints;
 
         if (IsTwoPageSpreadMode && SelectedSpread != null)
         {
             if (SelectedSpread.LeftPage != null && SelectedSpread.RightPage != null)
             {
-                targetWidth = SelectedSpread.LeftPage.WidthPoints + SelectedSpread.RightPage.WidthPoints;
+                double leftW = (SelectedSpread.LeftPage.RotationAngle % 180 == 0) ? SelectedSpread.LeftPage.WidthPoints : SelectedSpread.LeftPage.HeightPoints;
+                double rightW = (SelectedSpread.RightPage.RotationAngle % 180 == 0) ? SelectedSpread.RightPage.WidthPoints : SelectedSpread.RightPage.HeightPoints;
+                targetWidth = leftW + rightW;
                 availableWidth = Math.Max(100.0, availableWidth - 16.0); // 16px gap between pages
             }
             else
             {
-                targetWidth = SelectedSpread.LeftPage?.WidthPoints ?? SelectedSpread.RightPage?.WidthPoints ?? page.WidthPoints;
+                var single = SelectedSpread.LeftPage ?? SelectedSpread.RightPage ?? page;
+                targetWidth = (single.RotationAngle % 180 == 0) ? single.WidthPoints : single.HeightPoints;
             }
         }
 
@@ -2152,21 +2155,26 @@ public partial class PdfViewerViewModel : ViewModelBase
         // Reserve 36px for page footnote indicator and card vertical spacing
         double availableHeight = Math.Max(100.0, viewportHeight - verticalPadding - 36.0);
 
-        double targetWidth = page.WidthPoints;
-        double targetHeight = page.HeightPoints;
+        double targetWidth = (page.RotationAngle % 180 == 0) ? page.WidthPoints : page.HeightPoints;
+        double targetHeight = (page.RotationAngle % 180 == 0) ? page.HeightPoints : page.WidthPoints;
 
         if (IsTwoPageSpreadMode && SelectedSpread != null)
         {
             if (SelectedSpread.LeftPage != null && SelectedSpread.RightPage != null)
             {
-                targetWidth = SelectedSpread.LeftPage.WidthPoints + SelectedSpread.RightPage.WidthPoints;
-                targetHeight = Math.Max(SelectedSpread.LeftPage.HeightPoints, SelectedSpread.RightPage.HeightPoints);
+                double leftW = (SelectedSpread.LeftPage.RotationAngle % 180 == 0) ? SelectedSpread.LeftPage.WidthPoints : SelectedSpread.LeftPage.HeightPoints;
+                double leftH = (SelectedSpread.LeftPage.RotationAngle % 180 == 0) ? SelectedSpread.LeftPage.HeightPoints : SelectedSpread.LeftPage.WidthPoints;
+                double rightW = (SelectedSpread.RightPage.RotationAngle % 180 == 0) ? SelectedSpread.RightPage.WidthPoints : SelectedSpread.RightPage.HeightPoints;
+                double rightH = (SelectedSpread.RightPage.RotationAngle % 180 == 0) ? SelectedSpread.RightPage.HeightPoints : SelectedSpread.RightPage.WidthPoints;
+                targetWidth = leftW + rightW;
+                targetHeight = Math.Max(leftH, rightH);
                 availableWidth = Math.Max(100.0, availableWidth - 16.0);
             }
             else
             {
-                targetWidth = SelectedSpread.LeftPage?.WidthPoints ?? SelectedSpread.RightPage?.WidthPoints ?? page.WidthPoints;
-                targetHeight = SelectedSpread.LeftPage?.HeightPoints ?? SelectedSpread.RightPage?.HeightPoints ?? page.HeightPoints;
+                var single = SelectedSpread.LeftPage ?? SelectedSpread.RightPage ?? page;
+                targetWidth = (single.RotationAngle % 180 == 0) ? single.WidthPoints : single.HeightPoints;
+                targetHeight = (single.RotationAngle % 180 == 0) ? single.HeightPoints : single.WidthPoints;
             }
         }
 
@@ -2213,20 +2221,44 @@ public partial class PdfViewerViewModel : ViewModelBase
     [RelayCommand]
     public void RotateClockwise()
     {
-        if (SelectedPage != null)
+        var page = SelectedPage ?? Pages.FirstOrDefault(p => p.PageNumber == CurrentPageNumber) ?? Pages.FirstOrDefault();
+        if (page != null)
         {
-            SelectedPage.RotationAngle = (SelectedPage.RotationAngle + 90) % 360;
-            StatusMessage = $"Page {SelectedPage.PageNumber} rotated clockwise.";
+            SelectedPage = page;
+            page.RotationAngle = (page.RotationAngle + 90) % 360;
+            StatusMessage = $"Page {page.PageNumber} rotated 90° CW ({page.RotationAngle}°).";
+            ShowToastRequested?.Invoke($"Page {page.PageNumber} rotated 90° CW ({page.RotationAngle}°)");
+
+            if (IsFitToPageActive)
+            {
+                FitToPage();
+            }
+            else if (IsFitToWidthActive)
+            {
+                FitToWidth();
+            }
         }
     }
 
     [RelayCommand]
     public void RotateCounterClockwise()
     {
-        if (SelectedPage != null)
+        var page = SelectedPage ?? Pages.FirstOrDefault(p => p.PageNumber == CurrentPageNumber) ?? Pages.FirstOrDefault();
+        if (page != null)
         {
-            SelectedPage.RotationAngle = (SelectedPage.RotationAngle + 270) % 360;
-            StatusMessage = $"Page {SelectedPage.PageNumber} rotated counter-clockwise.";
+            SelectedPage = page;
+            page.RotationAngle = (page.RotationAngle + 270) % 360;
+            StatusMessage = $"Page {page.PageNumber} rotated 90° CCW ({page.RotationAngle}°).";
+            ShowToastRequested?.Invoke($"Page {page.PageNumber} rotated 90° CCW ({page.RotationAngle}°)");
+
+            if (IsFitToPageActive)
+            {
+                FitToPage();
+            }
+            else if (IsFitToWidthActive)
+            {
+                FitToWidth();
+            }
         }
     }
 
@@ -2239,6 +2271,15 @@ public partial class PdfViewerViewModel : ViewModelBase
         }
         StatusMessage = "Rotated all pages 90° clockwise.";
         ShowToastRequested?.Invoke("Rotated all pages 90° CW");
+
+        if (IsFitToPageActive)
+        {
+            FitToPage();
+        }
+        else if (IsFitToWidthActive)
+        {
+            FitToWidth();
+        }
     }
 
     // --- Text Search & Find in Document ---

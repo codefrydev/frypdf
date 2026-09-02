@@ -633,6 +633,62 @@ public class PdfReaderTests
         var sepiaPixel = sepiaBmp.GetPixel(5, 5);
         Assert.True(sepiaPixel.Red > sepiaPixel.Blue); // warm tint has more red than blue
     }
+
+    [Fact]
+    public void PdfViewer_RotateCommands_UpdateRotationAngleAndDynamicFit()
+    {
+        var vm = new PdfViewerViewModel();
+        var page1 = new PdfViewerPageItem { PageNumber = 1, WidthPoints = 595, HeightPoints = 842, RotationAngle = 0 };
+        var page2 = new PdfViewerPageItem { PageNumber = 2, WidthPoints = 595, HeightPoints = 842, RotationAngle = 0 };
+        vm.Pages.Add(page1);
+        vm.Pages.Add(page2);
+        vm.SelectedPage = page1;
+
+        // Initial state
+        Assert.Equal(0, page1.RotationAngle);
+
+        // Rotate clockwise: 0 -> 90 -> 180 -> 270 -> 0
+        vm.RotateClockwiseCommand.Execute(null);
+        Assert.Equal(90, page1.RotationAngle);
+
+        vm.RotateClockwiseCommand.Execute(null);
+        Assert.Equal(180, page1.RotationAngle);
+
+        vm.RotateClockwiseCommand.Execute(null);
+        Assert.Equal(270, page1.RotationAngle);
+
+        vm.RotateClockwiseCommand.Execute(null);
+        Assert.Equal(0, page1.RotationAngle);
+
+        // Rotate counter-clockwise: 0 -> 270 -> 180 -> 90 -> 0
+        vm.RotateCounterClockwiseCommand.Execute(null);
+        Assert.Equal(270, page1.RotationAngle);
+
+        vm.RotateCounterClockwiseCommand.Execute(null);
+        Assert.Equal(180, page1.RotationAngle);
+
+        vm.RotateCounterClockwiseCommand.Execute(null);
+        Assert.Equal(90, page1.RotationAngle);
+
+        vm.RotateCounterClockwiseCommand.Execute(null);
+        Assert.Equal(0, page1.RotationAngle);
+
+        // Rotate all pages clockwise
+        vm.RotateAllPagesClockwiseCommand.Execute(null);
+        Assert.Equal(90, page1.RotationAngle);
+        Assert.Equal(90, page2.RotationAngle);
+
+        // Dynamic fit to width with 90 degree rotation should use HeightPoints (842) as target width instead of WidthPoints (595)
+        vm.FitToWidthDynamic(viewportWidth: 1000, horizontalPadding: 64);
+        double expectedZoom90 = Math.Clamp(Math.Round((1000 - 64 - 8) / 842.0, 2), 0.25, 5.0);
+        Assert.Equal(expectedZoom90, vm.ZoomLevel);
+
+        // Rotate back to 0
+        page1.RotationAngle = 0;
+        vm.FitToWidthDynamic(viewportWidth: 1000, horizontalPadding: 64);
+        double zoomAt0 = vm.ZoomLevel;
+        Assert.True(zoomAt0 > expectedZoom90); // Portrait fit zoom (1.55) is larger than landscape fit zoom (1.10)
+    }
 }
 
 

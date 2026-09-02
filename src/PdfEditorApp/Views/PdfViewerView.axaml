@@ -418,11 +418,16 @@
                                             <Border Classes="thumbnail-card"
                                                     Classes.selected="{Binding IsSelected}"
                                                     Width="176" MinHeight="210" MaxHeight="250">
-                                                <Image Source="{Binding ThumbnailBitmap}"
-                                                       Stretch="Uniform"
-                                                       RenderOptions.BitmapInterpolationMode="HighQuality"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
+                                                <LayoutTransformControl HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <LayoutTransformControl.LayoutTransform>
+                                                        <RotateTransform Angle="{Binding RotationAngle}" />
+                                                    </LayoutTransformControl.LayoutTransform>
+                                                    <Image Source="{Binding ThumbnailBitmap}"
+                                                           Stretch="Uniform"
+                                                           RenderOptions.BitmapInterpolationMode="HighQuality"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                                </LayoutTransformControl>
                                             </Border>
 
                                             <!-- Page Number Pill -->
@@ -678,53 +683,48 @@
                             <DataTemplate x:DataType="vm:PdfViewerPageItem">
                                 <StackPanel HorizontalAlignment="Center" Spacing="8" Focusable="False">
                                     <!-- Crisp High-DPI Vector Rendered Page Canvas -->
-                                    <Border Classes="reader-page-card"
-                                            Classes.reading-theme-sepia="{Binding #RootPdfViewer.ViewModel.IsThemeSepia}"
-                                            Classes.reading-theme-dark="{Binding #RootPdfViewer.ViewModel.IsThemeDark}"
-                                            Classes.reading-theme-highcontrast="{Binding #RootPdfViewer.ViewModel.IsThemeHighContrast}">
-                                        <Border.Width>
-                                            <MultiBinding Converter="{StaticResource MultiplyConverter}">
-                                                <Binding Path="WidthPoints" />
-                                                <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
-                                            </MultiBinding>
-                                        </Border.Width>
-                                        <Border.Height>
-                                            <MultiBinding Converter="{StaticResource MultiplyConverter}">
-                                                <Binding Path="HeightPoints" />
-                                                <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
-                                            </MultiBinding>
-                                        </Border.Height>
+                                    <LayoutTransformControl HorizontalAlignment="Center">
+                                        <LayoutTransformControl.LayoutTransform>
+                                            <RotateTransform Angle="{Binding RotationAngle}" />
+                                        </LayoutTransformControl.LayoutTransform>
+                                        <Border Classes="reader-page-card"
+                                                Classes.reading-theme-sepia="{Binding #RootPdfViewer.ViewModel.IsThemeSepia}"
+                                                Classes.reading-theme-dark="{Binding #RootPdfViewer.ViewModel.IsThemeDark}"
+                                                Classes.reading-theme-highcontrast="{Binding #RootPdfViewer.ViewModel.IsThemeHighContrast}">
+                                            <Border.Width>
+                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                    <Binding Path="WidthPoints" />
+                                                    <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
+                                                </MultiBinding>
+                                            </Border.Width>
+                                            <Border.Height>
+                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                    <Binding Path="HeightPoints" />
+                                                    <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
+                                                </MultiBinding>
+                                            </Border.Height>
 
-                                        <Panel>
-                                            <!-- High Quality Anti-Aliased Interpolation Bitmap -->
-                                            <Image Source="{Binding Bitmap}"
-                                                   Stretch="UniformToFill"
-                                                   RenderOptions.BitmapInterpolationMode="HighQuality"
-                                                   RenderTransformOrigin="0.5,0.5">
-                                                <Image.RenderTransform>
-                                                    <RotateTransform Angle="{Binding RotationAngle}" />
-                                                </Image.RenderTransform>
-                                            </Image>
+                                            <Panel>
+                                                <!-- High Quality Anti-Aliased Interpolation Bitmap -->
+                                                <Image Source="{Binding Bitmap}"
+                                                       Stretch="UniformToFill"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
 
-                                            <!-- Interactive Vector Text Selection & Highlight Layer -->
-                                            <controls:PdfTextOverlayControl
-                                                Page="{Binding}"
-                                                ZoomLevel="{Binding #RootPdfViewer.ViewModel.ZoomLevel}"
-                                                ViewerViewModel="{Binding #RootPdfViewer.ViewModel}"
-                                                RenderTransformOrigin="0.5,0.5">
-                                                <controls:PdfTextOverlayControl.RenderTransform>
-                                                    <RotateTransform Angle="{Binding RotationAngle}" />
-                                                </controls:PdfTextOverlayControl.RenderTransform>
-                                            </controls:PdfTextOverlayControl>
+                                                <!-- Interactive Vector Text Selection & Highlight Layer -->
+                                                <controls:PdfTextOverlayControl
+                                                    Page="{Binding}"
+                                                    ZoomLevel="{Binding #RootPdfViewer.ViewModel.ZoomLevel}"
+                                                    ViewerViewModel="{Binding #RootPdfViewer.ViewModel}" />
 
-                                            <!-- Fallback when loading / empty -->
-                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
-                                                        IsVisible="{Binding Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
-                                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
-                                                <TextBlock Text="{Binding PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                            </StackPanel>
-                                        </Panel>
-                                    </Border>
+                                                <!-- Fallback when loading / empty -->
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
+                                                            IsVisible="{Binding Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
+                                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
+                                                    <TextBlock Text="{Binding PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                                </StackPanel>
+                                            </Panel>
+                                        </Border>
+                                    </LayoutTransformControl>
 
                                     <!-- Page Number Footnote Indicator -->
                                     <TextBlock Text="{Binding PageLabel}"
@@ -749,51 +749,46 @@
                     </ScrollViewer.GestureRecognizers>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10"
                                 IsVisible="{Binding SelectedPage, Converter={StaticResource NullToBooleanConverter}}">
-                        <Border Classes="reader-page-card"
-                                Classes.reading-theme-sepia="{Binding IsThemeSepia}"
-                                Classes.reading-theme-dark="{Binding IsThemeDark}"
-                                Classes.reading-theme-highcontrast="{Binding IsThemeHighContrast}">
-                            <Border.Width>
-                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
-                                    <Binding Path="SelectedPage.WidthPoints" />
-                                    <Binding Path="ZoomLevel" />
-                                </MultiBinding>
-                            </Border.Width>
-                            <Border.Height>
-                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
-                                    <Binding Path="SelectedPage.HeightPoints" />
-                                    <Binding Path="ZoomLevel" />
-                                </MultiBinding>
-                            </Border.Height>
+                        <LayoutTransformControl HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <LayoutTransformControl.LayoutTransform>
+                                <RotateTransform Angle="{Binding SelectedPage.RotationAngle}" />
+                            </LayoutTransformControl.LayoutTransform>
+                            <Border Classes="reader-page-card"
+                                    Classes.reading-theme-sepia="{Binding IsThemeSepia}"
+                                    Classes.reading-theme-dark="{Binding IsThemeDark}"
+                                    Classes.reading-theme-highcontrast="{Binding IsThemeHighContrast}">
+                                <Border.Width>
+                                    <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                        <Binding Path="SelectedPage.WidthPoints" />
+                                        <Binding Path="ZoomLevel" />
+                                    </MultiBinding>
+                                </Border.Width>
+                                <Border.Height>
+                                    <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                        <Binding Path="SelectedPage.HeightPoints" />
+                                        <Binding Path="ZoomLevel" />
+                                    </MultiBinding>
+                                </Border.Height>
 
-                            <Panel>
-                                <Image Source="{Binding SelectedPage.Bitmap}"
-                                       Stretch="UniformToFill"
-                                       RenderOptions.BitmapInterpolationMode="HighQuality"
-                                       RenderTransformOrigin="0.5,0.5">
-                                    <Image.RenderTransform>
-                                        <RotateTransform Angle="{Binding SelectedPage.RotationAngle}" />
-                                    </Image.RenderTransform>
-                                </Image>
+                                <Panel>
+                                    <Image Source="{Binding SelectedPage.Bitmap}"
+                                           Stretch="UniformToFill"
+                                           RenderOptions.BitmapInterpolationMode="HighQuality" />
 
-                                <!-- Interactive Vector Text Selection & Highlight Layer -->
-                                <controls:PdfTextOverlayControl
-                                    Page="{Binding SelectedPage}"
-                                    ZoomLevel="{Binding ZoomLevel}"
-                                    ViewerViewModel="{Binding}"
-                                    RenderTransformOrigin="0.5,0.5">
-                                    <controls:PdfTextOverlayControl.RenderTransform>
-                                        <RotateTransform Angle="{Binding SelectedPage.RotationAngle}" />
-                                    </controls:PdfTextOverlayControl.RenderTransform>
-                                </controls:PdfTextOverlayControl>
+                                    <!-- Interactive Vector Text Selection & Highlight Layer -->
+                                    <controls:PdfTextOverlayControl
+                                        Page="{Binding SelectedPage}"
+                                        ZoomLevel="{Binding ZoomLevel}"
+                                        ViewerViewModel="{Binding}" />
 
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
-                                            IsVisible="{Binding SelectedPage.Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
-                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
-                                    <TextBlock Text="{Binding SelectedPage.PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                </StackPanel>
-                            </Panel>
-                        </Border>
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
+                                                IsVisible="{Binding SelectedPage.Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
+                                        <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
+                                        <TextBlock Text="{Binding SelectedPage.PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Panel>
+                            </Border>
+                        </LayoutTransformControl>
 
                         <TextBlock Text="{Binding SelectedPage.PageLabel}"
                                    FontSize="11"
@@ -818,44 +813,44 @@
                             <!-- Left Page -->
                             <Panel IsVisible="{Binding SelectedSpread.LeftPage, Converter={StaticResource NullToBooleanConverter}}">
                                 <StackPanel Spacing="6" HorizontalAlignment="Center">
-                                    <Border Classes="reader-page-card"
-                                            Classes.reading-theme-sepia="{Binding IsThemeSepia}"
-                                            Classes.reading-theme-dark="{Binding IsThemeDark}"
-                                            Classes.reading-theme-highcontrast="{Binding IsThemeHighContrast}">
-                                        <Border.Width>
-                                            <MultiBinding Converter="{StaticResource MultiplyConverter}">
-                                                <Binding Path="SelectedSpread.LeftPage.WidthPoints" />
-                                                <Binding Path="ZoomLevel" />
-                                            </MultiBinding>
-                                        </Border.Width>
-                                        <Border.Height>
-                                            <MultiBinding Converter="{StaticResource MultiplyConverter}">
-                                                <Binding Path="SelectedSpread.LeftPage.HeightPoints" />
-                                                <Binding Path="ZoomLevel" />
-                                            </MultiBinding>
-                                        </Border.Height>
-                                        <Panel>
-                                            <Image Source="{Binding SelectedSpread.LeftPage.Bitmap}"
-                                                   Stretch="UniformToFill"
-                                                   RenderOptions.BitmapInterpolationMode="HighQuality"
-                                                   RenderTransformOrigin="0.5,0.5">
-                                                <Image.RenderTransform>
-                                                    <RotateTransform Angle="{Binding SelectedSpread.LeftPage.RotationAngle}" />
-                                                </Image.RenderTransform>
-                                            </Image>
-                                            <controls:PdfTextOverlayControl
-                                                Page="{Binding SelectedSpread.LeftPage}"
-                                                ZoomLevel="{Binding ZoomLevel}"
-                                                ViewerViewModel="{Binding}" />
+                                    <LayoutTransformControl HorizontalAlignment="Center">
+                                        <LayoutTransformControl.LayoutTransform>
+                                            <RotateTransform Angle="{Binding SelectedSpread.LeftPage.RotationAngle}" />
+                                        </LayoutTransformControl.LayoutTransform>
+                                        <Border Classes="reader-page-card"
+                                                Classes.reading-theme-sepia="{Binding IsThemeSepia}"
+                                                Classes.reading-theme-dark="{Binding IsThemeDark}"
+                                                Classes.reading-theme-highcontrast="{Binding IsThemeHighContrast}">
+                                            <Border.Width>
+                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                    <Binding Path="SelectedSpread.LeftPage.WidthPoints" />
+                                                    <Binding Path="ZoomLevel" />
+                                                </MultiBinding>
+                                            </Border.Width>
+                                            <Border.Height>
+                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                    <Binding Path="SelectedSpread.LeftPage.HeightPoints" />
+                                                    <Binding Path="ZoomLevel" />
+                                                </MultiBinding>
+                                            </Border.Height>
+                                            <Panel>
+                                                <Image Source="{Binding SelectedSpread.LeftPage.Bitmap}"
+                                                       Stretch="UniformToFill"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                                <controls:PdfTextOverlayControl
+                                                    Page="{Binding SelectedSpread.LeftPage}"
+                                                    ZoomLevel="{Binding ZoomLevel}"
+                                                    ViewerViewModel="{Binding}" />
 
-                                            <!-- Fallback when loading / empty -->
-                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
-                                                        IsVisible="{Binding SelectedSpread.LeftPage.Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
-                                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
-                                                <TextBlock Text="{Binding SelectedSpread.LeftPage.PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                            </StackPanel>
-                                        </Panel>
-                                    </Border>
+                                                <!-- Fallback when loading / empty -->
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
+                                                            IsVisible="{Binding SelectedSpread.LeftPage.Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
+                                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
+                                                    <TextBlock Text="{Binding SelectedSpread.LeftPage.PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                                </StackPanel>
+                                            </Panel>
+                                        </Border>
+                                    </LayoutTransformControl>
                                     <TextBlock Text="{Binding SelectedSpread.LeftPage.PageLabel}" FontSize="10.5" FontWeight="Medium" Foreground="{Binding ThemeTextColorHex}" HorizontalAlignment="Center" />
                                 </StackPanel>
                             </Panel>
@@ -863,44 +858,44 @@
                             <!-- Right Page -->
                             <Panel IsVisible="{Binding SelectedSpread.RightPage, Converter={StaticResource NullToBooleanConverter}}">
                                 <StackPanel Spacing="6" HorizontalAlignment="Center">
-                                    <Border Classes="reader-page-card"
-                                            Classes.reading-theme-sepia="{Binding IsThemeSepia}"
-                                            Classes.reading-theme-dark="{Binding IsThemeDark}"
-                                            Classes.reading-theme-highcontrast="{Binding IsThemeHighContrast}">
-                                        <Border.Width>
-                                            <MultiBinding Converter="{StaticResource MultiplyConverter}">
-                                                <Binding Path="SelectedSpread.RightPage.WidthPoints" />
-                                                <Binding Path="ZoomLevel" />
-                                            </MultiBinding>
-                                        </Border.Width>
-                                        <Border.Height>
-                                            <MultiBinding Converter="{StaticResource MultiplyConverter}">
-                                                <Binding Path="SelectedSpread.RightPage.HeightPoints" />
-                                                <Binding Path="ZoomLevel" />
-                                            </MultiBinding>
-                                        </Border.Height>
-                                        <Panel>
-                                            <Image Source="{Binding SelectedSpread.RightPage.Bitmap}"
-                                                   Stretch="UniformToFill"
-                                                   RenderOptions.BitmapInterpolationMode="HighQuality"
-                                                   RenderTransformOrigin="0.5,0.5">
-                                                <Image.RenderTransform>
-                                                    <RotateTransform Angle="{Binding SelectedSpread.RightPage.RotationAngle}" />
-                                                </Image.RenderTransform>
-                                            </Image>
-                                            <controls:PdfTextOverlayControl
-                                                Page="{Binding SelectedSpread.RightPage}"
-                                                ZoomLevel="{Binding ZoomLevel}"
-                                                ViewerViewModel="{Binding}" />
+                                    <LayoutTransformControl HorizontalAlignment="Center">
+                                        <LayoutTransformControl.LayoutTransform>
+                                            <RotateTransform Angle="{Binding SelectedSpread.RightPage.RotationAngle}" />
+                                        </LayoutTransformControl.LayoutTransform>
+                                        <Border Classes="reader-page-card"
+                                                Classes.reading-theme-sepia="{Binding IsThemeSepia}"
+                                                Classes.reading-theme-dark="{Binding IsThemeDark}"
+                                                Classes.reading-theme-highcontrast="{Binding IsThemeHighContrast}">
+                                            <Border.Width>
+                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                    <Binding Path="SelectedSpread.RightPage.WidthPoints" />
+                                                    <Binding Path="ZoomLevel" />
+                                                </MultiBinding>
+                                            </Border.Width>
+                                            <Border.Height>
+                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                    <Binding Path="SelectedSpread.RightPage.HeightPoints" />
+                                                    <Binding Path="ZoomLevel" />
+                                                </MultiBinding>
+                                            </Border.Height>
+                                            <Panel>
+                                                <Image Source="{Binding SelectedSpread.RightPage.Bitmap}"
+                                                       Stretch="UniformToFill"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                                <controls:PdfTextOverlayControl
+                                                    Page="{Binding SelectedSpread.RightPage}"
+                                                    ZoomLevel="{Binding ZoomLevel}"
+                                                    ViewerViewModel="{Binding}" />
 
-                                            <!-- Fallback when loading / empty -->
-                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
-                                                        IsVisible="{Binding SelectedSpread.RightPage.Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
-                                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
-                                                <TextBlock Text="{Binding SelectedSpread.RightPage.PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                            </StackPanel>
-                                        </Panel>
-                                    </Border>
+                                                <!-- Fallback when loading / empty -->
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
+                                                            IsVisible="{Binding SelectedSpread.RightPage.Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
+                                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
+                                                    <TextBlock Text="{Binding SelectedSpread.RightPage.PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                                </StackPanel>
+                                            </Panel>
+                                        </Border>
+                                    </LayoutTransformControl>
                                     <TextBlock Text="{Binding SelectedSpread.RightPage.PageLabel}" FontSize="10.5" FontWeight="Medium" Foreground="{Binding ThemeTextColorHex}" HorizontalAlignment="Center" />
                                 </StackPanel>
                             </Panel>

@@ -198,29 +198,33 @@
                     <Border Classes="toolbar-capsule">
                         <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
                             <!-- Daylight -->
-                            <Button Classes="toolbar-btn" Width="24" Height="24"
-                                    Command="{Binding SetReadingThemeCommand}" CommandParameter="Default"
+                            <Button Classes="toolbar-btn" Width="26" Height="26"
+                                    Classes.mode-active="{Binding IsThemeDefault}"
+                                    Command="{Binding SetDefaultReadingThemeCommand}"
                                     ToolTip.Tip="Daylight Theme (Standard White)">
                                 <materialIcons:MaterialIcon Kind="WhiteBalanceSunny" Width="14" Height="14"
                                                             Foreground="{Binding IsThemeDefault, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#94A3B8'}" />
                             </Button>
                             <!-- Sepia -->
-                            <Button Classes="toolbar-btn" Width="24" Height="24"
-                                    Command="{Binding SetReadingThemeCommand}" CommandParameter="Sepia"
+                            <Button Classes="toolbar-btn" Width="26" Height="26"
+                                    Classes.mode-active="{Binding IsThemeSepia}"
+                                    Command="{Binding SetSepiaReadingThemeCommand}"
                                     ToolTip.Tip="Warm Sepia Book Theme (Reduced Eye Strain)">
                                 <materialIcons:MaterialIcon Kind="BookOpenOutline" Width="14" Height="14"
                                                             Foreground="{Binding IsThemeSepia, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#D97706|#94A3B8'}" />
                             </Button>
                             <!-- Dark Night -->
-                            <Button Classes="toolbar-btn" Width="24" Height="24"
-                                    Command="{Binding SetReadingThemeCommand}" CommandParameter="Dark"
+                            <Button Classes="toolbar-btn" Width="26" Height="26"
+                                    Classes.mode-active="{Binding IsThemeDark}"
+                                    Command="{Binding SetDarkReadingThemeCommand}"
                                     ToolTip.Tip="Dark Night Reading Theme (OLED / Low Light)">
                                 <materialIcons:MaterialIcon Kind="WeatherNight" Width="14" Height="14"
                                                             Foreground="{Binding IsThemeDark, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#6366F1|#94A3B8'}" />
                             </Button>
                             <!-- High Contrast -->
-                            <Button Classes="toolbar-btn" Width="24" Height="24"
-                                    Command="{Binding SetReadingThemeCommand}" CommandParameter="HighContrast"
+                            <Button Classes="toolbar-btn" Width="26" Height="26"
+                                    Classes.mode-active="{Binding IsThemeHighContrast}"
+                                    Command="{Binding SetHighContrastReadingThemeCommand}"
                                     ToolTip.Tip="High Contrast Mode (Accessibility)">
                                 <materialIcons:MaterialIcon Kind="ContrastCircle" Width="14" Height="14"
                                                             Foreground="{Binding IsThemeHighContrast, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EAB308|#94A3B8'}" />
@@ -610,7 +614,7 @@
             </Border>
 
             <!-- CENTER DOCUMENT VIEWPORT CANVAS (Acrobat/Preview Paper Rendering) -->
-            <Grid Grid.Column="1" Background="{DynamicResource WinBgBrush}">
+            <Grid Grid.Column="1" Background="{Binding ThemeBackgroundHex}">
 
                 <!-- Top Indeterminate Progress Bar for instant feedback while opening -->
                 <ProgressBar IsIndeterminate="True"
@@ -726,7 +730,7 @@
                                     <TextBlock Text="{Binding PageLabel}"
                                                FontSize="10.5"
                                                FontWeight="Medium"
-                                               Foreground="{DynamicResource WinMutedBrush}"
+                                               Foreground="{Binding #RootPdfViewer.ViewModel.ThemeTextColorHex}"
                                                HorizontalAlignment="Center" />
                                 </StackPanel>
                             </DataTemplate>
@@ -794,7 +798,7 @@
                         <TextBlock Text="{Binding SelectedPage.PageLabel}"
                                    FontSize="11"
                                    FontWeight="SemiBold"
-                                   Foreground="{DynamicResource WinMutedBrush}"
+                                   Foreground="{Binding ThemeTextColorHex}"
                                    HorizontalAlignment="Center" />
                     </StackPanel>
                 </ScrollViewer>
@@ -852,7 +856,7 @@
                                             </StackPanel>
                                         </Panel>
                                     </Border>
-                                    <TextBlock Text="{Binding SelectedSpread.LeftPage.PageLabel}" FontSize="10.5" FontWeight="Medium" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding SelectedSpread.LeftPage.PageLabel}" FontSize="10.5" FontWeight="Medium" Foreground="{Binding ThemeTextColorHex}" HorizontalAlignment="Center" />
                                 </StackPanel>
                             </Panel>
 
@@ -897,7 +901,7 @@
                                             </StackPanel>
                                         </Panel>
                                     </Border>
-                                    <TextBlock Text="{Binding SelectedSpread.RightPage.PageLabel}" FontSize="10.5" FontWeight="Medium" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding SelectedSpread.RightPage.PageLabel}" FontSize="10.5" FontWeight="Medium" Foreground="{Binding ThemeTextColorHex}" HorizontalAlignment="Center" />
                                 </StackPanel>
                             </Panel>
                         </StackPanel>
@@ -905,7 +909,7 @@
                         <TextBlock Text="{Binding SelectedSpread.SpreadLabel}"
                                    FontSize="11"
                                    FontWeight="SemiBold"
-                                   Foreground="{DynamicResource WinMutedBrush}"
+                                   Foreground="{Binding ThemeTextColorHex}"
                                    HorizontalAlignment="Center" />
                     </StackPanel>
                 </ScrollViewer>

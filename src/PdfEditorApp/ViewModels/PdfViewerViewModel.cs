@@ -20,6 +20,7 @@ using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Outline;
 using UglyToad.PdfPig.Rendering.Skia;
+using SkiaSharp;
 
 namespace PdfEditorApp.ViewModels;
 
@@ -76,6 +77,8 @@ public class PdfViewerPageItem : ObservableObject, IDisposable
     private string _selectedText = string.Empty;
     private bool _hasSelection;
     private bool _isDisposed;
+
+    public PdfReaderTheme AppliedReadingTheme { get; set; } = PdfReaderTheme.Default;
 
     /// <summary>Guards against piling up redundant background geometry-extraction tasks
     /// while pointer-move events keep firing before the first one completes.</summary>
@@ -562,7 +565,7 @@ public partial class PdfViewerViewModel : ViewModelBase
     private PdfReaderTheme _readingTheme = PdfReaderTheme.Default;
 
     [ObservableProperty]
-    private string _themeBackgroundHex = "#0F172A";
+    private string _themeBackgroundHex = "#F1F5F9";
 
     [ObservableProperty]
     private string _themePaperBackgroundHex = "#FFFFFF";
@@ -839,28 +842,33 @@ public partial class PdfViewerViewModel : ViewModelBase
         switch (value)
         {
             case PdfReaderTheme.Sepia:
+                ThemeBackgroundHex = "#EDE3C9";
                 ThemePaperBackgroundHex = "#FBF0D9";
                 ThemeTextColorHex = "#433422";
                 ThemeBorderColorHex = "#E6D5B8";
                 break;
             case PdfReaderTheme.Dark:
+                ThemeBackgroundHex = "#0F172A";
                 ThemePaperBackgroundHex = "#1E293B";
                 ThemeTextColorHex = "#F1F5F9";
                 ThemeBorderColorHex = "#334155";
                 break;
             case PdfReaderTheme.HighContrast:
+                ThemeBackgroundHex = "#000000";
                 ThemePaperBackgroundHex = "#000000";
                 ThemeTextColorHex = "#FFFF00";
                 ThemeBorderColorHex = "#FFFF00";
                 break;
             case PdfReaderTheme.Default:
             default:
+                ThemeBackgroundHex = "#F1F5F9";
                 ThemePaperBackgroundHex = "#FFFFFF";
                 ThemeTextColorHex = "#0F172A";
                 ThemeBorderColorHex = "#E2E8F0";
                 break;
         }
 
+        ReRenderActivePagesForTheme();
         ReadingThemeChanged?.Invoke(value);
     }
 
@@ -1329,19 +1337,87 @@ public partial class PdfViewerViewModel : ViewModelBase
     }
 
     /// <summary>Renders a specific page at the specified scale directly from PDF bytes using Skia.</summary>
-    public Bitmap? RenderPageAtScale(int pageNumber, float scale)
+    public Bitmap? RenderPageAtScale(int pageNumber, float scale, PdfReaderTheme? theme = null)
     {
         var bytes = RenderPageBytesAtScale(pageNumber, scale);
         if (bytes != null && bytes.Length > 0)
         {
             try
             {
-                using var ms = new MemoryStream(bytes);
-                return new Bitmap(ms);
+                var activeTheme = theme ?? ReadingTheme;
+                if (activeTheme == PdfReaderTheme.Default)
+                {
+                    using var ms = new MemoryStream(bytes);
+                    return new Bitmap(ms);
+                }
+
+                // Apply theme color filter using SkiaSharp
+                using var stream = new MemoryStream(bytes);
+                using var skBitmap = SKBitmap.Decode(stream);
+                if (skBitmap != null)
+                {
+                    using var themed = ApplyThemeToSkBitmap(skBitmap, activeTheme);
+                    using var img = SKImage.FromBitmap(themed);
+                    using var data = img.Encode(SKEncodedImageFormat.Png, 95);
+                    using var outStream = data.AsStream();
+                    return new Bitmap(outStream);
+                }
+
+                using var fallbackMs = new MemoryStream(bytes);
+                return new Bitmap(fallbackMs);
             }
             catch { }
         }
         return null;
+    }
+
+    public static SKBitmap ApplyThemeToSkBitmap(SKBitmap source, PdfReaderTheme theme)
+    {
+        var dest = new SKBitmap(source.Width, source.Height, source.ColorType, source.AlphaType);
+        using var canvas = new SKCanvas(dest);
+        using var paint = new SKPaint();
+
+        if (theme == PdfReaderTheme.Sepia)
+        {
+            // Warm eye-care sepia matrix
+            float[] sepiaMatrix = new float[]
+            {
+                0.393f, 0.769f, 0.189f, 0, 0,
+                0.349f, 0.686f, 0.168f, 0, 0,
+                0.272f, 0.534f, 0.131f, 0, 0,
+                0,      0,      0,      1, 0
+            };
+            paint.ColorFilter = SKColorFilter.CreateColorMatrix(sepiaMatrix);
+        }
+        else if (theme == PdfReaderTheme.Dark)
+        {
+            // Comfortable dark mode: converts pure white (1.0) to dark slate (30,41,59)
+            // and pure black (0.0) to soft off-white (241,245,249)
+            float scale = -0.827f;
+            float[] darkMatrix = new float[]
+            {
+                scale, 0, 0, 0, 241f / 255f,
+                0, scale, 0, 0, 245f / 255f,
+                0, 0, scale, 0, 249f / 255f,
+                0, 0, 0, 1, 0
+            };
+            paint.ColorFilter = SKColorFilter.CreateColorMatrix(darkMatrix);
+        }
+        else if (theme == PdfReaderTheme.HighContrast)
+        {
+            // High contrast accessibility: inverted black background with sharp yellow text
+            float[] hcMatrix = new float[]
+            {
+                -1.0f, 0, 0, 0, 1.0f,
+                -0.1f, -0.9f, 0, 0, 1.0f,
+                0, 0, -1.0f, 0, 40f / 255f,
+                0, 0, 0, 1, 0
+            };
+            paint.ColorFilter = SKColorFilter.CreateColorMatrix(hcMatrix);
+        }
+
+        canvas.DrawBitmap(source, 0, 0, paint);
+        return dest;
     }
 
     /// <summary>Ensures a page is rendered at the appropriate scale with top priority.</summary>
@@ -1351,7 +1427,7 @@ public partial class PdfViewerViewModel : ViewModelBase
         if (page == null) return;
 
         float targetScale = scale ?? Math.Clamp((float)(ZoomLevel * 2.25f), PdfViewerPageItem.BasePageRenderScale, 5.0f);
-        if (page.Bitmap == null || Math.Abs(page.RenderedScale - targetScale) > 0.5f)
+        if (page.Bitmap == null || Math.Abs(page.RenderedScale - targetScale) > 0.5f || page.AppliedReadingTheme != ReadingTheme)
         {
             // Scrolling fires this repeatedly for the same pages, and a page's Bitmap stays
             // null until its render finishes — so without this guard, scrolling back and forth
@@ -1362,12 +1438,13 @@ public partial class PdfViewerViewModel : ViewModelBase
             page.IsRenderLoading = true;
             Interlocked.Increment(ref _pendingForegroundRenders);
 
+            var theme = ReadingTheme;
             Task.Run(() =>
             {
                 Bitmap? bmp = null;
                 try
                 {
-                    bmp = RenderPageAtScale(pageNumber, targetScale);
+                    bmp = RenderPageAtScale(pageNumber, targetScale, theme);
                 }
                 finally
                 {
@@ -1382,11 +1459,35 @@ public partial class PdfViewerViewModel : ViewModelBase
                         {
                             page.Bitmap = bmp;
                             page.RenderedScale = targetScale;
+                            page.AppliedReadingTheme = theme;
                         }
                         page.IsRenderLoading = false;
                     });
                 }
             });
+        }
+    }
+
+    private void ReRenderActivePagesForTheme()
+    {
+        if (Pages == null || Pages.Count == 0) return;
+
+        foreach (var page in Pages)
+        {
+            if (page.Bitmap != null)
+            {
+                EnsurePageRendered(page.PageNumber, page.RenderedScale);
+            }
+        }
+
+        if (IsSinglePageMode && SelectedPage != null)
+        {
+            EnsurePageRendered(SelectedPage.PageNumber);
+        }
+        else if (IsTwoPageSpreadMode && SelectedSpread != null)
+        {
+            if (SelectedSpread.LeftPage != null) EnsurePageRendered(SelectedSpread.LeftPage.PageNumber);
+            if (SelectedSpread.RightPage != null) EnsurePageRendered(SelectedSpread.RightPage.PageNumber);
         }
     }
 
@@ -1853,6 +1954,30 @@ public partial class PdfViewerViewModel : ViewModelBase
     }
 
     // --- Reading Themes ---
+
+    [RelayCommand]
+    public void SetDefaultReadingTheme()
+    {
+        SetReadingTheme("Default");
+    }
+
+    [RelayCommand]
+    public void SetSepiaReadingTheme()
+    {
+        SetReadingTheme("Sepia");
+    }
+
+    [RelayCommand]
+    public void SetDarkReadingTheme()
+    {
+        SetReadingTheme("Dark");
+    }
+
+    [RelayCommand]
+    public void SetHighContrastReadingTheme()
+    {
+        SetReadingTheme("HighContrast");
+    }
 
     [RelayCommand]
     public void SetReadingTheme(string? themeStr)

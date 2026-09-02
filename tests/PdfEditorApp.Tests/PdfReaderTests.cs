@@ -546,6 +546,93 @@ public class PdfReaderTests
         Assert.False(vm.IsTwoPageSpreadMode);
         Assert.Equal(PdfViewLayoutMode.ContinuousScroll, vm.SelectedLayoutMode);
     }
+
+    [Fact]
+    public void PdfViewer_ReadingThemeCommands_SwitchThemesAndColors()
+    {
+        var vm = new PdfViewerViewModel();
+
+        // Default state
+        Assert.True(vm.IsThemeDefault);
+        Assert.False(vm.IsThemeSepia);
+        Assert.False(vm.IsThemeDark);
+        Assert.False(vm.IsThemeHighContrast);
+        Assert.Equal("#F1F5F9", vm.ThemeBackgroundHex);
+        Assert.Equal("#FFFFFF", vm.ThemePaperBackgroundHex);
+
+        // Switch to Sepia
+        vm.SetSepiaReadingThemeCommand.Execute(null);
+        Assert.False(vm.IsThemeDefault);
+        Assert.True(vm.IsThemeSepia);
+        Assert.False(vm.IsThemeDark);
+        Assert.False(vm.IsThemeHighContrast);
+        Assert.Equal(PdfReaderTheme.Sepia, vm.ReadingTheme);
+        Assert.Equal("#EDE3C9", vm.ThemeBackgroundHex);
+        Assert.Equal("#FBF0D9", vm.ThemePaperBackgroundHex);
+        Assert.Equal("#433422", vm.ThemeTextColorHex);
+        Assert.Equal("#E6D5B8", vm.ThemeBorderColorHex);
+
+        // Switch to Dark Night
+        vm.SetDarkReadingThemeCommand.Execute(null);
+        Assert.False(vm.IsThemeDefault);
+        Assert.False(vm.IsThemeSepia);
+        Assert.True(vm.IsThemeDark);
+        Assert.False(vm.IsThemeHighContrast);
+        Assert.Equal(PdfReaderTheme.Dark, vm.ReadingTheme);
+        Assert.Equal("#0F172A", vm.ThemeBackgroundHex);
+        Assert.Equal("#1E293B", vm.ThemePaperBackgroundHex);
+        Assert.Equal("#F1F5F9", vm.ThemeTextColorHex);
+        Assert.Equal("#334155", vm.ThemeBorderColorHex);
+
+        // Switch to High Contrast
+        vm.SetHighContrastReadingThemeCommand.Execute(null);
+        Assert.False(vm.IsThemeDefault);
+        Assert.False(vm.IsThemeSepia);
+        Assert.False(vm.IsThemeDark);
+        Assert.True(vm.IsThemeHighContrast);
+        Assert.Equal(PdfReaderTheme.HighContrast, vm.ReadingTheme);
+        Assert.Equal("#000000", vm.ThemeBackgroundHex);
+        Assert.Equal("#000000", vm.ThemePaperBackgroundHex);
+        Assert.Equal("#FFFF00", vm.ThemeTextColorHex);
+
+        // Switch back to Daylight
+        vm.SetDefaultReadingThemeCommand.Execute(null);
+        Assert.True(vm.IsThemeDefault);
+        Assert.False(vm.IsThemeSepia);
+        Assert.False(vm.IsThemeDark);
+        Assert.False(vm.IsThemeHighContrast);
+        Assert.Equal(PdfReaderTheme.Default, vm.ReadingTheme);
+        Assert.Equal("#F1F5F9", vm.ThemeBackgroundHex);
+        Assert.Equal("#FFFFFF", vm.ThemePaperBackgroundHex);
+    }
+
+    [Fact]
+    public void PdfViewer_ApplyThemeToSkBitmap_TransformsPixels()
+    {
+        using var source = new SkiaSharp.SKBitmap(10, 10);
+        using (var canvas = new SkiaSharp.SKCanvas(source))
+        {
+            canvas.Clear(SkiaSharp.SKColors.White);
+        }
+
+        // Apply Dark mode
+        using var darkBmp = PdfViewerViewModel.ApplyThemeToSkBitmap(source, PdfReaderTheme.Dark);
+        Assert.NotNull(darkBmp);
+        Assert.Equal(10, darkBmp.Width);
+        Assert.Equal(10, darkBmp.Height);
+
+        // Pure white should be darkened to dark slate
+        var pixel = darkBmp.GetPixel(5, 5);
+        Assert.True(pixel.Red < 100);
+        Assert.True(pixel.Green < 100);
+        Assert.True(pixel.Blue < 100);
+
+        // Apply Sepia
+        using var sepiaBmp = PdfViewerViewModel.ApplyThemeToSkBitmap(source, PdfReaderTheme.Sepia);
+        Assert.NotNull(sepiaBmp);
+        var sepiaPixel = sepiaBmp.GetPixel(5, 5);
+        Assert.True(sepiaPixel.Red > sepiaPixel.Blue); // warm tint has more red than blue
+    }
 }
 
 

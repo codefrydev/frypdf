@@ -589,11 +589,58 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
 
         if (file != null)
         {
-            string targetPath = file.Path.LocalPath;
+            SaveOutputFileToPath(file.Path.LocalPath);
+        }
+    }
+
+    /// <summary>
+    /// Saves the current output file to <paramref name="targetPath"/>.
+    /// Gracefully prevents self-copy errors and handles locked file IO exceptions.
+    /// </summary>
+    public void SaveOutputFileToPath(string targetPath)
+    {
+        if (string.IsNullOrWhiteSpace(targetPath) || string.IsNullOrWhiteSpace(LastOutputFilePath) || !File.Exists(LastOutputFilePath)) return;
+
+        string fullSource = Path.GetFullPath(LastOutputFilePath);
+        string fullTarget = Path.GetFullPath(targetPath);
+
+        // If the user picked the exact same path where the output is already stored,
+        // copying the file onto itself will throw an IOException ("used by another process").
+        // Since it's already there, simply update notification and return successfully.
+        if (string.Equals(fullSource, fullTarget, StringComparison.OrdinalIgnoreCase))
+        {
+            RememberedSaveDirectory = Path.GetDirectoryName(targetPath);
+            SavedNotificationMessage = $"Saved successfully to: {targetPath}";
+            HasSavedNotification = true;
+            HasError = false;
+            return;
+        }
+
+        try
+        {
             File.Copy(LastOutputFilePath, targetPath, overwrite: true);
             RememberedSaveDirectory = Path.GetDirectoryName(targetPath);
             SavedNotificationMessage = $"Saved successfully to: {targetPath}";
             HasSavedNotification = true;
+            HasError = false;
+        }
+        catch (IOException)
+        {
+            HasSavedNotification = false;
+            HasError = true;
+            ErrorMessage = $"Cannot save to '{Path.GetFileName(targetPath)}': The file is currently open or in use by another application. Please close it and try again.";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            HasSavedNotification = false;
+            HasError = true;
+            ErrorMessage = $"Cannot save to '{Path.GetFileName(targetPath)}': Access denied. Please choose a different folder.";
+        }
+        catch (Exception ex)
+        {
+            HasSavedNotification = false;
+            HasError = true;
+            ErrorMessage = $"Failed to save file: {ex.Message}";
         }
     }
 

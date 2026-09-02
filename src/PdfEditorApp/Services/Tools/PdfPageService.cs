@@ -66,14 +66,43 @@ public class PdfPageService : IPdfPageService
             if (string.IsNullOrWhiteSpace(outPath))
             {
                 string dir = Path.GetDirectoryName(options.InputFiles[0]) ?? Path.GetTempPath();
-                outPath = Path.Combine(dir, "Merged_Document.pdf");
+                outPath = PdfFileHelper.ResolveSafeOutputPath(null, dir, "Merged_Document", ".pdf", options.InputFiles);
             }
 
             string? targetDir = Path.GetDirectoryName(outPath);
             if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
                 Directory.CreateDirectory(targetDir);
 
-            PdfFileHelper.SaveDocumentWithFryPdfMetadata(outputDoc, outPath);
+            try
+            {
+                PdfFileHelper.SaveDocumentWithFryPdfMetadata(outputDoc, outPath);
+            }
+            catch (IOException) when (string.IsNullOrWhiteSpace(options.OutputFilePath))
+            {
+                string dir = Path.GetDirectoryName(outPath) ?? Path.GetTempPath();
+                string fallbackPath = Path.Combine(dir, $"Merged_Document_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+                try
+                {
+                    PdfFileHelper.SaveDocumentWithFryPdfMetadata(outputDoc, fallbackPath);
+                    outPath = fallbackPath;
+                }
+                catch
+                {
+                    return new ToolExecutionResult
+                    {
+                        Success = false,
+                        ErrorMessage = $"Cannot save merged document to '{Path.GetFileName(outPath)}': the file is currently open in another application. Please close it and try again."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ToolExecutionResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Cannot save to '{Path.GetFileName(outPath)}': {ex.Message}"
+                };
+            }
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
@@ -231,7 +260,7 @@ public class PdfPageService : IPdfPageService
             {
                 string dir = Path.GetDirectoryName(options.InputFilePath) ?? "";
                 string name = Path.GetFileNameWithoutExtension(options.InputFilePath);
-                outPath = Path.Combine(dir, $"{name}_Rotated.pdf");
+                outPath = PdfFileHelper.ResolveSafeOutputPath(null, dir, $"{name}_Rotated", ".pdf", [options.InputFilePath]);
             }
 
             PdfFileHelper.SaveDocumentWithFryPdfMetadata(doc, outPath);
@@ -290,7 +319,7 @@ public class PdfPageService : IPdfPageService
             {
                 string dir = Path.GetDirectoryName(options.InputFilePath) ?? "";
                 string name = Path.GetFileNameWithoutExtension(options.InputFilePath);
-                outPath = Path.Combine(dir, $"{name}_Cropped.pdf");
+                outPath = PdfFileHelper.ResolveSafeOutputPath(null, dir, $"{name}_Cropped", ".pdf", [options.InputFilePath]);
             }
 
             PdfFileHelper.SaveDocumentWithFryPdfMetadata(doc, outPath);
@@ -347,7 +376,7 @@ public class PdfPageService : IPdfPageService
             {
                 string dir = Path.GetDirectoryName(options.InputFilePath) ?? "";
                 string name = Path.GetFileNameWithoutExtension(options.InputFilePath);
-                outPath = Path.Combine(dir, $"{name}_Organized.pdf");
+                outPath = PdfFileHelper.ResolveSafeOutputPath(null, dir, $"{name}_Organized", ".pdf", [options.InputFilePath]);
             }
 
             PdfFileHelper.SaveDocumentWithFryPdfMetadata(outputDoc, outPath);
@@ -437,7 +466,7 @@ public class PdfPageService : IPdfPageService
             {
                 string dir = Path.GetDirectoryName(options.InputFilePath) ?? "";
                 string name = Path.GetFileNameWithoutExtension(options.InputFilePath);
-                outPath = Path.Combine(dir, $"{name}_Numbered.pdf");
+                outPath = PdfFileHelper.ResolveSafeOutputPath(null, dir, $"{name}_Numbered", ".pdf", [options.InputFilePath]);
             }
 
             PdfFileHelper.SaveDocumentWithFryPdfMetadata(doc, outPath);
@@ -558,7 +587,7 @@ public class PdfPageService : IPdfPageService
             {
                 string dir = Path.GetDirectoryName(options.InputFilePath) ?? "";
                 string name = Path.GetFileNameWithoutExtension(options.InputFilePath);
-                outPath = Path.Combine(dir, $"{name}_Watermarked.pdf");
+                outPath = PdfFileHelper.ResolveSafeOutputPath(null, dir, $"{name}_Watermarked", ".pdf", [options.InputFilePath]);
             }
 
             PdfFileHelper.SaveDocumentWithFryPdfMetadata(doc, outPath);

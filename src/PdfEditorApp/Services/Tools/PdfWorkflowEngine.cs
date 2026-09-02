@@ -123,8 +123,11 @@ public class PdfWorkflowEngine : IPdfWorkflowEngine
                         finalFileName += ".pdf";
 
                     string destPath = Path.Combine(outDir, finalFileName);
-                    if (File.Exists(destPath)) File.Delete(destPath);
-                    File.Copy(currentFile, destPath, true);
+                    if (!string.Equals(Path.GetFullPath(currentFile), Path.GetFullPath(destPath), StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (File.Exists(destPath)) File.Delete(destPath);
+                        File.Copy(currentFile, destPath, true);
+                    }
                     finalOutputs.Add(destPath);
                 }
 
@@ -206,7 +209,10 @@ public class PdfWorkflowEngine : IPdfWorkflowEngine
 
             default:
                 // Pass-through copy if no specialized execution needed
-                File.Copy(inputFile, outputFile, true);
+                if (!string.Equals(Path.GetFullPath(inputFile), Path.GetFullPath(outputFile), StringComparison.OrdinalIgnoreCase))
+                {
+                    File.Copy(inputFile, outputFile, true);
+                }
                 return new ToolExecutionResult { Success = true, OutputFilePath = outputFile };
         }
     }

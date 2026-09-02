@@ -2752,8 +2752,19 @@ public partial class PdfViewerViewModel : ViewModelBase
 
         if (file != null)
         {
-            await File.WriteAllBytesAsync(file.Path.LocalPath, _currentPdfBytes);
-            ShowToastRequested?.Invoke($"Saved copy: {Path.GetFileName(file.Path.LocalPath)}");
+            try
+            {
+                await File.WriteAllBytesAsync(file.Path.LocalPath, _currentPdfBytes);
+                ShowToastRequested?.Invoke($"Saved copy: {Path.GetFileName(file.Path.LocalPath)}");
+            }
+            catch (IOException)
+            {
+                ShowToastRequested?.Invoke($"Cannot save: '{Path.GetFileName(file.Path.LocalPath)}' is open in another program.");
+            }
+            catch (Exception ex)
+            {
+                ShowToastRequested?.Invoke($"Save failed: {ex.Message}");
+            }
         }
     }
 

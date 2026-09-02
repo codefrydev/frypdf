@@ -117,6 +117,96 @@ public class PdfToolsServiceTests
     }
 
     [Fact]
+    public void PdfFileHelper_IsFileLocked_DetectsLockedFiles()
+    {
+        string tempPath = Path.Combine(Path.GetTempPath(), $"lock_test_{Guid.NewGuid():N}.pdf");
+        File.WriteAllText(tempPath, "Sample PDF");
+        try
+        {
+            Assert.False(PdfFileHelper.IsFileLocked(tempPath));
+
+            // Exclusively open/lock the file
+            using (var stream = new FileStream(tempPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            {
+                Assert.True(PdfFileHelper.IsFileLocked(tempPath));
+            }
+
+            // Once disposed, lock is released
+            Assert.False(PdfFileHelper.IsFileLocked(tempPath));
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
+
+    [Fact]
+    public void PdfFileHelper_ResolveSafeOutputPath_AvoidsLockedFilesAndAvoidPaths()
+    {
+        string tempDir = Path.Combine(Path.GetTempPath(), $"safe_path_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+        string lockedDefault = Path.Combine(tempDir, "Merged_Document.pdf");
+        File.WriteAllText(lockedDefault, "existing document");
+
+        try
+        {
+            // When default is locked, it resolves to Merged_Document_1.pdf
+            using (var stream = new FileStream(lockedDefault, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            {
+                string resolved = PdfFileHelper.ResolveSafeOutputPath(null, tempDir, "Merged_Document", ".pdf");
+                Assert.Equal(Path.Combine(tempDir, "Merged_Document_1.pdf"), resolved);
+            }
+
+            // Avoid list (e.g. input file matching candidate)
+            string resolvedAvoid = PdfFileHelper.ResolveSafeOutputPath(null, tempDir, "Merged_Document", ".pdf", [lockedDefault]);
+            Assert.Equal(Path.Combine(tempDir, "Merged_Document_1.pdf"), resolvedAvoid);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir)) Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task PdfPageService_Merge_AutoResolvesWhenDefaultIsLocked()
+    {
+        string tempDir = Path.Combine(Path.GetTempPath(), $"merge_lock_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+        string file1 = Path.Combine(tempDir, "Input1.pdf");
+        string file2 = Path.Combine(tempDir, "Input2.pdf");
+        File.Copy(CreateTempPdf(1, "src1"), file1, true);
+        File.Copy(CreateTempPdf(1, "src2"), file2, true);
+
+        // Lock the default output path
+        string lockedDefault = Path.Combine(tempDir, "Merged_Document.pdf");
+        File.WriteAllText(lockedDefault, "Locked existing file");
+
+        try
+        {
+            using (var stream = new FileStream(lockedDefault, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            {
+                var svc = new PdfPageService();
+                var opts = new MergeToolOptions
+                {
+                    InputFiles = new List<string> { file1, file2 }
+                    // OutputFilePath left empty to trigger auto-resolution
+                };
+
+                var result = await svc.MergePdfAsync(opts);
+                Assert.True(result.Success, result.ErrorMessage);
+                Assert.NotNull(result.OutputFilePath);
+                Assert.True(File.Exists(result.OutputFilePath));
+                Assert.NotEqual(lockedDefault, result.OutputFilePath);
+                Assert.Contains("Merged_Document_1.pdf", result.OutputFilePath);
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir)) Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task PdfPageService_Split_ProducesOnePdfPerPage()
     {
         var inputPath = CreateTempPdf(4, "split");

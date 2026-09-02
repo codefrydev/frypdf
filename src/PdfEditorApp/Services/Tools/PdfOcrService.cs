@@ -67,7 +67,10 @@ public class PdfOcrService : IPdfOcrService
                 // No new text layer is needed — the document is already fully searchable.
                 // Still produce the expected output file (a straight copy) so Save/Open/
                 // preview flows downstream have something to point at.
-                File.Copy(options.InputFilePath, outPath, overwrite: true);
+                if (!string.Equals(Path.GetFullPath(options.InputFilePath), Path.GetFullPath(outPath), StringComparison.OrdinalIgnoreCase))
+                {
+                    File.Copy(options.InputFilePath, outPath, overwrite: true);
+                }
                 long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
                 return new ToolExecutionResult
                 {

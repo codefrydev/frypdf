@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using PdfEditorApp.Models;
@@ -130,5 +132,68 @@ public class MergePdfToolTests : IClassFixture<ToolTestFixture>
         Assert.Empty(vm.OutputPageThumbnails);
         Assert.Null(vm.OutputFilePreview);
         Assert.False(vm.IsComplete);
+    }
+
+    [Fact]
+    public async Task MergePdfTool_SaveOutputFileAs_DoesNotThrowWhenSavingToSamePath()
+    {
+        string file1 = ToolTestFixture.CreateSamplePdf("Doc1", 1);
+        string file2 = ToolTestFixture.CreateSamplePdf("Doc2", 1);
+        try
+        {
+            var vm = (MergePdfToolViewModel)_fixture.Factory.Create(PdfToolId.MergePdf);
+            vm.SelectedFiles.Add(file1);
+            vm.SelectedFiles.Add(file2);
+            await vm.ExecuteToolCommand.ExecuteAsync(null);
+
+            Assert.True(vm.IsComplete);
+            Assert.True(File.Exists(vm.LastOutputFilePath));
+
+            // Saving to the exact same path must NOT throw IOException (self-copy)
+            vm.SaveOutputFileToPath(vm.LastOutputFilePath);
+
+            Assert.True(vm.HasSavedNotification);
+            Assert.False(vm.HasError);
+            Assert.Contains("Saved successfully", vm.SavedNotificationMessage);
+        }
+        finally
+        {
+            if (File.Exists(file1)) File.Delete(file1);
+            if (File.Exists(file2)) File.Delete(file2);
+        }
+    }
+
+    [Fact]
+    public async Task MergePdfTool_SaveOutputFileAs_HandlesLockedTargetGracefully()
+    {
+        string file1 = ToolTestFixture.CreateSamplePdf("Doc1", 1);
+        string file2 = ToolTestFixture.CreateSamplePdf("Doc2", 1);
+        string lockedTarget = Path.Combine(Path.GetTempPath(), $"locked_target_{Guid.NewGuid():N}.pdf");
+        File.WriteAllText(lockedTarget, "locked content");
+
+        try
+        {
+            using var lockStream = new FileStream(lockedTarget, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+            var vm = (MergePdfToolViewModel)_fixture.Factory.Create(PdfToolId.MergePdf);
+            vm.SelectedFiles.Add(file1);
+            vm.SelectedFiles.Add(file2);
+            await vm.ExecuteToolCommand.ExecuteAsync(null);
+
+            Assert.True(vm.IsComplete);
+
+            // Saving to an externally locked file must NOT crash with an unhandled exception
+            vm.SaveOutputFileToPath(lockedTarget);
+
+            Assert.False(vm.HasSavedNotification);
+            Assert.True(vm.HasError);
+            Assert.Contains("currently open or in use", vm.ErrorMessage);
+        }
+        finally
+        {
+            if (File.Exists(file1)) File.Delete(file1);
+            if (File.Exists(file2)) File.Delete(file2);
+            if (File.Exists(lockedTarget)) File.Delete(lockedTarget);
+        }
     }
 }

@@ -83,7 +83,10 @@ public class PdfOptimizationService : IPdfOptimizationService
             else
             {
                 // Document is already optimally compressed. NEVER output a larger file!
-                File.Copy(options.InputFilePath, outPath, overwrite: true);
+                if (!string.Equals(Path.GetFullPath(options.InputFilePath), Path.GetFullPath(outPath), StringComparison.OrdinalIgnoreCase))
+                {
+                    File.Copy(options.InputFilePath, outPath, overwrite: true);
+                }
                 outBytes = origBytes;
                 message = $"Document is already at optimal compression ({FormatFileSize(origBytes)}). Original fidelity preserved without increasing file size.";
             }

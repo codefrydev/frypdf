@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using PdfSharpCore.Pdf;
 using PdfSharpCore.Pdf.IO;
@@ -286,5 +288,90 @@ public static class PdfFileHelper
             return ms.ToArray();
         }
         return rawBytes;
+    }
+
+    /// <summary>
+    /// Checks whether an existing file is currently locked or cannot be opened for writing by the current process.
+    /// Returns false if the file does not exist.
+    /// </summary>
+    public static bool IsFileLocked(string filePath)
+    {
+        if (!File.Exists(filePath)) return false;
+        try
+        {
+            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            return false;
+        }
+        catch (IOException)
+        {
+            return true;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Resolves a safe, non-conflicting, and writable destination file path.
+    /// If requestedPath is supplied and non-empty, it is returned directly.
+    /// Otherwise, checks defaultDirectory for baseFileName.extension.
+    /// If that file already exists and is locked or matches any path in avoidPaths,
+    /// appends an incrementing index (_1, _2, ...) until an available and unlocked path is found.
+    /// </summary>
+    public static string ResolveSafeOutputPath(
+        string? requestedPath,
+        string defaultDirectory,
+        string baseFileName,
+        string extension = ".pdf",
+        IEnumerable<string>? avoidPaths = null)
+    {
+        if (!string.IsNullOrWhiteSpace(requestedPath))
+        {
+            return requestedPath;
+        }
+
+        if (!extension.StartsWith(".", StringComparison.Ordinal))
+        {
+            extension = "." + extension;
+        }
+
+        string dir = !string.IsNullOrWhiteSpace(defaultDirectory) && Directory.Exists(defaultDirectory)
+            ? defaultDirectory
+            : Path.GetTempPath();
+
+        var avoidList = avoidPaths?
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => Path.GetFullPath(p))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        bool ShouldAvoid(string path)
+        {
+            string fullPath = Path.GetFullPath(path);
+            if (avoidList != null && avoidList.Contains(fullPath)) return true;
+            if (File.Exists(path) && IsFileLocked(path)) return true;
+            return false;
+        }
+
+        string candidate = Path.Combine(dir, $"{baseFileName}{extension}");
+        if (!ShouldAvoid(candidate))
+        {
+            return candidate;
+        }
+
+        for (int i = 1; i <= 1000; i++)
+        {
+            candidate = Path.Combine(dir, $"{baseFileName}_{i}{extension}");
+            if (!ShouldAvoid(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return Path.Combine(dir, $"{baseFileName}_{DateTime.Now:yyyyMMdd_HHmmss}{extension}");
     }
 }

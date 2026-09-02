@@ -47,10 +47,15 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid ColumnDefinitions="230,*">
+    <Grid ColumnDefinitions="Auto,*">
 
-        <!-- ===== LEFT SIDEBAR ===== -->
+        <!-- ===== LEFT SIDEBAR =====
+             Hidden while a tool is open so the tool's own workspace (toolbar + its
+             Options/Files/Pages/Info sidebar) gets the full window, matching the PDF
+             Reader's full-width treatment instead of squeezing it in next to this nav. -->
         <Border Grid.Column="0"
+                Width="230"
+                IsVisible="{Binding !IsToolPageActive}"
                 Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="0,0,1,0">

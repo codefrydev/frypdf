@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:PdfEditorApp.ViewModels.Tools"
              xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:shell="using:PdfEditorApp.Views.Shell"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.Views.Tools.HtmlToPdfToolView"
              x:DataType="vm:HtmlToPdfToolViewModel">
@@ -10,52 +11,65 @@
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
     </UserControl.Resources>
 
-    <Grid ColumnDefinitions="*,380" Margin="0,4,0,0">
+    <shell:PdfToolWorkspaceView>
 
-        <!-- LEFT: HTML URL & Content Input Workspace -->
-        <ScrollViewer Grid.Column="0" Margin="0,0,20,0" VerticalScrollBarVisibility="Auto">
+        <!-- Toolbar primary action -->
+        <shell:PdfToolWorkspaceView.ToolbarActionContent>
+            <Button Command="{Binding ExecuteToolCommand}" IsEnabled="{Binding !IsRunning}" Background="#CA8A04" Foreground="White" CornerRadius="8" Padding="16,8" FontWeight="Bold" FontSize="12.5" Cursor="Hand">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <materialIcons:MaterialIcon Kind="LanguageHtml5" Width="15" Height="15" />
+                    <TextBlock Text="Convert to PDF" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </shell:PdfToolWorkspaceView.ToolbarActionContent>
+
+        <!-- Sidebar Options tab: status, URL/HTML input, and page setup.
+             This tool has no input file at all (input is a URL or pasted HTML), so
+             there's nothing to show in the Files tab pre-conversion — the live preview
+             canvas picks up the generated PDF automatically once conversion completes. -->
+        <shell:PdfToolWorkspaceView.OptionsContent>
             <StackPanel Spacing="16">
 
                 <!-- Error Alert Banner -->
-                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="10" Padding="16,12" IsVisible="{Binding HasError}">
+                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="10" Padding="14,10" IsVisible="{Binding HasError}">
                     <Grid ColumnDefinitions="Auto,*">
-                        <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="22" Height="22" Foreground="#DC2626" Margin="0,0,12,0" VerticalAlignment="Center" />
+                        <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="20" Height="20" Foreground="#DC2626" Margin="0,0,10,0" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                            <TextBlock Text="Conversion Failed" FontSize="13" FontWeight="Bold" Foreground="#991B1B" />
-                            <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="#B91C1C" TextWrapping="Wrap" />
+                            <TextBlock Text="Conversion Failed" FontSize="12.5" FontWeight="Bold" Foreground="#991B1B" />
+                            <TextBlock Text="{Binding ErrorMessage}" FontSize="11.5" Foreground="#B91C1C" TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- Success Banner -->
-                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="12" Padding="20,18" BoxShadow="0 4 12 #1016A34A" IsVisible="{Binding IsComplete}">
-                    <StackPanel Spacing="14">
-                        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                            <Border Width="40" Height="40" Background="#DCFCE7" CornerRadius="10">
-                                <materialIcons:MaterialIcon Kind="CheckCircle" Width="24" Height="24" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="12" Padding="16,14" BoxShadow="0 4 12 #1016A34A" IsVisible="{Binding IsComplete}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <Border Width="36" Height="36" Background="#DCFCE7" CornerRadius="9">
+                                <materialIcons:MaterialIcon Kind="CheckCircle" Width="20" Height="20" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Spacing="2" VerticalAlignment="Center">
-                                <TextBlock Text="HTML Converted to PDF!" FontSize="15" FontWeight="Bold" Foreground="#166534" />
-                                <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="12.5" Foreground="#15803D" TextWrapping="Wrap" />
+                                <TextBlock Text="HTML Converted to PDF!" FontSize="13.5" FontWeight="Bold" Foreground="#166534" />
+                                <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="11.5" Foreground="#15803D" TextWrapping="Wrap" />
                             </StackPanel>
                         </StackPanel>
 
-                        <WrapPanel Orientation="Horizontal" Margin="52,0,0,0">
-                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="15" Height="15" />
-                                    <TextBlock Text="Open PDF Document" VerticalAlignment="Center" />
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="14" Height="14" />
+                                    <TextBlock Text="Open PDF" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#DCFCE7" Foreground="#166534" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
+                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#DCFCE7" Foreground="#166534" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="8" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="14" Height="14" />
                                     <TextBlock Text="Show in Folder" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Command="{Binding OpenInEditorCommand}" Background="#EFF6FF" Foreground="#0F6CBD" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="SquareEditOutline" Width="15" Height="15" />
+                            <Button Command="{Binding OpenInEditorCommand}" Background="#EFF6FF" Foreground="#0F6CBD" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="SquareEditOutline" Width="14" Height="14" />
                                     <TextBlock Text="Edit in FryPDF" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
@@ -64,87 +78,73 @@
                 </Border>
 
                 <!-- Processing Card -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20,16" IsVisible="{Binding IsRunning}">
-                    <StackPanel Spacing="12">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" IsVisible="{Binding IsRunning}">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="14" FontWeight="Bold" Foreground="#CA8A04" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="13" FontWeight="Bold" Foreground="#CA8A04" VerticalAlignment="Center" />
                         </Grid>
-                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#CA8A04" Background="{DynamicResource WinHoverBrush}" />
+                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="7" CornerRadius="4" Foreground="#CA8A04" Background="{DynamicResource WinHoverBrush}" />
                     </StackPanel>
                 </Border>
 
-                <!-- URL & Raw HTML Editor Card -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 2 6 #05000000">
-                    <StackPanel Spacing="14">
-                        <Grid ColumnDefinitions="Auto,*">
-                            <Border Grid.Column="0" Width="36" Height="36" Background="#FEFCE8" CornerRadius="8" Margin="0,0,10,0">
-                                <materialIcons:MaterialIcon Kind="LanguageHtml5" Width="22" Height="22" Foreground="#CA8A04" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <!-- URL & Raw HTML Editor -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" BoxShadow="0 2 6 #05000000">
+                    <StackPanel Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Border Width="30" Height="30" Background="#FEFCE8" CornerRadius="7">
+                                <materialIcons:MaterialIcon Kind="LanguageHtml5" Width="18" Height="18" Foreground="#CA8A04" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Webpage URL or HTML Content" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                                <TextBlock Text="Enter a web URL (e.g. https://codefrydev.in) or paste HTML code" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                            <StackPanel VerticalAlignment="Center" Spacing="1">
+                                <TextBlock Text="URL or HTML Content" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                <TextBlock Text="Enter a URL or paste HTML" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" />
                             </StackPanel>
-                        </Grid>
+                        </StackPanel>
 
                         <TextBox Text="{Binding HtmlContentOrUrl}"
                                  AcceptsReturn="True"
                                  TextWrapping="Wrap"
-                                 MinHeight="180"
-                                 MaxHeight="320"
-                                 FontSize="13"
+                                 MinHeight="140"
+                                 MaxHeight="260"
+                                 FontSize="12"
                                  FontFamily="Cascadia Code,Consolas,Courier New"
                                  PlaceholderText="https://codefrydev.in or &lt;html&gt;&lt;body&gt;...&lt;/body&gt;&lt;/html&gt;" />
                     </StackPanel>
                 </Border>
 
-            </StackPanel>
-        </ScrollViewer>
-
-        <!-- RIGHT: Page Settings & Options -->
-        <Border Grid.Column="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
-            <DockPanel>
-                <Border DockPanel.Dock="Top" Margin="0,0,0,16">
-                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#CA8A04" />
-                        <TextBlock Text="Page Setup &amp; Options" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-
-                <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0" Spacing="10">
-                    <Button Command="{Binding ExecuteToolCommand}" Background="#CA8A04" Foreground="White" CornerRadius="10" Padding="24,14" FontWeight="Bold" FontSize="14" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsEnabled="{Binding !IsRunning}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <materialIcons:MaterialIcon Kind="LanguageHtml5" Width="18" Height="18" />
-                            <TextBlock Text="Convert to PDF" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+                <!-- Page setup -->
+                <StackPanel Spacing="3">
+                    <TextBlock Text="Page Setup &amp; Options" FontSize="14" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
                 </StackPanel>
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="14">
-                        <TextBlock Text="Paper Format" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                <StackPanel Spacing="10">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Paper Format" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <RadioButton Content="A4" IsChecked="{Binding Format, Converter={StaticResource EqualityConverter}, ConverterParameter=A4}" />
                             <RadioButton Content="Letter" IsChecked="{Binding Format, Converter={StaticResource EqualityConverter}, ConverterParameter=Letter}" />
                             <RadioButton Content="A3" IsChecked="{Binding Format, Converter={StaticResource EqualityConverter}, ConverterParameter=A3}" />
                         </StackPanel>
+                    </StackPanel>
 
-                        <TextBlock Text="Orientation" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Orientation" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <RadioButton Content="Portrait" IsChecked="{Binding Orientation, Converter={StaticResource EqualityConverter}, ConverterParameter=Portrait}" />
                             <RadioButton Content="Landscape" IsChecked="{Binding Orientation, Converter={StaticResource EqualityConverter}, ConverterParameter=Landscape}" />
                         </StackPanel>
-
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Margin (Points)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                            <NumericUpDown Value="{Binding MarginPoints}" Minimum="0" Maximum="100" />
-                        </StackPanel>
-
-                        <CheckBox Content="Include Header / Footer Page Numbers" IsChecked="{Binding IncludePageNumbers}" FontSize="12" />
                     </StackPanel>
-                </ScrollViewer>
-            </DockPanel>
-        </Border>
 
-    </Grid>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Margin (Points)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <NumericUpDown Value="{Binding MarginPoints}" Minimum="0" Maximum="100" />
+                    </StackPanel>
+
+                    <CheckBox Content="Include Header / Footer Page Numbers" IsChecked="{Binding IncludePageNumbers}" FontSize="12" />
+                </StackPanel>
+
+            </StackPanel>
+        </shell:PdfToolWorkspaceView.OptionsContent>
+
+    </shell:PdfToolWorkspaceView>
 </UserControl>

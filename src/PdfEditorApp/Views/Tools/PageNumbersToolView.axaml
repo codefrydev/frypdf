@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:PdfEditorApp.ViewModels.Tools"
              xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:shell="using:PdfEditorApp.Views.Shell"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.Views.Tools.PageNumbersToolView"
              x:DataType="vm:PageNumbersToolViewModel">
@@ -10,10 +11,20 @@
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
     </UserControl.Resources>
 
-    <Grid ColumnDefinitions="*,380" Margin="0,4,0,0">
+    <shell:PdfToolWorkspaceView>
 
-        <!-- LEFT: File Workspace -->
-        <ScrollViewer Grid.Column="0" Margin="0,0,20,0" VerticalScrollBarVisibility="Auto">
+        <!-- Toolbar primary action -->
+        <shell:PdfToolWorkspaceView.ToolbarActionContent>
+            <Button Command="{Binding ExecuteToolCommand}" IsEnabled="{Binding !IsRunning}" Background="#9333EA" Foreground="White" CornerRadius="8" Padding="16,8" FontWeight="Bold" FontSize="12.5" Cursor="Hand">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <materialIcons:MaterialIcon Kind="Numeric1BoxMultipleOutline" Width="15" Height="15" />
+                    <TextBlock Text="Add Page Numbers" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </shell:PdfToolWorkspaceView.ToolbarActionContent>
+
+        <!-- Sidebar Options tab: status, document selection, and numbering settings -->
+        <shell:PdfToolWorkspaceView.OptionsContent>
             <StackPanel Spacing="16">
 
                 <!-- Error Alert Banner -->
@@ -40,7 +51,7 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <WrapPanel Orientation="Horizontal" Margin="52,0,0,0">
+                        <WrapPanel Orientation="Horizontal">
                             <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="15" Height="15" />
@@ -75,16 +86,16 @@
                 </Border>
 
                 <!-- Dropzone Box -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
-                        <Border Width="64" Height="64" Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="Numeric1BoxMultipleOutline" Width="34" Height="34" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="24,28" IsVisible="{Binding !HasSelectedFiles}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
+                        <Border Width="56" Height="56" Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="Numeric1BoxMultipleOutline" Width="30" Height="30" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Text="Select PDF to Add Page Numbers" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Text="Add custom page headers/footers with dynamic page numbers and Bates formats" FontSize="13" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Select PDF to Add Page Numbers" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
+                            <TextBlock Text="Add custom page headers/footers with dynamic page numbers and Bates formats" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                         </StackPanel>
-                        <Button Command="{Binding AddFilesCommand}" Background="#9333EA" Foreground="White" CornerRadius="8" Padding="24,10" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
+                        <Button Command="{Binding AddFilesCommand}" Background="#9333EA" Foreground="White" CornerRadius="8" Padding="20,10" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
                                 <TextBlock Text="Select PDF Document" VerticalAlignment="Center" />
@@ -94,20 +105,20 @@
                 </Border>
 
                 <!-- Loaded Document Card -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" IsVisible="{Binding HasSelectedFiles}">
-                    <StackPanel Spacing="12">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16" IsVisible="{Binding HasSelectedFiles}">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="Document to Number" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <Button Command="{Binding AddFilesCommand}" Background="#FAF5FF" Foreground="#9333EA" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="6" Padding="12,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand">
+                            <TextBlock Text="Document to Number" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <Button Command="{Binding AddFilesCommand}" Background="#FAF5FF" Foreground="#9333EA" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="6" Padding="10,5" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
                                 Change File
                             </Button>
                         </Grid>
-                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,12">
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Border Grid.Column="0" Width="36" Height="36" Background="#FAF5FF" CornerRadius="8" Margin="0,0,12,0">
-                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Width="32" Height="32" Background="#FAF5FF" CornerRadius="8" Margin="0,0,10,0">
+                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 <Button Grid.Column="2" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Padding="6" Cursor="Hand">
                                     <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" />
                                 </Button>
@@ -116,63 +127,44 @@
                     </StackPanel>
                 </Border>
 
-            </StackPanel>
-        </ScrollViewer>
-
-        <!-- RIGHT: Numbering Options -->
-        <Border Grid.Column="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
-            <DockPanel>
-                <Border DockPanel.Dock="Top" Margin="0,0,0,16">
-                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#9333EA" />
-                        <TextBlock Text="Numbering Style" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-
-                <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0" Spacing="10">
-                    <Button Command="{Binding ExecuteToolCommand}" Background="#9333EA" Foreground="White" CornerRadius="10" Padding="24,14" FontWeight="Bold" FontSize="14" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsEnabled="{Binding !IsRunning}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <materialIcons:MaterialIcon Kind="Numeric1BoxMultipleOutline" Width="18" Height="18" />
-                            <TextBlock Text="Add Page Numbers" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+                <!-- Numbering settings -->
+                <StackPanel Spacing="3">
+                    <TextBlock Text="Numbering Style" FontSize="14" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="Choose a format, position, and appearance" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
                 </StackPanel>
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="14">
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Format Template" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                            <TextBox Text="{Binding Template}" FontSize="12" />
-                            <TextBlock Text="Use {n} for current page, {total} for total page count." FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" />
-                        </StackPanel>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Format Template" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                    <TextBox Text="{Binding Template}" FontSize="12" />
+                    <TextBlock Text="Use {n} for current page, {total} for total page count." FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" TextWrapping="Wrap" />
+                </StackPanel>
 
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Starting Page Number" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                            <NumericUpDown Value="{Binding StartingNumber}" Minimum="1" Maximum="99999" />
-                        </StackPanel>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Starting Page Number" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                    <NumericUpDown Value="{Binding StartingNumber}" Minimum="1" Maximum="99999" />
+                </StackPanel>
 
-                        <TextBlock Text="Position Matrix" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                        <WrapPanel Orientation="Horizontal">
-                            <RadioButton Content="Bottom-Center" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomCenter}" Margin="0,0,8,6" />
-                            <RadioButton Content="Bottom-Right" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomRight}" Margin="0,0,8,6" />
-                            <RadioButton Content="Top-Right" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=TopRight}" Margin="0,0,8,6" />
-                            <RadioButton Content="Top-Center" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=TopCenter}" Margin="0,0,8,6" />
-                        </WrapPanel>
+                <TextBlock Text="Position Matrix" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                <WrapPanel Orientation="Horizontal">
+                    <RadioButton Content="Bottom-Center" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomCenter}" Margin="0,0,8,6" />
+                    <RadioButton Content="Bottom-Right" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomRight}" Margin="0,0,8,6" />
+                    <RadioButton Content="Top-Right" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=TopRight}" Margin="0,0,8,6" />
+                    <RadioButton Content="Top-Center" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=TopCenter}" Margin="0,0,8,6" />
+                </WrapPanel>
 
-                        <Grid ColumnDefinitions="*,*">
-                            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
-                                <TextBlock Text="Font Size" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                                <NumericUpDown Value="{Binding FontSize}" Minimum="6" Maximum="36" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
-                                <TextBlock Text="Margin (pt)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                                <NumericUpDown Value="{Binding MarginPoints}" Minimum="8" Maximum="100" />
-                            </StackPanel>
-                        </Grid>
+                <Grid ColumnDefinitions="*,*">
+                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                        <TextBlock Text="Font Size" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <NumericUpDown Value="{Binding FontSize}" Minimum="6" Maximum="36" />
                     </StackPanel>
-                </ScrollViewer>
-            </DockPanel>
-        </Border>
+                    <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
+                        <TextBlock Text="Margin (pt)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <NumericUpDown Value="{Binding MarginPoints}" Minimum="8" Maximum="100" />
+                    </StackPanel>
+                </Grid>
 
-    </Grid>
+            </StackPanel>
+        </shell:PdfToolWorkspaceView.OptionsContent>
+
+    </shell:PdfToolWorkspaceView>
 </UserControl>

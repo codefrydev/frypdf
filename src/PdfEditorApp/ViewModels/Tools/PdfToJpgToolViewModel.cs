@@ -27,6 +27,8 @@ public partial class PdfToJpgToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private string _pageRange = "1";
 
+    public override bool UsesWorkspaceShell => true;
+
     public PdfToJpgToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

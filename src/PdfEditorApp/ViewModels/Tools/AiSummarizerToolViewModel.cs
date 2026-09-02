@@ -24,6 +24,8 @@ public partial class AiSummarizerToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private string _customPrompt = string.Empty;
 
+    public override bool UsesWorkspaceShell => true;
+
     public AiSummarizerToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

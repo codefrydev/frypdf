@@ -28,6 +28,8 @@ public partial class JpgToPdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private int _imagesPerPage = 1;
 
+    public override bool UsesWorkspaceShell => true;
+
     public JpgToPdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

@@ -18,6 +18,8 @@ public partial class OcrPdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private bool _extractTextOnly;
 
+    public override bool UsesWorkspaceShell => true;
+
     public OcrPdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

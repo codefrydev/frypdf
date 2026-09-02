@@ -33,6 +33,8 @@ public partial class WatermarkToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private string _customRange = string.Empty;
 
+    public override bool UsesWorkspaceShell => true;
+
     public WatermarkToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

@@ -24,6 +24,8 @@ public partial class HtmlToPdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private bool _includePageNumbers = true;
 
+    public override bool UsesWorkspaceShell => true;
+
     public HtmlToPdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

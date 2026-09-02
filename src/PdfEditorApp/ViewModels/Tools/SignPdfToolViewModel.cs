@@ -36,6 +36,8 @@ public partial class SignPdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private double _height = 70;
 
+    public override bool UsesWorkspaceShell => true;
+
     public SignPdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

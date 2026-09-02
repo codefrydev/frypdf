@@ -12,6 +12,7 @@ using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 using PdfEditorApp.Services.Tools;
+using PdfEditorApp.ViewModels.Shell;
 using UglyToad.PdfPig;
 
 namespace PdfEditorApp.ViewModels.Tools;
@@ -96,6 +97,23 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
 
     public ObservableCollection<PdfFilePreviewItem> SelectedFilePreviewItems { get; } = new();
 
+    /// <summary>
+    /// Reader-style live preview (page render, zoom, page nav) of the currently
+    /// selected input file, shared by the reader-matching tool shell
+    /// (<see cref="PdfEditorApp.Views.Shell.PdfToolWorkspaceView"/>). Reloads
+    /// automatically whenever <see cref="SelectedFiles"/> changes.
+    /// </summary>
+    public PdfLivePreviewViewModel Preview { get; } = new();
+
+    /// <summary>
+    /// True for tools migrated to the shared reader-style workspace shell
+    /// (<see cref="PdfEditorApp.Views.Shell.PdfToolWorkspaceView"/>), which has its own
+    /// back button, tool identity, and toolbar. <see cref="PdfEditorApp.Views.PdfToolPageView"/>
+    /// hides its separate header banner for these so there's exactly one toolbar row,
+    /// matching the PDF Reader, instead of two stacked bars.
+    /// </summary>
+    public virtual bool UsesWorkspaceShell => false;
+
     public ObservableCollection<PdfPagePreviewThumbnail> OutputPageThumbnails { get; } = new();
 
     public bool HasSelectedFiles => SelectedFiles.Count > 0;
@@ -146,6 +164,7 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
     {
         OperationsService = operationsService;
         Tool = tool;
+        SelectedFiles.CollectionChanged += (_, _) => { _ = Preview.LoadDocumentAsync(PrimaryInputFile); };
     }
 
     [RelayCommand]
@@ -441,6 +460,7 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
                     int pages = PdfFileHelper.InspectPageCountSafely(LastOutputFilePath);
                     OutputFilePreview = PdfFilePreviewItem.CreateFromFile(LastOutputFilePath, 1, pages);
                     LoadOutputPreviewThumbnails(LastOutputFilePath);
+                    _ = Preview.LoadDocumentAsync(LastOutputFilePath);
                 }
             }
             else

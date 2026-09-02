@@ -18,6 +18,8 @@ public partial class PdfToMarkdownToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private bool _includeMetadataHeader = true;
 
+    public override bool UsesWorkspaceShell => true;
+
     public PdfToMarkdownToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

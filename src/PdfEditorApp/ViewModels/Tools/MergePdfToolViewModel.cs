@@ -16,6 +16,8 @@ public partial class MergePdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private bool _preserveBookmarks = true;
 
+    public override bool UsesWorkspaceShell => true;
+
     public MergePdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

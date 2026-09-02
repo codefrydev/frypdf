@@ -3,6 +3,7 @@
              xmlns:vm="using:PdfEditorApp.ViewModels.Tools"
              xmlns:models="using:PdfEditorApp.Models"
              xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:shell="using:PdfEditorApp.Views.Shell"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.Views.Tools.CompressPdfToolView"
              x:DataType="vm:CompressPdfToolViewModel">
@@ -13,469 +14,314 @@
         <converters:BooleanToThicknessConverter x:Key="BooleanToThicknessConverter" />
     </UserControl.Resources>
 
-    <Grid ColumnDefinitions="*,420" Margin="0,4,0,0">
+    <shell:PdfToolWorkspaceView>
 
-        <!-- LEFT: Workspace, selected document, and preview -->
-        <ScrollViewer Grid.Column="0" Margin="0,0,20,0" VerticalScrollBarVisibility="Auto">
+        <!-- Toolbar primary action -->
+        <shell:PdfToolWorkspaceView.ToolbarActionContent>
+            <Button Command="{Binding ExecuteToolCommand}" IsEnabled="{Binding !IsRunning}" Background="#DC2626" Foreground="White" CornerRadius="8" Padding="16,8" FontWeight="Bold" FontSize="12.5" Cursor="Hand">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <materialIcons:MaterialIcon Kind="ArrowCollapseVertical" Width="15" Height="15" />
+                    <TextBlock Text="Compress PDF" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </shell:PdfToolWorkspaceView.ToolbarActionContent>
+
+        <!-- Sidebar Options tab: status, document selection, and compression settings -->
+        <shell:PdfToolWorkspaceView.OptionsContent>
             <StackPanel Spacing="16">
 
                 <!-- Error Banner -->
-                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="10" Padding="16,12" IsVisible="{Binding HasError}">
+                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="10" Padding="14,10" IsVisible="{Binding HasError}">
                     <Grid ColumnDefinitions="Auto,*">
-                        <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="22" Height="22" Foreground="#DC2626" Margin="0,0,12,0" VerticalAlignment="Center" />
+                        <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="20" Height="20" Foreground="#DC2626" Margin="0,0,10,0" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                            <TextBlock Text="Compression Failed" FontSize="13" FontWeight="Bold" Foreground="#991B1B" />
-                            <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="#B91C1C" TextWrapping="Wrap" />
+                            <TextBlock Text="Compression Failed" FontSize="12.5" FontWeight="Bold" Foreground="#991B1B" />
+                            <TextBlock Text="{Binding ErrorMessage}" FontSize="11.5" Foreground="#B91C1C" TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- Saved Destination Notification Banner -->
-                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="10" Padding="14,10" IsVisible="{Binding HasSavedNotification}">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                        <materialIcons:MaterialIcon Grid.Column="0" Kind="CheckCircleOutline" Width="20" Height="20" Foreground="#16A34A" Margin="0,0,10,0" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="{Binding SavedNotificationMessage}" FontSize="12.5" FontWeight="SemiBold" Foreground="#166534" VerticalAlignment="Center" TextWrapping="Wrap" />
-                        <Button Grid.Column="2" Command="{Binding OpenOutputFolderCommand}" Background="#DCFCE7" Foreground="#166534" CornerRadius="6" Padding="10,4" FontSize="11.5" Cursor="Hand">
+                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="10" Padding="12,9" IsVisible="{Binding HasSavedNotification}">
+                    <StackPanel Spacing="6">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <materialIcons:MaterialIcon Kind="CheckCircleOutline" Width="18" Height="18" Foreground="#16A34A" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding SavedNotificationMessage}" FontSize="11.5" FontWeight="SemiBold" Foreground="#166534" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Command="{Binding OpenOutputFolderCommand}" Background="#DCFCE7" Foreground="#166534" CornerRadius="6" Padding="10,4" FontSize="11" Cursor="Hand" HorizontalAlignment="Left">
                             View in Folder
                         </Button>
-                    </Grid>
+                    </StackPanel>
                 </Border>
 
-                <!-- Rich Success & Interactive Preview Card -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="#86EFAC" BorderThickness="1.5" CornerRadius="14" Padding="20" BoxShadow="0 8 24 #1516A34A" IsVisible="{Binding IsComplete}">
-                    <StackPanel Spacing="18">
+                <!-- Success Summary -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="#86EFAC" BorderThickness="1.5" CornerRadius="12" Padding="16" BoxShadow="0 6 18 #1216A34A" IsVisible="{Binding IsComplete}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="PDF compressed!" FontSize="15" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
+                            <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
 
-                        <!-- Header & Compress Another -->
-                        <Grid ColumnDefinitions="*,Auto">
-                            <StackPanel Grid.Column="0" Spacing="2">
-                                <TextBlock Text="PDFs have been compressed!" FontSize="20" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
-                                <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="12.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                        <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1.5" CornerRadius="10" Padding="12" IsVisible="{Binding HasSizeReduction}">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="{Binding SizeReductionPercentage, StringFormat='{}{0:F0}% smaller'}" FontSize="14" FontWeight="Bold" Foreground="#166534" />
+                                <TextBlock Text="{Binding SizeComparisonText}" FontSize="11.5" FontWeight="SemiBold" Foreground="#15803D" />
                             </StackPanel>
-                            <Button Grid.Column="1" Command="{Binding StartOverCommand}" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" Foreground="{DynamicResource WinMutedBrush}" CornerRadius="8" Padding="12,6" FontSize="12" Cursor="Hand">
+                        </Border>
+
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Command="{Binding SaveOutputFileAsCommand}" Background="#DC2626" Foreground="White" CornerRadius="8" Padding="14,9" FontSize="12" FontWeight="Bold" Cursor="Hand" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="Download" Width="15" Height="15" />
+                                    <TextBlock Text="Save As..." VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding OpenInEditorCommand}" Background="#EFF6FF" Foreground="#0F6CBD" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="14,9" FontSize="12" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="SquareEditOutline" Width="15" Height="15" />
+                                    <TextBlock Text="Edit in FryPDF" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding StartOverCommand}" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" Foreground="{DynamicResource WinMutedBrush}" CornerRadius="8" Padding="14,9" FontSize="12" Cursor="Hand" Margin="0,0,6,6">
                                 <StackPanel Orientation="Horizontal" Spacing="5">
                                     <materialIcons:MaterialIcon Kind="Refresh" Width="14" Height="14" />
                                     <TextBlock Text="Compress Another" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                        </Grid>
-
-                        <!-- Primary Download Button & Quick Share -->
-                        <WrapPanel Orientation="Horizontal">
-                            <!-- Prominent Save As Button (iLovePDF Style) -->
-                            <Button Command="{Binding SaveOutputFileAsCommand}" Background="#DC2626" Foreground="White" CornerRadius="10" Padding="22,14" FontSize="14.5" FontWeight="Bold" Cursor="Hand" Margin="0,0,10,8">
-                                <StackPanel Orientation="Horizontal" Spacing="9">
-                                    <materialIcons:MaterialIcon Kind="Download" Width="20" Height="20" />
-                                    <TextBlock Text="Download Compressed PDF" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
-
-                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="10" Padding="16,14" FontSize="13" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,8">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="17" Height="17" />
-                                    <TextBlock Text="Open in Viewer" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
-                            <Button Command="{Binding OpenInEditorCommand}" Background="#EFF6FF" Foreground="#0F6CBD" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="10" Padding="16,14" FontSize="13" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,8">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="SquareEditOutline" Width="17" Height="17" />
-                                    <TextBlock Text="Edit in FryPDF" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
-                            <Button Command="{Binding OpenOutputFolderCommand}" Background="{DynamicResource WinHoverBrush}" Foreground="{DynamicResource WinTextBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16,14" FontSize="13" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,8">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="17" Height="17" />
-                                    <TextBlock Text="Show in Folder" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
                         </WrapPanel>
 
-                        <!-- Visual Savings Gauge & Percentage Display -->
-                        <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1.5" CornerRadius="12" Padding="16,14" IsVisible="{Binding HasSizeReduction}">
-                            <Grid ColumnDefinitions="Auto,*">
-                                <Border Grid.Column="0" Width="68" Height="68" CornerRadius="34" Background="#DCFCE7" BorderBrush="#16A34A" BorderThickness="3" Margin="0,0,16,0">
-                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="0">
-                                        <TextBlock Text="{Binding SizeReductionPercentage, StringFormat='{}{0:F0}%'}" FontSize="15" FontWeight="ExtraBold" Foreground="#166534" HorizontalAlignment="Center" />
-                                        <TextBlock Text="SAVED" FontSize="8.5" FontWeight="Bold" Foreground="#15803D" HorizontalAlignment="Center" LetterSpacing="0.5" />
-                                    </StackPanel>
-                                </Border>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                                    <TextBlock Text="{Binding SizeReductionPercentage, StringFormat='{}Your PDF is now {0:F0}% smaller!'}" FontSize="15" FontWeight="Bold" Foreground="#166534" />
-                                    <TextBlock Text="{Binding SizeComparisonText}" FontSize="13" FontWeight="SemiBold" Foreground="#15803D" />
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-
-                        <!-- Output Document Metadata Card -->
-                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14,10">
-                            <Grid ColumnDefinitions="*,Auto,Auto">
-                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <materialIcons:MaterialIcon Kind="FileDocumentCheckOutline" Width="18" Height="18" Foreground="#16A34A" />
-                                    <TextBlock Text="{Binding OutputFilePreview.FileName}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="350" />
-                                </StackPanel>
-                                <Border Grid.Column="1" Background="#DCFCE7" CornerRadius="6" Padding="8,2" Margin="10,0">
-                                    <TextBlock Text="{Binding OutputFilePreview.PageCountText}" FontSize="11.5" FontWeight="Bold" Foreground="#166534" />
-                                </Border>
-                                <Border Grid.Column="2" Background="#E2E8F0" CornerRadius="6" Padding="8,2">
-                                    <TextBlock Text="{Binding OutputFilePreview.FileSizeFormatted}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                                </Border>
-                            </Grid>
-                        </Border>
-
-                        <!-- Continue To Tools Strip (iLovePDF Style) -->
-                        <StackPanel Spacing="10">
-                            <TextBlock Text="Continue to..." FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Continue to..." FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                             <WrapPanel Orientation="Horizontal">
-                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="MergePdf" Margin="0,0,8,8" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <materialIcons:MaterialIcon Kind="CallMerge" Width="16" Height="16" Foreground="#E11D48" />
-                                        <TextBlock Text="Merge PDF" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
+                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="MergePdf" Margin="0,0,6,6" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <materialIcons:MaterialIcon Kind="CallMerge" Width="14" Height="14" Foreground="#E11D48" />
+                                        <TextBlock Text="Merge PDF" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
-                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="SplitPdf" Margin="0,0,8,8" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <materialIcons:MaterialIcon Kind="CallSplit" Width="16" Height="16" Foreground="#F97316" />
-                                        <TextBlock Text="Split PDF" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
+                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="Watermark" Margin="0,0,6,6" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <materialIcons:MaterialIcon Kind="Watermark" Width="14" Height="14" Foreground="#D97706" />
+                                        <TextBlock Text="Add Watermark" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
-                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="PageNumbers" Margin="0,0,8,8" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <materialIcons:MaterialIcon Kind="Numeric" Width="16" Height="16" Foreground="#8B5CF6" />
-                                        <TextBlock Text="Add Page Numbers" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
-                                    </StackPanel>
-                                </Button>
-                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="Watermark" Margin="0,0,8,8" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <materialIcons:MaterialIcon Kind="Watermark" Width="16" Height="16" Foreground="#D97706" />
-                                        <TextBlock Text="Add Watermark" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
-                                    </StackPanel>
-                                </Button>
-                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="RotatePdf" Margin="0,0,8,8" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <materialIcons:MaterialIcon Kind="RotateRight" Width="16" Height="16" Foreground="#0284C7" />
-                                        <TextBlock Text="Rotate PDF" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
-                                    </StackPanel>
-                                </Button>
-                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="ProtectPdf" Margin="0,0,8,8" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <materialIcons:MaterialIcon Kind="ShieldLockOutline" Width="16" Height="16" Foreground="#059669" />
-                                        <TextBlock Text="Protect PDF" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
+                                <Button Classes="mini-tool-btn" Command="{Binding NavigateToToolCommand}" CommandParameter="ProtectPdf" Margin="0,0,6,6" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <materialIcons:MaterialIcon Kind="ShieldLockOutline" Width="14" Height="14" Foreground="#059669" />
+                                        <TextBlock Text="Protect PDF" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
                             </WrapPanel>
                         </StackPanel>
-
-                        <!-- Page Gallery Strip Preview -->
-                        <StackPanel Spacing="8">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="Optimized Document Pages Preview" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="{Binding OutputPageThumbnails.Count, StringFormat='{}{0} Pages'}" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
-                            </Grid>
-
-                            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                                <ItemsControl ItemsSource="{Binding OutputPageThumbnails}" Margin="0,4,0,8">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal" Spacing="12" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="models:PdfPagePreviewThumbnail">
-                                            <Border Width="110" Height="150" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1.5" CornerRadius="8" Padding="8" BoxShadow="0 3 8 #0A000000">
-                                                <Grid RowDefinitions="Auto,*,Auto">
-                                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
-                                                        <Border Grid.Column="0" Background="#16A34A" CornerRadius="4" Padding="5,1" HorizontalAlignment="Left">
-                                                            <TextBlock Text="{Binding PageNumber, StringFormat='{}#{0}'}" FontSize="9.5" FontWeight="Bold" Foreground="White" />
-                                                        </Border>
-                                                        <TextBlock Grid.Column="1" Text="{Binding DimensionsText}" FontSize="8.5" Foreground="{DynamicResource WinSubtleBrush}" />
-                                                    </Grid>
-
-                                                    <Border Grid.Row="1" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,6" Margin="0,0,0,6">
-                                                        <StackPanel Spacing="4" VerticalAlignment="Center">
-                                                            <Border Height="3" Background="#16A34A" CornerRadius="1.5" Margin="0,0,20,0" Opacity="0.8" />
-                                                            <Border Height="2" Background="#CBD5E1" CornerRadius="1" Margin="0,0,6,0" />
-                                                            <Border Height="2" Background="#E2E8F0" CornerRadius="1" Margin="0,0,12,0" />
-                                                            <Border Height="2" Background="#CBD5E1" CornerRadius="1" Margin="0,0,4,0" />
-                                                            <Border Height="2" Background="#E2E8F0" CornerRadius="1" Margin="0,0,16,0" />
-                                                        </StackPanel>
-                                                    </Border>
-
-                                                    <TextBlock Grid.Row="2" Text="{Binding PageLabel}" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </ScrollViewer>
-                        </StackPanel>
-
                     </StackPanel>
                 </Border>
 
-                <!-- Progress Bar -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20,16" IsVisible="{Binding IsRunning}">
-                    <StackPanel Spacing="12">
+                <!-- Progress -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" IsVisible="{Binding IsRunning}">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="14" FontWeight="Bold" Foreground="#16A34A" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="13" FontWeight="Bold" Foreground="#16A34A" VerticalAlignment="Center" />
                         </Grid>
-                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#16A34A" Background="{DynamicResource WinHoverBrush}" />
-                        <Button Command="{Binding CancelExecutionCommand}" HorizontalAlignment="Right" Background="{DynamicResource WinHoverBrush}" Foreground="{DynamicResource WinMutedBrush}" CornerRadius="6" Padding="12,5" FontSize="11.5" Cursor="Hand">
+                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="7" CornerRadius="4" Foreground="#16A34A" Background="{DynamicResource WinHoverBrush}" />
+                        <Button Command="{Binding CancelExecutionCommand}" HorizontalAlignment="Right" Background="{DynamicResource WinHoverBrush}" Foreground="{DynamicResource WinMutedBrush}" CornerRadius="6" Padding="10,4" FontSize="11" Cursor="Hand">
                             Cancel
                         </Button>
                     </StackPanel>
                 </Border>
 
-                <!-- Dropzone Box -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
-                        <Border Width="64" Height="64" Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="ArrowCollapseVertical" Width="34" Height="34" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <!-- Dropzone -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="10" Padding="20,26" IsVisible="{Binding !HasSelectedFiles}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                        <Border Width="52" Height="52" Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="14" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="ArrowCollapseVertical" Width="28" Height="28" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
-                        <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Text="Select PDF to Compress &amp; Optimize" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Text="Reduce file size by up to 80% while preserving visual clarity" FontSize="13" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                        <StackPanel Spacing="3" HorizontalAlignment="Center">
+                            <TextBlock Text="Select PDF to Compress" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
+                            <TextBlock Text="Reduce file size while preserving clarity" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                         </StackPanel>
-                        <Button Command="{Binding AddFilesCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="24,10" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
+                        <Button Command="{Binding AddFilesCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="18,9" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
                                 <TextBlock Text="Select PDF Document" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
                 </Border>
 
-                <!-- Selected Document Card with Mini Preview -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 2 6 #05000000" IsVisible="{Binding HasSelectedFiles}">
-                    <StackPanel Spacing="14">
+                <!-- Selected document -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" IsVisible="{Binding HasSelectedFiles}">
+                    <StackPanel Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="Document to Compress" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <Button Grid.Column="1" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Foreground="#EF4444" FontSize="12" Cursor="Hand">
-                                Change Document
+                            <TextBlock Grid.Column="0" Text="Document to Compress" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Foreground="#EF4444" FontSize="11" Cursor="Hand">
+                                Change
                             </Button>
                         </Grid>
-
                         <ItemsControl ItemsSource="{Binding SelectedFilePreviewItems}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="models:PdfFilePreviewItem">
-                                    <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14">
-                                        <Grid ColumnDefinitions="Auto,*">
-                                            <Border Grid.Column="0" Width="64" Height="82" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" BoxShadow="0 2 6 #0A000000" Margin="0,0,14,0" Padding="6,5">
-                                                <Grid RowDefinitions="Auto,*,Auto">
-                                                    <Border Grid.Row="0" Width="20" Height="3" Background="#16A34A" CornerRadius="1" HorizontalAlignment="Left" Margin="0,0,0,4" />
-                                                    <StackPanel Grid.Row="1" Spacing="3" VerticalAlignment="Center">
-                                                        <Border Height="2.5" Background="#E2E8F0" CornerRadius="1" Margin="0,0,4,0" />
-                                                        <Border Height="2.5" Background="#E2E8F0" CornerRadius="1" Margin="0,0,10,0" />
-                                                        <Border Height="2.5" Background="{DynamicResource WinHoverBrush}" CornerRadius="1" Margin="0,0,2,0" />
-                                                    </StackPanel>
-                                                    <Border Grid.Row="2" Background="#DCFCE7" CornerRadius="2" Padding="2,1" HorizontalAlignment="Center">
-                                                        <TextBlock Text="{Binding PageCountText}" FontSize="7.5" FontWeight="Bold" Foreground="#166534" />
-                                                    </Border>
-                                                </Grid>
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="{Binding FileName}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" />
+                                        <WrapPanel Orientation="Horizontal">
+                                            <Border Background="#DCFCE7" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                                                <TextBlock Text="{Binding PageCountText}" FontSize="10.5" FontWeight="SemiBold" Foreground="#166534" />
                                             </Border>
-
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                                                <TextBlock Text="{Binding FileName}" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" />
-                                                <WrapPanel Orientation="Horizontal">
-                                                    <Border Background="#DCFCE7" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
-                                                        <TextBlock Text="{Binding PageCountText}" FontSize="11" FontWeight="SemiBold" Foreground="#166534" />
-                                                    </Border>
-                                                    <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
-                                                        <TextBlock Text="{Binding FileSizeFormatted}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
-                                                    </Border>
-                                                </WrapPanel>
-                                                <TextBlock Text="{Binding FilePath}" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" TextTrimming="CharacterEllipsis" MaxWidth="380" />
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
+                                            <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="4" Padding="6,2">
+                                                <TextBlock Text="{Binding FileSizeFormatted}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                            </Border>
+                                        </WrapPanel>
+                                    </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
                 </Border>
 
-            </StackPanel>
-        </ScrollViewer>
+                <!-- Compression settings -->
+                <StackPanel Spacing="3">
+                    <TextBlock Text="Compression level" FontSize="14" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="Choose a preset or fine-tune with live feedback" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                </StackPanel>
 
-        <!-- RIGHT: Compression Presets, Live Sliders & Trigger Panel -->
-        <Border Grid.Column="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 4 12 #08000000">
-            <DockPanel>
-                <Border DockPanel.Dock="Top" Margin="0,0,0,14">
-                    <StackPanel Spacing="3">
-                        <TextBlock Text="Compression level" FontSize="17" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
-                        <TextBlock Text="Choose a preset or fine-tune parameters with live feedback" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                <!-- 1. EXTREME COMPRESSION PRESET -->
+                <Border Background="{Binding IsExtremeCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
+                        BorderBrush="{Binding IsExtremeCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#3B82F6|#E2E8F0'}"
+                        BorderThickness="{Binding IsExtremeCompression, Converter={StaticResource BooleanToThicknessConverter}, ConverterParameter='2|1'}"
+                        CornerRadius="10" Padding="12" Cursor="Hand">
+                    <Button Command="{Binding SelectPresetCommand}" CommandParameter="extreme" Background="Transparent" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="EXTREME COMPRESSION" FontSize="11.5" FontWeight="ExtraBold" Foreground="{Binding IsExtremeCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#1D4ED8|#DC2626'}" LetterSpacing="0.4" />
+                                <TextBlock Text="Less quality, high compression (~75%)" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="20" Height="20" CornerRadius="10"
+                                    Background="{Binding IsExtremeCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#16A34A|#F1F5F9'}"
+                                    VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="Check" Width="13" Height="13" Foreground="White" IsVisible="{Binding IsExtremeCompression}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
+                    </Button>
+                </Border>
+
+                <!-- 2. RECOMMENDED COMPRESSION PRESET (DEFAULT) -->
+                <Border Background="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
+                        BorderBrush="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#3B82F6|#E2E8F0'}"
+                        BorderThickness="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToThicknessConverter}, ConverterParameter='2|1'}"
+                        CornerRadius="10" Padding="12" Cursor="Hand">
+                    <Button Command="{Binding SelectPresetCommand}" CommandParameter="recommended" Background="Transparent" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="RECOMMENDED" FontSize="11.5" FontWeight="ExtraBold" Foreground="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#1D4ED8|#DC2626'}" LetterSpacing="0.4" />
+                                    <Border Background="#DCFCE7" CornerRadius="4" Padding="5,1">
+                                        <TextBlock Text="DEFAULT" FontSize="8" FontWeight="Bold" Foreground="#166534" />
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="Good quality, good compression (~70%)" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="20" Height="20" CornerRadius="10"
+                                    Background="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#16A34A|#F1F5F9'}"
+                                    VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="Check" Width="13" Height="13" Foreground="White" IsVisible="{Binding IsRecommendedCompression}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
+                    </Button>
+                </Border>
+
+                <!-- 3. LESS COMPRESSION PRESET -->
+                <Border Background="{Binding IsLessCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
+                        BorderBrush="{Binding IsLessCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#3B82F6|#E2E8F0'}"
+                        BorderThickness="{Binding IsLessCompression, Converter={StaticResource BooleanToThicknessConverter}, ConverterParameter='2|1'}"
+                        CornerRadius="10" Padding="12" Cursor="Hand">
+                    <Button Command="{Binding SelectPresetCommand}" CommandParameter="less" Background="Transparent" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="LESS COMPRESSION" FontSize="11.5" FontWeight="ExtraBold" Foreground="{Binding IsLessCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#1D4ED8|#DC2626'}" LetterSpacing="0.4" />
+                                <TextBlock Text="High quality, less compression (~40%)" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="20" Height="20" CornerRadius="10"
+                                    Background="{Binding IsLessCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#16A34A|#F1F5F9'}"
+                                    VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="Check" Width="13" Height="13" Foreground="White" IsVisible="{Binding IsLessCompression}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
+                    </Button>
+                </Border>
+
+                <!-- 4. CUSTOM / FINE-TUNE PRESET -->
+                <Border Background="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
+                        BorderBrush="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#3B82F6|#E2E8F0'}"
+                        BorderThickness="{Binding IsCustomMode, Converter={StaticResource BooleanToThicknessConverter}, ConverterParameter='2|1'}"
+                        CornerRadius="10" Padding="12" Cursor="Hand">
+                    <Button Command="{Binding SelectPresetCommand}" CommandParameter="custom" Background="Transparent" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="CUSTOM / EXPERT" FontSize="11.5" FontWeight="ExtraBold" Foreground="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#1D4ED8|#0F172A'}" LetterSpacing="0.4" />
+                                <TextBlock Text="Manual sliders for DPI, quality, color" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="20" Height="20" CornerRadius="10"
+                                    Background="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#16A34A|#F1F5F9'}"
+                                    VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="Tune" Width="13" Height="13" Foreground="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#FFFFFF|#64748B'}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
+                    </Button>
+                </Border>
+
+                <!-- Live quality feedback -->
+                <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1.5" CornerRadius="10" Padding="12,10">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <materialIcons:MaterialIcon Grid.Column="0" Kind="InformationOutline" Width="17" Height="17" Foreground="#2563EB" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding QualityFeedbackMessage}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- Fine-tuning -->
+                <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14,12">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Interactive Fine-Tuning" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Image Resolution (DPI):" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding ImageQualityDpi, StringFormat='{}{0} DPI'}" FontSize="11.5" FontWeight="Bold" Foreground="#0F6CBD" VerticalAlignment="Center" />
+                            </Grid>
+                            <Slider Value="{Binding ImageQualityDpi}" Minimum="50" Maximum="350" SmallChange="5" LargeChange="25" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="JPEG Compression Quality:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding JpegQuality, StringFormat='{}{0}%'}" FontSize="11.5" FontWeight="Bold" Foreground="#0F6CBD" VerticalAlignment="Center" />
+                            </Grid>
+                            <Slider Value="{Binding JpegQuality}" Minimum="20" Maximum="100" SmallChange="2" LargeChange="10" />
+                        </StackPanel>
+
+                        <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Convert to Grayscale" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                    <TextBlock Text="Saves extra ~20-30% on scans" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                                </StackPanel>
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding ConvertToGrayscale}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </Border>
 
-                <StackPanel DockPanel.Dock="Bottom" Margin="0,14,0,0" Spacing="8">
-                    <Button Command="{Binding ExecuteToolCommand}" Background="#DC2626" Foreground="White" CornerRadius="10" Padding="20,13" FontWeight="Bold" FontSize="14" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsEnabled="{Binding !IsRunning}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <materialIcons:MaterialIcon Kind="ArrowCollapseVertical" Width="18" Height="18" />
-                            <TextBlock Text="Compress PDF" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                    <TextBlock Text="Safe &amp; privacy-first compression runs 100% locally on your device" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
-                </StackPanel>
-
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="10">
-
-                        <!-- 1. EXTREME COMPRESSION PRESET -->
-                        <Border Background="{Binding IsExtremeCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
-                                BorderBrush="{Binding IsExtremeCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#3B82F6|#E2E8F0'}"
-                                BorderThickness="{Binding IsExtremeCompression, Converter={StaticResource BooleanToThicknessConverter}, ConverterParameter='2|1'}"
-                                CornerRadius="10" Padding="12" Cursor="Hand">
-                            <Button Command="{Binding SelectPresetCommand}" CommandParameter="extreme" Background="Transparent" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <StackPanel Grid.Column="0" Spacing="2">
-                                        <TextBlock Text="EXTREME COMPRESSION" FontSize="12" FontWeight="ExtraBold" Foreground="{Binding IsExtremeCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#1D4ED8|#DC2626'}" LetterSpacing="0.4" />
-                                        <TextBlock Text="Less quality, high compression (~75% reduction)" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
-                                    </StackPanel>
-                                    <Border Grid.Column="1" Width="20" Height="20" CornerRadius="10"
-                                            Background="{Binding IsExtremeCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#16A34A|#F1F5F9'}"
-                                            VerticalAlignment="Center">
-                                        <materialIcons:MaterialIcon Kind="Check" Width="13" Height="13" Foreground="White" IsVisible="{Binding IsExtremeCompression}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </Border>
-                                </Grid>
-                            </Button>
-                        </Border>
-
-                        <!-- 2. RECOMMENDED COMPRESSION PRESET (DEFAULT) -->
-                        <Border Background="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
-                                BorderBrush="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#3B82F6|#E2E8F0'}"
-                                BorderThickness="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToThicknessConverter}, ConverterParameter='2|1'}"
-                                CornerRadius="10" Padding="12" Cursor="Hand">
-                            <Button Command="{Binding SelectPresetCommand}" CommandParameter="recommended" Background="Transparent" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <StackPanel Grid.Column="0" Spacing="2">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="RECOMMENDED COMPRESSION" FontSize="12" FontWeight="ExtraBold" Foreground="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#1D4ED8|#DC2626'}" LetterSpacing="0.4" />
-                                            <Border Background="#DCFCE7" CornerRadius="4" Padding="5,1">
-                                                <TextBlock Text="DEFAULT" FontSize="8" FontWeight="Bold" Foreground="#166534" />
-                                            </Border>
-                                        </StackPanel>
-                                        <TextBlock Text="Good quality, good compression (~70% reduction)" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
-                                    </StackPanel>
-                                    <Border Grid.Column="1" Width="20" Height="20" CornerRadius="10"
-                                            Background="{Binding IsRecommendedCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#16A34A|#F1F5F9'}"
-                                            VerticalAlignment="Center">
-                                        <materialIcons:MaterialIcon Kind="Check" Width="13" Height="13" Foreground="White" IsVisible="{Binding IsRecommendedCompression}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </Border>
-                                </Grid>
-                            </Button>
-                        </Border>
-
-                        <!-- 3. LESS COMPRESSION PRESET -->
-                        <Border Background="{Binding IsLessCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
-                                BorderBrush="{Binding IsLessCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#3B82F6|#E2E8F0'}"
-                                BorderThickness="{Binding IsLessCompression, Converter={StaticResource BooleanToThicknessConverter}, ConverterParameter='2|1'}"
-                                CornerRadius="10" Padding="12" Cursor="Hand">
-                            <Button Command="{Binding SelectPresetCommand}" CommandParameter="less" Background="Transparent" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <StackPanel Grid.Column="0" Spacing="2">
-                                        <TextBlock Text="LESS COMPRESSION" FontSize="12" FontWeight="ExtraBold" Foreground="{Binding IsLessCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#1D4ED8|#DC2626'}" LetterSpacing="0.4" />
-                                        <TextBlock Text="High quality, less compression (~40% reduction)" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
-                                    </StackPanel>
-                                    <Border Grid.Column="1" Width="20" Height="20" CornerRadius="10"
-                                            Background="{Binding IsLessCompression, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#16A34A|#F1F5F9'}"
-                                            VerticalAlignment="Center">
-                                        <materialIcons:MaterialIcon Kind="Check" Width="13" Height="13" Foreground="White" IsVisible="{Binding IsLessCompression}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </Border>
-                                </Grid>
-                            </Button>
-                        </Border>
-
-                        <!-- 4. CUSTOM / FINE-TUNE PRESET -->
-                        <Border Background="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EFF6FF|#FFFFFF'}"
-                                BorderBrush="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#3B82F6|#E2E8F0'}"
-                                BorderThickness="{Binding IsCustomMode, Converter={StaticResource BooleanToThicknessConverter}, ConverterParameter='2|1'}"
-                                CornerRadius="10" Padding="12" Cursor="Hand">
-                            <Button Command="{Binding SelectPresetCommand}" CommandParameter="custom" Background="Transparent" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <StackPanel Grid.Column="0" Spacing="2">
-                                        <TextBlock Text="CUSTOM / EXPERT TUNING" FontSize="12" FontWeight="ExtraBold" Foreground="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#1D4ED8|#0F172A'}" LetterSpacing="0.4" />
-                                        <TextBlock Text="Manual sliders for DPI, quality, and color palette" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
-                                    </StackPanel>
-                                    <Border Grid.Column="1" Width="20" Height="20" CornerRadius="10"
-                                            Background="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#16A34A|#F1F5F9'}"
-                                            VerticalAlignment="Center">
-                                        <materialIcons:MaterialIcon Kind="Tune" Width="13" Height="13" Foreground="{Binding IsCustomMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#FFFFFF|#64748B'}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </Border>
-                                </Grid>
-                            </Button>
-                        </Border>
-
-                        <!-- DYNAMIC LIVE QUALITY & WARNING FEEDBACK BANNER -->
-                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1.5" CornerRadius="10" Padding="12,10" Margin="0,2">
-                            <Grid ColumnDefinitions="Auto,*">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="InformationOutline" Width="18" Height="18" Foreground="#2563EB" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="{Binding QualityFeedbackMessage}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
-                            </Grid>
-                        </Border>
-
-                        <!-- FINE-TUNING SLIDERS & CONTROLS -->
-                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14,12">
-                            <StackPanel Spacing="12">
-                                <TextBlock Text="Interactive Fine-Tuning" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-
-                                <!-- DPI Slider & Numeric Input -->
-                                <StackPanel Spacing="4">
-                                    <Grid ColumnDefinitions="*,Auto">
-                                        <TextBlock Grid.Column="0" Text="Target Image Resolution (DPI):" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Column="1" Text="{Binding ImageQualityDpi, StringFormat='{}{0} DPI'}" FontSize="12" FontWeight="Bold" Foreground="#0F6CBD" VerticalAlignment="Center" />
-                                    </Grid>
-                                    <Slider Value="{Binding ImageQualityDpi}" Minimum="50" Maximum="350" SmallChange="5" LargeChange="25" />
-                                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,-4,0,0">
-                                        <TextBlock Grid.Column="0" Text="50 (Low / Max Small)" FontSize="9.5" Foreground="{DynamicResource WinSubtleBrush}" />
-                                        <TextBlock Grid.Column="2" Text="350 (Ultra Sharp)" FontSize="9.5" Foreground="{DynamicResource WinSubtleBrush}" />
-                                    </Grid>
-                                </StackPanel>
-
-                                <!-- JPEG Quality Slider & Numeric Input -->
-                                <StackPanel Spacing="4">
-                                    <Grid ColumnDefinitions="*,Auto">
-                                        <TextBlock Grid.Column="0" Text="JPEG Compression Quality:" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Column="1" Text="{Binding JpegQuality, StringFormat='{}{0}%'}" FontSize="12" FontWeight="Bold" Foreground="#0F6CBD" VerticalAlignment="Center" />
-                                    </Grid>
-                                    <Slider Value="{Binding JpegQuality}" Minimum="20" Maximum="100" SmallChange="2" LargeChange="10" />
-                                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,-4,0,0">
-                                        <TextBlock Grid.Column="0" Text="20% (Aggressive)" FontSize="9.5" Foreground="{DynamicResource WinSubtleBrush}" />
-                                        <TextBlock Grid.Column="2" Text="100% (Lossless)" FontSize="9.5" Foreground="{DynamicResource WinSubtleBrush}" />
-                                    </Grid>
-                                </StackPanel>
-
-                                <!-- Grayscale Switch -->
-                                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8">
-                                    <Grid ColumnDefinitions="*,Auto">
-                                        <StackPanel Grid.Column="0" Spacing="2">
-                                            <TextBlock Text="Convert to Grayscale (B&amp;W)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
-                                            <TextBlock Text="Saves extra ~20-30% on scanned forms &amp; receipts" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
-                                        </StackPanel>
-                                        <ToggleSwitch Grid.Column="1" IsChecked="{Binding ConvertToGrayscale}" OnContent="" OffContent="" VerticalAlignment="Center" />
-                                    </Grid>
-                                </Border>
-
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Advanced Optimization Options -->
-                        <Expander Header="Advanced PDF Stream Settings" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}">
-                            <StackPanel Spacing="8" Margin="0,4,0,0">
-                                <CheckBox Content="Compress Content Streams &amp; Fonts" IsChecked="{Binding CompressStreams}" FontSize="11.5" />
-                                <CheckBox Content="Remove Duplicate Objects &amp; Fonts" IsChecked="{Binding RemoveDuplicateObjects}" FontSize="11.5" />
-                                <CheckBox Content="Strip Metadata &amp; Bookmarks" IsChecked="{Binding RemoveMetadata}" FontSize="11.5" />
-                            </StackPanel>
-                        </Expander>
-
+                <Expander Header="Advanced PDF Stream Settings" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}">
+                    <StackPanel Spacing="8" Margin="0,4,0,0">
+                        <CheckBox Content="Compress Content Streams &amp; Fonts" IsChecked="{Binding CompressStreams}" FontSize="11.5" />
+                        <CheckBox Content="Remove Duplicate Objects &amp; Fonts" IsChecked="{Binding RemoveDuplicateObjects}" FontSize="11.5" />
+                        <CheckBox Content="Strip Metadata &amp; Bookmarks" IsChecked="{Binding RemoveMetadata}" FontSize="11.5" />
                     </StackPanel>
-                </ScrollViewer>
-            </DockPanel>
-        </Border>
+                </Expander>
 
-    </Grid>
+                <TextBlock Text="Safe &amp; privacy-first compression runs 100% locally on your device" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" TextAlignment="Center" TextWrapping="Wrap" />
+
+            </StackPanel>
+        </shell:PdfToolWorkspaceView.OptionsContent>
+
+    </shell:PdfToolWorkspaceView>
 </UserControl>

@@ -18,6 +18,8 @@ public partial class RotatePdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private string _customRange = string.Empty;
 
+    public override bool UsesWorkspaceShell => true;
+
     public RotatePdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

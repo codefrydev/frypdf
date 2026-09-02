@@ -8,6 +8,8 @@ namespace PdfEditorApp.ViewModels.Tools;
 
 public partial class RepairPdfToolViewModel : PdfToolViewModelBase
 {
+    public override bool UsesWorkspaceShell => true;
+
     public RepairPdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

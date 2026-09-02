@@ -12,6 +12,8 @@ public partial class PdfToPdfAToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private PdfAStandard _standard = PdfAStandard.PdfA2b;
 
+    public override bool UsesWorkspaceShell => true;
+
     public PdfToPdfAToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

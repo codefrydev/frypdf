@@ -27,6 +27,8 @@ public partial class CropPdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private string _customRange = string.Empty;
 
+    public override bool UsesWorkspaceShell => true;
+
     public CropPdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

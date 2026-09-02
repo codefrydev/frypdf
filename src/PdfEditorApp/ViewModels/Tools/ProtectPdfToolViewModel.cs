@@ -30,6 +30,8 @@ public partial class ProtectPdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private bool _allowFormFilling = true;
 
+    public override bool UsesWorkspaceShell => true;
+
     public ProtectPdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

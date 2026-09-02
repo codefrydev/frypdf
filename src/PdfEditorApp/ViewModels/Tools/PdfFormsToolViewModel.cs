@@ -15,6 +15,8 @@ public partial class PdfFormsToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private bool _exportFieldValuesJson;
 
+    public override bool UsesWorkspaceShell => true;
+
     public PdfFormsToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

@@ -18,6 +18,8 @@ public partial class TranslatePdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private bool _preserveLayout = true;
 
+    public override bool UsesWorkspaceShell => true;
+
     public TranslatePdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

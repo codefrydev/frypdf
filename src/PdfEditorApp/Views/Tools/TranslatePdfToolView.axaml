@@ -1,14 +1,25 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:PdfEditorApp.ViewModels.Tools"
+             xmlns:shell="using:PdfEditorApp.Views.Shell"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.Views.Tools.TranslatePdfToolView"
              x:DataType="vm:TranslatePdfToolViewModel">
 
-    <Grid ColumnDefinitions="*,380" Margin="0,4,0,0">
+    <shell:PdfToolWorkspaceView>
 
-        <!-- LEFT: File workspace -->
-        <ScrollViewer Grid.Column="0" Margin="0,0,20,0" VerticalScrollBarVisibility="Auto">
+        <!-- Toolbar primary action -->
+        <shell:PdfToolWorkspaceView.ToolbarActionContent>
+            <Button Command="{Binding ExecuteToolCommand}" IsEnabled="{Binding !IsRunning}" Background="#6366F1" Foreground="White" CornerRadius="8" Padding="16,8" FontWeight="Bold" FontSize="12.5" Cursor="Hand">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <materialIcons:MaterialIcon Kind="Translate" Width="15" Height="15" />
+                    <TextBlock Text="Translate PDF" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </shell:PdfToolWorkspaceView.ToolbarActionContent>
+
+        <!-- Sidebar Options tab: status, document selection, and translation settings -->
+        <shell:PdfToolWorkspaceView.OptionsContent>
             <StackPanel Spacing="16">
 
                 <!-- Error Alert Banner -->
@@ -35,7 +46,7 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <WrapPanel Orientation="Horizontal" Margin="52,0,0,0">
+                        <WrapPanel Orientation="Horizontal">
                             <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="15" Height="15" />
@@ -59,29 +70,32 @@
                 </Border>
 
                 <!-- Processing Card -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20,16" IsVisible="{Binding IsRunning}">
-                    <StackPanel Spacing="12">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" IsVisible="{Binding IsRunning}">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="14" FontWeight="Bold" Foreground="#6366F1" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="13" FontWeight="Bold" Foreground="#6366F1" VerticalAlignment="Center" />
                         </Grid>
-                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#6366F1" Background="{DynamicResource WinHoverBrush}" />
+                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="7" CornerRadius="4" Foreground="#6366F1" Background="{DynamicResource WinHoverBrush}" />
+                        <Button Command="{Binding CancelExecutionCommand}" HorizontalAlignment="Right" Background="{DynamicResource WinHoverBrush}" Foreground="{DynamicResource WinMutedBrush}" CornerRadius="6" Padding="10,4" FontSize="11" Cursor="Hand">
+                            Cancel
+                        </Button>
                     </StackPanel>
                 </Border>
 
                 <!-- Dropzone Box -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
-                        <Border Width="64" Height="64" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="Translate" Width="34" Height="34" Foreground="#6366F1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="10" Padding="20,26" IsVisible="{Binding !HasSelectedFiles}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                        <Border Width="52" Height="52" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="14" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="Translate" Width="28" Height="28" Foreground="#6366F1" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
-                        <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Text="Select PDF to Translate" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Text="Translate documents while preserving fonts, formatting, and layout structure" FontSize="13" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                        <StackPanel Spacing="3" HorizontalAlignment="Center">
+                            <TextBlock Text="Select PDF to Translate" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
+                            <TextBlock Text="Translate documents while preserving fonts, formatting, and layout" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                         </StackPanel>
-                        <Button Command="{Binding AddFilesCommand}" Background="#6366F1" Foreground="White" CornerRadius="8" Padding="24,10" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
+                        <Button Command="{Binding AddFilesCommand}" Background="#6366F1" Foreground="White" CornerRadius="8" Padding="18,9" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
                                 <TextBlock Text="Select PDF Document" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
@@ -89,20 +103,20 @@
                 </Border>
 
                 <!-- Loaded Document Card -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" IsVisible="{Binding HasSelectedFiles}">
-                    <StackPanel Spacing="12">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" IsVisible="{Binding HasSelectedFiles}">
+                    <StackPanel Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="Document to Translate" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <Button Command="{Binding AddFilesCommand}" Background="#EEF2FF" Foreground="#6366F1" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Padding="12,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand">
+                            <TextBlock Text="Document to Translate" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <Button Command="{Binding AddFilesCommand}" Background="#EEF2FF" Foreground="#6366F1" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Padding="10,5" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
                                 Change File
                             </Button>
                         </Grid>
-                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,12">
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Border Grid.Column="0" Width="36" Height="36" Background="#EEF2FF" CornerRadius="8" Margin="0,0,12,0">
-                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#6366F1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Width="32" Height="32" Background="#EEF2FF" CornerRadius="8" Margin="0,0,10,0">
+                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="#6366F1" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 <Button Grid.Column="2" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Padding="6" Cursor="Hand">
                                     <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" />
                                 </Button>
@@ -111,45 +125,26 @@
                     </StackPanel>
                 </Border>
 
-            </StackPanel>
-        </ScrollViewer>
-
-        <!-- RIGHT: Translation Options -->
-        <Border Grid.Column="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
-            <DockPanel>
-                <Border DockPanel.Dock="Top" Margin="0,0,0,16">
-                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#6366F1" />
-                        <TextBlock Text="Translation Language" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-
-                <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0" Spacing="10">
-                    <Button Command="{Binding ExecuteToolCommand}" Background="#6366F1" Foreground="White" CornerRadius="10" Padding="24,14" FontWeight="Bold" FontSize="14" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsEnabled="{Binding !IsRunning}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <materialIcons:MaterialIcon Kind="Translate" Width="18" Height="18" />
-                            <TextBlock Text="Translate PDF" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+                <!-- Translation settings -->
+                <StackPanel Spacing="3">
+                    <TextBlock Text="Translation Language" FontSize="14" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="Choose the source and target language" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
                 </StackPanel>
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="14">
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Source Language" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                            <TextBox Text="{Binding SourceLanguage}" FontSize="12" />
-                        </StackPanel>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Source Language" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                    <TextBox Text="{Binding SourceLanguage}" FontSize="12" />
+                </StackPanel>
 
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Target Language" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                            <TextBox Text="{Binding TargetLanguage}" FontSize="12" PlaceholderText="Spanish, French, German, Japanese..." />
-                        </StackPanel>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Target Language" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                    <TextBox Text="{Binding TargetLanguage}" FontSize="12" PlaceholderText="Spanish, French, German, Japanese..." />
+                </StackPanel>
 
-                        <CheckBox Content="Preserve Original Layout &amp; Font Geometry" IsChecked="{Binding PreserveLayout}" FontSize="12" />
-                    </StackPanel>
-                </ScrollViewer>
-            </DockPanel>
-        </Border>
+                <CheckBox Content="Preserve Original Layout &amp; Font Geometry" IsChecked="{Binding PreserveLayout}" FontSize="11.5" />
 
-    </Grid>
+            </StackPanel>
+        </shell:PdfToolWorkspaceView.OptionsContent>
+
+    </shell:PdfToolWorkspaceView>
 </UserControl>

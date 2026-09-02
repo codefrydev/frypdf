@@ -25,6 +25,8 @@ public partial class ScanToPdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private PageFormat _format = PageFormat.A4;
 
+    public override bool UsesWorkspaceShell => true;
+
     public ScanToPdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

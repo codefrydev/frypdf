@@ -15,6 +15,8 @@ public partial class PdfToExcelToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private bool _separateSheetsPerPage;
 
+    public override bool UsesWorkspaceShell => true;
+
     public PdfToExcelToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

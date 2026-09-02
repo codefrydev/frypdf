@@ -12,6 +12,8 @@ public partial class UnlockPdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private string _password = string.Empty;
 
+    public override bool UsesWorkspaceShell => true;
+
     public UnlockPdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

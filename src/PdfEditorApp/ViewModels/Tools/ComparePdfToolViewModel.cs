@@ -23,6 +23,8 @@ public partial class ComparePdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private bool _detectVisualDiff = true;
 
+    public override bool UsesWorkspaceShell => true;
+
     public ComparePdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

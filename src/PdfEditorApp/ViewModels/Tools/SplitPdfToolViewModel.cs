@@ -24,6 +24,8 @@ public partial class SplitPdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private bool _extractOddPages;
 
+    public override bool UsesWorkspaceShell => true;
+
     public SplitPdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

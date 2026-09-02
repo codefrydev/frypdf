@@ -12,6 +12,8 @@ public partial class WordToPdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private PageOrientation _orientation = PageOrientation.Portrait;
 
+    public override bool UsesWorkspaceShell => true;
+
     public WordToPdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

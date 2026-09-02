@@ -1,0 +1,291 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels.Tools"
+             xmlns:models="using:PdfEditorApp.Models"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Shell.PdfToolWorkspaceView"
+             x:Name="RootWorkspace"
+             x:DataType="vm:PdfToolViewModelBase"
+             Background="{DynamicResource WinBgBrush}">
+
+    <UserControl.Resources>
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:MultiplyConverter x:Key="MultiplyConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Sidebar Tab Button -->
+        <Style Selector="Button.workspace-tab">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="0,10" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.workspace-tab:pointerover">
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+        </Style>
+        <Style Selector="Button.workspace-tab.mode-active">
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ================= TOOLBAR ================= -->
+        <Border Grid.Row="0" Height="48"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto" Margin="16,0">
+
+                <!-- Back + tool identity (merged in from the old separate header banner,
+                     so there's exactly one toolbar row, like the PDF Reader) -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center"
+                            ToolTip.Tip="{Binding Tool.Description}">
+                    <Button Classes="secondary-btn" Padding="10,4" Command="{Binding GoBackCommand}" ToolTip.Tip="Back to All Tools (Home)">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <materialIcons:MaterialIcon Kind="ArrowLeft" Width="15" Height="15" />
+                            <TextBlock Text="Back to Tools" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Rectangle Width="1" Height="22" Fill="{DynamicResource WinBorderBrush}" />
+                    <Border Width="28" Height="28" CornerRadius="7"
+                            Background="{Binding Tool.BackgroundAccentHex, Converter={StaticResource HexToBrushConverter}}">
+                        <materialIcons:MaterialIcon Kind="{Binding Tool.IconKind}" Width="16" Height="16"
+                                                    Foreground="{Binding Tool.IconColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="{Binding Tool.Name}" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Page navigation capsule -->
+                <Border Grid.Column="1" Classes="toolbar-capsule" Margin="14,0,0,0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                        <Button Classes="toolbar-btn" Command="{Binding Preview.PreviousPageCommand}" IsEnabled="{Binding Preview.CanGoToPreviousPage}" ToolTip.Tip="Previous Page">
+                            <materialIcons:MaterialIcon Kind="ChevronLeft" Width="16" Height="16" />
+                        </Button>
+                        <TextBlock Text="{Binding Preview.PageIndicatorText}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" Margin="6,0" />
+                        <Button Classes="toolbar-btn" Command="{Binding Preview.NextPageCommand}" IsEnabled="{Binding Preview.CanGoToNextPage}" ToolTip.Tip="Next Page">
+                            <materialIcons:MaterialIcon Kind="ChevronRight" Width="16" Height="16" />
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Zoom capsule -->
+                <Border Grid.Column="2" Classes="toolbar-capsule" Margin="10,0,0,0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                        <Button Classes="toolbar-btn" Command="{Binding Preview.ZoomOutCommand}" IsEnabled="{Binding Preview.CanZoomOut}" ToolTip.Tip="Zoom Out">
+                            <materialIcons:MaterialIcon Kind="Minus" Width="14" Height="14" />
+                        </Button>
+                        <Button Classes="toolbar-btn" Width="50" Command="{Binding Preview.ResetZoomCommand}" ToolTip.Tip="Reset Zoom">
+                            <TextBlock Text="{Binding Preview.ZoomPercentText}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                        </Button>
+                        <Button Classes="toolbar-btn" Command="{Binding Preview.ZoomInCommand}" IsEnabled="{Binding Preview.CanZoomIn}" ToolTip.Tip="Zoom In">
+                            <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" />
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Right: guide/star (merged in from the old header banner) + primary CTA slot -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Classes="secondary-btn" Padding="7" Command="{Binding OpenToolHelpGuideCommand}" ToolTip.Tip="Guide &amp; Tips">
+                        <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="16" Height="16" />
+                    </Button>
+                    <Button Classes="secondary-btn" Padding="7" Command="{Binding ToggleStarCommand}" ToolTip.Tip="Toggle Favorite">
+                        <Panel>
+                            <materialIcons:MaterialIcon Kind="Star" Width="16" Height="16" Foreground="#F59E0B" IsVisible="{Binding IsToolStarred}" />
+                            <materialIcons:MaterialIcon Kind="StarOutline" Width="16" Height="16" IsVisible="{Binding !IsToolStarred}" />
+                        </Panel>
+                    </Button>
+                    <ContentPresenter Content="{Binding ToolbarActionContent, ElementName=RootWorkspace}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ================= WORKSPACE ================= -->
+        <Grid Grid.Row="1" ColumnDefinitions="320,*">
+
+            <!-- ============ LEFT: TOOL-SPECIFIC SIDEBAR ============ -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource WinPanelBrush}"
+                    BorderBrush="{DynamicResource WinBorderBrush}"
+                    BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="Auto,*">
+
+                    <!-- Tab switcher -->
+                    <UniformGrid Grid.Row="0" Columns="4" Rows="1">
+                        <Button Classes="workspace-tab" Tag="Options" Click="OnTabButtonClick" Classes.mode-active="{Binding SelectedTab, ElementName=RootWorkspace, Converter={StaticResource EqualityConverter}, ConverterParameter=Options}">
+                            <StackPanel Spacing="3" HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="TuneVariant" Width="17" Height="17" HorizontalAlignment="Center" Foreground="{DynamicResource WinMutedBrush}" />
+                                <TextBlock Text="Options" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="workspace-tab" Tag="Files" Click="OnTabButtonClick" Classes.mode-active="{Binding SelectedTab, ElementName=RootWorkspace, Converter={StaticResource EqualityConverter}, ConverterParameter=Files}">
+                            <StackPanel Spacing="3" HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="17" Height="17" HorizontalAlignment="Center" Foreground="{DynamicResource WinMutedBrush}" />
+                                <TextBlock Text="Files" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="workspace-tab" Tag="Pages" Click="OnTabButtonClick" Classes.mode-active="{Binding SelectedTab, ElementName=RootWorkspace, Converter={StaticResource EqualityConverter}, ConverterParameter=Pages}">
+                            <StackPanel Spacing="3" HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="ViewGridOutline" Width="17" Height="17" HorizontalAlignment="Center" Foreground="{DynamicResource WinMutedBrush}" />
+                                <TextBlock Text="Pages" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="workspace-tab" Tag="Info" Click="OnTabButtonClick" Classes.mode-active="{Binding SelectedTab, ElementName=RootWorkspace, Converter={StaticResource EqualityConverter}, ConverterParameter=Info}">
+                            <StackPanel Spacing="3" HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="InformationOutline" Width="17" Height="17" HorizontalAlignment="Center" Foreground="{DynamicResource WinMutedBrush}" />
+                                <TextBlock Text="Info" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </UniformGrid>
+
+                    <!-- Tab 1: Options (tool-supplied content) -->
+                    <ScrollViewer Grid.Row="1" Padding="16" VerticalScrollBarVisibility="Auto"
+                                  IsVisible="{Binding SelectedTab, ElementName=RootWorkspace, Converter={StaticResource EqualityConverter}, ConverterParameter=Options}">
+                        <ContentPresenter Content="{Binding OptionsContent, ElementName=RootWorkspace}" />
+                    </ScrollViewer>
+
+                    <!-- Tab 2: Files (built-in, shared across every tool) -->
+                    <ScrollViewer Grid.Row="1" Padding="16" VerticalScrollBarVisibility="Auto"
+                                  IsVisible="{Binding SelectedTab, ElementName=RootWorkspace, Converter={StaticResource EqualityConverter}, ConverterParameter=Files}">
+                        <StackPanel Spacing="12">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding SelectedFilesCountText}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Command="{Binding AddFilesCommand}" Background="{DynamicResource WinHoverBrush}" BorderThickness="0" CornerRadius="6" Padding="10,5" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" Cursor="Hand">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <materialIcons:MaterialIcon Kind="Plus" Width="13" Height="13" />
+                                        <TextBlock Text="Add" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <TextBlock Text="No files selected yet." FontSize="12" Foreground="{DynamicResource WinSubtleBrush}" IsVisible="{Binding !HasSelectedFiles}" />
+
+                            <ItemsControl ItemsSource="{Binding SelectedFilePreviewItems}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="models:PdfFilePreviewItem">
+                                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,8">
+                                            <StackPanel Spacing="6">
+                                                <TextBlock Text="{Binding FileName}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding FilePath}" />
+                                                <TextBlock Text="{Binding PageCountText}" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <Button Command="{Binding $parent[UserControl].((vm:PdfToolViewModelBase)DataContext).MoveFileUpCommand}" CommandParameter="{Binding FilePath}" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="6" Cursor="Hand" ToolTip.Tip="Move Up">
+                                                        <materialIcons:MaterialIcon Kind="ArrowUp" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                                                    </Button>
+                                                    <Button Command="{Binding $parent[UserControl].((vm:PdfToolViewModelBase)DataContext).MoveFileDownCommand}" CommandParameter="{Binding FilePath}" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="6" Cursor="Hand" ToolTip.Tip="Move Down">
+                                                        <materialIcons:MaterialIcon Kind="ArrowDown" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" />
+                                                    </Button>
+                                                    <Button Command="{Binding $parent[UserControl].((vm:PdfToolViewModelBase)DataContext).RemoveFileCommand}" CommandParameter="{Binding FilePath}" Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="5" Padding="6" Cursor="Hand" ToolTip.Tip="Remove">
+                                                        <materialIcons:MaterialIcon Kind="Close" Width="13" Height="13" Foreground="#DC2626" />
+                                                    </Button>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Tab 3: Pages (built-in, real rendered thumbnails from Preview) -->
+                    <ScrollViewer Grid.Row="1" Padding="16" VerticalScrollBarVisibility="Auto"
+                                  IsVisible="{Binding SelectedTab, ElementName=RootWorkspace, Converter={StaticResource EqualityConverter}, ConverterParameter=Pages}">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="No document loaded yet." FontSize="12" Foreground="{DynamicResource WinSubtleBrush}" IsVisible="{Binding !Preview.HasDocument}" />
+                            <ItemsControl ItemsSource="{Binding Preview.Pages}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="models:PdfToolPreviewPage">
+                                        <Border Classes="thumbnail-card" Width="118" Margin="0,0,10,10"
+                                                Classes.selected="{Binding IsSelected}"
+                                                Cursor="Hand"
+                                                PointerPressed="OnThumbnailPointerPressed">
+                                            <StackPanel Spacing="4">
+                                                <Image Source="{Binding ThumbnailBitmap}" Height="140" Stretch="Uniform" />
+                                                <TextBlock Text="{Binding PageLabel}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Tab 4: Info (built-in file metadata) -->
+                    <ScrollViewer Grid.Row="1" Padding="16" VerticalScrollBarVisibility="Auto"
+                                  IsVisible="{Binding SelectedTab, ElementName=RootWorkspace, Converter={StaticResource EqualityConverter}, ConverterParameter=Info}">
+                        <ItemsControl ItemsSource="{Binding SelectedFilePreviewItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="models:PdfFilePreviewItem">
+                                    <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="{Binding FileName}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextWrapping="Wrap" />
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" Text="Pages" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                                                <TextBlock Grid.Column="1" Text="{Binding PageCountText}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                            </Grid>
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" Text="Size" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                                                <TextBlock Grid.Column="1" Text="{Binding FileSizeFormatted}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                            </Grid>
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" Text="Page Size" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                                                <TextBlock Grid.Column="1" Text="{Binding PageDimensionsText}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                            </Grid>
+                                            <TextBlock Text="{Binding FilePath}" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- ============ CENTER: LIVE PREVIEW CANVAS ============ -->
+            <Grid Grid.Column="1" Background="{DynamicResource WinInputBgBrush}">
+                <TextBlock Text="Select a file to preview it here." FontSize="13" Foreground="{DynamicResource WinSubtleBrush}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           IsVisible="{Binding !Preview.HasDocument}" />
+
+                <ScrollViewer x:Name="PreviewScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                              IsVisible="{Binding Preview.HasDocument}">
+                    <Border Padding="40" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border Classes="reader-page-card">
+                            <Border.Width>
+                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                    <Binding Path="Preview.SelectedPage.WidthPoints" />
+                                    <Binding Path="Preview.ZoomLevel" />
+                                </MultiBinding>
+                            </Border.Width>
+                            <Border.Height>
+                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                    <Binding Path="Preview.SelectedPage.HeightPoints" />
+                                    <Binding Path="Preview.ZoomLevel" />
+                                </MultiBinding>
+                            </Border.Height>
+                            <Panel>
+                                <Image Source="{Binding Preview.SelectedPage.Bitmap}" Stretch="Fill" />
+                                <ContentPresenter Content="{Binding CanvasOverlayContent, ElementName=RootWorkspace}" />
+                            </Panel>
+                        </Border>
+                    </Border>
+                </ScrollViewer>
+
+                <Border Background="#66000000" IsVisible="{Binding Preview.IsLoading}" IsHitTestVisible="False">
+                    <TextBlock Text="Loading preview..." Foreground="White" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

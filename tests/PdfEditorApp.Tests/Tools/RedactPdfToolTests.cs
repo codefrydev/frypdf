@@ -27,27 +27,25 @@ public class RedactPdfToolTests : IClassFixture<ToolTestFixture>
         Assert.Equal("CONFIDENTIAL", vm.SearchPattern);
         Assert.Empty(vm.Marks);
         Assert.False(vm.HasMarks);
-        Assert.Equal(1.0, vm.ZoomLevel);
+        Assert.Equal(1.0, vm.Preview.ZoomLevel);
     }
 
     [Fact]
-    public void RedactPdfTool_ZoomIn_And_ZoomOut_ScaleDisplaySizeAndClamp()
+    public void RedactPdfTool_ZoomIn_And_ZoomOut_Clamp()
     {
         var vm = (RedactPdfToolViewModel)_fixture.Factory.Create(PdfToolId.RedactPdf);
-        double baseWidth = vm.DisplayPageWidth;
 
-        vm.ZoomInCommand.Execute(null);
-        Assert.True(vm.ZoomLevel > 1.0);
-        Assert.True(vm.DisplayPageWidth > baseWidth);
+        vm.Preview.ZoomInCommand.Execute(null);
+        Assert.True(vm.Preview.ZoomLevel > 1.0);
 
         // Clamp at the top.
-        for (int i = 0; i < 20; i++) vm.ZoomInCommand.Execute(null);
-        Assert.Equal(3.0, vm.ZoomLevel);
-        Assert.False(vm.CanZoomIn);
+        for (int i = 0; i < 20; i++) vm.Preview.ZoomInCommand.Execute(null);
+        Assert.Equal(3.0, vm.Preview.ZoomLevel);
+        Assert.False(vm.Preview.CanZoomIn);
 
-        for (int i = 0; i < 20; i++) vm.ZoomOutCommand.Execute(null);
-        Assert.Equal(0.5, vm.ZoomLevel);
-        Assert.False(vm.CanZoomOut);
+        for (int i = 0; i < 20; i++) vm.Preview.ZoomOutCommand.Execute(null);
+        Assert.Equal(0.5, vm.Preview.ZoomLevel);
+        Assert.False(vm.Preview.CanZoomOut);
     }
 
     [Fact]
@@ -66,7 +64,7 @@ public class RedactPdfToolTests : IClassFixture<ToolTestFixture>
             Assert.True(vm.CurrentPageMarks.Count > 0);
             double originalDisplayX = vm.CurrentPageMarks[0].DisplayX;
 
-            vm.ZoomInCommand.Execute(null);
+            vm.Preview.ZoomInCommand.Execute(null);
 
             // Recomputed synchronously as soon as ZoomLevel changes, ahead of the
             // debounced re-render — the highlight must track the new scale immediately.
@@ -244,11 +242,11 @@ public class RedactPdfToolTests : IClassFixture<ToolTestFixture>
     public async Task RedactPdfTool_LoadingDocument_ResolvesPageCountAndDimensions()
     {
         // Note: actual Bitmap decoding needs Avalonia's platform rendering services,
-        // which this headless xUnit host doesn't bootstrap — so PageBitmap itself isn't
+        // which this headless xUnit host doesn't bootstrap — so the Bitmap itself isn't
         // asserted here. Page count/dimensions come from PdfPig directly and are
         // deliberately captured independent of bitmap decode success (see
-        // RenderCurrentPageAsync), so they're verifiable in this environment and are
-        // exactly what the highlight-overlay math depends on.
+        // PdfPageRenderer.RenderPageAtScale), so they're verifiable in this environment
+        // and are exactly what the highlight-overlay math depends on.
         string sample = ToolTestFixture.CreateSamplePdf("RedactPreviewSample", 3);
         try
         {
@@ -257,13 +255,15 @@ public class RedactPdfToolTests : IClassFixture<ToolTestFixture>
             vm.SyncPreviewItems();
 
             // Loading is fire-and-forget off the SelectedFiles collection change; give it
-            // a moment to finish (waits on PageWidthPoints, set last in the load chain —
-            // polling TotalPages instead would race ahead of the render actually finishing).
+            // a moment to finish (waits on SelectedPage.WidthPoints, set last in the load
+            // chain — polling TotalPages instead would race ahead of the render actually
+            // finishing).
             await WaitForPreviewAsync(vm);
 
-            Assert.Equal(3, vm.TotalPages);
-            Assert.True(vm.PageWidthPoints > 0);
-            Assert.True(vm.PageHeightPoints > 0);
+            Assert.Equal(3, vm.Preview.TotalPages);
+            Assert.NotNull(vm.Preview.SelectedPage);
+            Assert.True(vm.Preview.SelectedPage!.WidthPoints > 0);
+            Assert.True(vm.Preview.SelectedPage!.HeightPoints > 0);
         }
         finally
         {
@@ -273,7 +273,10 @@ public class RedactPdfToolTests : IClassFixture<ToolTestFixture>
 
     private static async Task WaitForPreviewAsync(RedactPdfToolViewModel vm)
     {
-        for (int i = 0; i < 50 && vm.PageWidthPoints == 0; i++)
+        // Word geometry (needed for text-snap marking) refreshes independently of, and
+        // not necessarily before, Preview's own page render completing — wait for both
+        // so callers can rely on AddManualMark's word-snapping actually having data.
+        for (int i = 0; i < 50 && (vm.Preview.SelectedPage == null || vm.Preview.SelectedPage.WidthPoints == 0 || vm.WordsRefreshedCount == 0); i++)
         {
             await Task.Delay(50);
         }
@@ -289,7 +292,8 @@ public class RedactPdfToolTests : IClassFixture<ToolTestFixture>
             vm.SelectedFiles.Add(sample);
             vm.SyncPreviewItems();
             await WaitForPreviewAsync(vm);
-            Assert.True(vm.PageWidthPoints > 0);
+            Assert.NotNull(vm.Preview.SelectedPage);
+            Assert.True(vm.Preview.SelectedPage!.WidthPoints > 0);
 
             vm.AddManualMark(new Rect(50, 60, 120, 30), forceDrawBox: true);
 
@@ -315,11 +319,14 @@ public class RedactPdfToolTests : IClassFixture<ToolTestFixture>
             vm.SelectedFiles.Add(sample);
             vm.SyncPreviewItems();
             await WaitForPreviewAsync(vm);
-            Assert.True(vm.PageWidthPoints > 0);
+            Assert.NotNull(vm.Preview.SelectedPage);
+            Assert.True(vm.Preview.SelectedPage!.WidthPoints > 0);
 
             // A drag covering the whole page must touch every word on it (default mode
             // snaps to text — no mode switch needed, matching the PDF Reader's behavior).
-            vm.AddManualMark(new Rect(0, 0, vm.DisplayPageWidth, vm.DisplayPageHeight));
+            double displayWidth = vm.Preview.SelectedPage!.WidthPoints * vm.Preview.ZoomLevel;
+            double displayHeight = vm.Preview.SelectedPage!.HeightPoints * vm.Preview.ZoomLevel;
+            vm.AddManualMark(new Rect(0, 0, displayWidth, displayHeight));
 
             Assert.Single(vm.Marks);
             var mark = vm.Marks[0];
@@ -344,9 +351,12 @@ public class RedactPdfToolTests : IClassFixture<ToolTestFixture>
             vm.SelectedFiles.Add(sample);
             vm.SyncPreviewItems();
             await WaitForPreviewAsync(vm);
+            Assert.NotNull(vm.Preview.SelectedPage);
 
             // Bottom-right corner is blank in the fixture's generated layout.
-            vm.AddManualMark(new Rect(vm.DisplayPageWidth - 5, vm.DisplayPageHeight - 5, 3, 3));
+            double displayWidth = vm.Preview.SelectedPage!.WidthPoints * vm.Preview.ZoomLevel;
+            double displayHeight = vm.Preview.SelectedPage!.HeightPoints * vm.Preview.ZoomLevel;
+            vm.AddManualMark(new Rect(displayWidth - 5, displayHeight - 5, 3, 3));
 
             Assert.Empty(vm.Marks);
         }

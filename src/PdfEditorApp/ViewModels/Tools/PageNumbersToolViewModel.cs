@@ -36,6 +36,8 @@ public partial class PageNumbersToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private double _marginPoints = 28;
 
+    public override bool UsesWorkspaceShell => true;
+
     public PageNumbersToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

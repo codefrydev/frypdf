@@ -3,28 +3,19 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels;
-using UglyToad.PdfPig.Rendering.Skia;
 
 namespace PdfEditorApp.ViewModels.Tools;
 
 public partial class RedactPdfToolViewModel : PdfToolViewModelBase
 {
-    private const double BaseDisplayWidthPx = 640.0;
-    private const double MinZoom = 0.5;
-    private const double MaxZoom = 3.0;
-    private const double ZoomStep = 0.25;
-
     private List<PdfViewerWordItem> _currentPageWords = new();
-    private CancellationTokenSource? _zoomRenderCts;
 
     [ObservableProperty]
     private string _searchPattern = "CONFIDENTIAL";
@@ -36,50 +27,28 @@ public partial class RedactPdfToolViewModel : PdfToolViewModelBase
     private bool _permanentScrubText = true;
 
     [ObservableProperty]
-    private int _currentPageNumber = 1;
-
-    [ObservableProperty]
-    private int _totalPages;
-
-    [ObservableProperty]
-    private Bitmap? _pageBitmap;
-
-    [ObservableProperty]
-    private double _pageWidthPoints;
-
-    [ObservableProperty]
-    private double _pageHeightPoints;
-
-    [ObservableProperty]
-    private double _displayPageHeight = BaseDisplayWidthPx;
-
-    [ObservableProperty]
-    private double _zoomLevel = 1.0;
-
-    [ObservableProperty]
-    private bool _isLoadingPreview;
-
-    [ObservableProperty]
     private bool _isSearching;
 
     [ObservableProperty]
     private string _searchStatusMessage = string.Empty;
 
-    public double DisplayPageWidth => BaseDisplayWidthPx * ZoomLevel;
-    public string ZoomPercentText => $"{ZoomLevel * 100:F0}%";
-    public bool CanZoomIn => ZoomLevel < MaxZoom - 0.001;
-    public bool CanZoomOut => ZoomLevel > MinZoom + 0.001;
-
     public ObservableCollection<RedactionMarkItem> Marks { get; } = new();
 
     public ObservableCollection<RedactionMarkItem> CurrentPageMarks { get; } = new();
 
-    public bool HasMarks => Marks.Count > 0;
+    public override bool UsesWorkspaceShell => true;
 
-    public string PageIndicatorText => TotalPages > 0 ? $"Page {CurrentPageNumber} of {TotalPages}" : "";
-    public bool CanGoToPreviousPage => CurrentPageNumber > 1;
-    public bool CanGoToNextPage => CurrentPageNumber < TotalPages;
+    public bool HasMarks => Marks.Count > 0;
     public bool HasSearchStatusMessage => !string.IsNullOrEmpty(SearchStatusMessage);
+
+    /// <summary>
+    /// Increments each time word geometry finishes refreshing for the current page.
+    /// Word extraction runs independently of Preview's own page rendering (both react
+    /// to the same file/page-change signals but complete on their own schedule), so
+    /// this is the only reliable way to know marking is ready to snap to text — there's
+    /// no user-visible "loading words" state to show instead.
+    /// </summary>
+    public int WordsRefreshedCount { get; private set; }
 
     partial void OnSearchStatusMessageChanged(string value) => OnPropertyChanged(nameof(HasSearchStatusMessage));
 
@@ -87,182 +56,91 @@ public partial class RedactPdfToolViewModel : PdfToolViewModelBase
         : base(operationsService, tool)
     {
         Marks.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasMarks));
-        SelectedFiles.CollectionChanged += (_, _) => { _ = LoadDocumentAsync(); };
-    }
 
-    partial void OnCurrentPageNumberChanged(int value)
-    {
-        OnPropertyChanged(nameof(PageIndicatorText));
-        OnPropertyChanged(nameof(CanGoToPreviousPage));
-        OnPropertyChanged(nameof(CanGoToNextPage));
-    }
-
-    partial void OnTotalPagesChanged(int value)
-    {
-        OnPropertyChanged(nameof(PageIndicatorText));
-        OnPropertyChanged(nameof(CanGoToNextPage));
-    }
-
-    partial void OnZoomLevelChanged(double value)
-    {
-        OnPropertyChanged(nameof(DisplayPageWidth));
-        OnPropertyChanged(nameof(ZoomPercentText));
-        OnPropertyChanged(nameof(CanZoomIn));
-        OnPropertyChanged(nameof(CanZoomOut));
-
-        RecomputeDisplayHeight();
-        RecomputeCurrentPageMarks();
-
-        // Re-render at a zoom-appropriate resolution so zoomed-in text stays sharp
-        // (matching the PDF Reader's own zoom behavior), debounced so rapid zooming
-        // doesn't trigger a render per tick.
-        _zoomRenderCts?.Cancel();
-        var cts = new CancellationTokenSource();
-        _zoomRenderCts = cts;
-        _ = RerenderAfterZoomDebounceAsync(cts.Token);
-    }
-
-    private async Task RerenderAfterZoomDebounceAsync(CancellationToken ct)
-    {
-        try
+        // Rendering/zoom/page-nav now lives entirely in the shared Preview (from
+        // PdfToolViewModelBase), which reloads itself on SelectedFiles changes. This
+        // handler only clears the redaction-specific state that Preview doesn't know
+        // about.
+        SelectedFiles.CollectionChanged += (_, _) =>
         {
-            await Task.Delay(150, ct);
-        }
-        catch (OperationCanceledException)
+            Marks.Clear();
+            CurrentPageMarks.Clear();
+            SearchStatusMessage = string.Empty;
+        };
+
+        // Marks are positioned/scaled relative to the current page and zoom, and
+        // word-snap marking needs the current page's word geometry — both need to be
+        // recomputed whenever Preview's document, page, or zoom changes.
+        Preview.PropertyChanged += (_, e) =>
         {
+            if (e.PropertyName == nameof(Preview.IsLoading) && !Preview.IsLoading && Preview.HasDocument)
+            {
+                _ = RefreshCurrentPageWordsAsync();
+            }
+            else if (e.PropertyName == nameof(Preview.CurrentPageNumber))
+            {
+                _ = RefreshCurrentPageWordsAsync();
+            }
+            else if (e.PropertyName == nameof(Preview.ZoomLevel))
+            {
+                RecomputeCurrentPageMarks();
+            }
+        };
+    }
+
+    /// <summary>
+    /// Re-extracts word geometry for whatever page Preview is currently showing, reusing
+    /// the PDF Reader's own extraction (<see cref="PdfViewerViewModel.ExtractPageTextGeometry"/>)
+    /// rather than duplicating it. Independent of Preview's own bitmap rendering — this
+    /// only needs the page's text layer, not a rasterized image.
+    /// </summary>
+    private async Task RefreshCurrentPageWordsAsync()
+    {
+        string path = PrimaryInputFile;
+        int pageNumber = Preview.CurrentPageNumber;
+
+        if (string.IsNullOrEmpty(path) || !File.Exists(path) || pageNumber < 1)
+        {
+            _currentPageWords = new List<PdfViewerWordItem>();
+            RecomputeCurrentPageMarks();
             return;
         }
-        if (ct.IsCancellationRequested) return;
-        await RenderCurrentPageAsync();
-    }
 
-    private void RecomputeDisplayHeight()
-    {
-        DisplayPageHeight = PageWidthPoints > 0
-            ? DisplayPageWidth * (PageHeightPoints / PageWidthPoints)
-            : DisplayPageWidth;
-    }
-
-    [RelayCommand]
-    private void ZoomIn() => ZoomLevel = Math.Min(MaxZoom, Math.Round(ZoomLevel + ZoomStep, 2));
-
-    [RelayCommand]
-    private void ZoomOut() => ZoomLevel = Math.Max(MinZoom, Math.Round(ZoomLevel - ZoomStep, 2));
-
-    private async Task LoadDocumentAsync()
-    {
-        Marks.Clear();
-        CurrentPageMarks.Clear();
-        PageBitmap = null;
-        CurrentPageNumber = 1;
-        TotalPages = 0;
-        ZoomLevel = 1.0;
-        SearchStatusMessage = string.Empty;
-
-        string path = PrimaryInputFile;
-        if (string.IsNullOrEmpty(path) || !File.Exists(path)) return;
-
-        IsLoadingPreview = true;
-        try
+        var words = await Task.Run(() =>
         {
-            TotalPages = await Task.Run(() =>
+            try
             {
-                try
-                {
-                    using var doc = UglyToad.PdfPig.PdfDocument.Open(path);
-                    return doc.NumberOfPages;
-                }
-                catch
-                {
-                    return 0;
-                }
-            });
+                using var doc = UglyToad.PdfPig.PdfDocument.Open(path);
+                if (pageNumber > doc.NumberOfPages) return new List<PdfViewerWordItem>();
 
-            if (TotalPages > 0)
-            {
-                await RenderCurrentPageAsync();
+                var page = doc.GetPage(pageNumber);
+                var (_, extractedWords, _) = PdfViewerViewModel.ExtractPageTextGeometry(page);
+                return extractedWords;
             }
-        }
-        finally
-        {
-            IsLoadingPreview = false;
-        }
-    }
-
-    private async Task RenderCurrentPageAsync()
-    {
-        string path = PrimaryInputFile;
-        if (string.IsNullOrEmpty(path) || !File.Exists(path) || CurrentPageNumber < 1) return;
-
-        IsLoadingPreview = true;
-        try
-        {
-            int pageNumber = CurrentPageNumber;
-            // Render resolution scales with zoom (like the PDF Reader) so zoomed-in text
-            // stays sharp instead of just stretching a fixed-resolution bitmap.
-            float renderScale = (float)Math.Clamp(2.0 * ZoomLevel, 1.5, 6.0);
-
-            var (bitmap, widthPoints, heightPoints, words) = await Task.Run(() =>
+            catch
             {
-                double w = 0, h = 0;
-                Bitmap? bmp = null;
-                var wordList = new List<PdfViewerWordItem>();
-                try
-                {
-                    using var doc = UglyToad.PdfPig.PdfDocument.Open(path);
-                    if (pageNumber > doc.NumberOfPages) return (bmp, w, h, wordList);
+                return new List<PdfViewerWordItem>();
+            }
+        });
 
-                    // Dimensions come from the page itself, independent of whether the
-                    // bitmap can actually be decoded below — keeps highlight-position math
-                    // correct even if rendering fails for some reason.
-                    var page = doc.GetPage(pageNumber);
-                    w = page.Width;
-                    h = page.Height;
+        if (path != PrimaryInputFile || pageNumber != Preview.CurrentPageNumber) return;
 
-                    // Word geometry (already in top-down, page-point space, same as
-                    // RedactionRegion) powers text-selection drag-to-mark below — reuses
-                    // the PDF Reader's own extraction rather than duplicating it.
-                    try
-                    {
-                        var (_, extractedWords, _) = PdfViewerViewModel.ExtractPageTextGeometry(page);
-                        wordList = extractedWords;
-                    }
-                    catch { }
-
-                    try { PdfPigExtensions.AddSkiaPageFactory(doc); } catch { }
-
-                    using var stream = PdfPigExtensions.GetPageAsPng(doc, pageNumber, renderScale, 100);
-                    if (stream != null && stream.Length > 0)
-                    {
-                        stream.Position = 0;
-                        try { bmp = new Bitmap(stream); } catch { bmp = null; }
-                    }
-                }
-                catch { }
-                return (bmp, w, h, wordList);
-            });
-
-            PageBitmap = bitmap;
-            PageWidthPoints = widthPoints;
-            PageHeightPoints = heightPoints;
-            RecomputeDisplayHeight();
-            _currentPageWords = words;
-
-            RecomputeCurrentPageMarks();
-        }
-        finally
-        {
-            IsLoadingPreview = false;
-        }
+        _currentPageWords = words;
+        WordsRefreshedCount++;
+        RecomputeCurrentPageMarks();
     }
 
     private void RecomputeCurrentPageMarks()
     {
         CurrentPageMarks.Clear();
-        if (PageWidthPoints <= 0) return;
 
-        double scale = DisplayPageWidth / PageWidthPoints;
-        foreach (var mark in Marks.Where(m => m.Region.PageIndex == CurrentPageNumber - 1))
+        double pageWidthPoints = Preview.SelectedPage?.WidthPoints ?? 0;
+        if (pageWidthPoints <= 0) return;
+
+        // Preview renders each page at WidthPoints * ZoomLevel pixels (same convention as
+        // the PDF Reader), so ZoomLevel alone is the points-to-pixels scale factor.
+        double scale = Preview.ZoomLevel;
+        foreach (var mark in Marks.Where(m => m.Region.PageIndex == Preview.CurrentPageNumber - 1))
         {
             mark.DisplayX = mark.Region.X * scale;
             mark.DisplayY = mark.Region.Y * scale;
@@ -338,13 +216,15 @@ public partial class RedactPdfToolViewModel : PdfToolViewModelBase
     /// </summary>
     public void AddManualMark(Rect displayRect, bool forceDrawBox = false)
     {
-        if (PageWidthPoints <= 0 || displayRect.Width < 2 || displayRect.Height < 2) return;
+        double pageWidthPoints = Preview.SelectedPage?.WidthPoints ?? 0;
+        if (pageWidthPoints <= 0 || displayRect.Width < 2 || displayRect.Height < 2) return;
 
-        double scale = DisplayPageWidth / PageWidthPoints;
+        double scale = Preview.ZoomLevel;
         double pdfX = displayRect.X / scale;
         double pdfY = displayRect.Y / scale;
         double pdfWidth = Math.Max(1, displayRect.Width / scale);
         double pdfHeight = Math.Max(1, displayRect.Height / scale);
+        int pageIndex = Preview.CurrentPageNumber - 1;
 
         RedactionRegion region;
         string label;
@@ -362,7 +242,7 @@ public partial class RedactPdfToolViewModel : PdfToolViewModelBase
 
             region = new RedactionRegion
             {
-                PageIndex = CurrentPageNumber - 1,
+                PageIndex = pageIndex,
                 X = left,
                 Y = top,
                 Width = right - left,
@@ -377,7 +257,7 @@ public partial class RedactPdfToolViewModel : PdfToolViewModelBase
         {
             region = new RedactionRegion
             {
-                PageIndex = CurrentPageNumber - 1,
+                PageIndex = pageIndex,
                 X = pdfX,
                 Y = pdfY,
                 Width = pdfWidth,
@@ -389,22 +269,6 @@ public partial class RedactPdfToolViewModel : PdfToolViewModelBase
 
         Marks.Add(new RedactionMarkItem { Region = region, Label = label });
         RecomputeCurrentPageMarks();
-    }
-
-    [RelayCommand]
-    private async Task NextPageAsync()
-    {
-        if (CurrentPageNumber >= TotalPages) return;
-        CurrentPageNumber++;
-        await RenderCurrentPageAsync();
-    }
-
-    [RelayCommand]
-    private async Task PreviousPageAsync()
-    {
-        if (CurrentPageNumber <= 1) return;
-        CurrentPageNumber--;
-        await RenderCurrentPageAsync();
     }
 
     protected override bool ValidateInputs(out string errorMessage)
@@ -420,7 +284,7 @@ public partial class RedactPdfToolViewModel : PdfToolViewModelBase
         return true;
     }
 
-    protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct)
+    protected override async Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, System.Threading.CancellationToken ct)
     {
         var options = new RedactionToolOptions
         {

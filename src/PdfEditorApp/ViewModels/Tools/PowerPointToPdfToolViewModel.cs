@@ -12,6 +12,8 @@ public partial class PowerPointToPdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private PageOrientation _orientation = PageOrientation.Landscape;
 
+    public override bool UsesWorkspaceShell => true;
+
     public PowerPointToPdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

@@ -82,8 +82,8 @@ public partial class RedactPdfToolView : UserControl
         bool zoomModifier = e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
         if (!zoomModifier || DataContext is not RedactPdfToolViewModel vm) return;
 
-        if (e.Delta.Y > 0) vm.ZoomInCommand.Execute(null);
-        else if (e.Delta.Y < 0) vm.ZoomOutCommand.Execute(null);
+        if (e.Delta.Y > 0) vm.Preview.ZoomInCommand.Execute(null);
+        else if (e.Delta.Y < 0) vm.Preview.ZoomOutCommand.Execute(null);
         e.Handled = true;
     }
 }

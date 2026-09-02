@@ -18,6 +18,8 @@ public partial class PdfToWordToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private bool _ocrFallback;
 
+    public override bool UsesWorkspaceShell => true;
+
     public PdfToWordToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

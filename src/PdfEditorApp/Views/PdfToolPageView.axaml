@@ -56,12 +56,24 @@
             <Setter Property="Background" Value="#FFFBEB" />
             <Setter Property="BorderBrush" Value="#FDE68A" />
         </Style>
+
+        <!-- Tools on the shared workspace shell (PdfToolWorkspaceView) bring their own
+             toolbar/back-button/identity, so the content host sits flush instead of
+             carrying this page's own padding meant for the older ad hoc tool layouts. -->
+        <Style Selector="ContentControl#ToolContentHost">
+            <Setter Property="Margin" Value="28,24,28,28" />
+        </Style>
+        <Style Selector="ContentControl#ToolContentHost.flush">
+            <Setter Property="Margin" Value="0" />
+        </Style>
     </UserControl.Styles>
 
     <Grid RowDefinitions="Auto,*">
 
-        <!-- 1. Top Navigation & Header Banner -->
+        <!-- 1. Top Navigation & Header Banner (hidden for tools using the shared
+             workspace shell, which has its own merged back+identity+toolbar row) -->
         <Border Grid.Row="0"
+                IsVisible="{Binding !UsesWorkspaceShell}"
                 Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="0,0,0,1"
@@ -145,7 +157,7 @@
         </Border>
 
         <!-- 2. Dynamic Dedicated Tool View Loaded via ViewLocator -->
-        <ContentControl Grid.Row="1" Content="{Binding}" Margin="28,24,28,28" />
+        <ContentControl x:Name="ToolContentHost" Grid.Row="1" Content="{Binding}" Classes.flush="{Binding UsesWorkspaceShell}" />
 
     </Grid>
 </UserControl>

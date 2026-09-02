@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:PdfEditorApp.ViewModels.Tools"
              xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:shell="using:PdfEditorApp.Views.Shell"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.Views.Tools.SignPdfToolView"
              x:DataType="vm:SignPdfToolViewModel">
@@ -10,10 +11,20 @@
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
     </UserControl.Resources>
 
-    <Grid ColumnDefinitions="*,380" Margin="0,4,0,0">
+    <shell:PdfToolWorkspaceView>
 
-        <!-- LEFT: File Workspace & Live Signature Style Preview -->
-        <ScrollViewer Grid.Column="0" Margin="0,0,20,0" VerticalScrollBarVisibility="Auto">
+        <!-- Toolbar primary action -->
+        <shell:PdfToolWorkspaceView.ToolbarActionContent>
+            <Button Command="{Binding ExecuteToolCommand}" IsEnabled="{Binding !IsRunning}" Background="#2563EB" Foreground="White" CornerRadius="8" Padding="16,8" FontWeight="Bold" FontSize="12.5" Cursor="Hand">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <materialIcons:MaterialIcon Kind="DrawPen" Width="15" Height="15" />
+                    <TextBlock Text="Sign PDF Document" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </shell:PdfToolWorkspaceView.ToolbarActionContent>
+
+        <!-- Sidebar Options tab: status, document selection, and signature settings -->
+        <shell:PdfToolWorkspaceView.OptionsContent>
             <StackPanel Spacing="16">
 
                 <!-- Error Alert Banner -->
@@ -40,7 +51,7 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <WrapPanel Orientation="Horizontal" Margin="52,0,0,0">
+                        <WrapPanel Orientation="Horizontal">
                             <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="15" Height="15" />
@@ -64,36 +75,36 @@
                 </Border>
 
                 <!-- Processing Card -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20,16" IsVisible="{Binding IsRunning}">
-                    <StackPanel Spacing="12">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16,14" IsVisible="{Binding IsRunning}">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="14" FontWeight="Bold" Foreground="#2563EB" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="13.5" FontWeight="Bold" Foreground="#2563EB" VerticalAlignment="Center" />
                         </Grid>
-                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#2563EB" Background="{DynamicResource WinHoverBrush}" />
+                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="7" CornerRadius="4" Foreground="#2563EB" Background="{DynamicResource WinHoverBrush}" />
                     </StackPanel>
                 </Border>
 
                 <!-- LIVE SIGNATURE BADGE PREVIEW -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 2 6 #05000000">
-                    <StackPanel Spacing="14">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16" BoxShadow="0 2 6 #05000000">
+                    <StackPanel Spacing="12">
                         <Grid ColumnDefinitions="*,Auto">
-                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="DrawPen" Width="18" Height="18" Foreground="#2563EB" />
-                                <TextBlock Text="Live Signature Stamp Preview" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="DrawPen" Width="15" Height="15" Foreground="#2563EB" />
+                                <TextBlock Text="Live Signature Preview" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
-                            <Border Background="#EFF6FF" CornerRadius="6" Padding="8,3">
-                                <TextBlock Text="Verified Seal" FontSize="11" FontWeight="SemiBold" Foreground="#2563EB" />
+                            <Border Background="#EFF6FF" CornerRadius="6" Padding="6,2">
+                                <TextBlock Text="Verified Seal" FontSize="10" FontWeight="SemiBold" Foreground="#2563EB" />
                             </Border>
                         </Grid>
 
-                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="24,18" HorizontalAlignment="Center" MinWidth="340">
-                            <StackPanel Spacing="8">
-                                <TextBlock Text="{Binding SignerName}" FontSize="24" FontFamily="Brush Script MT,Zapfino,Caveat,Segoe Script,Cursive" Foreground="#1E3A8A" HorizontalAlignment="Center" />
-                                <Rectangle Height="1" Fill="{DynamicResource WinBorderBrush}" Margin="0,4" />
-                                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                                    <materialIcons:MaterialIcon Kind="ShieldCheck" Width="14" Height="14" Foreground="#16A34A" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding Reason}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="{Binding SignerName}" FontSize="20" FontFamily="Brush Script MT,Zapfino,Caveat,Segoe Script,Cursive" Foreground="#1E3A8A" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                                <Rectangle Height="1" Fill="{DynamicResource WinBorderBrush}" Margin="0,3" />
+                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="ShieldCheck" Width="12" Height="12" Foreground="#16A34A" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Reason}" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -101,16 +112,16 @@
                 </Border>
 
                 <!-- Dropzone Box -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
-                        <Border Width="64" Height="64" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="DrawPen" Width="34" Height="34" Foreground="#2563EB" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="20,26" IsVisible="{Binding !HasSelectedFiles}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                        <Border Width="52" Height="52" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="14" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="DrawPen" Width="28" Height="28" Foreground="#2563EB" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
-                        <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Text="Select PDF to Sign" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Text="Sign with elegant typed cursive script, ink stamp, or certificate metadata" FontSize="13" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                        <StackPanel Spacing="3" HorizontalAlignment="Center">
+                            <TextBlock Text="Select PDF to Sign" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
+                            <TextBlock Text="Sign with elegant cursive script, ink stamp, or certificate metadata" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                         </StackPanel>
-                        <Button Command="{Binding AddFilesCommand}" Background="#2563EB" Foreground="White" CornerRadius="8" Padding="24,10" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
+                        <Button Command="{Binding AddFilesCommand}" Background="#2563EB" Foreground="White" CornerRadius="8" Padding="20,10" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
                                 <TextBlock Text="Select PDF Document" VerticalAlignment="Center" />
@@ -120,20 +131,20 @@
                 </Border>
 
                 <!-- Loaded Document Card -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" IsVisible="{Binding HasSelectedFiles}">
-                    <StackPanel Spacing="12">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16" IsVisible="{Binding HasSelectedFiles}">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="Document to Sign" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <Button Command="{Binding AddFilesCommand}" Background="#EFF6FF" Foreground="#2563EB" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Padding="12,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand">
+                            <TextBlock Text="Document to Sign" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <Button Command="{Binding AddFilesCommand}" Background="#EFF6FF" Foreground="#2563EB" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Padding="10,5" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
                                 Change File
                             </Button>
                         </Grid>
-                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,12">
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Border Grid.Column="0" Width="36" Height="36" Background="#EFF6FF" CornerRadius="8" Margin="0,0,12,0">
-                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#2563EB" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Width="32" Height="32" Background="#EFF6FF" CornerRadius="8" Margin="0,0,10,0">
+                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="#2563EB" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 <Button Grid.Column="2" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Padding="6" Cursor="Hand">
                                     <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" />
                                 </Button>
@@ -142,62 +153,45 @@
                     </StackPanel>
                 </Border>
 
-            </StackPanel>
-        </ScrollViewer>
-
-        <!-- RIGHT: Signature Settings -->
-        <Border Grid.Column="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
-            <DockPanel>
-                <Border DockPanel.Dock="Top" Margin="0,0,0,16">
-                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#2563EB" />
-                        <TextBlock Text="Signature Options" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-
-                <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0" Spacing="10">
-                    <Button Command="{Binding ExecuteToolCommand}" Background="#2563EB" Foreground="White" CornerRadius="10" Padding="24,14" FontWeight="Bold" FontSize="14" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsEnabled="{Binding !IsRunning}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <materialIcons:MaterialIcon Kind="DrawPen" Width="18" Height="18" />
-                            <TextBlock Text="Sign PDF Document" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+                <!-- Signature settings -->
+                <StackPanel Spacing="3">
+                    <TextBlock Text="Signature Details" FontSize="14" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="Signer name, cursive style, and placement" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
                 </StackPanel>
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="14">
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Signer Full Name" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                            <TextBox Text="{Binding SignerName}" FontSize="12" />
-                        </StackPanel>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Signer Full Name" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                    <TextBox Text="{Binding SignerName}" FontSize="12" />
+                </StackPanel>
 
-                        <TextBlock Text="Cursive Signature Style" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                        <StackPanel Spacing="6">
-                            <RadioButton Content="Cursive Elegance" IsChecked="{Binding Style, Converter={StaticResource EqualityConverter}, ConverterParameter=CursiveElegance}" />
-                            <RadioButton Content="Modern Monoline" IsChecked="{Binding Style, Converter={StaticResource EqualityConverter}, ConverterParameter=ModernMonoline}" />
-                            <RadioButton Content="Bold Calligraphy" IsChecked="{Binding Style, Converter={StaticResource EqualityConverter}, ConverterParameter=BoldCalligraphy}" />
-                            <RadioButton Content="Technical Blueprint" IsChecked="{Binding Style, Converter={StaticResource EqualityConverter}, ConverterParameter=TechnicalBlueprint}" />
-                        </StackPanel>
-
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Signing Reason / Description" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                            <TextBox Text="{Binding Reason}" FontSize="12" />
-                        </StackPanel>
-
-                        <Grid ColumnDefinitions="*,*">
-                            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
-                                <TextBlock Text="Target Page" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                                <NumericUpDown Value="{Binding TargetPageNumber}" Minimum="1" Maximum="1000" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
-                                <TextBlock Text="Location (Optional)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                                <TextBox Text="{Binding Location}" FontSize="12" PlaceholderText="City, Country" />
-                            </StackPanel>
-                        </Grid>
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Cursive Signature Style" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                    <StackPanel Spacing="6">
+                        <RadioButton Content="Cursive Elegance" IsChecked="{Binding Style, Converter={StaticResource EqualityConverter}, ConverterParameter=CursiveElegance}" FontSize="12" />
+                        <RadioButton Content="Modern Monoline" IsChecked="{Binding Style, Converter={StaticResource EqualityConverter}, ConverterParameter=ModernMonoline}" FontSize="12" />
+                        <RadioButton Content="Bold Calligraphy" IsChecked="{Binding Style, Converter={StaticResource EqualityConverter}, ConverterParameter=BoldCalligraphy}" FontSize="12" />
+                        <RadioButton Content="Technical Blueprint" IsChecked="{Binding Style, Converter={StaticResource EqualityConverter}, ConverterParameter=TechnicalBlueprint}" FontSize="12" />
                     </StackPanel>
-                </ScrollViewer>
-            </DockPanel>
-        </Border>
+                </StackPanel>
 
-    </Grid>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Signing Reason / Description" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                    <TextBox Text="{Binding Reason}" FontSize="12" />
+                </StackPanel>
+
+                <Grid ColumnDefinitions="*,*">
+                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                        <TextBlock Text="Target Page" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <NumericUpDown Value="{Binding TargetPageNumber}" Minimum="1" Maximum="1000" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
+                        <TextBlock Text="Location (Optional)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <TextBox Text="{Binding Location}" FontSize="12" PlaceholderText="City, Country" />
+                    </StackPanel>
+                </Grid>
+
+            </StackPanel>
+        </shell:PdfToolWorkspaceView.OptionsContent>
+
+    </shell:PdfToolWorkspaceView>
 </UserControl>

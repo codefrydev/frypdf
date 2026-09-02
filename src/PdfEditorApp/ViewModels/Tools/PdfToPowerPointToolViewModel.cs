@@ -12,6 +12,8 @@ public partial class PdfToPowerPointToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private bool _editableText = true;
 
+    public override bool UsesWorkspaceShell => true;
+
     public PdfToPowerPointToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

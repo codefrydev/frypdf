@@ -40,6 +40,8 @@ public partial class CompressPdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private string _qualityFeedbackSeverity = "Success"; // "Success", "Warning", "Info"
 
+    public override bool UsesWorkspaceShell => true;
+
     public bool IsExtremeCompression => !IsCustomMode && CompressionLevel == PdfCompressionLevel.MaximumCompression;
     public bool IsRecommendedCompression => !IsCustomMode && (CompressionLevel == PdfCompressionLevel.Balanced || CompressionLevel == PdfCompressionLevel.SmallSize);
     public bool IsLessCompression => !IsCustomMode && (CompressionLevel == PdfCompressionLevel.HighQuality || CompressionLevel == PdfCompressionLevel.MaximumQuality);

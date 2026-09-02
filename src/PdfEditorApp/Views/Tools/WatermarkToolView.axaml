@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:PdfEditorApp.ViewModels.Tools"
              xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:shell="using:PdfEditorApp.Views.Shell"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.Views.Tools.WatermarkToolView"
              x:DataType="vm:WatermarkToolViewModel">
@@ -11,10 +12,20 @@
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
     </UserControl.Resources>
 
-    <Grid ColumnDefinitions="*,380" Margin="0,4,0,0">
+    <shell:PdfToolWorkspaceView>
 
-        <!-- LEFT: File workspace, live watermark preview, and completion status -->
-        <ScrollViewer Grid.Column="0" Margin="0,0,20,0" VerticalScrollBarVisibility="Auto">
+        <!-- Toolbar primary action -->
+        <shell:PdfToolWorkspaceView.ToolbarActionContent>
+            <Button Command="{Binding ExecuteToolCommand}" IsEnabled="{Binding !IsRunning}" Background="#9333EA" Foreground="White" CornerRadius="8" Padding="16,8" FontWeight="Bold" FontSize="12.5" Cursor="Hand">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <materialIcons:MaterialIcon Kind="Watermark" Width="15" Height="15" />
+                    <TextBlock Text="Apply Watermark" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </shell:PdfToolWorkspaceView.ToolbarActionContent>
+
+        <!-- Sidebar Options tab: status, document selection, live stamp preview, and watermark styling -->
+        <shell:PdfToolWorkspaceView.OptionsContent>
             <StackPanel Spacing="16">
 
                 <!-- Error Alert Banner -->
@@ -41,7 +52,7 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <WrapPanel Orientation="Horizontal" Margin="52,0,0,0">
+                        <WrapPanel Orientation="Horizontal">
                             <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="15" Height="15" />
@@ -78,31 +89,31 @@
                     </StackPanel>
                 </Border>
 
-                <!-- LIVE WATERMARK STAMP VISUALIZER -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" BoxShadow="0 2 8 #06000000">
-                    <StackPanel Spacing="14">
+                <!-- Live Watermark Stamp Preview -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="14" BoxShadow="0 2 8 #06000000">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="EyeOutline" Width="18" Height="18" Foreground="#9333EA" />
-                                <TextBlock Text="Live Watermark Stamp Preview" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                <materialIcons:MaterialIcon Kind="EyeOutline" Width="16" Height="16" Foreground="#9333EA" />
+                                <TextBlock Text="Live Stamp Preview" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
-                            <Border Background="#FAF5FF" CornerRadius="6" Padding="8,3">
-                                <TextBlock Text="Interactive" FontSize="11" FontWeight="SemiBold" Foreground="#9333EA" />
+                            <Border Background="#FAF5FF" CornerRadius="6" Padding="7,3">
+                                <TextBlock Text="Live" FontSize="10.5" FontWeight="SemiBold" Foreground="#9333EA" />
                             </Border>
                         </Grid>
 
                         <!-- Simulated Page Canvas -->
-                        <Border Width="380" Height="220" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" HorizontalAlignment="Center" ClipToBounds="True">
+                        <Border Height="170" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" HorizontalAlignment="Stretch" ClipToBounds="True">
                             <Panel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                                 <!-- Ghost document lines -->
-                                <StackPanel Margin="24,20" Spacing="8" Opacity="0.35">
-                                    <Rectangle Width="200" Height="10" Fill="#94A3B8" HorizontalAlignment="Left" RadiusX="3" RadiusY="3" />
-                                    <Rectangle Width="320" Height="6" Fill="{DynamicResource WinBorderBrush}" HorizontalAlignment="Left" RadiusX="2" RadiusY="2" />
-                                    <Rectangle Width="300" Height="6" Fill="{DynamicResource WinBorderBrush}" HorizontalAlignment="Left" RadiusX="2" RadiusY="2" />
-                                    <Rectangle Width="310" Height="6" Fill="{DynamicResource WinBorderBrush}" HorizontalAlignment="Left" RadiusX="2" RadiusY="2" />
-                                    <Rectangle Width="180" Height="6" Fill="{DynamicResource WinBorderBrush}" HorizontalAlignment="Left" RadiusX="2" RadiusY="2" />
-                                    <Rectangle Width="320" Height="6" Fill="{DynamicResource WinBorderBrush}" HorizontalAlignment="Left" RadiusX="2" RadiusY="2" Margin="0,10,0,0" />
-                                    <Rectangle Width="290" Height="6" Fill="{DynamicResource WinBorderBrush}" HorizontalAlignment="Left" RadiusX="2" RadiusY="2" />
+                                <StackPanel Margin="16,14" Spacing="7" Opacity="0.35">
+                                    <Rectangle Width="140" Height="8" Fill="#94A3B8" HorizontalAlignment="Left" RadiusX="3" RadiusY="3" />
+                                    <Rectangle Width="220" Height="5" Fill="{DynamicResource WinBorderBrush}" HorizontalAlignment="Left" RadiusX="2" RadiusY="2" />
+                                    <Rectangle Width="200" Height="5" Fill="{DynamicResource WinBorderBrush}" HorizontalAlignment="Left" RadiusX="2" RadiusY="2" />
+                                    <Rectangle Width="210" Height="5" Fill="{DynamicResource WinBorderBrush}" HorizontalAlignment="Left" RadiusX="2" RadiusY="2" />
+                                    <Rectangle Width="120" Height="5" Fill="{DynamicResource WinBorderBrush}" HorizontalAlignment="Left" RadiusX="2" RadiusY="2" />
+                                    <Rectangle Width="220" Height="5" Fill="{DynamicResource WinBorderBrush}" HorizontalAlignment="Left" RadiusX="2" RadiusY="2" Margin="0,8,0,0" />
+                                    <Rectangle Width="190" Height="5" Fill="{DynamicResource WinBorderBrush}" HorizontalAlignment="Left" RadiusX="2" RadiusY="2" />
                                 </StackPanel>
 
                                 <!-- Rotated Watermark Text -->
@@ -113,11 +124,11 @@
                                     <Border BorderBrush="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
                                             BorderThickness="2"
                                             CornerRadius="6"
-                                            Padding="12,6"
+                                            Padding="10,5"
                                             Opacity="{Binding Opacity}">
                                         <TextBlock Text="{Binding WatermarkText}"
                                                    Foreground="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                   FontSize="22"
+                                                   FontSize="17"
                                                    FontWeight="Bold"
                                                    TextAlignment="Center" />
                                     </Border>
@@ -128,39 +139,39 @@
                 </Border>
 
                 <!-- Dropzone Box -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="36,44" IsVisible="{Binding !HasSelectedFiles}">
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
-                        <Border Width="64" Height="64" Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="Watermark" Width="34" Height="34" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="10" Padding="20,26" IsVisible="{Binding !HasSelectedFiles}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                        <Border Width="52" Height="52" Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="14" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="Watermark" Width="28" Height="28" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
-                        <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Text="Select PDF to Watermark" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Text="Stamp text or image watermarks with precise transparency, angle, and position" FontSize="13" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                        <StackPanel Spacing="3" HorizontalAlignment="Center">
+                            <TextBlock Text="Select PDF to Watermark" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
+                            <TextBlock Text="Stamp text with precise transparency, angle, and position" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                         </StackPanel>
-                        <Button Command="{Binding AddFilesCommand}" Background="#9333EA" Foreground="White" CornerRadius="8" Padding="24,10" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
+                        <Button Command="{Binding AddFilesCommand}" Background="#9333EA" Foreground="White" CornerRadius="8" Padding="18,9" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
                                 <TextBlock Text="Select PDF Document" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
                 </Border>
 
-                <!-- Document List -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" IsVisible="{Binding HasSelectedFiles}">
-                    <StackPanel Spacing="12">
+                <!-- Document Card -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" IsVisible="{Binding HasSelectedFiles}">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="Document to Stamp" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <Button Command="{Binding AddFilesCommand}" Background="#FAF5FF" Foreground="#9333EA" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="6" Padding="12,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand">
+                            <TextBlock Text="Document to Stamp" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <Button Command="{Binding AddFilesCommand}" Background="#FAF5FF" Foreground="#9333EA" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="6" Padding="10,5" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
                                 Change File
                             </Button>
                         </Grid>
-                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,12">
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Border Grid.Column="0" Width="36" Height="36" Background="#FAF5FF" CornerRadius="8" Margin="0,0,12,0">
-                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Width="32" Height="32" Background="#FAF5FF" CornerRadius="8" Margin="0,0,10,0">
+                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 <Button Grid.Column="2" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Padding="6" Cursor="Hand">
                                     <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" />
                                 </Button>
@@ -169,71 +180,52 @@
                     </StackPanel>
                 </Border>
 
-            </StackPanel>
-        </ScrollViewer>
-
-        <!-- RIGHT: Watermark Styling Options -->
-        <Border Grid.Column="1" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="22" BoxShadow="0 4 12 #08000000">
-            <DockPanel>
-                <Border DockPanel.Dock="Top" Margin="0,0,0,16">
-                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <materialIcons:MaterialIcon Kind="TuneVerticalVariant" Width="18" Height="18" Foreground="#9333EA" />
-                        <TextBlock Text="Watermark Typography &amp; Style" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-
-                <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0" Spacing="10">
-                    <Button Command="{Binding ExecuteToolCommand}" Background="#9333EA" Foreground="White" CornerRadius="10" Padding="24,14" FontWeight="Bold" FontSize="14" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsEnabled="{Binding !IsRunning}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <materialIcons:MaterialIcon Kind="Watermark" Width="18" Height="18" />
-                            <TextBlock Text="Apply Watermark" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+                <!-- Watermark styling settings -->
+                <StackPanel Spacing="3">
+                    <TextBlock Text="Watermark Style" FontSize="14" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="Customize text, opacity, rotation, and position" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
                 </StackPanel>
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="14">
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Watermark Text" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                            <TextBox Text="{Binding WatermarkText}" FontSize="12" />
-                        </StackPanel>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Watermark Text" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                    <TextBox Text="{Binding WatermarkText}" FontSize="12" />
+                </StackPanel>
 
-                        <Grid ColumnDefinitions="*,*">
-                            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
-                                <TextBlock Text="Opacity (0.05 - 1.0)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                                <NumericUpDown Value="{Binding Opacity}" Minimum="0.05" Maximum="1.0" Increment="0.05" FormatString="0.00" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
-                                <TextBlock Text="Rotation Angle (°)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                                <NumericUpDown Value="{Binding RotationAngle}" Minimum="-180" Maximum="180" Increment="15" />
-                            </StackPanel>
-                        </Grid>
-
-                        <Grid ColumnDefinitions="*,*">
-                            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
-                                <TextBlock Text="Color Hex Code" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                                <TextBox Text="{Binding ColorHex}" FontSize="12" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
-                                <TextBlock Text="Font Size (pt)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                                <NumericUpDown Value="{Binding FontSize}" Minimum="12" Maximum="140" Increment="4" />
-                            </StackPanel>
-                        </Grid>
-
-                        <StackPanel Spacing="6">
-                            <TextBlock Text="Stamp Position" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                            <WrapPanel Orientation="Horizontal">
-                                <RadioButton Content="Center" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=Center}" Margin="0,0,10,6" />
-                                <RadioButton Content="Top-Left" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=TopLeft}" Margin="0,0,10,6" />
-                                <RadioButton Content="Top-Right" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=TopRight}" Margin="0,0,10,6" />
-                                <RadioButton Content="Bottom-Center" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomCenter}" Margin="0,0,10,6" />
-                                <RadioButton Content="Tiled Pattern" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=Tiled}" Margin="0,0,10,6" />
-                            </WrapPanel>
-                        </StackPanel>
+                <Grid ColumnDefinitions="*,*">
+                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                        <TextBlock Text="Opacity (0.05 - 1.0)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <NumericUpDown Value="{Binding Opacity}" Minimum="0.05" Maximum="1.0" Increment="0.05" FormatString="0.00" />
                     </StackPanel>
-                </ScrollViewer>
-            </DockPanel>
-        </Border>
+                    <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
+                        <TextBlock Text="Rotation Angle (°)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <NumericUpDown Value="{Binding RotationAngle}" Minimum="-180" Maximum="180" Increment="15" />
+                    </StackPanel>
+                </Grid>
 
-    </Grid>
+                <Grid ColumnDefinitions="*,*">
+                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                        <TextBlock Text="Color Hex Code" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <TextBox Text="{Binding ColorHex}" FontSize="12" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
+                        <TextBlock Text="Font Size (pt)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <NumericUpDown Value="{Binding FontSize}" Minimum="12" Maximum="140" Increment="4" />
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Stamp Position" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                    <WrapPanel Orientation="Horizontal">
+                        <RadioButton Content="Center" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=Center}" Margin="0,0,10,6" />
+                        <RadioButton Content="Top-Left" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=TopLeft}" Margin="0,0,10,6" />
+                        <RadioButton Content="Top-Right" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=TopRight}" Margin="0,0,10,6" />
+                        <RadioButton Content="Bottom-Center" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomCenter}" Margin="0,0,10,6" />
+                        <RadioButton Content="Tiled Pattern" IsChecked="{Binding Position, Converter={StaticResource EqualityConverter}, ConverterParameter=Tiled}" Margin="0,0,10,6" />
+                    </WrapPanel>
+                </StackPanel>
+
+            </StackPanel>
+        </shell:PdfToolWorkspaceView.OptionsContent>
+
+    </shell:PdfToolWorkspaceView>
 </UserControl>

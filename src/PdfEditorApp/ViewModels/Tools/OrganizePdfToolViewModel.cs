@@ -16,6 +16,8 @@ public partial class OrganizePdfToolViewModel : PdfToolViewModelBase
     [ObservableProperty]
     private List<int> _pagesToDelete = new();
 
+    public override bool UsesWorkspaceShell => true;
+
     public OrganizePdfToolViewModel(IPdfDocumentOperationsService operationsService, PdfToolDefinition tool)
         : base(operationsService, tool)
     {

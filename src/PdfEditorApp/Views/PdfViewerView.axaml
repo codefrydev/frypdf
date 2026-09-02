@@ -22,87 +22,8 @@
         <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
     </UserControl.Resources>
 
-    <UserControl.Styles>
-        <!-- Page Card Physical Styling -->
-        <Style Selector="Border.reader-page-card">
-            <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="BoxShadow" Value="0 8 28 #22000000, 0 1 3 #12000000" />
-            <Setter Property="BorderBrush" Value="#E2E8F0" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="ClipToBounds" Value="True" />
-        </Style>
-
-        <!-- Reading Theme Specific Paper Styling -->
-        <Style Selector="Border.reading-theme-sepia">
-            <Setter Property="Background" Value="#FBF0D9" />
-            <Setter Property="BorderBrush" Value="#E6D5B8" />
-        </Style>
-        <Style Selector="Border.reading-theme-dark">
-            <Setter Property="Background" Value="#1E293B" />
-            <Setter Property="BorderBrush" Value="#334155" />
-        </Style>
-        <Style Selector="Border.reading-theme-highcontrast">
-            <Setter Property="Background" Value="#000000" />
-            <Setter Property="BorderBrush" Value="#FFFF00" />
-        </Style>
-
-        <!-- Toolbar Segmented Capsule -->
-        <Style Selector="Border.toolbar-capsule">
-            <Setter Property="Background" Value="{DynamicResource WinInputBgBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="7" />
-            <Setter Property="Padding" Value="3,2" />
-        </Style>
-
-        <!-- Compact Tool Button -->
-        <Style Selector="Button.toolbar-btn">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="CornerRadius" Value="5" />
-            <Setter Property="Width" Value="28" />
-            <Setter Property="Height" Value="28" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
-        <Style Selector="Button.toolbar-btn:pointerover">
-            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
-        </Style>
-
-        <!-- Active Mode Button in Segmented Capsule -->
-        <Style Selector="Button.mode-active">
-            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
-        </Style>
-
-        <!-- Thumbnail Item Card -->
-        <Style Selector="Border.thumbnail-card">
-            <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Padding" Value="4" />
-            <Setter Property="BoxShadow" Value="0 2 8 #10000000" />
-            <Setter Property="Transitions">
-                <Transitions>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
-                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.15" />
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Border.thumbnail-card:pointerover">
-            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
-            <Setter Property="BoxShadow" Value="0 4 14 #200F6CBD" />
-        </Style>
-        <Style Selector="Border.thumbnail-card.selected">
-            <Setter Property="BorderBrush" Value="#0F6CBD" />
-            <Setter Property="BorderThickness" Value="2" />
-            <Setter Property="Background" Value="#F0F7FF" />
-            <Setter Property="BoxShadow" Value="0 4 16 #280F6CBD" />
-        </Style>
-    </UserControl.Styles>
+    <!-- Reader-page/toolbar/thumbnail styling now lives in Styles/FluentOfficeStyles.axaml,
+         shared with the tool-screen workspace shell (PdfToolWorkspaceView). -->
 
     <Grid RowDefinitions="Auto,*,Auto">
 

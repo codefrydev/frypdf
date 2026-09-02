@@ -47,9 +47,26 @@ public partial class PdfLivePreviewViewModel : ObservableObject
     [ObservableProperty]
     private PdfToolPreviewPage? _selectedPage;
 
-    public bool HasDocument => TotalPages > 0;
+    [ObservableProperty]
+    private bool _isTextDocument;
+
+    [ObservableProperty]
+    private string _textDocumentContent = string.Empty;
+
+    [ObservableProperty]
+    private int _textDocumentLinesCount;
+
+    [ObservableProperty]
+    private int _textDocumentWordsCount;
+
+    [ObservableProperty]
+    private string _textDocumentFileName = string.Empty;
+
+    public bool HasDocument => TotalPages > 0 || IsTextDocument;
     public string ZoomPercentText => $"{ZoomLevel * 100:F0}%";
-    public string PageIndicatorText => TotalPages > 0 ? $"Page {CurrentPageNumber} of {TotalPages}" : "No document";
+    public string PageIndicatorText => IsTextDocument
+        ? (TextDocumentLinesCount > 0 ? $"{TextDocumentLinesCount} lines" : "Text Document")
+        : (TotalPages > 0 ? $"Page {CurrentPageNumber} of {TotalPages}" : "No document");
     public bool CanGoToPreviousPage => CurrentPageNumber > 1;
     public bool CanGoToNextPage => CurrentPageNumber < TotalPages;
     public bool CanZoomIn => ZoomLevel < MaxZoom - 0.001;
@@ -129,6 +146,7 @@ public partial class PdfLivePreviewViewModel : ObservableObject
     /// <summary>
     /// Loads (or clears, if <paramref name="filePath"/> is null/empty) the document the
     /// preview shows. Safe to call repeatedly as the tool's selected file changes.
+    /// Supports both PDF documents and plain text / markdown files (.txt, .md, .csv, .log).
     /// </summary>
     public async Task LoadDocumentAsync(string? filePath)
     {
@@ -142,9 +160,44 @@ public partial class PdfLivePreviewViewModel : ObservableObject
         ZoomLevel = 1.0;
         SelectedPage = null;
         _loadedFilePath = filePath;
+        IsTextDocument = false;
+        TextDocumentContent = string.Empty;
+        TextDocumentFileName = string.Empty;
+        TextDocumentLinesCount = 0;
+        TextDocumentWordsCount = 0;
 
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
         {
+            return;
+        }
+
+        string ext = Path.GetExtension(filePath).ToLowerInvariant();
+        if (ext is ".txt" or ".text" or ".md" or ".json" or ".csv" or ".tsv" or ".log")
+        {
+            IsLoading = true;
+            try
+            {
+                string text = await File.ReadAllTextAsync(filePath, cts.Token);
+                if (cts.Token.IsCancellationRequested || filePath != _loadedFilePath) return;
+
+                TextDocumentContent = text;
+                TextDocumentFileName = Path.GetFileName(filePath);
+                var lines = text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+                TextDocumentLinesCount = lines.Length;
+                TextDocumentWordsCount = text.Split(new[] { ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
+                TotalPages = 1;
+                CurrentPageNumber = 1;
+                IsTextDocument = true;
+            }
+            catch (Exception ex)
+            {
+                TextDocumentContent = $"[Error loading text file: {ex.Message}]";
+                IsTextDocument = true;
+            }
+            finally
+            {
+                IsLoading = false;
+            }
             return;
         }
 
@@ -171,6 +224,27 @@ public partial class PdfLivePreviewViewModel : ObservableObject
         {
             IsLoading = false;
         }
+    }
+
+    /// <summary>
+    /// Directly loads text content into the live preview canvas without requiring a file on disk.
+    /// </summary>
+    public void LoadTextContent(string text, string title = "Extracted_Text.txt")
+    {
+        _loadCts?.Cancel();
+        Pages.Clear();
+        SelectedPage = null;
+        TotalPages = 1;
+        CurrentPageNumber = 1;
+        ZoomLevel = 1.0;
+        _loadedFilePath = null;
+
+        TextDocumentContent = text;
+        TextDocumentFileName = title;
+        var lines = text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        TextDocumentLinesCount = lines.Length;
+        TextDocumentWordsCount = text.Split(new[] { ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
+        IsTextDocument = true;
     }
 
     private async Task LoadThumbnailsInBackgroundAsync(string filePath, CancellationToken ct)

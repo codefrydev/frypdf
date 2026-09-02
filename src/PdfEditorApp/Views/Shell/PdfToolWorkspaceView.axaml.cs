@@ -35,6 +35,23 @@ public partial class PdfToolWorkspaceView : UserControl
     public static readonly StyledProperty<object?> CanvasOverlayContentProperty =
         AvaloniaProperty.Register<PdfToolWorkspaceView, object?>(nameof(CanvasOverlayContent));
 
+    public static readonly StyledProperty<object?> SideBySideContentProperty =
+        AvaloniaProperty.Register<PdfToolWorkspaceView, object?>(nameof(SideBySideContent));
+
+    public static readonly DirectProperty<PdfToolWorkspaceView, GridLength> SideBySideColumnWidthProperty =
+        AvaloniaProperty.RegisterDirect<PdfToolWorkspaceView, GridLength>(
+            nameof(SideBySideColumnWidth),
+            o => o.SideBySideColumnWidth,
+            (o, v) => o.SideBySideColumnWidth = v);
+
+    private GridLength _sideBySideColumnWidth = new GridLength(0, GridUnitType.Pixel);
+
+    public GridLength SideBySideColumnWidth
+    {
+        get => _sideBySideColumnWidth;
+        set => SetAndRaise(SideBySideColumnWidthProperty, ref _sideBySideColumnWidth, value);
+    }
+
     public static readonly StyledProperty<string> SelectedTabProperty =
         AvaloniaProperty.Register<PdfToolWorkspaceView, string>(nameof(SelectedTab), "Options");
 
@@ -71,6 +88,13 @@ public partial class PdfToolWorkspaceView : UserControl
         set => SetValue(CanvasOverlayContentProperty, value);
     }
 
+    /// <summary>Optional side-by-side comparison panel shown next to the preview canvas (e.g. OCR extracted text or side-by-side diff).</summary>
+    public object? SideBySideContent
+    {
+        get => GetValue(SideBySideContentProperty);
+        set => SetValue(SideBySideContentProperty, value);
+    }
+
     public string SelectedTab
     {
         get => GetValue(SelectedTabProperty);
@@ -96,6 +120,17 @@ public partial class PdfToolWorkspaceView : UserControl
         AddHandler(PointerReleasedEvent, OnWorkspacePointerReleased, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, OnWorkspaceKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnWorkspaceKeyUp, RoutingStrategies.Tunnel);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == SideBySideContentProperty)
+        {
+            SideBySideColumnWidth = change.NewValue != null
+                ? new GridLength(1, GridUnitType.Star)
+                : new GridLength(0, GridUnitType.Pixel);
+        }
     }
 
     private void OnTabButtonClick(object? sender, RoutedEventArgs e)

@@ -34,35 +34,64 @@
                 </Border>
 
                 <!-- Success Banner -->
-                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="12" Padding="20,18" BoxShadow="0 4 12 #1016A34A" IsVisible="{Binding IsComplete}">
-                    <StackPanel Spacing="14">
-                        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                            <Border Width="40" Height="40" Background="#DCFCE7" CornerRadius="10">
-                                <materialIcons:MaterialIcon Kind="CheckCircle" Width="24" Height="24" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="12" Padding="18,16" BoxShadow="0 4 12 #1016A34A" IsVisible="{Binding IsComplete}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <Border Width="38" Height="38" Background="#DCFCE7" CornerRadius="10">
+                                <materialIcons:MaterialIcon Kind="CheckCircle" Width="22" Height="22" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Spacing="2" VerticalAlignment="Center">
-                                <TextBlock Text="OCR Text Recognition Completed!" FontSize="15" FontWeight="Bold" Foreground="#166534" />
-                                <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="12.5" Foreground="#15803D" TextWrapping="Wrap" />
+                                <TextBlock Text="OCR Recognition Completed!" FontSize="14" FontWeight="Bold" Foreground="#166534" />
+                                <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="11.5" Foreground="#15803D" TextWrapping="Wrap" />
                             </StackPanel>
                         </StackPanel>
 
                         <WrapPanel Orientation="Horizontal">
-                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="15" Height="15" />
-                                    <TextBlock Text="Open Searchable PDF" VerticalAlignment="Center" />
+                            <!-- Preview Extracted Text Button -->
+                            <Button Command="{Binding PreviewTextFileCommand}" IsVisible="{Binding HasGeneratedTextFile}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6" ToolTip.Tip="Preview the extracted text document in the main canvas">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="14" Height="14" />
+                                    <TextBlock Text="Preview Text File" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#DCFCE7" Foreground="#166534" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
+
+                            <!-- Preview Searchable PDF Button -->
+                            <Button Command="{Binding PreviewSearchablePdfCommand}" IsVisible="{Binding HasSearchablePdfOutput}" Background="#DCFCE7" Foreground="#166534" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="8" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6" ToolTip.Tip="Preview the searchable PDF in the main canvas">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="14" Height="14" />
+                                    <TextBlock Text="Preview PDF" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Open Text File (.txt) Button -->
+                            <Button Command="{Binding OpenGeneratedTextFileCommand}" IsVisible="{Binding HasGeneratedTextFile}" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="14" Height="14" />
+                                    <TextBlock Text="Open .txt" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Open Searchable PDF Button -->
+                            <Button Command="{Binding OpenOutputFileCommand}" IsVisible="{Binding HasSearchablePdfOutput}" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="OpenInNew" Width="14" Height="14" />
+                                    <TextBlock Text="Open .pdf" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Copy All Text Button -->
+                            <Button Command="{Binding CopyCurrentTextCommand}" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="ContentCopy" Width="14" Height="14" />
+                                    <TextBlock Text="Copy Text" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Show in Folder Button -->
+                            <Button Command="{Binding OpenOutputFolderCommand}" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="14" Height="14" />
                                     <TextBlock Text="Show in Folder" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
-                            <Button Command="{Binding OpenInEditorCommand}" Background="#EFF6FF" Foreground="#0F6CBD" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <materialIcons:MaterialIcon Kind="SquareEditOutline" Width="15" Height="15" />
-                                    <TextBlock Text="Edit in FryPDF" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                         </WrapPanel>
@@ -70,29 +99,29 @@
                 </Border>
 
                 <!-- Processing Card -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20,16" IsVisible="{Binding IsRunning}">
-                    <StackPanel Spacing="12">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18,14" IsVisible="{Binding IsRunning}">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="14" FontWeight="Bold" Foreground="#65A30D" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="13" FontWeight="Bold" Foreground="#65A30D" VerticalAlignment="Center" />
                         </Grid>
-                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#65A30D" Background="{DynamicResource WinHoverBrush}" />
+                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="7" CornerRadius="4" Foreground="#65A30D" Background="{DynamicResource WinHoverBrush}" />
                     </StackPanel>
                 </Border>
 
                 <!-- Dropzone Box -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="24,28" IsVisible="{Binding !HasSelectedFiles}">
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
-                        <Border Width="56" Height="56" Background="#F7FEE7" BorderBrush="#D9F99D" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="TextRecognition" Width="30" Height="30" Foreground="#65A30D" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="22,24" IsVisible="{Binding !HasSelectedFiles}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                        <Border Width="52" Height="52" Background="#F7FEE7" BorderBrush="#D9F99D" BorderThickness="1" CornerRadius="14" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="TextRecognition" Width="28" Height="28" Foreground="#65A30D" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
-                        <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Text="Select Scanned PDF for OCR" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
-                            <TextBlock Text="Transform scanned pages into selectable, searchable, and copyable text" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                        <StackPanel Spacing="3" HorizontalAlignment="Center">
+                            <TextBlock Text="Select Scanned PDF for OCR" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
+                            <TextBlock Text="Transform scanned documents into editable text and searchable PDFs" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                         </StackPanel>
-                        <Button Command="{Binding AddFilesCommand}" Background="#65A30D" Foreground="White" CornerRadius="8" Padding="20,10" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
+                        <Button Command="{Binding AddFilesCommand}" Background="#65A30D" Foreground="White" CornerRadius="8" Padding="18,9" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
                                 <TextBlock Text="Select Scanned Documents" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
@@ -100,22 +129,22 @@
                 </Border>
 
                 <!-- Selected Document -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" IsVisible="{Binding HasSelectedFiles}">
-                    <StackPanel Spacing="10">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12" IsVisible="{Binding HasSelectedFiles}">
+                    <StackPanel Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="Scanned Document" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <Button Grid.Column="1" Command="{Binding AddFilesCommand}" Background="#F7FEE7" Foreground="#65A30D" BorderBrush="#D9F99D" BorderThickness="1" CornerRadius="6" Padding="10,5" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
-                                Add Files
+                            <TextBlock Grid.Column="0" Text="Scanned Document" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Command="{Binding AddFilesCommand}" Background="#F7FEE7" Foreground="#65A30D" BorderBrush="#D9F99D" BorderThickness="1" CornerRadius="6" Padding="8,4" FontSize="10.5" FontWeight="SemiBold" Cursor="Hand">
+                                Change File
                             </Button>
                         </Grid>
-                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Border Grid.Column="0" Width="32" Height="32" Background="#F7FEE7" CornerRadius="8" Margin="0,0,10,0">
-                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="#65A30D" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Width="28" Height="28" Background="#F7FEE7" CornerRadius="6" Margin="0,0,8,0">
+                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="16" Height="16" Foreground="#65A30D" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                <Button Grid.Column="2" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Padding="6" Cursor="Hand">
-                                    <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="11.5" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                <Button Grid.Column="2" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Padding="4" Cursor="Hand">
+                                    <materialIcons:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
                                 </Button>
                             </Grid>
                         </Border>
@@ -124,20 +153,163 @@
 
                 <!-- OCR engine settings -->
                 <StackPanel Spacing="3">
-                    <TextBlock Text="OCR Engine Settings" FontSize="14" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
-                    <TextBlock Text="Choose a language and output format" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="OCR Engine Settings" FontSize="13.5" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="Hardware-accelerated native OCR and on-demand language packs" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
                 </StackPanel>
 
-                <StackPanel Spacing="4">
-                    <TextBlock Text="Document Language" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                    <TextBox Text="{Binding Language}" FontSize="12" PlaceholderText="eng, spa, deu, fra, jpn..." />
+                <!-- Active Engine Badge -->
+                <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Active Recognition Engine" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="Cpu64Bit" Width="16" Height="16" Foreground="#65A30D" />
+                            <TextBlock Text="{Binding ActiveEngineDescription}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Document Language Input & Download Action -->
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Document Language Code" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Grid.Column="0" Text="{Binding Language}" FontSize="12" PlaceholderText="eng, spa, deu, fra, jpn, chi_sim..." Margin="0,0,6,0" />
+                        <Button Grid.Column="1" Command="{Binding DownloadSelectedLanguageCommand}" Background="#F7FEE7" Foreground="#65A30D" BorderBrush="#D9F99D" BorderThickness="1" CornerRadius="6" Padding="10,6" FontSize="11" FontWeight="SemiBold" Cursor="Hand" ToolTip.Tip="Download or verify Tesseract language pack">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <materialIcons:MaterialIcon Kind="Download" Width="14" Height="14" />
+                                <TextBlock Text="Get Pack" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- Language model download progress -->
+                    <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="6" Padding="8" IsVisible="{Binding IsDownloadingModel}">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding DownloadStatusText}" FontSize="11" Foreground="{DynamicResource WinTextBrush}" />
+                            <ProgressBar Value="{Binding DownloadProgress}" Minimum="0" Maximum="100" Height="4" CornerRadius="2" Foreground="#65A30D" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="{Binding DownloadStatusText}" FontSize="11" Foreground="#65A30D" FontWeight="Medium" IsVisible="{Binding !IsDownloadingModel}" TextWrapping="Wrap" />
                 </StackPanel>
 
-                <CheckBox Content="Generate Searchable Invisible Text Layer" IsChecked="{Binding GenerateSearchablePdf}" FontSize="11.5" />
-                <CheckBox Content="Extract Text Content Only (.txt)" IsChecked="{Binding ExtractTextOnly}" FontSize="11.5" />
+                <!-- Output Formats -->
+                <StackPanel Spacing="3">
+                    <TextBlock Text="Output Formats" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="Choose what files are produced when OCR completes" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                </StackPanel>
+
+                <CheckBox Content="Generate Extracted Text File (.txt)" IsChecked="{Binding GenerateTextFile}" FontSize="11.5" />
+                <CheckBox Content="Generate Searchable Invisible Text Layer (.pdf)" IsChecked="{Binding GenerateSearchablePdf}" FontSize="11.5" />
+                <CheckBox Content="Extract Text Only (.txt)" IsChecked="{Binding ExtractTextOnly}" FontSize="11.5" />
+
+                <!-- Side-by-Side Toggle -->
+                <Separator Height="1" Background="{DynamicResource WinBorderBrush}" Margin="0,4" />
+                <CheckBox Content="Show Side-by-Side Comparison Panel" IsChecked="{Binding IsSideBySideVisible}" FontSize="11.5" />
 
             </StackPanel>
         </shell:PdfToolWorkspaceView.OptionsContent>
+
+        <!-- ================= SIDE-BY-SIDE OCR EXTRACTED TEXT PANEL ================= -->
+        <shell:PdfToolWorkspaceView.SideBySideContent>
+            <Grid RowDefinitions="Auto,*,Auto" Background="{DynamicResource WinPanelBrush}" IsVisible="{Binding IsSideBySideVisible}">
+                
+                <!-- Panel Header -->
+                <Border Grid.Row="0" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="14,10" Background="{DynamicResource WinInputBgBrush}">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        
+                        <!-- Left: Title and active page indicator -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Border Width="28" Height="28" Background="#F7FEE7" BorderBrush="#D9F99D" BorderThickness="1" CornerRadius="6">
+                                <materialIcons:MaterialIcon Kind="TextBoxOutline" Width="16" Height="16" Foreground="#65A30D" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Spacing="1" VerticalAlignment="Center">
+                                <TextBlock Text="Extracted Text (OCR)" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                <TextBlock Text="{Binding Preview.PageIndicatorText}" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Center: Word count & Character count pill -->
+                        <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource WinHoverBrush}" CornerRadius="12" Padding="10,3">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="Counter" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding WordCountText}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="·" FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding CharCountText}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Right: Actions (Copy, Save .TXT, Switch View) -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <!-- Toggle Page / Full Document -->
+                            <Button Command="{Binding ToggleViewModeCommand}" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" Padding="8,4" CornerRadius="6" Cursor="Hand" ToolTip.Tip="Toggle between Current Page and Full Document text">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="13" Height="13" />
+                                    <TextBlock Text="{Binding ViewModeButtonText}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Copy Text Button -->
+                            <Button Command="{Binding CopyCurrentTextCommand}" Background="#F7FEE7" BorderBrush="#D9F99D" BorderThickness="1" Foreground="#65A30D" Padding="8,4" CornerRadius="6" Cursor="Hand" ToolTip.Tip="Copy extracted text to clipboard">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <materialIcons:MaterialIcon Kind="ContentCopy" Width="13" Height="13" />
+                                    <TextBlock Text="Copy" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Save as .TXT File Button -->
+                            <Button Command="{Binding ExportTextFileCommand}" Background="#16A34A" Foreground="White" Padding="8,4" CornerRadius="6" Cursor="Hand" ToolTip.Tip="Save extracted text to a .txt file">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <materialIcons:MaterialIcon Kind="FileDownloadOutline" Width="13" Height="13" />
+                                    <TextBlock Text="Save .TXT" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Panel Body: Rich Text Editor / Viewer -->
+                <Grid Grid.Row="1">
+                    <TextBox Text="{Binding ActiveDisplayedText, Mode=TwoWay}"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             FontFamily="Consolas, Menlo, Monaco, monospace"
+                             FontSize="12"
+                             LineHeight="18"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Padding="16"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             PlaceholderText="No text extracted for this page yet. Click 'Re-extract' or perform OCR to extract text from scanned image..." />
+
+                    <!-- Loading Indicator Overlay -->
+                    <Border Background="#88000000" CornerRadius="4" IsVisible="{Binding IsExtractingPageText}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+                            <ProgressBar IsIndeterminate="True" Width="160" Height="4" Foreground="#65A30D" />
+                            <TextBlock Text="Recognizing text with OCR..." Foreground="White" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Panel Footer: Engine & Status info -->
+                <Border Grid.Row="2" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,1,0,0" Padding="14,6" Background="{DynamicResource WinInputBgBrush}">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="Cpu64Bit" Width="14" Height="14" Foreground="#65A30D" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding ActiveEngineDescription}" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- Toast / Status message -->
+                        <TextBlock Grid.Column="1" Text="{Binding CopyStatusMessage}" FontSize="11" FontWeight="Bold" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <Button Command="{Binding ExtractCurrentPageTextCommand}" Background="{DynamicResource WinHoverBrush}" BorderThickness="0" CornerRadius="4" Padding="6,2" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" Cursor="Hand" ToolTip.Tip="Re-run OCR recognition on this page">
+                                Re-extract
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </shell:PdfToolWorkspaceView.SideBySideContent>
 
     </shell:PdfToolWorkspaceView>
 </UserControl>

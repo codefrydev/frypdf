@@ -374,6 +374,7 @@ public class OcrToolOptions
     public string OutputFilePath { get; set; } = string.Empty;
     public string Language { get; set; } = "eng"; // eng, spa, deu, fra, etc.
     public bool GenerateSearchablePdf { get; set; } = true;
+    public bool GenerateTextFile { get; set; } = true;
     public bool ExtractTextOnly { get; set; }
 }
 

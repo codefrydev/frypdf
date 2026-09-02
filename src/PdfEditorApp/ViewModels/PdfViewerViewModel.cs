@@ -16,6 +16,7 @@ using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services.Tools;
+using PdfEditorApp.Services.Ocr;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Outline;
@@ -784,6 +785,10 @@ public partial class PdfViewerViewModel : ViewModelBase
             {
                 CurrentPageNumber = value.PageNumber;
             }
+            if (value.Words.Count == 0 && !value.IsGeometryLoading)
+            {
+                EnsurePageGeometry(value);
+            }
         }
     }
 
@@ -1007,6 +1012,98 @@ public partial class PdfViewerViewModel : ViewModelBase
         return (fullText, wordItems, lineList.OrderBy(l => l.Bounds.Top).ToList());
     }
 
+    /// <summary>
+    /// Performs OCR on a rendered page image if vector text extraction yields no words (e.g. scanned documents).
+    /// </summary>
+    public (string text, List<PdfViewerWordItem> words, List<PdfViewerTextLineItem> lines) ExtractOcrPageTextGeometry(int pageNumber, double width, double height)
+    {
+        try
+        {
+            var ocrProvider = CompositeOcrProvider.Default;
+            if (!ocrProvider.IsAvailable)
+            {
+                return (string.Empty, new List<PdfViewerWordItem>(), new List<PdfViewerTextLineItem>());
+            }
+
+            byte[]? pagePng = RenderPageBytesAtScale(pageNumber, 1.5f);
+            if (pagePng == null || pagePng.Length == 0)
+            {
+                return (string.Empty, new List<PdfViewerWordItem>(), new List<PdfViewerTextLineItem>());
+            }
+
+            var ocrResult = ocrProvider.RecognizeTextAsync(pagePng).GetAwaiter().GetResult();
+            if (!ocrResult.Success || ocrResult.Words.Count == 0)
+            {
+                return (string.Empty, new List<PdfViewerWordItem>(), new List<PdfViewerTextLineItem>());
+            }
+
+            var words = new List<PdfViewerWordItem>();
+            int wIdx = 0;
+            foreach (var ow in ocrResult.Words)
+            {
+                double wx = Math.Max(0, ow.NormalizedBounds.X * width);
+                double wy = Math.Max(0, ow.NormalizedBounds.Y * height);
+                double ww = Math.Max(1, ow.NormalizedBounds.Width * width);
+                double wh = Math.Max(1, ow.NormalizedBounds.Height * height);
+
+                var wordItem = new PdfViewerWordItem
+                {
+                    Text = ow.Text,
+                    Bounds = new Rect(wx, wy, ww, wh),
+                    WordIndex = wIdx++
+                };
+
+                double charW = ww / Math.Max(1, ow.Text.Length);
+                for (int ci = 0; ci < ow.Text.Length; ci++)
+                {
+                    wordItem.Glyphs.Add(new PdfViewerGlyphItem
+                    {
+                        Character = ow.Text[ci],
+                        Bounds = new Rect(wx + ci * charW, wy, Math.Max(0.5, charW), wh)
+                    });
+                }
+
+                words.Add(wordItem);
+            }
+
+            var lines = new List<PdfViewerTextLineItem>();
+            int lIdx = 0;
+            foreach (var ol in ocrResult.Lines)
+            {
+                double lx = Math.Max(0, ol.NormalizedBounds.X * width);
+                double ly = Math.Max(0, ol.NormalizedBounds.Y * height);
+                double lw = Math.Max(1, ol.NormalizedBounds.Width * width);
+                double lh = Math.Max(1, ol.NormalizedBounds.Height * height);
+
+                var lineItem = new PdfViewerTextLineItem
+                {
+                    LineIndex = lIdx++,
+                    Bounds = new Rect(lx, ly, lw, lh)
+                };
+
+                var lineWords = words
+                    .Where(w => w.Bounds.Top >= ly - 4 && w.Bounds.Bottom <= ly + lh + 4)
+                    .OrderBy(w => w.Bounds.Left)
+                    .ToList();
+
+                foreach (var lw_item in lineWords)
+                {
+                    lw_item.LineIndex = lineItem.LineIndex;
+                }
+
+                lineItem.Words.AddRange(lineWords);
+                lineItem.Text = string.Join(" ", lineItem.Words.Select(w => w.Text));
+                lines.Add(lineItem);
+            }
+
+            return (ocrResult.FullText, words, lines);
+        }
+        catch
+        {
+            return (string.Empty, new List<PdfViewerWordItem>(), new List<PdfViewerTextLineItem>());
+        }
+    }
+
     public byte[]? CurrentPdfBytes => _currentPdfBytes;
 
     /// <summary>
@@ -1047,21 +1144,40 @@ public partial class PdfViewerViewModel : ViewModelBase
             }
             catch { }
 
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            // Automatic OCR fallback for scanned pages with zero vector text
+            if ((words == null || words.Count == 0) && width > 0 && height > 0)
             {
-                if (text != null)
+                var (ocrText, ocrWords, ocrLines) = ExtractOcrPageTextGeometry(pageNumber, width, height);
+                if (ocrWords.Count > 0)
                 {
-                    page.ExtractedText = text;
-                    page.Words = words!;
-                    page.TextLines = lines!;
-                    if (width > 0 && height > 0)
-                    {
-                        page.WidthPoints = width;
-                        page.HeightPoints = height;
-                    }
+                    text = ocrText;
+                    words = ocrWords;
+                    lines = ocrLines;
                 }
-                page.IsGeometryLoading = false;
-            });
+            }
+
+            // Assign geometry data directly so both UI and headless test runners receive words immediately
+            if (text != null && words != null && lines != null)
+            {
+                page.ExtractedText = text;
+                page.Words = words;
+                page.TextLines = lines;
+                if (width > 0 && height > 0)
+                {
+                    page.WidthPoints = width;
+                    page.HeightPoints = height;
+                }
+            }
+            page.IsGeometryLoading = false;
+
+            try
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    page.NotifySelectionChanged();
+                });
+            }
+            catch { }
         });
     }
 
@@ -1662,6 +1778,17 @@ public partial class PdfViewerViewModel : ViewModelBase
                                     w = Math.Max(100, p.Width);
                                     h = Math.Max(100, p.Height);
                                     rot = (int)p.Rotation.Value;
+                                }
+                            }
+
+                            if ((words == null || words.Count == 0) && w > 0 && h > 0)
+                            {
+                                var (ocrTxt, ocrWords, ocrLines) = ExtractOcrPageTextGeometry(pageNum, w, h);
+                                if (ocrWords.Count > 0)
+                                {
+                                    txt = ocrTxt;
+                                    words = ocrWords;
+                                    lines = ocrLines;
                                 }
                             }
 

@@ -10,6 +10,9 @@ using PdfSharpCore.Pdf;
 using PdfSharpCore.Pdf.IO;
 using UglyToad.PdfPig;
 
+using System.Text;
+using PdfEditorApp.Services.Ocr;
+
 namespace PdfEditorApp.Services.Tools;
 
 public interface IPdfOcrService
@@ -20,6 +23,13 @@ public interface IPdfOcrService
 
 public class PdfOcrService : IPdfOcrService
 {
+    private readonly ICompositeOcrProvider _ocrProvider;
+
+    public PdfOcrService(ICompositeOcrProvider? ocrProvider = null)
+    {
+        _ocrProvider = ocrProvider ?? CompositeOcrProvider.Default;
+    }
+
     public async Task<ToolExecutionResult> OcrPdfAsync(OcrToolOptions options, IProgress<double>? progress = null, CancellationToken ct = default)
     {
         return await Task.Run(() =>
@@ -37,17 +47,15 @@ public class PdfOcrService : IPdfOcrService
             }
 
             ct.ThrowIfCancellationRequested();
-            progress?.Report(15.0);
+            progress?.Report(10.0);
 
-            // Read pages and analyze existing text glyphs. Note: this indexes text PdfPig
-            // already finds embedded in the page — it does not perform true image-to-text
-            // OCR recognition on scanned/image-only pages. A page that already has embedded
-            // text is already selectable, so no duplicate overlay is drawn for it either way.
             using var pdfPigDoc = UglyToad.PdfPig.PdfDocument.Open(options.InputFilePath);
+            try { UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.AddSkiaPageFactory(pdfPigDoc); } catch { }
 
             int totalPages = pdfPigDoc.NumberOfPages;
             int recognizedWords = 0;
             int pagesWithoutText = 0;
+            var scannedPageIndices = new List<int>();
 
             for (int p = 1; p <= totalPages; p++)
             {
@@ -55,18 +63,18 @@ public class PdfOcrService : IPdfOcrService
                 var pigPage = pdfPigDoc.GetPage(p);
                 var words = pigPage.GetWords().ToList();
                 recognizedWords += words.Count;
-                if (words.Count == 0) pagesWithoutText++;
+                if (words.Count == 0)
+                {
+                    pagesWithoutText++;
+                    scannedPageIndices.Add(p);
+                }
 
-                progress?.Report(15.0 + (p / (double)totalPages * 75.0));
+                progress?.Report(10.0 + (p / (double)totalPages * 15.0));
             }
-
-            progress?.Report(100.0);
 
             if (pagesWithoutText == 0)
             {
-                // No new text layer is needed — the document is already fully searchable.
-                // Still produce the expected output file (a straight copy) so Save/Open/
-                // preview flows downstream have something to point at.
+                // Document is already fully searchable
                 if (!string.Equals(Path.GetFullPath(options.InputFilePath), Path.GetFullPath(outPath), StringComparison.OrdinalIgnoreCase))
                 {
                     File.Copy(options.InputFilePath, outPath, overwrite: true);
@@ -83,12 +91,120 @@ public class PdfOcrService : IPdfOcrService
                 };
             }
 
+            // Perform true OCR on scanned pages
+            string txtOutPath = Path.ChangeExtension(outPath, ".txt");
+            var allText = new StringBuilder();
+            int ocrWordsAdded = 0;
+            string lastEngineUsed = _ocrProvider.EngineName;
+
+            for (int p = 1; p <= totalPages; p++)
+            {
+                ct.ThrowIfCancellationRequested();
+                var pigPage = pdfPigDoc.GetPage(p);
+                var words = pigPage.GetWords().ToList();
+
+                if (words.Count > 0)
+                {
+                    allText.AppendLine($"--- Page {p} ---");
+                    allText.AppendLine(pigPage.Text);
+                }
+                else
+                {
+                    using var pngStream = UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.GetPageAsPng(pdfPigDoc, p, 1.5f, 100);
+                    if (pngStream != null && pngStream.Length > 0)
+                    {
+                        var ocrRes = _ocrProvider.RecognizeTextAsync(pngStream.ToArray(), options.Language, ct).GetAwaiter().GetResult();
+                        if (ocrRes.Success)
+                        {
+                            allText.AppendLine($"--- Page {p} (OCR) ---");
+                            allText.AppendLine(ocrRes.FullText);
+                            recognizedWords += ocrRes.Words.Count;
+                            ocrWordsAdded += ocrRes.Words.Count;
+                            lastEngineUsed = ocrRes.EngineUsed;
+                        }
+                    }
+                }
+
+                progress?.Report(25.0 + (p / (double)totalPages * 35.0));
+            }
+
+            if (options.GenerateTextFile || options.ExtractTextOnly)
+            {
+                File.WriteAllText(txtOutPath, allText.ToString(), Encoding.UTF8);
+            }
+
+            if (options.ExtractTextOnly)
+            {
+                progress?.Report(100.0);
+                return new ToolExecutionResult
+                {
+                    Success = true,
+                    OutputFilePath = txtOutPath,
+                    OutputFiles = new List<string> { txtOutPath },
+                    OriginalSizeBytes = origBytes,
+                    OutputSizeBytes = new FileInfo(txtOutPath).Length,
+                    Message = $"Extracted text from {totalPages} page(s) ({recognizedWords} words) into {Path.GetFileName(txtOutPath)}."
+                };
+            }
+
+            // Create searchable PDF with invisible text layer
+            using var outPdfDoc = PdfSharpCore.Pdf.IO.PdfReader.Open(options.InputFilePath, PdfDocumentOpenMode.Modify);
+
+            for (int i = 0; i < scannedPageIndices.Count; i++)
+            {
+                ct.ThrowIfCancellationRequested();
+                int p = scannedPageIndices[i];
+
+                using var pngStream = UglyToad.PdfPig.Rendering.Skia.PdfPigExtensions.GetPageAsPng(pdfPigDoc, p, 1.5f, 100);
+                if (pngStream == null || pngStream.Length == 0) continue;
+
+                var ocrRes = _ocrProvider.RecognizeTextAsync(pngStream.ToArray(), options.Language, ct).GetAwaiter().GetResult();
+                if (!ocrRes.Success || ocrRes.Words.Count == 0) continue;
+
+                var sharpPage = outPdfDoc.Pages[p - 1];
+                double pw = sharpPage.Width.Point;
+                double ph = sharpPage.Height.Point;
+
+                using var gfx = XGraphics.FromPdfPage(sharpPage, XGraphicsPdfPageOptions.Append);
+                var transparentBrush = new XSolidBrush(XColor.FromArgb(0, 0, 0, 0));
+
+                foreach (var word in ocrRes.Words)
+                {
+                    double wx = word.NormalizedBounds.X * pw;
+                    double wy = word.NormalizedBounds.Y * ph;
+                    double ww = Math.Max(1, word.NormalizedBounds.Width * pw);
+                    double wh = Math.Max(1, word.NormalizedBounds.Height * ph);
+
+                    double fontSize = Math.Max(4, Math.Min(72, wh * 0.85));
+                    var font = new XFont("Helvetica", fontSize, XFontStyle.Regular);
+                    gfx.DrawString(word.Text, font, transparentBrush, new XPoint(wx, wy + wh * 0.85));
+                }
+
+                progress?.Report(60.0 + ((i + 1) / (double)scannedPageIndices.Count * 38.0));
+            }
+
+            outPdfDoc.Save(outPath);
+            progress?.Report(100.0);
+
+            long finalBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
+            var outFiles = new List<string> { outPath };
+            if (options.GenerateTextFile && File.Exists(txtOutPath))
+            {
+                outFiles.Add(txtOutPath);
+            }
+
+            string resultMsg = options.GenerateTextFile && File.Exists(txtOutPath)
+                ? $"OCR completed using {lastEngineUsed}: recognized and indexed {ocrWordsAdded} words across {pagesWithoutText} scanned page(s). Created Searchable PDF & Text File."
+                : $"OCR completed successfully using {lastEngineUsed}: recognized and indexed {ocrWordsAdded} words across {pagesWithoutText} scanned page(s).";
+
             return new ToolExecutionResult
             {
-                Success = false,
-                ErrorMessage = pagesWithoutText == totalPages
-                    ? $"No extractable text was found on any of the {totalPages} page(s) — this looks like a scanned/image-only document. This tool indexes text that already exists in a PDF; it does not yet perform true image-to-text OCR recognition."
-                    : $"{pagesWithoutText} of {totalPages} page(s) have no extractable text (likely scanned images) and could not be made searchable. This tool indexes text that already exists in a PDF; it does not yet perform true image-to-text OCR recognition for those pages."
+                Success = true,
+                OutputFilePath = outPath,
+                OutputFiles = outFiles,
+                OriginalSizeBytes = origBytes,
+                OutputSizeBytes = finalBytes,
+                Message = resultMsg
             };
         }, ct);
     }

@@ -527,6 +527,23 @@ public partial class PdfViewerViewModel : ViewModelBase
     [ObservableProperty]
     private double _zoomLevel = 1.0; // 100%
 
+    [ObservableProperty]
+    private PdfViewerZoomMode _zoomMode = PdfViewerZoomMode.Custom;
+
+    [ObservableProperty]
+    private bool _isFitToWidthActive = false;
+
+    [ObservableProperty]
+    private bool _isFitToPageActive = false;
+
+    private bool _isApplyingFitZoom = false;
+
+    /// <summary>
+    /// Optional provider supplied by the view (e.g. PdfViewerView) to return the current
+    /// viewport dimensions (ViewportWidth, ViewportHeight, HorizontalPadding, VerticalPadding).
+    /// </summary>
+    public Func<(double ViewportWidth, double ViewportHeight, double HorizontalPadding, double VerticalPadding)>? ViewportSizeProvider { get; set; }
+
     // Layout Modes: Continuous Scroll, Single Page, Two-Page Spread
     [ObservableProperty]
     private PdfViewLayoutMode _selectedLayoutMode = PdfViewLayoutMode.ContinuousScroll;
@@ -673,8 +690,19 @@ public partial class PdfViewerViewModel : ViewModelBase
     public bool IsThemeDark => ReadingTheme == PdfReaderTheme.Dark;
     public bool IsThemeHighContrast => ReadingTheme == PdfReaderTheme.HighContrast;
 
+    partial void OnZoomModeChanged(PdfViewerZoomMode value)
+    {
+        IsFitToWidthActive = (value == PdfViewerZoomMode.FitWidth);
+        IsFitToPageActive = (value == PdfViewerZoomMode.FitPage);
+    }
+
     partial void OnZoomLevelChanged(double value)
     {
+        if (!_isApplyingFitZoom)
+        {
+            ZoomMode = PdfViewerZoomMode.Custom;
+        }
+
         OnPropertyChanged(nameof(ZoomPercentageText));
         InvalidateVisiblePageCache();
 
@@ -765,6 +793,15 @@ public partial class PdfViewerViewModel : ViewModelBase
         if (IsTwoPageSpreadMode && PageSpreads.Count == 0 && Pages.Count > 0)
         {
             RebuildPageSpreads();
+        }
+
+        if (IsFitToWidthActive)
+        {
+            FitToWidth();
+        }
+        else if (IsFitToPageActive)
+        {
+            FitToPage();
         }
     }
 
@@ -1790,31 +1827,200 @@ public partial class PdfViewerViewModel : ViewModelBase
     [RelayCommand]
     public void ZoomIn()
     {
+        ZoomMode = PdfViewerZoomMode.Custom;
         ZoomLevel = Math.Min(5.0, Math.Round(ZoomLevel + 0.25, 2));
     }
 
     [RelayCommand]
     public void ZoomOut()
     {
+        ZoomMode = PdfViewerZoomMode.Custom;
         ZoomLevel = Math.Max(0.25, Math.Round(ZoomLevel - 0.25, 2));
     }
 
     [RelayCommand]
     public void ResetZoom()
     {
+        ZoomMode = PdfViewerZoomMode.Custom;
         ZoomLevel = 1.0;
     }
 
     [RelayCommand]
     public void FitToWidth()
     {
-        ZoomLevel = 1.35;
+        if (ViewportSizeProvider != null)
+        {
+            var dims = ViewportSizeProvider();
+            if (dims.ViewportWidth > 100)
+            {
+                FitToWidthDynamic(dims.ViewportWidth, dims.HorizontalPadding);
+                return;
+            }
+        }
+
+        _isApplyingFitZoom = true;
+        try
+        {
+            ZoomMode = PdfViewerZoomMode.FitWidth;
+            ZoomLevel = 1.35;
+        }
+        finally
+        {
+            _isApplyingFitZoom = false;
+        }
+    }
+
+    public void FitToWidthDynamic(double viewportWidth, double horizontalPadding = 64.0)
+    {
+        if (viewportWidth <= 100) return;
+
+        var page = SelectedPage ?? Pages.FirstOrDefault(p => p.PageNumber == CurrentPageNumber) ?? Pages.FirstOrDefault();
+        if (page == null)
+        {
+            _isApplyingFitZoom = true;
+            try
+            {
+                ZoomMode = PdfViewerZoomMode.FitWidth;
+                ZoomLevel = 1.35;
+            }
+            finally
+            {
+                _isApplyingFitZoom = false;
+            }
+            return;
+        }
+
+        double availableWidth = Math.Max(100.0, viewportWidth - horizontalPadding - 8.0);
+        double targetWidth = page.WidthPoints;
+
+        if (IsTwoPageSpreadMode && SelectedSpread != null)
+        {
+            if (SelectedSpread.LeftPage != null && SelectedSpread.RightPage != null)
+            {
+                targetWidth = SelectedSpread.LeftPage.WidthPoints + SelectedSpread.RightPage.WidthPoints;
+                availableWidth = Math.Max(100.0, availableWidth - 16.0); // 16px gap between pages
+            }
+            else
+            {
+                targetWidth = SelectedSpread.LeftPage?.WidthPoints ?? SelectedSpread.RightPage?.WidthPoints ?? page.WidthPoints;
+            }
+        }
+
+        if (targetWidth > 10.0)
+        {
+            double calculatedZoom = Math.Clamp(Math.Round(availableWidth / targetWidth, 2), 0.25, 5.0);
+            if (calculatedZoom * targetWidth > availableWidth && calculatedZoom > 0.25)
+            {
+                calculatedZoom = Math.Max(0.25, Math.Round(calculatedZoom - 0.01, 2));
+            }
+
+            _isApplyingFitZoom = true;
+            try
+            {
+                ZoomMode = PdfViewerZoomMode.FitWidth;
+                ZoomLevel = calculatedZoom;
+            }
+            finally
+            {
+                _isApplyingFitZoom = false;
+            }
+
+            StatusMessage = $"Fit to Width ({(int)Math.Round(ZoomLevel * 100)}%)";
+            ShowToastRequested?.Invoke($"Fit to Width ({(int)Math.Round(ZoomLevel * 100)}%)");
+        }
     }
 
     [RelayCommand]
     public void FitToPage()
     {
-        ZoomLevel = 0.95;
+        if (ViewportSizeProvider != null)
+        {
+            var dims = ViewportSizeProvider();
+            if (dims.ViewportWidth > 100 && dims.ViewportHeight > 100)
+            {
+                FitToPageDynamic(dims.ViewportWidth, dims.ViewportHeight, dims.HorizontalPadding, dims.VerticalPadding);
+                return;
+            }
+        }
+
+        _isApplyingFitZoom = true;
+        try
+        {
+            ZoomMode = PdfViewerZoomMode.FitPage;
+            ZoomLevel = 0.95;
+        }
+        finally
+        {
+            _isApplyingFitZoom = false;
+        }
+    }
+
+    public void FitToPageDynamic(double viewportWidth, double viewportHeight, double horizontalPadding = 64.0, double verticalPadding = 64.0)
+    {
+        if (viewportWidth <= 100 || viewportHeight <= 100) return;
+
+        var page = SelectedPage ?? Pages.FirstOrDefault(p => p.PageNumber == CurrentPageNumber) ?? Pages.FirstOrDefault();
+        if (page == null)
+        {
+            _isApplyingFitZoom = true;
+            try
+            {
+                ZoomMode = PdfViewerZoomMode.FitPage;
+                ZoomLevel = 0.95;
+            }
+            finally
+            {
+                _isApplyingFitZoom = false;
+            }
+            return;
+        }
+
+        double availableWidth = Math.Max(100.0, viewportWidth - horizontalPadding - 8.0);
+        // Reserve 36px for page footnote indicator and card vertical spacing
+        double availableHeight = Math.Max(100.0, viewportHeight - verticalPadding - 36.0);
+
+        double targetWidth = page.WidthPoints;
+        double targetHeight = page.HeightPoints;
+
+        if (IsTwoPageSpreadMode && SelectedSpread != null)
+        {
+            if (SelectedSpread.LeftPage != null && SelectedSpread.RightPage != null)
+            {
+                targetWidth = SelectedSpread.LeftPage.WidthPoints + SelectedSpread.RightPage.WidthPoints;
+                targetHeight = Math.Max(SelectedSpread.LeftPage.HeightPoints, SelectedSpread.RightPage.HeightPoints);
+                availableWidth = Math.Max(100.0, availableWidth - 16.0);
+            }
+            else
+            {
+                targetWidth = SelectedSpread.LeftPage?.WidthPoints ?? SelectedSpread.RightPage?.WidthPoints ?? page.WidthPoints;
+                targetHeight = SelectedSpread.LeftPage?.HeightPoints ?? SelectedSpread.RightPage?.HeightPoints ?? page.HeightPoints;
+            }
+        }
+
+        if (targetWidth > 10.0 && targetHeight > 10.0)
+        {
+            double scaleX = availableWidth / targetWidth;
+            double scaleY = availableHeight / targetHeight;
+            double calculatedZoom = Math.Clamp(Math.Round(Math.Min(scaleX, scaleY), 2), 0.25, 5.0);
+            if ((calculatedZoom * targetWidth > availableWidth || calculatedZoom * targetHeight > availableHeight) && calculatedZoom > 0.25)
+            {
+                calculatedZoom = Math.Max(0.25, Math.Round(calculatedZoom - 0.01, 2));
+            }
+
+            _isApplyingFitZoom = true;
+            try
+            {
+                ZoomMode = PdfViewerZoomMode.FitPage;
+                ZoomLevel = calculatedZoom;
+            }
+            finally
+            {
+                _isApplyingFitZoom = false;
+            }
+
+            StatusMessage = $"Fit to Page ({(int)Math.Round(ZoomLevel * 100)}%)";
+            ShowToastRequested?.Invoke($"Fit to Page ({(int)Math.Round(ZoomLevel * 100)}%)");
+        }
     }
 
     [RelayCommand]
@@ -1824,6 +2030,7 @@ public partial class PdfViewerViewModel : ViewModelBase
         string clean = preset.Replace("%", "").Trim();
         if (double.TryParse(clean, out double val))
         {
+            ZoomMode = PdfViewerZoomMode.Custom;
             ZoomLevel = Math.Clamp(val / 100.0, 0.25, 5.0);
         }
     }

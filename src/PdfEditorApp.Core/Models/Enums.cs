@@ -471,6 +471,13 @@ public enum PdfViewLayoutMode
     TwoPageSpread
 }
 
+public enum PdfViewerZoomMode
+{
+    Custom,
+    FitWidth,
+    FitPage
+}
+
 public enum AppThemeMode
 {
     System,

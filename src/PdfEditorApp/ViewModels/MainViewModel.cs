@@ -1188,7 +1188,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (IsPdfViewerVisible && PdfViewer != null)
         {
-            PdfViewer.FitToWidth();
+            PdfViewer.FitToWidthDynamic(viewportWidth);
             return;
         }
         if (CurrentPage != null && viewportWidth > 100)
@@ -1218,7 +1218,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (IsPdfViewerVisible && PdfViewer != null)
         {
-            PdfViewer.FitToPage();
+            PdfViewer.FitToPageDynamic(viewportWidth, viewportHeight);
             return;
         }
         if (CurrentPage != null && viewportWidth > 100 && viewportHeight > 100)

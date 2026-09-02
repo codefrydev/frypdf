@@ -78,6 +78,51 @@ public partial class PdfViewerView : UserControl
         }
     }
 
+    public (double ViewportWidth, double ViewportHeight, double HorizontalPadding, double VerticalPadding) GetViewportDimensions()
+    {
+        var sv = ActiveScrollViewer;
+        if (sv != null)
+        {
+            double vw = sv.Viewport.Width > 0 ? sv.Viewport.Width : sv.Bounds.Width;
+            double vh = sv.Viewport.Height > 0 ? sv.Viewport.Height : sv.Bounds.Height;
+            if (vw > 0 && vh > 0)
+            {
+                double hp = sv.Padding.Left + sv.Padding.Right;
+                double vp = sv.Padding.Top + sv.Padding.Bottom;
+                return (vw, vh, hp, vp);
+            }
+        }
+
+        double w = Bounds.Width;
+        double h = Bounds.Height;
+        if (w > 0 && h > 0)
+        {
+            if (ViewModel?.IsSidebarOpen == true)
+            {
+                w = Math.Max(100, w - 260);
+            }
+            return (w, h, 64.0, 64.0);
+        }
+
+        return (800, 600, 64.0, 64.0);
+    }
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        if (ViewModel != null && ViewModel.HasDocument && (e.WidthChanged || e.HeightChanged))
+        {
+            if (ViewModel.IsFitToWidthActive)
+            {
+                ViewModel.FitToWidth();
+            }
+            else if (ViewModel.IsFitToPageActive)
+            {
+                ViewModel.FitToPage();
+            }
+        }
+    }
+
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
         SetupScrollListeners();
@@ -103,6 +148,7 @@ public partial class PdfViewerView : UserControl
         {
             _subscribedVm.ScrollToPageRequested -= OnScrollToPageRequested;
             _subscribedVm.PropertyChanged -= OnViewModelPropertyChanged;
+            _subscribedVm.ViewportSizeProvider = null;
             _subscribedVm = null;
         }
 
@@ -111,6 +157,7 @@ public partial class PdfViewerView : UserControl
             _subscribedVm = vm;
             _subscribedVm.ScrollToPageRequested += OnScrollToPageRequested;
             _subscribedVm.PropertyChanged += OnViewModelPropertyChanged;
+            _subscribedVm.ViewportSizeProvider = GetViewportDimensions;
         }
     }
 
@@ -123,6 +170,7 @@ public partial class PdfViewerView : UserControl
         {
             _subscribedVm.ScrollToPageRequested -= OnScrollToPageRequested;
             _subscribedVm.PropertyChanged -= OnViewModelPropertyChanged;
+            _subscribedVm.ViewportSizeProvider = null;
             _subscribedVm = null;
         }
     }
@@ -196,6 +244,13 @@ public partial class PdfViewerView : UserControl
             if (ViewModel != null && !ViewModel.IsLoading && ViewModel.HasDocument)
             {
                 Dispatcher.UIThread.Post(OnContinuousScrollOffsetChanged);
+            }
+        }
+        else if (e.PropertyName == nameof(PdfViewerViewModel.ZoomLevel))
+        {
+            if (ViewModel != null && ViewModel.IsContinuousScroll)
+            {
+                Dispatcher.UIThread.Post(OnContinuousScrollOffsetChanged, DispatcherPriority.Background);
             }
         }
     }

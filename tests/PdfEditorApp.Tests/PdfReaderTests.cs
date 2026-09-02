@@ -388,6 +388,120 @@ public class PdfReaderTests
         Assert.Equal(1, vm.CurrentPageNumber);
         Assert.Equal(1, requestedPage);
     }
+
+    [Fact]
+    public async Task PdfViewer_FitToWidth_WithViewportProvider_DynamicallyScalesToAvailableWidth()
+    {
+        var vm = new PdfViewerViewModel();
+        byte[] pdfBytes = CreateSamplePdfBytes(1);
+        await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
+
+        Assert.True(vm.HasDocument);
+        var page = vm.Pages[0];
+        Assert.True(page.WidthPoints > 0);
+
+        // Simulate viewport of 1200 width with 64px padding (32 on each side)
+        vm.ViewportSizeProvider = () => (1200.0, 800.0, 64.0, 64.0);
+
+        vm.FitToWidthCommand.Execute(null);
+
+        // Expected available width = 1200 - 64 - 8 = 1128
+        // Expected zoom = 1128 / page.WidthPoints clamped and rounded to 2 decimals
+        double expectedZoom = Math.Clamp(Math.Round(1128.0 / page.WidthPoints, 2), 0.25, 5.0);
+        if (expectedZoom * page.WidthPoints > 1128.0)
+        {
+            expectedZoom = Math.Max(0.25, Math.Round(expectedZoom - 0.01, 2));
+        }
+
+        Assert.Equal(expectedZoom, vm.ZoomLevel);
+        Assert.True(vm.IsFitToWidthActive);
+        Assert.False(vm.IsFitToPageActive);
+        Assert.Equal(PdfViewerZoomMode.FitWidth, vm.ZoomMode);
+
+        // Verify page width at zoom fits comfortably within available width without horizontal overflow
+        double renderedWidth = page.WidthPoints * vm.ZoomLevel;
+        Assert.True(renderedWidth <= (1200.0 - 64.0));
+    }
+
+    [Fact]
+    public async Task PdfViewer_FitToPage_WithViewportProvider_DynamicallyScalesToFitBothDimensions()
+    {
+        var vm = new PdfViewerViewModel();
+        byte[] pdfBytes = CreateSamplePdfBytes(1);
+        await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
+
+        var page = vm.Pages[0];
+
+        // Simulate viewport of 800x600 with 64px horizontal and vertical padding
+        vm.ViewportSizeProvider = () => (800.0, 600.0, 64.0, 64.0);
+
+        vm.FitToPageCommand.Execute(null);
+
+        Assert.True(vm.IsFitToPageActive);
+        Assert.False(vm.IsFitToWidthActive);
+        Assert.Equal(PdfViewerZoomMode.FitPage, vm.ZoomMode);
+
+        // Verify both dimensions fit within viewport minus padding
+        double renderedWidth = page.WidthPoints * vm.ZoomLevel;
+        double renderedHeight = page.HeightPoints * vm.ZoomLevel;
+        Assert.True(renderedWidth <= (800.0 - 64.0));
+        Assert.True(renderedHeight <= (600.0 - 64.0));
+    }
+
+    [Fact]
+    public async Task PdfViewer_TwoPageSpread_FitToWidth_AccountsForSpreadWidth()
+    {
+        var vm = new PdfViewerViewModel();
+        byte[] pdfBytes = CreateSamplePdfBytes(3);
+        await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
+
+        vm.SetLayoutModeCommand.Execute("TwoPageSpread");
+        Assert.True(vm.IsTwoPageSpreadMode);
+
+        // Navigate to spread with two pages (page 2 & 3)
+        vm.NextPageCommand.Execute(null);
+        Assert.NotNull(vm.SelectedSpread);
+
+        vm.ViewportSizeProvider = () => (1600.0, 900.0, 64.0, 64.0);
+        vm.FitToWidthCommand.Execute(null);
+
+        Assert.True(vm.IsFitToWidthActive);
+        Assert.True(vm.ZoomLevel > 0);
+
+        if (vm.SelectedSpread.LeftPage != null && vm.SelectedSpread.RightPage != null)
+        {
+            double combinedPageWidth = (vm.SelectedSpread.LeftPage.WidthPoints + vm.SelectedSpread.RightPage.WidthPoints) * vm.ZoomLevel;
+            // Combined width + 16px gap must fit inside 1600 - 64
+            Assert.True(combinedPageWidth + 16.0 <= (1600.0 - 64.0));
+        }
+    }
+
+    [Fact]
+    public async Task PdfViewer_ManualZoom_ExitsFitModes()
+    {
+        var vm = new PdfViewerViewModel();
+        byte[] pdfBytes = CreateSamplePdfBytes(1);
+        await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
+
+        vm.ViewportSizeProvider = () => (1200.0, 800.0, 64.0, 64.0);
+        vm.FitToWidthCommand.Execute(null);
+        Assert.True(vm.IsFitToWidthActive);
+
+        // Manual zoom in
+        vm.ZoomInCommand.Execute(null);
+        Assert.False(vm.IsFitToWidthActive);
+        Assert.False(vm.IsFitToPageActive);
+        Assert.Equal(PdfViewerZoomMode.Custom, vm.ZoomMode);
+
+        // Fit to page
+        vm.FitToPageCommand.Execute(null);
+        Assert.True(vm.IsFitToPageActive);
+
+        // Manual reset zoom
+        vm.ResetZoomCommand.Execute(null);
+        Assert.False(vm.IsFitToPageActive);
+        Assert.Equal(PdfViewerZoomMode.Custom, vm.ZoomMode);
+    }
 }
 
 

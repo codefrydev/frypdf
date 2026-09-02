@@ -155,11 +155,17 @@
                     <!-- Capsule 3: Zoom Controls -->
                     <Border Classes="toolbar-capsule">
                         <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                            <Button Classes="toolbar-btn" Width="26" Height="26" Command="{Binding FitToWidthCommand}" ToolTip.Tip="Fit to Width (⌘1)">
-                                <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
+                            <Button Classes="toolbar-btn" Width="26" Height="26"
+                                    Classes.mode-active="{Binding IsFitToWidthActive}"
+                                    Command="{Binding FitToWidthCommand}" ToolTip.Tip="Fit to Width (⌘1)">
+                                <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="14" Height="14"
+                                                            Foreground="{Binding IsFitToWidthActive, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
                             </Button>
-                            <Button Classes="toolbar-btn" Width="26" Height="26" Command="{Binding FitToPageCommand}" ToolTip.Tip="Fit to Page (⌘9)">
-                                <materialIcons:MaterialIcon Kind="FitToScreenOutline" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
+                            <Button Classes="toolbar-btn" Width="26" Height="26"
+                                    Classes.mode-active="{Binding IsFitToPageActive}"
+                                    Command="{Binding FitToPageCommand}" ToolTip.Tip="Fit to Page (⌘9)">
+                                <materialIcons:MaterialIcon Kind="FitToScreenOutline" Width="14" Height="14"
+                                                            Foreground="{Binding IsFitToPageActive, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
                             </Button>
 
                             <Rectangle Width="1" Height="14" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />

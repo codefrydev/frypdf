@@ -790,18 +790,42 @@ public partial class PdfViewerViewModel : ViewModelBase
         IsSinglePageMode = (value == PdfViewLayoutMode.SinglePage);
         IsTwoPageSpreadMode = (value == PdfViewLayoutMode.TwoPageSpread);
 
-        if (IsTwoPageSpreadMode && PageSpreads.Count == 0 && Pages.Count > 0)
+        if (IsTwoPageSpreadMode)
         {
-            RebuildPageSpreads();
-        }
+            if (PageSpreads.Count == 0 && Pages.Count > 0)
+            {
+                RebuildPageSpreads();
+            }
+            else
+            {
+                UpdateSelectedSpreadForPage(CurrentPageNumber);
+            }
 
-        if (IsFitToWidthActive)
-        {
-            FitToWidth();
-        }
-        else if (IsFitToPageActive)
-        {
+            if (SelectedSpread?.LeftPage != null) EnsurePageRendered(SelectedSpread.LeftPage.PageNumber);
+            if (SelectedSpread?.RightPage != null) EnsurePageRendered(SelectedSpread.RightPage.PageNumber);
+
             FitToPage();
+        }
+        else if (IsSinglePageMode)
+        {
+            if (CurrentPageNumber >= 1 && CurrentPageNumber <= Pages.Count)
+            {
+                SelectedPage = Pages[CurrentPageNumber - 1];
+            }
+            EnsurePageRendered(CurrentPageNumber);
+
+            FitToPage();
+        }
+        else if (IsContinuousScroll)
+        {
+            if (IsFitToWidthActive)
+            {
+                FitToWidth();
+            }
+            else if (IsFitToPageActive)
+            {
+                FitToPage();
+            }
         }
     }
 
@@ -1620,6 +1644,12 @@ public partial class PdfViewerViewModel : ViewModelBase
                 SelectedSpread = s;
             }
         }
+
+        if (IsTwoPageSpreadMode && SelectedSpread != null)
+        {
+            if (SelectedSpread.LeftPage != null) EnsurePageRendered(SelectedSpread.LeftPage.PageNumber);
+            if (SelectedSpread.RightPage != null) EnsurePageRendered(SelectedSpread.RightPage.PageNumber);
+        }
     }
 
     private static void ExtractBookmarksRecursive(IEnumerable<BookmarkNode> nodes, IList<PdfViewerBookmarkItem> targetList)
@@ -1787,6 +1817,24 @@ public partial class PdfViewerViewModel : ViewModelBase
     }
 
     // --- Layout & View Modes ---
+
+    [RelayCommand]
+    public void SetContinuousScrollLayout()
+    {
+        SetLayoutMode("ContinuousScroll");
+    }
+
+    [RelayCommand]
+    public void SetSinglePageLayout()
+    {
+        SetLayoutMode("SinglePage");
+    }
+
+    [RelayCommand]
+    public void SetTwoPageSpreadLayout()
+    {
+        SetLayoutMode("TwoPageSpread");
+    }
 
     [RelayCommand]
     public void SetLayoutMode(string? modeStr)

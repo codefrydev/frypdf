@@ -502,6 +502,50 @@ public class PdfReaderTests
         Assert.False(vm.IsFitToPageActive);
         Assert.Equal(PdfViewerZoomMode.Custom, vm.ZoomMode);
     }
+
+    [Fact]
+    public async Task PdfViewer_DedicatedLayoutCommands_SwitchModesAndAutoFit()
+    {
+        var vm = new PdfViewerViewModel();
+        byte[] pdfBytes = CreateSamplePdfBytes(3);
+        await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
+        vm.ViewportSizeProvider = () => (1000.0, 700.0, 64.0, 64.0);
+
+        // Initially Continuous Scroll
+        Assert.True(vm.IsContinuousScroll);
+        Assert.False(vm.IsSinglePageMode);
+        Assert.False(vm.IsTwoPageSpreadMode);
+
+        // Switch to Single Page
+        vm.SetSinglePageLayoutCommand.Execute(null);
+        Assert.False(vm.IsContinuousScroll);
+        Assert.True(vm.IsSinglePageMode);
+        Assert.False(vm.IsTwoPageSpreadMode);
+        Assert.Equal(PdfViewLayoutMode.SinglePage, vm.SelectedLayoutMode);
+        Assert.NotNull(vm.SelectedPage);
+        Assert.True(vm.SelectedPage.WidthPoints > 0);
+        Assert.True(vm.SelectedPage.HeightPoints > 0);
+        Assert.True(vm.ZoomLevel > 0);
+        Assert.True(vm.IsFitToPageActive);
+
+        // Switch to Two Page Spread
+        vm.SetTwoPageSpreadLayoutCommand.Execute(null);
+        Assert.False(vm.IsContinuousScroll);
+        Assert.False(vm.IsSinglePageMode);
+        Assert.True(vm.IsTwoPageSpreadMode);
+        Assert.Equal(PdfViewLayoutMode.TwoPageSpread, vm.SelectedLayoutMode);
+        Assert.NotNull(vm.SelectedSpread);
+        Assert.True(vm.ZoomLevel > 0);
+        Assert.True(vm.SelectedSpread.LeftPage != null || vm.SelectedSpread.RightPage != null);
+        Assert.True(vm.IsFitToPageActive);
+
+        // Switch back to Continuous Scroll
+        vm.SetContinuousScrollLayoutCommand.Execute(null);
+        Assert.True(vm.IsContinuousScroll);
+        Assert.False(vm.IsSinglePageMode);
+        Assert.False(vm.IsTwoPageSpreadMode);
+        Assert.Equal(PdfViewLayoutMode.ContinuousScroll, vm.SelectedLayoutMode);
+    }
 }
 
 

@@ -25,6 +25,7 @@ public partial class PdfViewerView : UserControl
     // Scroll synchronization flags to prevent feedback loops
     private bool _isProgrammaticScroll;
     private bool _isUpdatingFromUserScroll;
+    private DateTime _lastWheelPageTurnTime = DateTime.MinValue;
     private PdfViewerViewModel? _subscribedVm;
     private IDisposable? _scrollOffsetSubscription;
 
@@ -64,6 +65,11 @@ public partial class PdfViewerView : UserControl
         AvaloniaXamlLoader.Load(this);
     }
 
+    public static readonly DirectProperty<PdfViewerView, PdfViewerViewModel?> ViewModelProperty =
+        AvaloniaProperty.RegisterDirect<PdfViewerView, PdfViewerViewModel?>(
+            nameof(ViewModel),
+            o => o.ViewModel);
+
     public PdfViewerViewModel? ViewModel => DataContext as PdfViewerViewModel;
 
     private ScrollViewer? ActiveScrollViewer
@@ -90,6 +96,21 @@ public partial class PdfViewerView : UserControl
                 double hp = sv.Padding.Left + sv.Padding.Right;
                 double vp = sv.Padding.Top + sv.Padding.Bottom;
                 return (vw, vh, hp, vp);
+            }
+        }
+
+        // If the newly active scrollviewer hasn't had a measure pass yet, check sibling viewers
+        // which share the exact same grid column bounds
+        var sibling = ContinuousScrollViewer ?? SinglePageScrollViewer ?? TwoPageSpreadScrollViewer;
+        if (sibling != null)
+        {
+            double svW = sibling.Viewport.Width > 0 ? sibling.Viewport.Width : sibling.Bounds.Width;
+            double svH = sibling.Viewport.Height > 0 ? sibling.Viewport.Height : sibling.Bounds.Height;
+            if (svW > 0 && svH > 0)
+            {
+                double hp = sibling.Padding.Left + sibling.Padding.Right;
+                double vp = sibling.Padding.Top + sibling.Padding.Bottom;
+                return (svW, svH, hp, vp);
             }
         }
 
@@ -138,7 +159,10 @@ public partial class PdfViewerView : UserControl
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
-        SubscribeViewModel(ViewModel);
+        var oldVm = _subscribedVm;
+        var newVm = ViewModel;
+        RaisePropertyChanged(ViewModelProperty, oldVm, newVm);
+        SubscribeViewModel(newVm);
         SetupScrollListeners();
     }
 
@@ -232,7 +256,15 @@ public partial class PdfViewerView : UserControl
                 Dispatcher.UIThread.Post(() =>
                 {
                     ScrollToPage(ViewModel.CurrentPageNumber);
-                });
+                    if (ViewModel.IsFitToPageActive)
+                    {
+                        ViewModel.FitToPage();
+                    }
+                    else if (ViewModel.IsFitToWidthActive)
+                    {
+                        ViewModel.FitToWidth();
+                    }
+                }, DispatcherPriority.Loaded);
             }
         }
         else if (e.PropertyName == nameof(PdfViewerViewModel.IsLoading))
@@ -508,6 +540,40 @@ public partial class PdfViewerView : UserControl
                     Math.Max(0, scrollViewer.Offset.X - (delta * 40)),
                     scrollViewer.Offset.Y);
                 e.Handled = true;
+            }
+        }
+        else if (ViewModel != null && (ViewModel.IsSinglePageMode || ViewModel.IsTwoPageSpreadMode))
+        {
+            var scrollViewer = ActiveScrollViewer;
+            if (scrollViewer != null)
+            {
+                double deltaY = e.Delta.Y;
+                if (Math.Abs(deltaY) > 0.15)
+                {
+                    bool atBottom = scrollViewer.Offset.Y >= (scrollViewer.Extent.Height - scrollViewer.Viewport.Height - 4.0);
+                    bool atTop = scrollViewer.Offset.Y <= 4.0;
+
+                    if (deltaY < 0 && atBottom)
+                    {
+                        if (DateTime.UtcNow - _lastWheelPageTurnTime > TimeSpan.FromMilliseconds(250))
+                        {
+                            _lastWheelPageTurnTime = DateTime.UtcNow;
+                            ViewModel.NextPageCommand.Execute(null);
+                            scrollViewer.Offset = new Vector(scrollViewer.Offset.X, 0);
+                            e.Handled = true;
+                        }
+                    }
+                    else if (deltaY > 0 && atTop)
+                    {
+                        if (DateTime.UtcNow - _lastWheelPageTurnTime > TimeSpan.FromMilliseconds(250))
+                        {
+                            _lastWheelPageTurnTime = DateTime.UtcNow;
+                            ViewModel.PreviousPageCommand.Execute(null);
+                            scrollViewer.Offset = new Vector(scrollViewer.Offset.X, Math.Max(0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height));
+                            e.Handled = true;
+                        }
+                    }
+                }
             }
         }
     }

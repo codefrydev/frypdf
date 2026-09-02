@@ -93,9 +93,11 @@ public partial class HomeViewModel : ViewModelBase
     public bool IsTrashSection => SelectedNavSection == HomeNavSection.Trash;
     public bool IsLicensingSection => SelectedNavSection == HomeNavSection.Licensing;
     public bool IsFontPackagesSection => SelectedNavSection == HomeNavSection.FontPackages;
+    public bool IsTesseractDataSection => SelectedNavSection == HomeNavSection.TesseractData;
     public bool IsHelpSection => SelectedNavSection == HomeNavSection.Help;
 
     public FontManagerViewModel FontManager { get; } = new();
+    public TesseractManagerViewModel TesseractManager { get; } = new();
     public HelpGuideViewModel HelpGuide { get; } = new();
 
     public int MatchingToolsCount => FilteredTools.Count;
@@ -345,7 +347,13 @@ public partial class HomeViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsTrashSection));
         OnPropertyChanged(nameof(IsLicensingSection));
         OnPropertyChanged(nameof(IsFontPackagesSection));
+        OnPropertyChanged(nameof(IsTesseractDataSection));
         OnPropertyChanged(nameof(IsHelpSection));
+
+        if (value == HomeNavSection.TesseractData)
+        {
+            _ = TesseractManager.RefreshStatsAsync();
+        }
     }
 
     [RelayCommand]

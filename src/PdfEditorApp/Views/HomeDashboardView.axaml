@@ -512,5 +512,46 @@
             </Grid>
         </Border>
 
+        <!-- On-Demand Tesseract OCR Models Banner -->
+        <Border Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="14"
+                Padding="20,16"
+                Margin="0,12,0,0">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+                <Border Grid.Column="0" Width="44" Height="44" Background="#DCFCE7" CornerRadius="10" VerticalAlignment="Center">
+                    <materialIcons:MaterialIcon Kind="TextRecognition" Width="24" Height="24" Foreground="#10B981" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="On-Demand Tesseract OCR Models" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <Border Background="#DCFCE7" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
+                            <TextBlock Text="Offline Neural Models" FontSize="9.5" FontWeight="Bold" Foreground="#16A34A" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Download fast trained models (.traineddata) for English, CJK, Indic, Arabic, and 35+ languages for high-accuracy document scanning and searchable PDFs."
+                               FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="2"
+                        Command="{Binding SelectNavSectionCommand}"
+                        CommandParameter="TesseractData"
+                        Background="#DCFCE7"
+                        Foreground="#15803D"
+                        BorderThickness="0"
+                        CornerRadius="8"
+                        Padding="14,8"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Cursor="Hand"
+                        VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="Manage OCR Models" VerticalAlignment="Center" />
+                        <materialIcons:MaterialIcon Kind="ArrowRight" Width="14" Height="14" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
     </StackPanel>
 </UserControl>

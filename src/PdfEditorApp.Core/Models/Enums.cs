@@ -453,6 +453,7 @@ public enum HomeNavSection
     Trash,
     Licensing,
     FontPackages,
+    TesseractData,
     Help
 }
 

@@ -73,10 +73,22 @@ public class TesseractLanguagePackageInfo
     public string DisplayName { get; set; } = string.Empty;
     public string NativeName { get; set; } = string.Empty;
     public string FlagEmoji { get; set; } = "🌐";
+    public string Category { get; set; } = "Latin & European";
+    public string Description { get; set; } = string.Empty;
+    public string SampleText { get; set; } = string.Empty;
     public long EstimatedSizeBytes { get; set; }
     public string DownloadUrl { get; set; } = string.Empty;
     public string FileName => $"{Code}.traineddata";
     public bool IsInstalled { get; set; }
+
+    public string FormattedSize => FormatBytes(EstimatedSizeBytes);
+
+    public static string FormatBytes(long bytes)
+    {
+        if (bytes <= 0) return "0 KB";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        return $"{bytes / (1024.0 * 1024.0):F1} MB";
+    }
 }
 
 /// <summary>

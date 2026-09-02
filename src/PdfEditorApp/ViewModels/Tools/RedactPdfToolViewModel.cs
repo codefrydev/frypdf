@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
+using PdfEditorApp.Services.Tools;
 using PdfEditorApp.ViewModels;
 
 namespace PdfEditorApp.ViewModels.Tools;
@@ -110,12 +111,33 @@ public partial class RedactPdfToolViewModel : PdfToolViewModelBase
         {
             try
             {
-                using var doc = UglyToad.PdfPig.PdfDocument.Open(path);
-                if (pageNumber > doc.NumberOfPages) return new List<PdfViewerWordItem>();
+                byte[] bytes = File.ReadAllBytes(path);
+                UglyToad.PdfPig.PdfDocument? doc = null;
+                try
+                {
+                    doc = UglyToad.PdfPig.PdfDocument.Open(bytes);
+                }
+                catch
+                {
+                    try
+                    {
+                        byte[] repaired = PdfFileHelper.SalvageAndRepairPdfBytes(bytes);
+                        doc = UglyToad.PdfPig.PdfDocument.Open(repaired);
+                    }
+                    catch
+                    {
+                        return new List<PdfViewerWordItem>();
+                    }
+                }
 
-                var page = doc.GetPage(pageNumber);
-                var (_, extractedWords, _) = PdfViewerViewModel.ExtractPageTextGeometry(page);
-                return extractedWords;
+                using (doc)
+                {
+                    if (doc == null || pageNumber > doc.NumberOfPages) return new List<PdfViewerWordItem>();
+
+                    var page = doc.GetPage(pageNumber);
+                    var (_, extractedWords, _) = PdfViewerViewModel.ExtractPageTextGeometry(page);
+                    return extractedWords;
+                }
             }
             catch
             {
@@ -204,22 +226,21 @@ public partial class RedactPdfToolViewModel : PdfToolViewModelBase
     {
         Marks.Clear();
         CurrentPageMarks.Clear();
+        SearchStatusMessage = string.Empty;
     }
 
     /// <summary>
-    /// Converts a manual drag rectangle (in on-screen display-pixel space, from the
-    /// interactive preview's code-behind pointer handling) into a mark. By default snaps
-    /// to whichever words the drag rectangle touches, matching the PDF Reader's text
-    /// selection; pass <paramref name="forceDrawBox"/> true (held Alt while dragging) to
-    /// use the raw rectangle instead, for images, signatures, or anything text search and
-    /// selection can't target.
+    /// Adds a manual mark for the given on-screen rectangle. Snaps to touched text by default
+    /// (matching the PDF Reader's selection UX); holding Alt/Option bypasses text snap and
+    /// draws a raw box for non-text areas. If no text words are touched, it gracefully falls
+    /// back to a raw box so the user's selection is never dropped.
     /// </summary>
     public void AddManualMark(Rect displayRect, bool forceDrawBox = false)
     {
         double pageWidthPoints = Preview.SelectedPage?.WidthPoints ?? 0;
         if (pageWidthPoints <= 0 || displayRect.Width < 2 || displayRect.Height < 2) return;
 
-        double scale = Preview.ZoomLevel;
+        double scale = Preview.ZoomLevel > 0 ? Preview.ZoomLevel : 1.0;
         double pdfX = displayRect.X / scale;
         double pdfY = displayRect.Y / scale;
         double pdfWidth = Math.Max(1, displayRect.Width / scale);
@@ -231,27 +252,50 @@ public partial class RedactPdfToolViewModel : PdfToolViewModelBase
 
         if (!forceDrawBox)
         {
-            var dragRect = new Rect(pdfX, pdfY, pdfWidth, pdfHeight);
-            var touched = _currentPageWords.Where(w => w.Bounds.Intersects(dragRect)).ToList();
-            if (touched.Count == 0) return;
+            // Use generous vertical tolerance (±8pt) so horizontal text drags comfortably catch words
+            var searchRect = new Rect(pdfX, Math.Max(0, pdfY - 8), pdfWidth, pdfHeight + 16);
+            var touched = _currentPageWords.Where(w => w.Bounds.Intersects(searchRect)).ToList();
 
-            double left = touched.Min(w => w.Bounds.Left);
-            double top = touched.Min(w => w.Bounds.Top);
-            double right = touched.Max(w => w.Bounds.Right);
-            double bottom = touched.Max(w => w.Bounds.Bottom);
-
-            region = new RedactionRegion
+            if (touched.Count > 0)
             {
-                PageIndex = pageIndex,
-                X = left,
-                Y = top,
-                Width = right - left,
-                Height = bottom - top,
-                Reason = "Manual selection"
-            };
+                double left = touched.Min(w => w.Bounds.Left);
+                double top = touched.Min(w => w.Bounds.Top);
+                double right = touched.Max(w => w.Bounds.Right);
+                double bottom = touched.Max(w => w.Bounds.Bottom);
 
-            label = string.Join(" ", touched.OrderBy(w => w.Bounds.Left).Select(w => w.Text));
-            if (label.Length > 60) label = label.Substring(0, 60) + "…";
+                region = new RedactionRegion
+                {
+                    PageIndex = pageIndex,
+                    X = left,
+                    Y = top,
+                    Width = Math.Max(1, right - left),
+                    Height = Math.Max(1, bottom - top),
+                    Reason = "Manual selection"
+                };
+
+                label = string.Join(" ", touched.OrderBy(w => w.Bounds.Left).Select(w => w.Text));
+                if (label.Length > 60) label = label.Substring(0, 60) + "…";
+            }
+            else
+            {
+                // Minor click/twitch on empty area (<= 5x5) adds nothing
+                if (displayRect.Width <= 5 && displayRect.Height <= 5)
+                {
+                    return;
+                }
+
+                // Dragging a box over images, signatures, or text not yet parsed as words
+                region = new RedactionRegion
+                {
+                    PageIndex = pageIndex,
+                    X = pdfX,
+                    Y = pdfY,
+                    Width = pdfWidth,
+                    Height = pdfHeight,
+                    Reason = "Manual selection"
+                };
+                label = "Manual selection";
+            }
         }
         else
         {
@@ -267,6 +311,7 @@ public partial class RedactPdfToolViewModel : PdfToolViewModelBase
             label = "Manual selection";
         }
 
+        SearchStatusMessage = string.Empty;
         Marks.Add(new RedactionMarkItem { Region = region, Label = label });
         RecomputeCurrentPageMarks();
     }

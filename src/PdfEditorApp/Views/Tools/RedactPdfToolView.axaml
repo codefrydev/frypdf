@@ -27,40 +27,43 @@
         <!-- Interactive mark-drawing layer over the shared preview's current page -->
         <shell:PdfToolWorkspaceView.CanvasOverlayContent>
             <Panel>
-                <Canvas>
-                    <Canvas.Width>
+                <ItemsControl ItemsSource="{Binding CurrentPageMarks}">
+                    <ItemsControl.Width>
                         <MultiBinding Converter="{StaticResource MultiplyConverter}">
                             <Binding Path="Preview.SelectedPage.WidthPoints" />
                             <Binding Path="Preview.ZoomLevel" />
                         </MultiBinding>
-                    </Canvas.Width>
-                    <Canvas.Height>
+                    </ItemsControl.Width>
+                    <ItemsControl.Height>
                         <MultiBinding Converter="{StaticResource MultiplyConverter}">
                             <Binding Path="Preview.SelectedPage.HeightPoints" />
                             <Binding Path="Preview.ZoomLevel" />
                         </MultiBinding>
-                    </Canvas.Height>
-                    <ItemsControl ItemsSource="{Binding CurrentPageMarks}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <Canvas />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="models:RedactionMarkItem">
-                                <Border Background="#B3DC2626" BorderBrush="#DC2626" BorderThickness="1.5" CornerRadius="1"
-                                        Canvas.Left="{Binding DisplayX}" Canvas.Top="{Binding DisplayY}"
-                                        Width="{Binding DisplayWidth}" Height="{Binding DisplayHeight}"
-                                        ToolTip.Tip="{Binding Label}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Canvas>
+                    </ItemsControl.Height>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas Width="{Binding #LiveGestureCanvas.Width}" Height="{Binding #LiveGestureCanvas.Height}" Background="Transparent" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerTheme>
+                        <ControlTheme TargetType="ContentPresenter" x:DataType="models:RedactionMarkItem">
+                            <Setter Property="Canvas.Left" Value="{Binding DisplayX}" />
+                            <Setter Property="Canvas.Top" Value="{Binding DisplayY}" />
+                        </ControlTheme>
+                    </ItemsControl.ItemContainerTheme>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="models:RedactionMarkItem">
+                            <Border Background="#B3DC2626" BorderBrush="#DC2626" BorderThickness="1.5" CornerRadius="1"
+                                    Width="{Binding DisplayWidth}" Height="{Binding DisplayHeight}"
+                                    ToolTip.Tip="{Binding Label}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
                 <!-- Catches drag gestures for manual marking; Background must be
                      non-null to be hit-testable across its whole area, not just
                      where child content is drawn. -->
-                <Canvas Background="Transparent" Cursor="IBeam"
+                <Canvas x:Name="LiveGestureCanvas" Background="Transparent" Cursor="IBeam"
                         PointerPressed="OnPreviewPointerPressed" PointerMoved="OnPreviewPointerMoved"
                         PointerReleased="OnPreviewPointerReleased" PointerWheelChanged="OnPreviewPointerWheelChanged">
                     <Canvas.Width>

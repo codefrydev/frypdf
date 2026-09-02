@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LiveChartsCore;
@@ -173,6 +175,20 @@ public partial class ChartElementViewModel : ElementViewModelBase
     [ObservableProperty]
     private Avalonia.Media.Imaging.Bitmap? _chartBitmap;
 
+    private Avalonia.Media.Imaging.Bitmap? _previousChartBitmap;
+
+    /// <summary>Disposes the outgoing bitmap whenever a new one is rasterized — <see cref="ChartBitmap"/>
+    /// is re-rasterized on nearly every property change with no other lifecycle owner, so without this
+    /// the old native bitmap leaks.</summary>
+    partial void OnChartBitmapChanged(Avalonia.Media.Imaging.Bitmap? value)
+    {
+        if (_previousChartBitmap != null && _previousChartBitmap != value)
+        {
+            _previousChartBitmap.Dispose();
+        }
+        _previousChartBitmap = value;
+    }
+
     public override ElementKind Kind => ElementKind.Chart;
     public override string DisplayName => Title;
 
@@ -186,15 +202,49 @@ public partial class ChartElementViewModel : ElementViewModelBase
         Bars.Add(new ChartBarItem { Category = "Q3", Value = 2.5, ValueLabel = "$2.5B", ColorHex = "#3B82F6" });
         Bars.Add(new ChartBarItem { Category = "Q4", Value = 3.1, ValueLabel = "$3.1B", ColorHex = "#0F6CBD" });
 
-        Bars.CollectionChanged += (s, e) => UpdateLiveChart();
+        Bars.CollectionChanged += (s, e) => { if (!_suppressChartUpdate) UpdateLiveChart(); };
         PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(Width) || e.PropertyName == nameof(Height))
             {
-                UpdateLiveChart();
+                // Width/Height fire on every pointer-move during an interactive resize drag —
+                // rasterizing a fresh chart bitmap on every one of those would make resize feel
+                // like it's dragging through mud. Coalesce to roughly one rasterize per settle.
+                RequestChartUpdate();
             }
         };
         UpdateLiveChart();
+    }
+
+    private bool _suppressChartUpdate;
+    private CancellationTokenSource? _chartUpdateDebounceCts;
+
+    private void RequestChartUpdate()
+    {
+        _chartUpdateDebounceCts?.Cancel();
+        _chartUpdateDebounceCts = new CancellationTokenSource();
+        var token = _chartUpdateDebounceCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(120, token);
+            }
+            catch (TaskCanceledException)
+            {
+                return;
+            }
+            if (token.IsCancellationRequested) return;
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                if (!token.IsCancellationRequested)
+                {
+                    UpdateLiveChart();
+                }
+            });
+        }, token);
     }
 
     partial void OnChartTypeChanged(ChartType value) => UpdateLiveChart();
@@ -242,6 +292,7 @@ public partial class ChartElementViewModel : ElementViewModelBase
         string color = palette[(nextNum - 1) % palette.Count];
         double val = Math.Round(1.0 + (nextNum * 0.5), 1);
 
+        _suppressChartUpdate = true;
         Bars.Add(new ChartBarItem
         {
             Category = $"Q{nextNum}",
@@ -249,6 +300,7 @@ public partial class ChartElementViewModel : ElementViewModelBase
             ValueLabel = $"${val:F1}B",
             ColorHex = color
         });
+        _suppressChartUpdate = false;
         OnPropertyChanged(nameof(Bars));
         UpdateLiveChart();
     }
@@ -258,7 +310,9 @@ public partial class ChartElementViewModel : ElementViewModelBase
     {
         if (Bars.Count > 1)
         {
+            _suppressChartUpdate = true;
             Bars.RemoveAt(Bars.Count - 1);
+            _suppressChartUpdate = false;
             OnPropertyChanged(nameof(Bars));
             UpdateLiveChart();
         }
@@ -633,6 +687,10 @@ public partial class ChartElementViewModel : ElementViewModelBase
             BorderColorHex = chart.BorderColorHex;
             MultiSeries = chart.MultiSeries?.Select(s => s.Clone()).ToList() ?? new();
 
+            // Adding N bars one at a time would otherwise fire UpdateLiveChart() (and a full
+            // chart rasterization) once per bar — suppress until the whole set has loaded,
+            // then rasterize exactly once.
+            _suppressChartUpdate = true;
             Bars.Clear();
             for (int i = 0; i < chart.Categories.Count; i++)
             {
@@ -644,6 +702,7 @@ public partial class ChartElementViewModel : ElementViewModelBase
                     ColorHex = i < chart.BarColorsHex.Count ? chart.BarColorsHex[i] : "#0F6CBD"
                 });
             }
+            _suppressChartUpdate = false;
             UpdateLiveChart();
         }
     }

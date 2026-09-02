@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -17,6 +19,7 @@ public partial class DocumentCanvasView : UserControl
     private bool _isResizingHandle;
     private bool _isMarqueeSelecting;
     private Point _marqueeStartPoint;
+    private DateTime _lastMarqueeSelectionUpdate = DateTime.MinValue;
     private string? _activeResizeHandle;
     private Point _lastPointerPosition;
     private ElementViewModelBase? _draggedElement;
@@ -49,6 +52,92 @@ public partial class DocumentCanvasView : UserControl
     // Pinch Gesture state
     private bool _isPinching;
     private double _pinchStartZoom = 1.0;
+
+    // Zoom commit throttle — wheel/trackpad/pinch events can fire far faster than the
+    // LayoutTransformControl-driven canvas can afford to re-measure/re-arrange for. The delta
+    // math below still runs on every raw event (so a fast flick still compounds correctly and
+    // the cursor-anchor point stays accurate); only the actual write to ZoomLevel/Offset —
+    // the part that triggers an expensive layout pass — is coalesced to roughly once per frame.
+    private CancellationTokenSource? _zoomThrottleCts;
+    private double _pendingZoomLevel;
+    private Vector _pendingCanvasOffset;
+
+    private double EffectiveZoomLevel => _zoomThrottleCts != null
+        ? _pendingZoomLevel
+        : (ViewModel != null && ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0);
+
+    private Vector EffectiveCanvasOffset => _zoomThrottleCts != null
+        ? _pendingCanvasOffset
+        : (CanvasScrollViewer?.Offset ?? default);
+
+    private void RequestZoomLevelChange(double newZoom, Vector newOffset)
+    {
+        if (ViewModel == null) return;
+
+        _pendingZoomLevel = newZoom;
+        _pendingCanvasOffset = newOffset;
+
+        if (_zoomThrottleCts != null) return; // a commit is already scheduled; it will pick up these latest values
+
+        _zoomThrottleCts = new CancellationTokenSource();
+        var token = _zoomThrottleCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(16, token);
+            }
+            catch (TaskCanceledException)
+            {
+                return;
+            }
+            if (token.IsCancellationRequested) return;
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => CommitPendingZoom(token));
+        }, token);
+    }
+
+    private void CommitPendingZoom(CancellationToken token)
+    {
+        if (token.IsCancellationRequested) return;
+        _zoomThrottleCts = null;
+        var targetOffset = _pendingCanvasOffset;
+        if (ViewModel != null) ViewModel.ZoomLevel = _pendingZoomLevel;
+        if (CanvasScrollViewer != null)
+        {
+            CanvasScrollViewer.Offset = targetOffset;
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                if (CanvasScrollViewer != null)
+                {
+                    CanvasScrollViewer.Offset = targetOffset;
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+    }
+
+    /// <summary>Applies the pending zoom immediately instead of waiting out the throttle —
+    /// used when a gesture explicitly ends, so the canvas settles crisply.</summary>
+    private void FlushPendingZoom()
+    {
+        if (_zoomThrottleCts == null) return;
+        _zoomThrottleCts.Cancel();
+        _zoomThrottleCts = null;
+        var targetOffset = _pendingCanvasOffset;
+        if (ViewModel != null) ViewModel.ZoomLevel = _pendingZoomLevel;
+        if (CanvasScrollViewer != null)
+        {
+            CanvasScrollViewer.Offset = targetOffset;
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                if (CanvasScrollViewer != null)
+                {
+                    CanvasScrollViewer.Offset = targetOffset;
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+    }
 
     public DocumentCanvasView()
     {
@@ -125,7 +214,7 @@ public partial class DocumentCanvasView : UserControl
 
         if ((isZoomModifier || isZoomTool) && ViewModel != null && CanvasScrollViewer != null)
         {
-            double oldZoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+            double oldZoom = EffectiveZoomLevel;
             double effectiveDelta = Math.Abs(e.Delta.Y) >= Math.Abs(e.Delta.X) ? e.Delta.Y : e.Delta.X;
 
             // Proportional smooth zoom supporting both discrete mouse wheel ticks and continuous trackpad pinch gestures
@@ -151,11 +240,11 @@ public partial class DocumentCanvasView : UserControl
             {
                 var mouseInViewer = e.GetPosition(CanvasScrollViewer);
                 double ratio = newZoom / oldZoom;
-                double targetOffsetX = (CanvasScrollViewer.Offset.X + mouseInViewer.X) * ratio - mouseInViewer.X;
-                double targetOffsetY = (CanvasScrollViewer.Offset.Y + mouseInViewer.Y) * ratio - mouseInViewer.Y;
+                var baseOffset = EffectiveCanvasOffset;
+                double targetOffsetX = (baseOffset.X + mouseInViewer.X) * ratio - mouseInViewer.X;
+                double targetOffsetY = (baseOffset.Y + mouseInViewer.Y) * ratio - mouseInViewer.Y;
 
-                ViewModel.ZoomLevel = newZoom;
-                CanvasScrollViewer.Offset = new Vector(Math.Max(0, targetOffsetX), Math.Max(0, targetOffsetY));
+                RequestZoomLevelChange(newZoom, new Vector(Math.Max(0, targetOffsetX), Math.Max(0, targetOffsetY)));
             }
 
             UpdateViewportOnPlacementService();
@@ -176,7 +265,7 @@ public partial class DocumentCanvasView : UserControl
     {
         if (ViewModel != null && CanvasScrollViewer != null)
         {
-            double oldZoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+            double oldZoom = EffectiveZoomLevel;
             double delta = Math.Abs(e.Delta.Y) >= Math.Abs(e.Delta.X) ? e.Delta.Y : e.Delta.X;
             if (delta == 0 && (e.Delta.X != 0 || e.Delta.Y != 0))
             {
@@ -190,11 +279,11 @@ public partial class DocumentCanvasView : UserControl
             {
                 var mouseInViewer = e.GetPosition(CanvasScrollViewer);
                 double ratio = newZoom / oldZoom;
-                double targetOffsetX = (CanvasScrollViewer.Offset.X + mouseInViewer.X) * ratio - mouseInViewer.X;
-                double targetOffsetY = (CanvasScrollViewer.Offset.Y + mouseInViewer.Y) * ratio - mouseInViewer.Y;
+                var baseOffset = EffectiveCanvasOffset;
+                double targetOffsetX = (baseOffset.X + mouseInViewer.X) * ratio - mouseInViewer.X;
+                double targetOffsetY = (baseOffset.Y + mouseInViewer.Y) * ratio - mouseInViewer.Y;
 
-                ViewModel.ZoomLevel = newZoom;
-                CanvasScrollViewer.Offset = new Vector(Math.Max(0, targetOffsetX), Math.Max(0, targetOffsetY));
+                RequestZoomLevelChange(newZoom, new Vector(Math.Max(0, targetOffsetX), Math.Max(0, targetOffsetY)));
             }
 
             UpdateViewportOnPlacementService();
@@ -214,19 +303,15 @@ public partial class DocumentCanvasView : UserControl
 
             // e.Scale is the total cumulative scale of the pinch gesture since start (starts at 1.0)
             double targetZoom = Math.Clamp(Math.Round(_pinchStartZoom * e.Scale, 3), 0.1, 5.0);
-            if (Math.Abs(targetZoom - ViewModel.ZoomLevel) > 0.002)
+            double oldZ = EffectiveZoomLevel;
+            if (Math.Abs(targetZoom - oldZ) > 0.002 && oldZ > 0)
             {
-                double oldZ = ViewModel.ZoomLevel;
-                ViewModel.ZoomLevel = targetZoom;
-
-                if (oldZ > 0)
-                {
-                    var origin = e.ScaleOrigin;
-                    double ratio = targetZoom / oldZ;
-                    double newOffsetX = (CanvasScrollViewer.Offset.X + origin.X) * ratio - origin.X;
-                    double newOffsetY = (CanvasScrollViewer.Offset.Y + origin.Y) * ratio - origin.Y;
-                    CanvasScrollViewer.Offset = new Vector(Math.Max(0, newOffsetX), Math.Max(0, newOffsetY));
-                }
+                var origin = e.ScaleOrigin;
+                double ratio = targetZoom / oldZ;
+                var baseOffset = EffectiveCanvasOffset;
+                double newOffsetX = (baseOffset.X + origin.X) * ratio - origin.X;
+                double newOffsetY = (baseOffset.Y + origin.Y) * ratio - origin.Y;
+                RequestZoomLevelChange(targetZoom, new Vector(Math.Max(0, newOffsetX), Math.Max(0, newOffsetY)));
             }
             e.Handled = true;
         }
@@ -235,6 +320,7 @@ public partial class DocumentCanvasView : UserControl
     private void OnCanvasPinchEnded(object? sender, PinchEndedEventArgs e)
     {
         _isPinching = false;
+        FlushPendingZoom();
         UpdateViewportOnPlacementService();
         e.Handled = true;
     }
@@ -817,6 +903,11 @@ public partial class DocumentCanvasView : UserControl
             double w = Math.Abs(curPos.X - _marqueeStartPoint.X);
             double h = Math.Abs(curPos.Y - _marqueeStartPoint.Y);
 
+            // The box itself tracks the cursor on every move (cheap, needs to feel precise).
+            // Recomputing which elements intersect it is an O(n) scan over the whole page
+            // followed by another O(n) pass inside SelectElements, so that part is throttled —
+            // OnGlobalPointerReleased always does one final, unthrottled pass so the committed
+            // selection is never stale.
             if (MarqueeSelectionBox != null)
             {
                 Canvas.SetLeft(MarqueeSelectionBox, minX);
@@ -825,14 +916,13 @@ public partial class DocumentCanvasView : UserControl
                 MarqueeSelectionBox.Height = h;
             }
 
-            double z = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
-            var marqueeRect = new Rect(minX / z, minY / z, Math.Max(1, w / z), Math.Max(1, h / z));
+            var now = DateTime.UtcNow;
+            if ((now - _lastMarqueeSelectionUpdate).TotalMilliseconds >= 16)
+            {
+                _lastMarqueeSelectionUpdate = now;
+                UpdateMarqueeSelection(minX, minY, w, h);
+            }
 
-            var intersecting = ViewModel.CurrentPage.Elements
-                .Where(el => marqueeRect.Intersects(new Rect(el.X, el.Y, Math.Max(1, el.Width), Math.Max(1, el.Height))))
-                .ToList();
-
-            ViewModel.CurrentPage.SelectElements(intersecting);
             e.Handled = true;
             return;
         }
@@ -901,6 +991,20 @@ public partial class DocumentCanvasView : UserControl
         // Handled by tunnel/bubble or direct event
     }
 
+    private void UpdateMarqueeSelection(double boxLeft, double boxTop, double boxWidth, double boxHeight)
+    {
+        if (ViewModel?.CurrentPage == null) return;
+
+        double z = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+        var marqueeRect = new Rect(boxLeft / z, boxTop / z, Math.Max(1, boxWidth / z), Math.Max(1, boxHeight / z));
+
+        var intersecting = ViewModel.CurrentPage.Elements
+            .Where(el => marqueeRect.Intersects(new Rect(el.X, el.Y, Math.Max(1, el.Width), Math.Max(1, el.Height))))
+            .ToList();
+
+        ViewModel.CurrentPage.SelectElements(intersecting);
+    }
+
     private void OnGlobalPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
         if (_isPotentialDrag && !_isDraggingElement && !_isResizingHandle && !_isMarqueeSelecting)
@@ -926,7 +1030,19 @@ public partial class DocumentCanvasView : UserControl
 
         if (_isMarqueeSelecting)
         {
-            if (MarqueeSelectionBox != null) MarqueeSelectionBox.IsVisible = false;
+            // Final, unthrottled pass — guarantees the committed selection matches exactly
+            // where the box ended up, regardless of the move handler's throttle timing. Only
+            // for an actual drag: a plain click (no move at all, box still at its 0x0 press
+            // size) must leave selection untouched, matching the previous behavior — otherwise
+            // a shift/ctrl-click with no drag would wipe out the existing selection.
+            if (MarqueeSelectionBox != null)
+            {
+                if (MarqueeSelectionBox.Width > 2 || MarqueeSelectionBox.Height > 2)
+                {
+                    UpdateMarqueeSelection(Canvas.GetLeft(MarqueeSelectionBox), Canvas.GetTop(MarqueeSelectionBox), MarqueeSelectionBox.Width, MarqueeSelectionBox.Height);
+                }
+                MarqueeSelectionBox.IsVisible = false;
+            }
             _isMarqueeSelecting = false;
         }
         else if (_isResizingHandle && _draggedElement != null)

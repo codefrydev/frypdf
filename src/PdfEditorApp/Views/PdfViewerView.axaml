@@ -389,6 +389,9 @@
                                   IsVisible="{Binding SelectedSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}"
                                   Padding="14,12">
                         <ItemsControl x:Name="ThumbnailsItemsControl" ItemsSource="{Binding Pages}">
+                            <!-- Plain panel, not virtualized: ScrollThumbnailIntoView does pixel-based
+                                 math against this ScrollViewer's Offset/Viewport, which a virtualizing
+                                 panel can switch to logical (item-based) scrolling and break. -->
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:PdfViewerPageItem">
                                     <Button Background="Transparent"
@@ -637,6 +640,7 @@
                 <ScrollViewer x:Name="ContinuousScrollViewer"
                               HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto"
+                              ScrollChanged="OnContinuousViewerScrollChanged"
                               Padding="32"
                               Focusable="False"
                               IsVisible="{Binding IsContinuousScroll}">
@@ -648,7 +652,16 @@
                                   HorizontalAlignment="Center">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Spacing="28" HorizontalAlignment="Center" />
+                                <!-- Intentionally a plain StackPanel, not VirtualizingStackPanel: this
+                                     list's scroll handling (OnContinuousScrollOffsetChanged) does its
+                                     own pixel-based math against ScrollViewer.Offset/Viewport to figure
+                                     out which pages are visible. VirtualizingStackPanel switches the
+                                     containing ScrollViewer to logical (item-based) scrolling, which
+                                     breaks that pixel math outright — pages stopped rendering entirely
+                                     past whatever was eagerly warmed at load. The two thumbnail rails
+                                     don't have this dependency (nothing reads Offset for them) and stay
+                                     virtualized. -->
+                                <StackPanel Orientation="Vertical" Spacing="28" HorizontalAlignment="Center" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>

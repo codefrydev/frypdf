@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -77,7 +78,12 @@ public class PdfExportService : IPdfExportService
 
     public byte[] GeneratePdfBytes(PdfDocumentModel model)
     {
-        var document = new QuestPdfDocumentWrapper(model);
+        return GeneratePdfBytes(model, null);
+    }
+
+    private static byte[] GeneratePdfBytes(PdfDocumentModel model, IProgress<double>? progress)
+    {
+        var document = new QuestPdfDocumentWrapper(model, progress);
         byte[] rawPdf = document.GeneratePdf();
 
         // If scrub metadata is requested, do not embed internal model
@@ -90,26 +96,47 @@ public class PdfExportService : IPdfExportService
         return FryPdfEmbeddingHelper.EmbedModelInPdfBytes(rawPdf, model);
     }
 
-    public Task<byte[]> ExportToBytesAsync(PdfDocumentModel model)
+    public Task<byte[]> ExportToBytesAsync(PdfDocumentModel model, IProgress<double>? progress = null, CancellationToken ct = default)
     {
-        return Task.Run(() => GeneratePdfBytes(model));
+        ct.ThrowIfCancellationRequested();
+        return Task.Run(() => GeneratePdfBytes(model, progress), ct);
     }
 
-    public async Task ExportToFileAsync(PdfDocumentModel model, string filePath)
+    public async Task ExportToFileAsync(PdfDocumentModel model, string filePath, IProgress<double>? progress = null, CancellationToken ct = default)
     {
-        // Generate on background thread using an immutable model clone or bytes
-        byte[] bytes = await ExportToBytesAsync(model);
-        await File.WriteAllBytesAsync(filePath, bytes);
+        byte[] bytes = await ExportToBytesAsync(model, progress, ct);
+
+        string tempPath = filePath + ".tmp";
+        try
+        {
+            await File.WriteAllBytesAsync(tempPath, bytes, ct);
+
+            if (File.Exists(filePath))
+            {
+                File.Replace(tempPath, filePath, null);
+            }
+            else
+            {
+                File.Move(tempPath, filePath);
+            }
+        }
+        catch
+        {
+            try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
+            throw;
+        }
     }
 }
 
 internal class QuestPdfDocumentWrapper : IDocument
 {
     private readonly PdfDocumentModel _model;
+    private readonly IProgress<double>? _progress;
 
-    public QuestPdfDocumentWrapper(PdfDocumentModel model)
+    public QuestPdfDocumentWrapper(PdfDocumentModel model, IProgress<double>? progress = null)
     {
         _model = model;
+        _progress = progress;
     }
 
     public DocumentMetadata GetMetadata()
@@ -143,6 +170,8 @@ internal class QuestPdfDocumentWrapper : IDocument
 
     public void Compose(IDocumentContainer container)
     {
+        int totalPages = Math.Max(1, _model.Pages.Count);
+        int pageIndex = 0;
         foreach (var pageModel in _model.Pages)
         {
             container.Page(page =>
@@ -263,6 +292,9 @@ internal class QuestPdfDocumentWrapper : IDocument
                     }
                 });
             });
+
+            pageIndex++;
+            _progress?.Report(Math.Min(100.0, pageIndex * 100.0 / totalPages));
         }
     }
 

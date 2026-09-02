@@ -26,6 +26,7 @@ public partial class PdfViewerView : UserControl
     private bool _isProgrammaticScroll;
     private bool _isUpdatingFromUserScroll;
     private PdfViewerViewModel? _subscribedVm;
+    private IDisposable? _scrollOffsetSubscription;
 
     public PdfViewerView()
     {
@@ -46,6 +47,16 @@ public partial class PdfViewerView : UserControl
         DataContextChanged += OnDataContextChanged;
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
+
+        this.GetObservable(Visual.IsVisibleProperty).Subscribe(new ActionObserver<bool>(visible =>
+        {
+            if (visible)
+            {
+                SetupScrollListeners();
+                SubscribeViewModel(ViewModel);
+                Dispatcher.UIThread.Post(OnContinuousScrollOffsetChanged);
+            }
+        }));
     }
 
     private void InitializeComponent()
@@ -75,6 +86,8 @@ public partial class PdfViewerView : UserControl
 
     private void OnUnloaded(object? sender, RoutedEventArgs e)
     {
+        _scrollOffsetSubscription?.Dispose();
+        _scrollOffsetSubscription = null;
         UnsubscribeViewModel();
     }
 
@@ -103,6 +116,9 @@ public partial class PdfViewerView : UserControl
 
     private void UnsubscribeViewModel()
     {
+        _scrollOffsetSubscription?.Dispose();
+        _scrollOffsetSubscription = null;
+
         if (_subscribedVm != null)
         {
             _subscribedVm.ScrollToPageRequested -= OnScrollToPageRequested;
@@ -118,7 +134,26 @@ public partial class PdfViewerView : UserControl
         {
             continuousViewer.PropertyChanged -= OnContinuousViewerPropertyChanged;
             continuousViewer.PropertyChanged += OnContinuousViewerPropertyChanged;
+
+            continuousViewer.RemoveHandler(ScrollViewer.ScrollChangedEvent, OnContinuousViewerScrollChanged);
+            continuousViewer.AddHandler(ScrollViewer.ScrollChangedEvent, OnContinuousViewerScrollChanged);
+
+            _scrollOffsetSubscription?.Dispose();
+            _scrollOffsetSubscription = continuousViewer.GetObservable(ScrollViewer.OffsetProperty)
+                .Subscribe(new ActionObserver<Vector>(_ => OnContinuousScrollOffsetChanged()));
         }
+    }
+
+    public void OnContinuousViewerScrollChanged(object? sender, ScrollChangedEventArgs e)
+    {
+        OnContinuousScrollOffsetChanged();
+    }
+
+    private sealed class ActionObserver<T>(Action<T> onNext) : IObserver<T>
+    {
+        public void OnCompleted() { }
+        public void OnError(Exception error) { }
+        public void OnNext(T value) => onNext(value);
     }
 
     private void OnContinuousViewerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs ev)
@@ -152,6 +187,17 @@ public partial class PdfViewerView : UserControl
                 });
             }
         }
+        else if (e.PropertyName == nameof(PdfViewerViewModel.IsLoading))
+        {
+            // A fresh document just finished loading. The ScrollViewer's offset is likely
+            // still (0,0) from before, so no Offset-changed event will fire on its own —
+            // without this, only page 1 (rendered eagerly by the load itself) would show
+            // anything until the user scrolled.
+            if (ViewModel != null && !ViewModel.IsLoading && ViewModel.HasDocument)
+            {
+                Dispatcher.UIThread.Post(OnContinuousScrollOffsetChanged);
+            }
+        }
     }
 
     private void OnScrollToPageRequested(int pageNumber)
@@ -175,43 +221,31 @@ public partial class PdfViewerView : UserControl
             _isProgrammaticScroll = true;
             try
             {
-                // 1. Try direct container BringIntoView if available
-                var itemsCtrl = ContinuousItemsControl;
-                if (itemsCtrl != null)
-                {
-                    var container = itemsCtrl.ContainerFromIndex(pageNumber - 1);
-                    if (container != null && container.Bounds.Height > 0)
-                    {
-                        container.BringIntoView(new Rect(0, 0, Math.Max(10, container.Bounds.Width), Math.Min(100, Math.Max(10, container.Bounds.Height))));
-                        return;
-                    }
-                }
-
-                // 2. Exact mathematical layout calculation fallback
-                double targetY = 0;
                 double zoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
-                
-                // ContinuousScrollViewer has 32px top padding
+                var itemsCtrl = ContinuousItemsControl;
                 double top = 32.0;
+
                 for (int i = 0; i < pageNumber - 1 && i < ViewModel.Pages.Count; i++)
                 {
                     var page = ViewModel.Pages[i];
                     double pageH = page.HeightPoints > 0 ? (page.HeightPoints * zoom) : (842.0 * zoom);
-                    double itemTotalH = pageH + 2 + 8 + 16 + 28;
-                    top += itemTotalH;
+                    double itemTotalH = pageH + 26.0;
+                    top += itemTotalH + 28.0;
                 }
-                targetY = top;
 
-                double scrollY = pageNumber == 1 ? 0 : Math.Max(0, targetY - 16);
-                viewer.Offset = new Vector(viewer.Offset.X, scrollY);
+                double margin = pageNumber == 1 ? 0 : 16.0;
+                double targetOffsetY = Math.Max(0, top - margin);
+                viewer.Offset = new Vector(viewer.Offset.X, targetOffsetY);
             }
             finally
             {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    _isProgrammaticScroll = false;
-                }, DispatcherPriority.Background);
+                _isProgrammaticScroll = false;
             }
+
+            // Programmatic scroll updated the offset while _isProgrammaticScroll suppressed
+            // OnContinuousScrollOffsetChanged. Now that the offset is settled and the flag is cleared,
+            // immediately trigger visible-page resolution and background rendering for the destination page.
+            OnContinuousScrollOffsetChanged();
         }
         else if (ViewModel.IsSinglePageMode)
         {
@@ -238,11 +272,12 @@ public partial class PdfViewerView : UserControl
 
         try
         {
+            double viewportH = thumbViewer.Viewport.Height;
+            if (viewportH <= 0) viewportH = 600;
+
             double thumbHeight = 270.0;
             double targetY = (pageNumber - 1) * thumbHeight;
             double currentY = thumbViewer.Offset.Y;
-            double viewportH = thumbViewer.Viewport.Height;
-            if (viewportH <= 0) viewportH = 600;
 
             if (targetY < currentY || targetY + thumbHeight > currentY + viewportH)
             {
@@ -252,47 +287,103 @@ public partial class PdfViewerView : UserControl
         catch { }
     }
 
-    private void OnContinuousScrollOffsetChanged()
+    /// <summary>
+    /// Resolves which pages are visible in the viewport and detects which page has the maximum
+    /// visible vertical overlap on screen. Uses exact, deterministic pixel geometry calculated
+    /// from ScrollViewer.Offset.Y, page dimensions, zoom level, and spacing.
+    /// </summary>
+    private bool ResolveVisiblePages(out int firstVisiblePage, out int lastVisiblePage, out int anchorPage)
     {
-        if (_isProgrammaticScroll || _isUpdatingFromUserScroll || ViewModel == null || !ViewModel.IsContinuousScroll || ViewModel.Pages.Count == 0) return;
+        firstVisiblePage = 1;
+        lastVisiblePage = 1;
+        anchorPage = 1;
+
         var viewer = ContinuousScrollViewer;
-        if (viewer == null) return;
+        if (viewer == null || ViewModel == null) return false;
 
-        double currentOffsetY = viewer.Offset.Y;
+        int count = ViewModel.Pages.Count;
+        if (count == 0) return false;
+
         double viewportHeight = viewer.Viewport.Height;
-        double targetMidY = currentOffsetY + Math.Min(viewportHeight * 0.4, 250);
+        if (viewportHeight <= 0) viewportHeight = viewer.Bounds.Height;
+        if (viewportHeight <= 0) viewportHeight = 800;
 
-        double accumulatedY = 32.0;
         double zoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
-        int detectedPageNum = 1;
+        double currentScrollY = viewer.Offset.Y;
 
-        for (int i = 0; i < ViewModel.Pages.Count; i++)
+        double currentY = 32.0;
+        int firstIdx = -1;
+        int lastIdx = -1;
+        int bestActiveIdx = -1;
+        double maxVisibleHeight = -1;
+
+        for (int i = 0; i < count; i++)
         {
             var page = ViewModel.Pages[i];
             double pageH = page.HeightPoints > 0 ? (page.HeightPoints * zoom) : (842.0 * zoom);
-            double itemTotalH = pageH + 2 + 8 + 16 + 28;
+            double itemTotalH = pageH + 26.0;
 
-            if (targetMidY >= accumulatedY && targetMidY < accumulatedY + itemTotalH)
+            double top = currentY - currentScrollY;
+            double bottom = top + itemTotalH;
+
+            if (bottom > 0 && top < viewportHeight)
             {
-                detectedPageNum = page.PageNumber;
-                break;
-            }
-            else if (targetMidY < accumulatedY && i == 0)
-            {
-                detectedPageNum = 1;
-                break;
+                if (firstIdx == -1) firstIdx = i;
+                lastIdx = i;
+
+                double visibleTop = Math.Max(0, top);
+                double visibleBottom = Math.Min(viewportHeight, bottom);
+                double visibleH = Math.Max(0, visibleBottom - visibleTop);
+                if (visibleH > maxVisibleHeight)
+                {
+                    maxVisibleHeight = visibleH;
+                    bestActiveIdx = i;
+                }
             }
 
-            accumulatedY += itemTotalH;
-            detectedPageNum = page.PageNumber;
+            currentY += itemTotalH + 28.0;
         }
 
-        if (detectedPageNum >= 1 && detectedPageNum <= ViewModel.Pages.Count && ViewModel.CurrentPageNumber != detectedPageNum)
+        if (firstIdx == -1)
+        {
+            if (currentScrollY <= 32.0)
+            {
+                firstIdx = 0;
+                lastIdx = Math.Min(count - 1, 1);
+                bestActiveIdx = 0;
+            }
+            else
+            {
+                bestActiveIdx = count - 1;
+                firstIdx = Math.Max(0, count - 2);
+                lastIdx = count - 1;
+            }
+        }
+
+        firstVisiblePage = ViewModel.Pages[firstIdx].PageNumber;
+        lastVisiblePage = ViewModel.Pages[lastIdx].PageNumber;
+        anchorPage = ViewModel.Pages[bestActiveIdx].PageNumber;
+        return true;
+    }
+
+    private void OnContinuousScrollOffsetChanged()
+    {
+        if (_isProgrammaticScroll || _isUpdatingFromUserScroll) return;
+        var vm = ViewModel;
+        if (vm == null || !vm.IsContinuousScroll || vm.Pages.Count == 0) return;
+        var viewer = ContinuousScrollViewer;
+        if (viewer == null) return;
+
+        if (!ResolveVisiblePages(out int firstVisiblePage, out int lastVisiblePage, out int detectedPageNum)) return;
+
+        vm.RequestPagesVisible(firstVisiblePage, lastVisiblePage);
+
+        if (detectedPageNum >= 1 && detectedPageNum <= vm.Pages.Count && vm.CurrentPageNumber != detectedPageNum)
         {
             _isUpdatingFromUserScroll = true;
             try
             {
-                ViewModel.CurrentPageNumber = detectedPageNum;
+                vm.CurrentPageNumber = detectedPageNum;
                 ScrollThumbnailIntoView(detectedPageNum);
             }
             finally

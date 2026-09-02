@@ -21,6 +21,20 @@ public partial class ImageElementViewModel : ElementViewModelBase
     [ObservableProperty]
     private Bitmap? _previewBitmap;
 
+    private Bitmap? _previousPreviewBitmap;
+
+    /// <summary>Disposes the outgoing bitmap whenever a new one is decoded — <see cref="PreviewBitmap"/>
+    /// is re-decoded on every path/data change with no other lifecycle owner, so without this the old
+    /// native bitmap leaks.</summary>
+    partial void OnPreviewBitmapChanged(Bitmap? value)
+    {
+        if (_previousPreviewBitmap != null && _previousPreviewBitmap != value)
+        {
+            _previousPreviewBitmap.Dispose();
+        }
+        _previousPreviewBitmap = value;
+    }
+
     [ObservableProperty]
     private bool _keepAspectRatio = true;
 

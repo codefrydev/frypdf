@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
 
@@ -61,6 +63,7 @@ public class DocumentAuditReport
 public interface IDocumentAuditService
 {
     DocumentAuditReport RunAudit(PdfDocumentModel document);
+    Task<DocumentAuditReport> RunAuditAsync(PdfDocumentModel document, IProgress<double>? progress = null, CancellationToken ct = default);
     int AutoFixContrastIssues(PdfDocumentModel document);
     int AutoFixMetadataIssues(PdfDocumentModel document);
     int AutoFixMissingAltText(PdfDocumentModel document);
@@ -69,6 +72,19 @@ public interface IDocumentAuditService
 
 public class DocumentAuditService : IDocumentAuditService
 {
+    public Task<DocumentAuditReport> RunAuditAsync(PdfDocumentModel document, IProgress<double>? progress = null, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.Run(() =>
+        {
+            progress?.Report(0);
+            ct.ThrowIfCancellationRequested();
+            var report = RunAudit(document);
+            progress?.Report(100);
+            return report;
+        }, ct);
+    }
+
     public DocumentAuditReport RunAudit(PdfDocumentModel document)
     {
         var report = new DocumentAuditReport

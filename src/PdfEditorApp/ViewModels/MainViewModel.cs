@@ -151,6 +151,13 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusMessage = "Ready";
 
+    /// <summary>
+    /// True while a document open/template load/export is in progress. Drives the
+    /// status-bar busy indicator so the app never looks idle while it's actually working.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isBusy;
+
     [ObservableProperty]
     private string _searchQuery = "";
 
@@ -223,6 +230,9 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private DocumentAuditReport? _activeAuditReport;
+
+    [ObservableProperty]
+    private bool _isAuditRunning;
 
     [ObservableProperty]
     private bool _isHeaderFooterDialogOpen;
@@ -303,6 +313,12 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private double _batesFontSize = 9.0;
 
+    [ObservableProperty]
+    private bool _isApplyingBatesNumbers;
+
+    [ObservableProperty]
+    private double _batesProgressPercentage;
+
     // Organize Pages: Split & Extract Studio
     [ObservableProperty]
     private bool _isSplitExtractDialogOpen;
@@ -322,6 +338,9 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private DocumentComparisonReport? _activeComparisonReport;
+
+    [ObservableProperty]
+    private bool _isComparing;
 
     // Math & Scientific Equation Studio
     [ObservableProperty]
@@ -645,14 +664,15 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>Switches to the editor and loads the requested template.</summary>
     public void OpenEditorWithTemplate(string? templateName)
     {
+        IsHomePageVisible = false;
+        IsPdfViewerVisible = false;
+        IsEditorVisible = true;
+
         var model = string.IsNullOrWhiteSpace(templateName)
             ? _templateService.CreateBlankDocument()
             : _templateService.CreateTemplate(templateName);
 
         LoadFromDocumentModel(model);
-        IsHomePageVisible = false;
-        IsPdfViewerVisible = false;
-        IsEditorVisible = true;
         ShowToast($"Created new document from {templateName ?? "Blank"} template", "FilePlusOutline");
     }
 
@@ -665,12 +685,20 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>Asynchronously switches to the editor and loads a project from a file path.</summary>
     public async Task OpenEditorWithFileAsync(string path)
     {
+        // Navigate to the (still-empty) editor shell immediately so the user sees the app
+        // respond right away, then populate it — mirrors OpenInViewerAsync's approach.
+        IsHomePageVisible = false;
+        IsPdfViewerVisible = false;
+        IsEditorVisible = true;
+        IsBusy = true;
+        UpdateStatus($"Opening {Path.GetFileName(path)}...");
+
         try
         {
             var model = await _persistenceService.LoadProjectAsync(path);
             if (model != null)
             {
-                LoadFromDocumentModel(model);
+                await LoadFromDocumentModelAsync(model);
                 _recentService.Add(new RecentDocumentItem
                 {
                     FilePath = path,
@@ -678,14 +706,21 @@ public partial class MainViewModel : ViewModelBase
                     LastOpened = DateTime.UtcNow
                 });
                 Home.RefreshRecent();
-                IsHomePageVisible = false;
-                IsPdfViewerVisible = false;
-                IsEditorVisible = true;
                 ShowToast($"Opened: {Path.GetFileName(path)}", "FolderOpenOutline");
+            }
+            else
+            {
+                IsBusy = false;
+                IsEditorVisible = false;
+                IsHomePageVisible = true;
+                ShowToast("Could not open file: unrecognized or corrupted document.", "AlertCircleOutline");
             }
         }
         catch (Exception ex)
         {
+            IsBusy = false;
+            IsEditorVisible = false;
+            IsHomePageVisible = true;
             ShowToast($"Could not open file: {ex.Message}", "AlertCircleOutline");
         }
     }

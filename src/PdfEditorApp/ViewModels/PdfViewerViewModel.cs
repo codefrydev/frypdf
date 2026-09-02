@@ -55,15 +55,35 @@ public class PdfViewerTextLineItem
     public List<PdfViewerWordItem> Words { get; } = new();
 }
 
-public class PdfViewerPageItem : ObservableObject
+public class PdfViewerPageItem : ObservableObject, IDisposable
 {
+    /// <summary>
+    /// Rasterization scale for a page shown at 100% zoom. Matches the ~2x device pixel ratio of
+    /// a HiDPI display, which is what mainstream PDF viewers target. This was 2.75x, which
+    /// oversampled by roughly 1.9x in area for no visible benefit — and since render cost scales
+    /// with pixel count, that directly inflated how long every page took to appear.
+    /// Every site that renders or records a scale must use this same value: a mismatch makes
+    /// <see cref="PdfViewerViewModel.EnsurePageRendered"/> think the page needs re-rendering and
+    /// silently doubles the work.
+    /// </summary>
+    internal const float BasePageRenderScale = 2.0f;
+
     private bool _isSelected;
     private int _rotationAngle;
-    private float _renderedScale = 2.75f;
+    private float _renderedScale = BasePageRenderScale;
     private Bitmap? _thumbnailBitmap;
     private Bitmap? _bitmap;
     private string _selectedText = string.Empty;
     private bool _hasSelection;
+    private bool _isDisposed;
+
+    /// <summary>Guards against piling up redundant background geometry-extraction tasks
+    /// while pointer-move events keep firing before the first one completes.</summary>
+    public bool IsGeometryLoading { get; set; }
+
+    /// <summary>Guards against queueing duplicate bitmap renders for this page while one is
+    /// already in flight — scroll events fire far faster than a page can be rasterized.</summary>
+    public bool IsRenderLoading { get; set; }
 
     public int PageNumber { get; set; }
     public double WidthPoints { get; set; }
@@ -276,7 +296,14 @@ public class PdfViewerPageItem : ObservableObject
     public Bitmap? ThumbnailBitmap
     {
         get => _thumbnailBitmap ?? _bitmap;
-        set => SetProperty(ref _thumbnailBitmap, value);
+        set
+        {
+            var old = _thumbnailBitmap;
+            if (SetProperty(ref _thumbnailBitmap, value) && old != null && old != _bitmap)
+            {
+                old.Dispose();
+            }
+        }
     }
 
     public Bitmap? Bitmap
@@ -284,9 +311,14 @@ public class PdfViewerPageItem : ObservableObject
         get => _bitmap;
         set
         {
+            var old = _bitmap;
             if (SetProperty(ref _bitmap, value))
             {
                 OnPropertyChanged(nameof(ThumbnailBitmap));
+                if (old != null && old != _thumbnailBitmap)
+                {
+                    old.Dispose();
+                }
             }
         }
     }
@@ -304,6 +336,24 @@ public class PdfViewerPageItem : ObservableObject
     }
 
     public ObservableCollection<PdfViewerAnnotationItem> PageAnnotations { get; } = new();
+
+    /// <summary>Releases the rendered bitmaps. Safe to call more than once.</summary>
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        var bmp = _bitmap;
+        var thumb = _thumbnailBitmap;
+        _bitmap = null;
+        _thumbnailBitmap = null;
+
+        bmp?.Dispose();
+        if (thumb != null && thumb != bmp)
+        {
+            thumb.Dispose();
+        }
+    }
 }
 
 public class PdfViewerPageSpreadItem : ObservableObject
@@ -372,6 +422,79 @@ public partial class PdfViewerViewModel : ViewModelBase
     private readonly object _renderLock = new();
     private byte[]? _currentPdfBytes;
     private string? _currentPassword;
+    private int _lastVisibleFirstPage = -1;
+    private int _lastVisibleLastPage = -1;
+
+    /// <summary>
+    /// Count of in-flight renders for pages the user is actually looking at. Every rasterization
+    /// and text extraction serializes behind <see cref="_renderLock"/> (the shared PdfPig document
+    /// is not thread-safe), so the whole-document background sweep must stand aside while this is
+    /// non-zero — otherwise a visible page's render queues behind hundreds of background jobs and
+    /// effectively never arrives.
+    /// </summary>
+    private int _pendingForegroundRenders;
+
+    /// <summary>Parks background sweep work while user-visible renders are outstanding.</summary>
+    private async Task WaitForForegroundIdleAsync(CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested && Volatile.Read(ref _pendingForegroundRenders) > 0)
+        {
+            try
+            {
+                await Task.Delay(40, ct);
+            }
+            catch (TaskCanceledException)
+            {
+                return;
+            }
+        }
+    }
+
+    /// <summary>
+    /// The currently-open document, kept alive and reused for every on-demand page render and
+    /// geometry extraction — opening/parsing a large PDF from bytes is expensive, and doing it
+    /// fresh on every single page request (as this used to) meant every page you touched paid
+    /// a whole-document re-parse instead of just the cost of that one page. Always access under
+    /// <see cref="_renderLock"/>; PdfPig documents aren't safe for concurrent multi-thread use.
+    /// </summary>
+    private PdfDocument? _openDocument;
+
+    /// <summary>Returns the shared open document for <see cref="_currentPdfBytes"/>, opening it
+    /// (with the same repair fallback used elsewhere) if this is the first access since the
+    /// document loaded. Caller must hold <see cref="_renderLock"/>.</summary>
+    private PdfDocument? OpenOrReuseDocument()
+    {
+        if (_openDocument != null) return _openDocument;
+        if (_currentPdfBytes == null) return null;
+
+        var parsingOptions = new ParsingOptions();
+        if (!string.IsNullOrEmpty(_currentPassword))
+        {
+            parsingOptions.Password = _currentPassword;
+        }
+
+        PdfDocument? doc = null;
+        try
+        {
+            doc = PdfDocument.Open(_currentPdfBytes, parsingOptions);
+        }
+        catch
+        {
+            try
+            {
+                byte[] repaired = PdfFileHelper.SalvageAndRepairPdfBytes(_currentPdfBytes);
+                doc = PdfDocument.Open(repaired, parsingOptions);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        try { PdfPigExtensions.AddSkiaPageFactory(doc); } catch { }
+        _openDocument = doc;
+        return doc;
+    }
 
     public IStorageProvider? StorageProvider { get; set; }
 
@@ -553,6 +676,7 @@ public partial class PdfViewerViewModel : ViewModelBase
     partial void OnZoomLevelChanged(double value)
     {
         OnPropertyChanged(nameof(ZoomPercentageText));
+        InvalidateVisiblePageCache();
 
         // Dynamic High-DPI Vector Re-render on Zoom Change (Debounced)
         _zoomDebounceCts?.Cancel();
@@ -566,7 +690,7 @@ public partial class PdfViewerViewModel : ViewModelBase
                 await Task.Delay(140, token);
                 if (token.IsCancellationRequested) return;
 
-                float dynamicScale = Math.Clamp((float)(value * 2.25f), 2.5f, 5.0f);
+                float dynamicScale = Math.Clamp((float)(value * 2.25f), PdfViewerPageItem.BasePageRenderScale, 5.0f);
                 if (SelectedPage != null && Math.Abs(SelectedPage.RenderedScale - dynamicScale) > 0.4f)
                 {
                     var highResBmp = RenderPageAtScale(SelectedPage.PageNumber, dynamicScale);
@@ -582,6 +706,12 @@ public partial class PdfViewerViewModel : ViewModelBase
             }
             catch (OperationCanceledException) { }
         }, token);
+    }
+
+    public void InvalidateVisiblePageCache()
+    {
+        _lastVisibleFirstPage = -1;
+        _lastVisibleLastPage = -1;
     }
 
     partial void OnCurrentPageNumberChanged(int value)
@@ -810,27 +940,60 @@ public partial class PdfViewerViewModel : ViewModelBase
 
     public byte[]? CurrentPdfBytes => _currentPdfBytes;
 
+    /// <summary>
+    /// Populates a page's word/line geometry for hit-testing (hover cursor, click-to-select-word).
+    /// Runs off the UI thread — the first hover/click on a page the background sweep hasn't
+    /// reached yet used to open and fully parse the PDF synchronously on the dispatcher thread.
+    /// </summary>
     public void EnsurePageGeometry(PdfViewerPageItem page)
     {
-        if (page.Words.Count > 0 || _currentPdfBytes == null || _currentPdfBytes.Length == 0) return;
-        try
+        if (page.Words.Count > 0 || page.IsGeometryLoading || _currentPdfBytes == null || _currentPdfBytes.Length == 0) return;
+
+        page.IsGeometryLoading = true;
+        int pageNumber = page.PageNumber;
+
+        Task.Run(() =>
         {
-            using var doc = PdfDocument.Open(_currentPdfBytes);
-            if (page.PageNumber >= 1 && page.PageNumber <= doc.NumberOfPages)
+            string? text = null;
+            List<PdfViewerWordItem>? words = null;
+            List<PdfViewerTextLineItem>? lines = null;
+            double width = 0, height = 0;
+
+            try
             {
-                var p = doc.GetPage(page.PageNumber);
-                var (txt, words, lines) = ExtractPageTextGeometry(p);
-                page.ExtractedText = txt;
-                page.Words = words;
-                page.TextLines = lines;
-                if (p.Width > 0 && p.Height > 0)
+                lock (_renderLock)
                 {
-                    page.WidthPoints = p.Width;
-                    page.HeightPoints = p.Height;
+                    var doc = OpenOrReuseDocument();
+                    if (doc != null && pageNumber >= 1 && pageNumber <= doc.NumberOfPages)
+                    {
+                        var p = doc.GetPage(pageNumber);
+                        (text, words, lines) = ExtractPageTextGeometry(p);
+                        if (p.Width > 0 && p.Height > 0)
+                        {
+                            width = p.Width;
+                            height = p.Height;
+                        }
+                    }
                 }
             }
-        }
-        catch { }
+            catch { }
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                if (text != null)
+                {
+                    page.ExtractedText = text;
+                    page.Words = words!;
+                    page.TextLines = lines!;
+                    if (width > 0 && height > 0)
+                    {
+                        page.WidthPoints = width;
+                        page.HeightPoints = height;
+                    }
+                }
+                page.IsGeometryLoading = false;
+            });
+        });
     }
 
     public async Task LoadDocumentAsync(string filePath, string? password = null)
@@ -873,6 +1036,22 @@ public partial class PdfViewerViewModel : ViewModelBase
         CurrentFilePath = sourceFilePath;
         DocumentTitle = string.IsNullOrWhiteSpace(sourceFilePath) ? "Document.pdf" : Path.GetFileName(sourceFilePath);
 
+        // Release the previous document's rendered bitmaps before replacing it — this
+        // ViewModel is a long-lived singleton reused across every document open, so
+        // nothing else ever frees this memory otherwise.
+        foreach (var oldPage in Pages)
+        {
+            oldPage.Dispose();
+        }
+        _lastVisibleFirstPage = -1;
+        _lastVisibleLastPage = -1;
+
+        lock (_renderLock)
+        {
+            _openDocument?.Dispose();
+            _openDocument = null;
+        }
+
         Pages.Clear();
         PageSpreads.Clear();
         Bookmarks.Clear();
@@ -911,7 +1090,7 @@ public partial class PdfViewerViewModel : ViewModelBase
                     }
                 }
 
-                using (doc)
+                try
                 {
                     try
                     {
@@ -920,7 +1099,11 @@ public partial class PdfViewerViewModel : ViewModelBase
                     catch { }
 
                     int total = doc.NumberOfPages;
-                    if (total == 0) return (new List<PdfViewerMetadataItem>(), new List<PdfViewerPageItem>(), 0);
+                    if (total == 0)
+                    {
+                        doc.Dispose();
+                        return (new List<PdfViewerMetadataItem>(), new List<PdfViewerPageItem>(), 0);
+                    }
 
                     // 1. Fast Page 1 extraction & immediate render
                     var firstPage = doc.GetPage(1);
@@ -938,7 +1121,7 @@ public partial class PdfViewerViewModel : ViewModelBase
                     Bitmap? bmp1 = null;
                     try
                     {
-                        using var pngStream = PdfPigExtensions.GetPageAsPng(doc, 1, 2.75f, 100);
+                        using var pngStream = PdfPigExtensions.GetPageAsPng(doc, 1, PdfViewerPageItem.BasePageRenderScale, 100);
                         if (pngStream != null && pngStream.Length > 0)
                         {
                             pngStream.Position = 0;
@@ -947,22 +1130,46 @@ public partial class PdfViewerViewModel : ViewModelBase
                     }
                     catch { }
 
-                    // 2. Instant Skeleton Generation (< 0.5ms for all 500+ pages)
+                    // 2. Instant Skeleton Generation, with REAL per-page dimensions. Reading a
+                    // page's declared size is cheap (the page dictionary's MediaBox) — nothing
+                    // like the cost of full word/text extraction — so it's worth doing for every
+                    // page right now rather than defaulting every page to page 1's size until
+                    // the much slower progressive background sweep happens to reach it. Every
+                    // scroll-position and click-to-navigate calculation sums page heights across
+                    // however many preceding pages there are, so a wrong default anywhere in
+                    // that chain drifts every page after it out of sync until the real value
+                    // loads — for a large document, that's most of the book for a long time.
                     var pagesList = new List<PdfViewerPageItem>(total);
                     for (int i = 1; i <= total; i++)
                     {
+                        double pageWidth = defaultWidth;
+                        double pageHeight = defaultHeight;
+                        int pageRot = (i == 1) ? defaultRot : 0;
+
+                        if (i > 1)
+                        {
+                            try
+                            {
+                                var pg = doc.GetPage(i);
+                                if (pg.Width > 0) pageWidth = pg.Width;
+                                if (pg.Height > 0) pageHeight = pg.Height;
+                                pageRot = (int)pg.Rotation.Value;
+                            }
+                            catch { }
+                        }
+
                         pagesList.Add(new PdfViewerPageItem
                         {
                             PageNumber = i,
-                            WidthPoints = defaultWidth,
-                            HeightPoints = defaultHeight,
-                            RotationAngle = (i == 1) ? defaultRot : 0,
+                            WidthPoints = pageWidth,
+                            HeightPoints = pageHeight,
+                            RotationAngle = pageRot,
                             ExtractedText = (i == 1) ? firstPageText : "",
                             Words = (i == 1) ? firstWords : new List<PdfViewerWordItem>(),
                             TextLines = (i == 1) ? firstLines : new List<PdfViewerTextLineItem>(),
                             PageSummary = (i == 1) ? firstPageSummary : "",
                             Bitmap = (i == 1) ? bmp1 : null,
-                            RenderedScale = 2.75f,
+                            RenderedScale = PdfViewerPageItem.BasePageRenderScale,
                             IsSelected = (i == 1)
                         });
                     }
@@ -988,7 +1195,21 @@ public partial class PdfViewerViewModel : ViewModelBase
                         new PdfViewerMetadataItem { Label = "Security Status", Value = doc.IsEncrypted ? "Password Protected (Encrypted)" : "Standard (No Security)", IconKind = doc.IsEncrypted ? "LockOutline" : "LockOpenOutline" }
                     };
 
+                    // Keep this document open for reuse by on-demand rendering/geometry
+                    // extraction instead of parsing the whole PDF from scratch again on the
+                    // very first page request right after this.
+                    lock (_renderLock)
+                    {
+                        _openDocument?.Dispose();
+                        _openDocument = doc;
+                    }
+
                     return (metaList, pagesList, total);
+                }
+                catch
+                {
+                    doc.Dispose();
+                    throw;
                 }
             }, ct);
 
@@ -1032,43 +1253,13 @@ public partial class PdfViewerViewModel : ViewModelBase
         {
             try
             {
-                var parsingOptions = new ParsingOptions();
-                if (!string.IsNullOrEmpty(_currentPassword))
-                {
-                    parsingOptions.Password = _currentPassword;
-                }
+                var doc = OpenOrReuseDocument();
+                if (doc == null) return null;
 
-                PdfDocument? doc = null;
-                try
+                using var stream = PdfPigExtensions.GetPageAsPng(doc, pageNumber, scale, 100);
+                if (stream != null && stream.Length > 0)
                 {
-                    doc = PdfDocument.Open(_currentPdfBytes, parsingOptions);
-                }
-                catch
-                {
-                    try
-                    {
-                        byte[] repaired = PdfFileHelper.SalvageAndRepairPdfBytes(_currentPdfBytes);
-                        doc = PdfDocument.Open(repaired, parsingOptions);
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-                }
-
-                using (doc)
-                {
-                    try
-                    {
-                        PdfPigExtensions.AddSkiaPageFactory(doc);
-                    }
-                    catch { }
-
-                    using var stream = PdfPigExtensions.GetPageAsPng(doc, pageNumber, scale, 100);
-                    if (stream != null && stream.Length > 0)
-                    {
-                        return stream.ToArray();
-                    }
+                    return stream.ToArray();
                 }
             }
             catch { }
@@ -1098,21 +1289,105 @@ public partial class PdfViewerViewModel : ViewModelBase
         var page = Pages.FirstOrDefault(p => p.PageNumber == pageNumber);
         if (page == null) return;
 
-        float targetScale = scale ?? Math.Clamp((float)(ZoomLevel * 2.25f), 2.75f, 5.0f);
+        float targetScale = scale ?? Math.Clamp((float)(ZoomLevel * 2.25f), PdfViewerPageItem.BasePageRenderScale, 5.0f);
         if (page.Bitmap == null || Math.Abs(page.RenderedScale - targetScale) > 0.5f)
         {
+            // Scrolling fires this repeatedly for the same pages, and a page's Bitmap stays
+            // null until its render finishes — so without this guard, scrolling back and forth
+            // queues up redundant renders of pages already being rendered. Since every render
+            // serializes behind the single render lock, that backlog delays the pages the user
+            // is actually looking at and makes scrolling feel unresponsive.
+            if (page.IsRenderLoading) return;
+            page.IsRenderLoading = true;
+            Interlocked.Increment(ref _pendingForegroundRenders);
+
             Task.Run(() =>
             {
-                var bmp = RenderPageAtScale(pageNumber, targetScale);
-                if (bmp != null)
+                Bitmap? bmp = null;
+                try
                 {
+                    bmp = RenderPageAtScale(pageNumber, targetScale);
+                }
+                finally
+                {
+                    // Released on the worker thread, not inside the dispatcher callback, so the
+                    // background sweep can resume as soon as the render itself is done rather
+                    // than waiting on UI-thread scheduling.
+                    Interlocked.Decrement(ref _pendingForegroundRenders);
+
                     Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
-                        page.Bitmap = bmp;
-                        page.RenderedScale = targetScale;
+                        if (bmp != null)
+                        {
+                            page.Bitmap = bmp;
+                            page.RenderedScale = targetScale;
+                        }
+                        page.IsRenderLoading = false;
                     });
                 }
             });
+        }
+    }
+
+    /// <summary>
+    /// Tells the viewer which pages are actually on screen right now (called from the view's
+    /// scroll handler). Renders full-resolution bitmaps for the visible range plus a small
+    /// lookahead, and releases them for pages that have scrolled well out of view — so memory
+    /// stays bounded by what's near the viewport instead of growing with document length.
+    /// </summary>
+    public void RequestPagesVisible(int firstPageNumber, int lastPageNumber)
+    {
+        if (Pages.Count == 0) return;
+
+        // Small lookahead by design. Every render serializes behind a single lock, so a wide
+        // window just builds a queue that delays the pages actually on screen.
+        const int renderLookahead = 2;
+        const int keepAliveLookahead = 40;
+
+        int renderFirst = Math.Max(1, firstPageNumber - renderLookahead);
+        int renderLast = Math.Min(Pages.Count, lastPageNumber + renderLookahead);
+
+        if (renderFirst == _lastVisibleFirstPage && renderLast == _lastVisibleLastPage) return;
+        _lastVisibleFirstPage = renderFirst;
+        _lastVisibleLastPage = renderLast;
+
+        // 1. On-screen pages first. Order matters: renders are serialized, so anything queued
+        // ahead of the visible pages directly delays what the user is waiting to see. This
+        // used to iterate from (firstVisible - lookahead) upward, which meant the pages just
+        // ABOVE the viewport were always rasterized before the page being looked at.
+        for (int p = firstPageNumber; p <= lastPageNumber; p++)
+        {
+            EnsurePageRendered(p);
+        }
+
+        // 2. Then the lookahead, nearest-first outward.
+        for (int d = 1; d <= renderLookahead; d++)
+        {
+            int before = firstPageNumber - d;
+            if (before >= 1) EnsurePageRendered(before);
+
+            int after = lastPageNumber + d;
+            if (after <= Pages.Count) EnsurePageRendered(after);
+        }
+
+        // Note: text geometry is deliberately NOT warmed here. It's as expensive as a render
+        // and shares the same lock, so warming it for every page in the window starved the
+        // visible pages' renders. It stays on-demand (first pointer interaction with a page).
+
+        // 3. Release bitmaps for pages far outside the viewport.
+        int keepFirst = Math.Max(1, firstPageNumber - keepAliveLookahead);
+        int keepLast = Math.Min(Pages.Count, lastPageNumber + keepAliveLookahead);
+
+        for (int i = 0; i < Pages.Count; i++)
+        {
+            int pageNum = i + 1;
+            if (pageNum < keepFirst || pageNum > keepLast)
+            {
+                // The "Fallback when loading" placeholder shows again if the user scrolls back;
+                // ThumbnailBitmap is left alone since the thumbnail rail may show a wider
+                // range than the main viewport and thumbnails are cheap to keep resident.
+                Pages[i].Bitmap = null;
+            }
         }
     }
 
@@ -1125,31 +1400,36 @@ public partial class PdfViewerViewModel : ViewModelBase
             // 1. Asynchronously extract Bookmarks/Outlines without blocking initial page display
             try
             {
-                var parsingOptions = new ParsingOptions();
-                if (!string.IsNullOrEmpty(_currentPassword))
+                List<PdfViewerBookmarkItem>? bookmarksList = null;
+                lock (_renderLock)
                 {
-                    parsingOptions.Password = _currentPassword;
+                    var doc = OpenOrReuseDocument();
+                    if (doc != null && doc.TryGetBookmarks(out var bookmarks) && bookmarks != null && bookmarks.Roots != null)
+                    {
+                        bookmarksList = new List<PdfViewerBookmarkItem>();
+                        ExtractBookmarksRecursive(bookmarks.Roots, bookmarksList);
+                    }
                 }
 
-                using var doc = PdfDocument.Open(_currentPdfBytes, parsingOptions);
-                if (doc.TryGetBookmarks(out var bookmarks) && bookmarks != null && bookmarks.Roots != null)
+                if (bookmarksList != null && bookmarksList.Count > 0 && !ct.IsCancellationRequested)
                 {
-                    var bookmarksList = new List<PdfViewerBookmarkItem>();
-                    ExtractBookmarksRecursive(bookmarks.Roots, bookmarksList);
-                    if (bookmarksList.Count > 0 && !ct.IsCancellationRequested)
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
-                        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                        {
-                            Bookmarks.Clear();
-                            foreach (var b in bookmarksList) Bookmarks.Add(b);
-                            OnPropertyChanged(nameof(HasBookmarks));
-                        });
-                    }
+                        Bookmarks.Clear();
+                        foreach (var b in bookmarksList) Bookmarks.Add(b);
+                        OnPropertyChanged(nameof(HasBookmarks));
+                    });
                 }
             }
             catch { }
 
-            // 2. Progressively render remaining pages and extract accurate text / geometry
+            // 2. Progressively build thumbnails and extract accurate text / geometry for every
+            // page — full-resolution page bitmaps are NOT rendered here (beyond the first
+            // screenful below); those are rendered on demand for the pages actually scrolled
+            // into view (see RequestPagesVisible), otherwise a large document would render
+            // every page's full-res bitmap up front and hold them all in memory regardless of
+            // whether they're ever looked at.
+            const int eagerFirstScreenfulPages = 8;
             for (int i = 1; i <= Pages.Count; i++)
             {
                 if (ct.IsCancellationRequested) return;
@@ -1158,15 +1438,30 @@ public partial class PdfViewerViewModel : ViewModelBase
                 var page = Pages.FirstOrDefault(p => p.PageNumber == pageNum);
                 if (page != null)
                 {
-                    // Render page bitmap if not yet rendered
-                    if (page.Bitmap == null)
+                    // Stand aside whenever the user is waiting on a visible page. Everything in
+                    // this sweep competes for the same render lock, and over a long document
+                    // it's minutes of work — without yielding, a scrolled-to page's render sits
+                    // behind hundreds of thumbnail renders and text extractions and takes so
+                    // long to arrive that scrolling looks like it does nothing at all.
+                    if (pageNum > eagerFirstScreenfulPages)
                     {
-                        var bmp = RenderPageAtScale(pageNum, 2.75f);
-                        if (bmp != null && !ct.IsCancellationRequested)
+                        await WaitForForegroundIdleAsync(ct);
+                        if (ct.IsCancellationRequested) return;
+                    }
+
+                    // Render a bounded first screenful eagerly and unconditionally — a safety
+                    // net independent of the view's own viewport/scroll wiring, so the pages a
+                    // user sees immediately after opening a document are never left waiting on
+                    // that wiring alone.
+                    if (pageNum <= eagerFirstScreenfulPages && page.Bitmap == null)
+                    {
+                        var eagerBmp = RenderPageAtScale(pageNum, PdfViewerPageItem.BasePageRenderScale);
+                        if (eagerBmp != null && !ct.IsCancellationRequested)
                         {
                             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                             {
-                                page.Bitmap = bmp;
+                                page.Bitmap = eagerBmp;
+                                page.RenderedScale = PdfViewerPageItem.BasePageRenderScale;
                             });
                         }
                     }
@@ -1189,12 +1484,24 @@ public partial class PdfViewerViewModel : ViewModelBase
                     {
                         try
                         {
-                            using var doc = PdfDocument.Open(_currentPdfBytes);
-                            var p = doc.GetPage(pageNum);
-                            var (txt, words, lines) = ExtractPageTextGeometry(p);
-                            double w = Math.Max(100, p.Width);
-                            double h = Math.Max(100, p.Height);
-                            int rot = (int)p.Rotation.Value;
+                            string? txt = null;
+                            List<PdfViewerWordItem>? words = null;
+                            List<PdfViewerTextLineItem>? lines = null;
+                            double w = 0, h = 0;
+                            int rot = 0;
+
+                            lock (_renderLock)
+                            {
+                                var doc = OpenOrReuseDocument();
+                                if (doc != null && pageNum <= doc.NumberOfPages)
+                                {
+                                    var p = doc.GetPage(pageNum);
+                                    (txt, words, lines) = ExtractPageTextGeometry(p);
+                                    w = Math.Max(100, p.Width);
+                                    h = Math.Max(100, p.Height);
+                                    rot = (int)p.Rotation.Value;
+                                }
+                            }
 
                             string summary = "";
                             if (!string.IsNullOrWhiteSpace(txt))
@@ -1203,7 +1510,7 @@ public partial class PdfViewerViewModel : ViewModelBase
                                 summary = firstLine.Length > 50 ? firstLine.Substring(0, 50) + "..." : firstLine;
                             }
 
-                            if (!ct.IsCancellationRequested)
+                            if (txt != null && !ct.IsCancellationRequested)
                             {
                                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                                 {
@@ -1211,8 +1518,8 @@ public partial class PdfViewerViewModel : ViewModelBase
                                     page.HeightPoints = h;
                                     page.RotationAngle = rot;
                                     page.ExtractedText = txt;
-                                    page.Words = words;
-                                    page.TextLines = lines;
+                                    page.Words = words!;
+                                    page.TextLines = lines!;
                                     page.PageSummary = summary;
                                 });
                             }

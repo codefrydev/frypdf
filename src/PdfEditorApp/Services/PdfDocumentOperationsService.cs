@@ -169,7 +169,7 @@ public class PdfDocumentOperationsService : IPdfDocumentOperationsService
                     ct.ThrowIfCancellationRequested();
                     progress?.Report(70.0);
 
-                    var report = compareService.CompareDocuments(docA, docB);
+                    var report = await compareService.CompareDocumentsAsync(docA, docB, ct);
 
                     string outDir = Path.GetDirectoryName(compOpts.DocumentBPath) ?? Path.GetTempPath();
                     string reportPath = Path.Combine(outDir, $"{Path.GetFileNameWithoutExtension(compOpts.DocumentBPath)}_comparison_report.txt");

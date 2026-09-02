@@ -653,7 +653,8 @@ public partial class InspectorViewModel : ViewModelBase
                 () => {
                     foreach (var el in targets) page.RemoveElement(el);
                     UpdateSelection(null, page);
-                }
+                },
+                onDiscarded: () => { foreach (var el in targets) ReleaseElementResources(el); }
             );
         }
         else if (SelectedElement != null)
@@ -665,8 +666,29 @@ public partial class InspectorViewModel : ViewModelBase
             UndoRedo?.RecordAction(
                 $"Delete {el.DisplayName}",
                 () => { page.AddElement(el); UpdateSelection(el, page); },
-                () => { page.RemoveElement(el); UpdateSelection(null, page); }
+                () => { page.RemoveElement(el); UpdateSelection(null, page); },
+                onDiscarded: () => ReleaseElementResources(el)
             );
+        }
+    }
+
+    /// <summary>
+    /// Releases the decoded bitmap of a deleted chart/image element once its undo entry is
+    /// discarded (capacity eviction or document teardown) — safe specifically because a
+    /// discarded delete-type undo entry is, by construction, not reachable from the live page
+    /// any more. Relies on ChartElementViewModel/ImageElementViewModel already disposing their
+    /// previous bitmap whenever the property is reassigned.
+    /// </summary>
+    private static void ReleaseElementResources(ElementViewModelBase element)
+    {
+        switch (element)
+        {
+            case ImageElementViewModel img:
+                img.PreviewBitmap = null;
+                break;
+            case ChartElementViewModel chart:
+                chart.ChartBitmap = null;
+                break;
         }
     }
 

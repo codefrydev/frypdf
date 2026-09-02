@@ -300,6 +300,79 @@ public class PdfToolViewModelsTests
         Assert.DoesNotContain("trailing web server junk", sanitizedText);
     }
 
+    [Fact]
+    public void RedactionMarkItem_RaisesPropertyChangedOnDisplayProperties()
+    {
+        var item = new RedactionMarkItem
+        {
+            Region = new RedactionRegion { PageIndex = 0, X = 10, Y = 20, Width = 100, Height = 50 },
+            Label = "Test"
+        };
+
+        var changedProps = new System.Collections.Generic.List<string>();
+        item.PropertyChanged += (s, e) => { if (e.PropertyName != null) changedProps.Add(e.PropertyName); };
+
+        item.DisplayX = 15;
+        item.DisplayY = 25;
+        item.DisplayWidth = 150;
+        item.DisplayHeight = 75;
+
+        Assert.Contains(nameof(RedactionMarkItem.DisplayX), changedProps);
+        Assert.Contains(nameof(RedactionMarkItem.DisplayY), changedProps);
+        Assert.Contains(nameof(RedactionMarkItem.DisplayWidth), changedProps);
+        Assert.Contains(nameof(RedactionMarkItem.DisplayHeight), changedProps);
+    }
+
+    [Fact]
+    public void RedactPdfToolViewModel_AddManualMark_CreatesBoxEvenWithoutText()
+    {
+        var vm = (RedactPdfToolViewModel)_factory.Create(PdfToolId.RedactPdf);
+        vm.Preview.Pages.Add(new PdfToolPreviewPage { PageNumber = 1, WidthPoints = 612, HeightPoints = 792 });
+        vm.Preview.SelectedPage = vm.Preview.Pages[0];
+        vm.Preview.CurrentPageNumber = 1;
+        vm.Preview.ZoomLevel = 1.0;
+
+        // Drag a box where no text exists (raw rectangle mode)
+        vm.AddManualMark(new Avalonia.Rect(50, 100, 200, 80), forceDrawBox: true);
+
+        Assert.NotEmpty(vm.Marks);
+        Assert.Single(vm.Marks);
+        var mark = vm.Marks[0];
+        Assert.Equal(50, mark.Region.X);
+        Assert.Equal(100, mark.Region.Y);
+        Assert.Equal(200, mark.Region.Width);
+        Assert.Equal(80, mark.Region.Height);
+        Assert.Equal("Manual selection", mark.Label);
+
+        Assert.NotEmpty(vm.CurrentPageMarks);
+        Assert.Equal(50, vm.CurrentPageMarks[0].DisplayX);
+        Assert.Equal(100, vm.CurrentPageMarks[0].DisplayY);
+        Assert.Equal(200, vm.CurrentPageMarks[0].DisplayWidth);
+        Assert.Equal(80, vm.CurrentPageMarks[0].DisplayHeight);
+    }
+
+    [Fact]
+    public void RedactPdfToolViewModel_AddManualMark_DefaultDragFallsBackToBoxWhenNoText()
+    {
+        var vm = (RedactPdfToolViewModel)_factory.Create(PdfToolId.RedactPdf);
+        vm.Preview.Pages.Add(new PdfToolPreviewPage { PageNumber = 1, WidthPoints = 612, HeightPoints = 792 });
+        vm.Preview.SelectedPage = vm.Preview.Pages[0];
+        vm.Preview.CurrentPageNumber = 1;
+        vm.Preview.ZoomLevel = 1.0;
+
+        // User drags a box without holding Option/Alt (forceDrawBox: false) over a signature or image
+        vm.AddManualMark(new Avalonia.Rect(40, 80, 160, 50), forceDrawBox: false);
+
+        Assert.NotEmpty(vm.Marks);
+        Assert.Single(vm.Marks);
+        var mark = vm.Marks[0];
+        Assert.Equal(40, mark.Region.X);
+        Assert.Equal(80, mark.Region.Y);
+        Assert.Equal(160, mark.Region.Width);
+        Assert.Equal(50, mark.Region.Height);
+        Assert.Equal("Manual selection", mark.Label);
+    }
+
     private class MockRecentService : IRecentDocumentsService
     {
         public List<RecentDocumentItem> Items { get; } = new();

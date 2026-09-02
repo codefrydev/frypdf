@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
@@ -1248,15 +1249,23 @@ public partial class MainViewModel
     // --- PREFLIGHT & HEALTH DIAGNOSTICS ---
 
     [RelayCommand]
-    public void OpenPreflightDialog()
+    public async Task OpenPreflightDialogAsync()
     {
-        var docModel = ToDocumentModel();
-        ActiveAuditReport = _auditService.RunAudit(docModel);
         IsPreflightDialogOpen = true;
+        IsAuditRunning = true;
+        try
+        {
+            var docModel = ToDocumentModel();
+            ActiveAuditReport = await _auditService.RunAuditAsync(docModel);
+        }
+        finally
+        {
+            IsAuditRunning = false;
+        }
     }
 
     [RelayCommand]
-    public void AutoFixPreflightIssues()
+    public async Task AutoFixPreflightIssuesAsync()
     {
         var docModel = ToDocumentModel();
         int fixedCount = _auditService.AutoFixAllIssues(docModel);
@@ -1286,7 +1295,15 @@ public partial class MainViewModel
 
             if (!string.IsNullOrWhiteSpace(docModel.Title)) DocumentTitle = docModel.Title;
 
-            ActiveAuditReport = _auditService.RunAudit(docModel);
+            IsAuditRunning = true;
+            try
+            {
+                ActiveAuditReport = await _auditService.RunAuditAsync(docModel);
+            }
+            finally
+            {
+                IsAuditRunning = false;
+            }
             ShowToast($"Auto-remediated {fixedCount} compliance issues", "CheckCircleOutline");
         }
         else
@@ -1332,7 +1349,7 @@ public partial class MainViewModel
         if (ActiveAuditReport == null)
         {
             var docModel = ToDocumentModel();
-            ActiveAuditReport = _auditService.RunAudit(docModel);
+            ActiveAuditReport = await _auditService.RunAuditAsync(docModel);
         }
 
         var sb = new System.Text.StringBuilder();
@@ -1480,72 +1497,105 @@ public partial class MainViewModel
         BatesPosition = pos;
     }
 
+    private CancellationTokenSource? _batesCts;
+
     [RelayCommand]
-    public void ApplyBatesNumbering()
+    public async Task ApplyBatesNumberingAsync()
     {
-        IsBatesNumberingDialogOpen = false;
+        IsApplyingBatesNumbers = true;
+        BatesProgressPercentage = 0;
+        _batesCts = new CancellationTokenSource();
+        var ct = _batesCts.Token;
+
         int currentNum = BatesStartingNumber;
+        int total = Pages.Count;
 
-        for (int i = 0; i < Pages.Count; i++)
+        try
         {
-            var page = Pages[i];
-            string batesText = $"{BatesPrefix}{currentNum.ToString().PadLeft(BatesNumberOfDigits, '0')}{BatesSuffix}";
-
-            // Remove any existing Bates on page
-            var existing = page.Elements.OfType<TextElementViewModel>().Where(e => e.Text.StartsWith(BatesPrefix) || e.DisplayName.Contains("Bates")).ToList();
-            foreach (var el in existing) page.RemoveElement(el);
-
-            double x = 40;
-            double y = 40;
-            double pageWidth = page.Width > 0 ? page.Width : 800;
-            double pageHeight = page.Height > 0 ? page.Height : 1131;
-
-            switch (BatesPosition)
+            for (int i = 0; i < Pages.Count; i++)
             {
-                case BatesPosition.TopLeft:
-                    page.HeaderLeft = batesText;
-                    page.ShowHeaderFooter = true;
-                    x = 40; y = 25; break;
-                case BatesPosition.TopCenter:
-                    page.HeaderCenter = batesText;
-                    page.ShowHeaderFooter = true;
-                    x = (pageWidth - 220) / 2; y = 25; break;
-                case BatesPosition.TopRight:
-                    page.HeaderRight = batesText;
-                    page.ShowHeaderFooter = true;
-                    x = pageWidth - 240; y = 25; break;
-                case BatesPosition.BottomLeft:
-                    page.FooterLeft = batesText;
-                    page.ShowHeaderFooter = true;
-                    x = 40; y = pageHeight - 45; break;
-                case BatesPosition.BottomCenter:
-                    page.FooterCenter = batesText;
-                    page.ShowHeaderFooter = true;
-                    x = (pageWidth - 220) / 2; y = pageHeight - 45; break;
-                case BatesPosition.BottomRight:
-                    page.FooterRight = batesText;
-                    page.ShowHeaderFooter = true;
-                    x = pageWidth - 240; y = pageHeight - 45; break;
+                ct.ThrowIfCancellationRequested();
+
+                var page = Pages[i];
+                string batesText = $"{BatesPrefix}{currentNum.ToString().PadLeft(BatesNumberOfDigits, '0')}{BatesSuffix}";
+
+                // Remove any existing Bates on page
+                var existing = page.Elements.OfType<TextElementViewModel>().Where(e => e.Text.StartsWith(BatesPrefix) || e.DisplayName.Contains("Bates")).ToList();
+                foreach (var el in existing) page.RemoveElement(el);
+
+                double x = 40;
+                double y = 40;
+                double pageWidth = page.Width > 0 ? page.Width : 800;
+                double pageHeight = page.Height > 0 ? page.Height : 1131;
+
+                switch (BatesPosition)
+                {
+                    case BatesPosition.TopLeft:
+                        page.HeaderLeft = batesText;
+                        page.ShowHeaderFooter = true;
+                        x = 40; y = 25; break;
+                    case BatesPosition.TopCenter:
+                        page.HeaderCenter = batesText;
+                        page.ShowHeaderFooter = true;
+                        x = (pageWidth - 220) / 2; y = 25; break;
+                    case BatesPosition.TopRight:
+                        page.HeaderRight = batesText;
+                        page.ShowHeaderFooter = true;
+                        x = pageWidth - 240; y = 25; break;
+                    case BatesPosition.BottomLeft:
+                        page.FooterLeft = batesText;
+                        page.ShowHeaderFooter = true;
+                        x = 40; y = pageHeight - 45; break;
+                    case BatesPosition.BottomCenter:
+                        page.FooterCenter = batesText;
+                        page.ShowHeaderFooter = true;
+                        x = (pageWidth - 220) / 2; y = pageHeight - 45; break;
+                    case BatesPosition.BottomRight:
+                        page.FooterRight = batesText;
+                        page.ShowHeaderFooter = true;
+                        x = pageWidth - 240; y = pageHeight - 45; break;
+                }
+
+                var batesEl = new TextElementViewModel
+                {
+                    X = x,
+                    Y = y,
+                    Width = 200,
+                    Height = 25,
+                    Text = batesText,
+                    FontSize = BatesFontSize,
+                    FontFamily = "Consolas",
+                    TextColorHex = BatesFontColorHex,
+                    IsBold = true
+                };
+
+                page.AddElement(batesEl);
+                currentNum++;
+
+                BatesProgressPercentage = total > 0 ? (i + 1) * 100.0 / total : 100.0;
+                if ((i + 1) % 5 == 0)
+                {
+                    await Task.Yield();
+                }
             }
 
-            var batesEl = new TextElementViewModel
-            {
-                X = x,
-                Y = y,
-                Width = 200,
-                Height = 25,
-                Text = batesText,
-                FontSize = BatesFontSize,
-                FontFamily = "Consolas",
-                TextColorHex = BatesFontColorHex,
-                IsBold = true
-            };
-
-            page.AddElement(batesEl);
-            currentNum++;
+            ShowToast($"Applied legal Bates stamp across all {Pages.Count} pages", "Numeric");
         }
+        catch (OperationCanceledException)
+        {
+            ShowToast("Bates numbering cancelled.", "CloseCircleOutline");
+        }
+        finally
+        {
+            IsApplyingBatesNumbers = false;
+            IsBatesNumberingDialogOpen = false;
+        }
+    }
 
-        ShowToast($"Applied legal Bates stamp across all {Pages.Count} pages", "Numeric");
+    [RelayCommand]
+    public void CancelBatesNumbering()
+    {
+        _batesCts?.Cancel();
     }
 
     [RelayCommand]
@@ -1575,13 +1625,21 @@ public partial class MainViewModel
     // --- DOCUMENT COMPARISON DIFF COMMANDS ---
 
     [RelayCommand]
-    public void OpenCompareDialog()
+    public async Task OpenCompareDialogAsync()
     {
-        var compareService = new DocumentCompareService();
-        var currentDoc = ToDocumentModel();
-        var templateDoc = _templateService.CreateAnnualReportTemplate(); // Compare against standard baseline
-        ActiveComparisonReport = compareService.CompareDocuments(templateDoc, currentDoc);
         IsCompareDialogOpen = true;
+        IsComparing = true;
+        try
+        {
+            var compareService = new DocumentCompareService();
+            var currentDoc = ToDocumentModel();
+            var templateDoc = _templateService.CreateAnnualReportTemplate(); // Compare against standard baseline
+            ActiveComparisonReport = await compareService.CompareDocumentsAsync(templateDoc, currentDoc);
+        }
+        finally
+        {
+            IsComparing = false;
+        }
     }
 
     [RelayCommand]

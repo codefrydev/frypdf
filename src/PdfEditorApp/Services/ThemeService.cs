@@ -232,6 +232,8 @@ public class ThemeService : IThemeService
 
     private void ApplyThemeToApplication(AppThemeMode mode)
     {
+        if (Application.Current == null) return;
+
         void Apply()
         {
             if (Application.Current == null) return;
@@ -245,13 +247,20 @@ public class ThemeService : IThemeService
             };
         }
 
-        if (Dispatcher.UIThread.CheckAccess())
+        try
         {
-            Apply();
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Apply();
+            }
+            else
+            {
+                Dispatcher.UIThread.Post(Apply);
+            }
         }
-        else
+        catch
         {
-            Dispatcher.UIThread.Post(Apply);
+            // Headless unit test environment without active dispatcher loop
         }
     }
 

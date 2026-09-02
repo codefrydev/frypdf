@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using PdfEditorApp.Models;
 using PdfEditorApp.Models.Elements;
 
@@ -9,10 +11,17 @@ namespace PdfEditorApp.Services;
 public interface IDocumentCompareService
 {
     DocumentComparisonReport CompareDocuments(PdfDocumentModel baseDoc, PdfDocumentModel comparedDoc);
+    Task<DocumentComparisonReport> CompareDocumentsAsync(PdfDocumentModel baseDoc, PdfDocumentModel comparedDoc, CancellationToken ct = default);
 }
 
 public class DocumentCompareService : IDocumentCompareService
 {
+    public Task<DocumentComparisonReport> CompareDocumentsAsync(PdfDocumentModel baseDoc, PdfDocumentModel comparedDoc, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.Run(() => CompareDocuments(baseDoc, comparedDoc), ct);
+    }
+
     public DocumentComparisonReport CompareDocuments(PdfDocumentModel baseDoc, PdfDocumentModel comparedDoc)
     {
         var report = new DocumentComparisonReport

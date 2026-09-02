@@ -49,6 +49,14 @@
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="440">
                     <StackPanel Spacing="14">
 
+                        <!-- Busy Indicator: comparison runs off the UI thread, this is the only sign it's happening -->
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" IsVisible="{Binding IsComparing}">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <ProgressBar IsIndeterminate="True" Width="120" Height="6" CornerRadius="3" Foreground="#0F6CBD" Background="{DynamicResource WinHoverBrush}" />
+                                <TextBlock Text="Comparing documents..." FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
                         <!-- Summary Cards Row -->
                         <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
                             <Border Grid.Column="0" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10">

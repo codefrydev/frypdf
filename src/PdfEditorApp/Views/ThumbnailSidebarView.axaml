@@ -111,6 +111,10 @@
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="12"
                               IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}">
                     <ItemsControl ItemsSource="{Binding Pages}">
+                        <!-- Plain panel, not virtualized: a sibling reader thumbnail rail with the
+                             same VirtualizingStackPanel swap broke pixel-based ScrollViewer.Offset
+                             math elsewhere in this app, so this one is left unvirtualized until that
+                             can be revisited deliberately rather than risking the same regression here. -->
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="vm:PageViewModel">
                                 <Button Background="Transparent"

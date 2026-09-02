@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CommunityToolkit.Mvvm.ComponentModel;
 using PdfEditorApp.Services;
 
 namespace PdfEditorApp.Models;
@@ -400,7 +401,7 @@ public class RedactionRegion
 /// redaction" review list — carries a human-readable label in addition to the raw
 /// region geometry the backend needs.
 /// </summary>
-public class RedactionMarkItem
+public partial class RedactionMarkItem : ObservableObject
 {
     public required RedactionRegion Region { get; init; }
     public required string Label { get; init; }
@@ -409,10 +410,17 @@ public class RedactionMarkItem
     // On-screen highlight position/size in display pixels, computed by the ViewModel
     // for the currently rendered page (Region stays in PDF-point space; these are
     // derived purely for XAML Canvas.Left/Top/Width/Height binding).
-    public double DisplayX { get; set; }
-    public double DisplayY { get; set; }
-    public double DisplayWidth { get; set; }
-    public double DisplayHeight { get; set; }
+    [ObservableProperty]
+    private double _displayX;
+
+    [ObservableProperty]
+    private double _displayY;
+
+    [ObservableProperty]
+    private double _displayWidth;
+
+    [ObservableProperty]
+    private double _displayHeight;
 }
 
 public class RedactionToolOptions

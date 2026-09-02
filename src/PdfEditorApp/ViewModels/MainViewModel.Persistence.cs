@@ -68,7 +68,16 @@ public partial class MainViewModel
             }
 
             var docModel = ToDocumentModel();
-            await _exportService.ExportToFileAsync(docModel, exportPath);
+            IsBusy = true;
+            try
+            {
+                var progress = new Progress<double>(p => UpdateStatus($"Generating PDF... {p:F0}%"));
+                await _exportService.ExportToFileAsync(docModel, exportPath, progress);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
 
             LastExportedFilePath = exportPath;
             IsExportSuccessDialogOpen = true;
@@ -76,6 +85,7 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
+            IsBusy = false;
             ShowToast($"Export error: {ex.Message}", "AlertCircleOutline");
         }
     }
@@ -283,13 +293,12 @@ public partial class MainViewModel
 
     public void LoadFromDocumentModel(PdfDocumentModel model)
     {
-        DocumentTitle = model.Title;
-        DocumentAuthor = model.Author;
-        DocumentSubject = model.Subject;
-        DocumentKeywords = model.Keywords ?? "";
-        DocumentCreator = string.IsNullOrWhiteSpace(model.Creator) ? "FryPDF" : model.Creator;
-        DocumentProducer = string.IsNullOrWhiteSpace(model.Producer) ? "codefrydev.in" : model.Producer;
-        SecuritySettings = model.SecuritySettings?.Clone() ?? new PdfSecuritySettings();
+        ApplyDocumentMetadata(model);
+
+        // The previous document's undo/redo history is meaningless once its pages are gone —
+        // undoing after switching documents must never resurrect a replaced document's state.
+        // This also releases any deleted chart/image bitmaps still pinned by that history.
+        UndoRedo.Clear();
 
         Pages.Clear();
         foreach (var pageModel in model.Pages)
@@ -300,6 +309,53 @@ public partial class MainViewModel
             Pages.Add(pageVm);
         }
 
+        FinishLoadingDocument();
+    }
+
+    /// <summary>
+    /// Same as <see cref="LoadFromDocumentModel"/> but yields back to the dispatcher every
+    /// few pages, so opening a large document doesn't freeze the UI thread for the whole
+    /// build — used by every user-facing "open a document" path.
+    /// </summary>
+    public async Task LoadFromDocumentModelAsync(PdfDocumentModel model)
+    {
+        ApplyDocumentMetadata(model);
+
+        // See LoadFromDocumentModel — the outgoing document's undo/redo history must not
+        // survive the switch.
+        UndoRedo.Clear();
+
+        Pages.Clear();
+        int i = 0;
+        foreach (var pageModel in model.Pages)
+        {
+            var pageVm = new PageViewModel();
+            pageVm.LoadFromModel(pageModel);
+            pageVm.SelectionChanged += OnElementSelectionChanged;
+            Pages.Add(pageVm);
+
+            if (++i % 8 == 0)
+            {
+                await Task.Yield();
+            }
+        }
+
+        FinishLoadingDocument();
+    }
+
+    private void ApplyDocumentMetadata(PdfDocumentModel model)
+    {
+        DocumentTitle = model.Title;
+        DocumentAuthor = model.Author;
+        DocumentSubject = model.Subject;
+        DocumentKeywords = model.Keywords ?? "";
+        DocumentCreator = string.IsNullOrWhiteSpace(model.Creator) ? "FryPDF" : model.Creator;
+        DocumentProducer = string.IsNullOrWhiteSpace(model.Producer) ? "codefrydev.in" : model.Producer;
+        SecuritySettings = model.SecuritySettings?.Clone() ?? new PdfSecuritySettings();
+    }
+
+    private void FinishLoadingDocument()
+    {
         if (Pages.Count > 0)
         {
             SelectPage(Pages[0]);
@@ -308,5 +364,6 @@ public partial class MainViewModel
         RefreshOutline();
         RefreshComments();
         UpdateStatus($"Loaded document: {DocumentTitle}");
+        IsBusy = false;
     }
 }

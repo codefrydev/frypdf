@@ -449,21 +449,29 @@ public class PdfSecurityService : IPdfSecurityService
             var comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
             string[] patternWords = trimmed.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 
-            void AddRegion(int pageIndex, double pageHeight, UglyToad.PdfPig.Core.PdfRectangle first, UglyToad.PdfPig.Core.PdfRectangle last)
+            void AddMatchRegions(int pageIndex, double pageHeight, IEnumerable<UglyToad.PdfPig.Content.Word> matchedWords)
             {
-                double left = Math.Min(first.Left, last.Left);
-                double right = Math.Max(first.Right, last.Right);
-                double top = Math.Max(first.Top, last.Top);
-                double bottom = Math.Min(first.Bottom, last.Bottom);
-                regions.Add(new RedactionRegion
+                var lineGroups = matchedWords
+                    .GroupBy(w => Math.Round(w.BoundingBox.Bottom / 4.0) * 4.0)
+                    .OrderByDescending(g => g.Key);
+
+                foreach (var line in lineGroups)
                 {
-                    PageIndex = pageIndex,
-                    X = left,
-                    Y = pageHeight - top,
-                    Width = right - left,
-                    Height = top - bottom,
-                    Reason = "Pattern match"
-                });
+                    double left = line.Min(w => w.BoundingBox.Left);
+                    double right = line.Max(w => w.BoundingBox.Right);
+                    double top = line.Max(w => w.BoundingBox.Top);
+                    double bottom = line.Min(w => w.BoundingBox.Bottom);
+
+                    regions.Add(new RedactionRegion
+                    {
+                        PageIndex = pageIndex,
+                        X = left,
+                        Y = Math.Max(0, pageHeight - top),
+                        Width = Math.Max(1, right - left),
+                        Height = Math.Max(1, top - bottom),
+                        Reason = "Pattern match"
+                    });
+                }
             }
 
             using var pigDoc = UglyToad.PdfPig.PdfDocument.Open(filePath);
@@ -485,7 +493,8 @@ public class PdfSecurityService : IPdfSecurityService
                         }
                         if (match)
                         {
-                            AddRegion(p - 1, pageHeight, words[i].BoundingBox, words[i + patternWords.Length - 1].BoundingBox);
+                            var matchedSubList = words.GetRange(i, patternWords.Length);
+                            AddMatchRegions(p - 1, pageHeight, matchedSubList);
                         }
                     }
                 }
@@ -495,7 +504,7 @@ public class PdfSecurityService : IPdfSecurityService
                     {
                         if (w.Text.IndexOf(patternWords[0], comparison) >= 0)
                         {
-                            AddRegion(p - 1, pageHeight, w.BoundingBox, w.BoundingBox);
+                            AddMatchRegions(p - 1, pageHeight, new[] { w });
                         }
                     }
                 }

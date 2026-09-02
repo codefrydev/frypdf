@@ -12,7 +12,7 @@ public interface IUndoRedoService
     string? NextRedoDescription { get; }
     event EventHandler? StateChanged;
 
-    void RecordAction(string description, Action undoAction, Action redoAction);
+    void RecordAction(string description, Action undoAction, Action redoAction, Action? onDiscarded = null);
     string? Undo();
     string? Redo();
     void Clear();
@@ -23,6 +23,15 @@ public class UndoRedoAction
     public string Description { get; set; } = "";
     public Action UndoAction { get; set; } = () => { };
     public Action RedoAction { get; set; } = () => { };
+
+    /// <summary>
+    /// Optional cleanup fired only when this action is discarded while it represents a
+    /// deleted (currently off-canvas) element — capacity eviction from the undo list, or a
+    /// full <see cref="UndoRedoService.Clear"/> on document teardown. Never fired for the
+    /// automatic redo-stack clear on a new action, since a discarded redo-side delete means
+    /// the element was already restored and is currently visible.
+    /// </summary>
+    public Action? OnDiscarded { get; set; }
 }
 
 public class UndoRedoService : IUndoRedoService
@@ -39,10 +48,11 @@ public class UndoRedoService : IUndoRedoService
 
     public event EventHandler? StateChanged;
 
-    public void RecordAction(string description, Action undoAction, Action redoAction)
+    public void RecordAction(string description, Action undoAction, Action redoAction, Action? onDiscarded = null)
     {
         if (_undoList.Count >= MaxHistorySize)
         {
+            DiscardAction(_undoList.First!.Value);
             _undoList.RemoveFirst();
         }
 
@@ -50,11 +60,24 @@ public class UndoRedoService : IUndoRedoService
         {
             Description = description,
             UndoAction = undoAction,
-            RedoAction = redoAction
+            RedoAction = redoAction,
+            OnDiscarded = onDiscarded
         });
 
         _redoStack.Clear();
         StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private static void DiscardAction(UndoRedoAction action)
+    {
+        try
+        {
+            action.OnDiscarded?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[UndoRedoService] Error during OnDiscarded '{action.Description}': {ex}");
+        }
     }
 
     public string? Undo()
@@ -100,6 +123,16 @@ public class UndoRedoService : IUndoRedoService
 
     public void Clear()
     {
+        // Document teardown: anything still holding a deleted element's resources (e.g. a
+        // decoded chart/image bitmap) is about to become unreachable anyway, since the whole
+        // document is being replaced — release it now instead of waiting on the GC. The redo
+        // stack is intentionally left alone: any delete sitting there was already undone, so
+        // the element it refers to is currently live elsewhere on the page.
+        foreach (var action in _undoList)
+        {
+            DiscardAction(action);
+        }
+
         _undoList.Clear();
         _redoStack.Clear();
         StateChanged?.Invoke(this, EventArgs.Empty);

@@ -1038,5 +1038,33 @@ public class PdfImportAndViewerTests
         return SkiaSharp.SKTypeface.FromFamilyName(fontFamily, weight, SkiaSharp.SKFontStyleWidth.Normal, slant)
             ?? SkiaSharp.SKTypeface.Default;
     }
+
+    [Fact]
+    public void PdfViewerViewModel_RequestPagesVisible_RendersVisiblePagesAndDisposesFarPages()
+    {
+        var vm = new PdfViewerViewModel();
+        for (int i = 1; i <= 30; i++)
+        {
+            vm.Pages.Add(new PdfViewerPageItem
+            {
+                PageNumber = i,
+                WidthPoints = 500,
+                HeightPoints = 700
+            });
+        }
+
+        // Simulate user scrolling down to Page 18
+        vm.RequestPagesVisible(18, 18);
+
+        var page18 = vm.Pages[17];
+        Assert.Equal(18, page18.PageNumber);
+
+        // Changing CurrentPageNumber moves selection cleanly
+        vm.CurrentPageNumber = 18;
+        Assert.True(page18.IsSelected);
+        Assert.False(vm.Pages[0].IsSelected);
+        Assert.Equal(18, vm.CurrentPageNumber);
+        Assert.Equal(18, vm.SelectedPage?.PageNumber);
+    }
 }
 

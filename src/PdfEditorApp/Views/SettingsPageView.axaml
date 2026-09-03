@@ -1,0 +1,548 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.SettingsPageView"
+             x:DataType="vm:SettingsViewModel">
+
+    <UserControl.Resources>
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:BooleanToStringConverter x:Key="BooleanToStringConverter" />
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Segmented Option Button Style -->
+        <Style Selector="Button.setting-segment-btn">
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.setting-segment-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+        </Style>
+        <Style Selector="Button.setting-segment-btn.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+        </Style>
+        <Style Selector="Button.setting-segment-btn.active">
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+
+        <!-- Setting Card Style -->
+        <Style Selector="Border.setting-card">
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="24,20" />
+            <Setter Property="BoxShadow" Value="0 2 8 #08000000" />
+            <Setter Property="Margin" Value="0,0,0,18" />
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel Margin="32,24,32,48" MaxWidth="920" HorizontalAlignment="Left">
+
+        <!-- ========================================== -->
+        <!-- 1. HERO HEADER BANNER                      -->
+        <!-- ========================================== -->
+        <Border Classes="setting-card" Padding="24,20">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="18">
+                <Border Grid.Column="0" Width="48" Height="48" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="12" VerticalAlignment="Center">
+                    <materialIcons:MaterialIcon Kind="TuneVariant" Width="26" Height="26" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Settings &amp; UI Preferences" FontSize="19" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <Border Background="#EDE9FE" CornerRadius="4" Padding="6,1.5" VerticalAlignment="Center">
+                            <TextBlock Text="Workspace Tuning" FontSize="10" FontWeight="Bold" Foreground="#7C3AED" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Customize toast notification position, snackbar aesthetics, appearance, canvas grid defaults, and studio behavior."
+                               FontSize="12.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="2"
+                        Command="{Binding ResetAllDefaultsCommand}"
+                        Background="{DynamicResource WinHoverBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
+                        BorderThickness="1"
+                        Foreground="{DynamicResource WinTextBrush}"
+                        CornerRadius="8"
+                        Padding="14,8"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Cursor="Hand"
+                        VerticalAlignment="Center"
+                        ToolTip.Tip="Reset all interface preferences to default">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="Restore" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="Restore Defaults" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- ========================================== -->
+        <!-- 2. NOTIFICATION & SNACKBAR SETTINGS CARD  -->
+        <!-- ========================================== -->
+        <Border Classes="setting-card">
+            <StackPanel Spacing="16">
+
+                <!-- Section Header -->
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <materialIcons:MaterialIcon Grid.Column="0" Kind="BellRingOutline" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="Notification &amp; Snackbar System" FontSize="14.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Configure where on-screen action badges appear and their visual styling." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                    </StackPanel>
+                    <Border Grid.Column="2" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                        <TextBlock Text="Live Preview Enabled" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
+                    </Border>
+                </Grid>
+
+                <Separator Height="1" Background="{DynamicResource WinBorderSubtleBrush}" />
+
+                <!-- A. Position Selector (3x2 matrix) -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="On-Screen Position" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="Select where toasts appear inside the FryPDF workspace window:" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+
+                    <!-- 3x2 Position Grid -->
+                    <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*,*" RowSpacing="8" ColumnSpacing="8" Margin="0,4,0,0">
+                        <!-- Top Left -->
+                        <Button Grid.Row="0" Grid.Column="0" Classes="setting-segment-btn"
+                                Classes.active="{Binding ToastPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=TopLeft}"
+                                Command="{Binding SetToastPositionCommand}" CommandParameter="TopLeft">
+                            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="DockTop" Width="15" Height="15" VerticalAlignment="Center" />
+                                <TextBlock Text="Top Left" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Top Center -->
+                        <Button Grid.Row="0" Grid.Column="1" Classes="setting-segment-btn"
+                                Classes.active="{Binding ToastPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=TopCenter}"
+                                Command="{Binding SetToastPositionCommand}" CommandParameter="TopCenter">
+                            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FormatVerticalAlignTop" Width="15" Height="15" VerticalAlignment="Center" />
+                                <TextBlock Text="Top Center" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Top Right -->
+                        <Button Grid.Row="0" Grid.Column="2" Classes="setting-segment-btn"
+                                Classes.active="{Binding ToastPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=TopRight}"
+                                Command="{Binding SetToastPositionCommand}" CommandParameter="TopRight">
+                            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="DockTop" Width="15" Height="15" VerticalAlignment="Center" />
+                                <TextBlock Text="Top Right" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Bottom Left -->
+                        <Button Grid.Row="1" Grid.Column="0" Classes="setting-segment-btn"
+                                Classes.active="{Binding ToastPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomLeft}"
+                                Command="{Binding SetToastPositionCommand}" CommandParameter="BottomLeft">
+                            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="DockBottom" Width="15" Height="15" VerticalAlignment="Center" />
+                                <TextBlock Text="Bottom Left" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Bottom Center (Default) -->
+                        <Button Grid.Row="1" Grid.Column="1" Classes="setting-segment-btn"
+                                Classes.active="{Binding ToastPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomCenter}"
+                                Command="{Binding SetToastPositionCommand}" CommandParameter="BottomCenter">
+                            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FormatVerticalAlignBottom" Width="15" Height="15" VerticalAlignment="Center" />
+                                <TextBlock Text="Bottom Center (Default)" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Bottom Right -->
+                        <Button Grid.Row="1" Grid.Column="2" Classes="setting-segment-btn"
+                                Classes.active="{Binding ToastPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomRight}"
+                                Command="{Binding SetToastPositionCommand}" CommandParameter="BottomRight">
+                            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="DockBottom" Width="15" Height="15" VerticalAlignment="Center" />
+                                <TextBlock Text="Bottom Right" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+
+                <!-- B. Visual Style Variant -->
+                <StackPanel Spacing="8" Margin="0,6,0,0">
+                    <TextBlock Text="Visual Style &amp; Theme" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                    <UniformGrid Columns="3">
+                        <Button Classes="setting-segment-btn" Margin="0,0,6,0"
+                                Classes.active="{Binding ToastStyleVariant, Converter={StaticResource EqualityConverter}, ConverterParameter=Solid}"
+                                Command="{Binding SetToastStyleVariantCommand}" CommandParameter="Solid">
+                            <StackPanel Spacing="3" HorizontalAlignment="Center">
+                                <TextBlock Text="Solid / Filled" FontWeight="Bold" FontSize="12" />
+                                <TextBlock Text="Vibrant card with white text" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="setting-segment-btn" Margin="0,0,6,0"
+                                Classes.active="{Binding ToastStyleVariant, Converter={StaticResource EqualityConverter}, ConverterParameter=Subtle}"
+                                Command="{Binding SetToastStyleVariantCommand}" CommandParameter="Subtle">
+                            <StackPanel Spacing="3" HorizontalAlignment="Center">
+                                <TextBlock Text="Subtle / Soft Tint" FontWeight="Bold" FontSize="12" />
+                                <TextBlock Text="Pastel tint with colored border" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="setting-segment-btn"
+                                Classes.active="{Binding ToastStyleVariant, Converter={StaticResource EqualityConverter}, ConverterParameter=Auto}"
+                                Command="{Binding SetToastStyleVariantCommand}" CommandParameter="Auto">
+                            <StackPanel Spacing="3" HorizontalAlignment="Center">
+                                <TextBlock Text="Theme Adaptive" FontWeight="Bold" FontSize="12" />
+                                <TextBlock Text="Subtle in Light, Solid in Dark" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" />
+                            </StackPanel>
+                        </Button>
+                    </UniformGrid>
+                </StackPanel>
+
+                <!-- C. Display Duration & Close Button Controls -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="16" Margin="0,6,0,0">
+                    <!-- Duration Selector -->
+                    <StackPanel Grid.Column="0" Spacing="6">
+                        <TextBlock Text="Display Duration" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                        <UniformGrid Columns="4">
+                            <Button Classes="setting-segment-btn" Margin="0,0,4,0"
+                                    Classes.active="{Binding ToastDurationMs, Converter={StaticResource EqualityConverter}, ConverterParameter=2000}"
+                                    Command="{Binding SetToastDurationCommand}" CommandParameter="2000">
+                                <TextBlock Text="2.0s" />
+                            </Button>
+                            <Button Classes="setting-segment-btn" Margin="0,0,4,0"
+                                    Classes.active="{Binding ToastDurationMs, Converter={StaticResource EqualityConverter}, ConverterParameter=3500}"
+                                    Command="{Binding SetToastDurationCommand}" CommandParameter="3500">
+                                <TextBlock Text="3.5s" />
+                            </Button>
+                            <Button Classes="setting-segment-btn" Margin="0,0,4,0"
+                                    Classes.active="{Binding ToastDurationMs, Converter={StaticResource EqualityConverter}, ConverterParameter=6000}"
+                                    Command="{Binding SetToastDurationCommand}" CommandParameter="6000">
+                                <TextBlock Text="6.0s" />
+                            </Button>
+                            <Button Classes="setting-segment-btn"
+                                    Classes.active="{Binding ToastDurationMs, Converter={StaticResource EqualityConverter}, ConverterParameter=-1}"
+                                    Command="{Binding SetToastDurationCommand}" CommandParameter="-1">
+                                <TextBlock Text="Sticky" ToolTip.Tip="Manual close button only" />
+                            </Button>
+                        </UniformGrid>
+                    </StackPanel>
+
+                    <!-- Close Button Toggle -->
+                    <StackPanel Grid.Column="1" Spacing="6">
+                        <TextBlock Text="Dismiss Button ('X')" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                        <Button Classes="setting-segment-btn"
+                                Classes.active="{Binding ToastShowCloseButton}"
+                                Command="{Binding ToggleToastCloseButtonCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <materialIcons:MaterialIcon Grid.Column="0" Kind="CloseCircleOutline" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <TextBlock Grid.Column="1" Text="Show Close Button ('X') on Toasts" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <Border Grid.Column="2" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding ToastShowCloseButton, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='ON|OFF'}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
+                                </Border>
+                            </Grid>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- D. Interactive Live Test Playground -->
+                <Border Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="16,14"
+                        Margin="0,6,0,0">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <materialIcons:MaterialIcon Kind="PlayCircleOutline" Width="18" Height="18" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="Live Interactive Notification Playground" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="Click any badge below to test the snackbar in your chosen position and style:" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+
+                        <!-- Status Action Buttons -->
+                        <UniformGrid Columns="5">
+                            <!-- Primary Blue -->
+                            <Button Command="{Binding TestPrimaryNotificationCommand}"
+                                    Background="#0F6CBD" Foreground="White"
+                                    BorderThickness="0" CornerRadius="8" Padding="10,8" Margin="0,0,6,0"
+                                    Cursor="Hand" HorizontalContentAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="15" Height="15" />
+                                    <TextBlock Text="Primary" FontSize="11.5" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Success Green -->
+                            <Button Command="{Binding TestSuccessNotificationCommand}"
+                                    Background="#15803D" Foreground="White"
+                                    BorderThickness="0" CornerRadius="8" Padding="10,8" Margin="0,0,6,0"
+                                    Cursor="Hand" HorizontalContentAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="CheckCircleOutline" Width="15" Height="15" />
+                                    <TextBlock Text="Success" FontSize="11.5" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Danger Red -->
+                            <Button Command="{Binding TestDangerNotificationCommand}"
+                                    Background="#DC2626" Foreground="White"
+                                    BorderThickness="0" CornerRadius="8" Padding="10,8" Margin="0,0,6,0"
+                                    Cursor="Hand" HorizontalContentAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="AlertOctagonOutline" Width="15" Height="15" />
+                                    <TextBlock Text="Danger" FontSize="11.5" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Warning Amber -->
+                            <Button Command="{Binding TestWarningNotificationCommand}"
+                                    Background="#D97706" Foreground="White"
+                                    BorderThickness="0" CornerRadius="8" Padding="10,8" Margin="0,0,6,0"
+                                    Cursor="Hand" HorizontalContentAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="AlertOutline" Width="15" Height="15" />
+                                    <TextBlock Text="Warning" FontSize="11.5" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- General Slate -->
+                            <Button Command="{Binding TestGeneralNotificationCommand}"
+                                    Background="#1E293B" Foreground="White"
+                                    BorderThickness="0" CornerRadius="8" Padding="10,8"
+                                    Cursor="Hand" HorizontalContentAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="15" Height="15" />
+                                    <TextBlock Text="General" FontSize="11.5" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Button>
+                        </UniformGrid>
+
+                        <!-- Live Visual Preview of Current Selected Variant -->
+                        <Border Background="{DynamicResource WinBgBrush}"
+                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16,12"
+                                Margin="0,4,0,0">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="PREVIEW CANVAS" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" />
+                                    <TextBlock Text="Active Style &amp; Appearance:" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                                </StackPanel>
+
+                                <!-- The Embedded Preview Toast Banner -->
+                                <Border Grid.Column="1"
+                                        Margin="20,0"
+                                        Background="{Binding PreviewBackgroundBrush}"
+                                        BorderBrush="{Binding PreviewBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="14,8"
+                                        BoxShadow="0 4 16 #25000000"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Grid.Column="0"
+                                                                    Kind="{Binding PreviewToastIcon}"
+                                                                    Width="17" Height="17"
+                                                                    Foreground="{Binding PreviewIconBrush}"
+                                                                    VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding PreviewToastMessage}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{Binding PreviewForegroundBrush}"
+                                                   VerticalAlignment="Center" />
+                                        <Border Grid.Column="2"
+                                                IsVisible="{Binding ToastShowCloseButton}"
+                                                Background="Transparent"
+                                                Padding="2"
+                                                VerticalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="{Binding PreviewCloseBrush}" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <Border Grid.Column="2" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="8,4" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding ToastPosition, StringFormat='At: {0}'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </Border>
+
+        <!-- ========================================== -->
+        <!-- 3. STUDIO THEME & APPEARANCE CARD          -->
+        <!-- ========================================== -->
+        <Border Classes="setting-card">
+            <StackPanel Spacing="16">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <materialIcons:MaterialIcon Grid.Column="0" Kind="PaletteOutline" Width="20" Height="20" Foreground="#8B5CF6" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="Studio Theme &amp; Color Scheme" FontSize="14.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Switch between light and dark palette or follow OS preference." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                    </StackPanel>
+                </Grid>
+
+                <Separator Height="1" Background="{DynamicResource WinBorderSubtleBrush}" />
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                    <!-- Studio Theme -->
+                    <StackPanel Grid.Column="0" Spacing="8">
+                        <TextBlock Text="Studio Theme" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                        <UniformGrid Columns="3">
+                            <Button Classes="setting-segment-btn" Margin="0,0,4,0"
+                                    Classes.active="{Binding ThemeMode, Converter={StaticResource EqualityConverter}, ConverterParameter=Light}"
+                                    Command="{Binding SetThemeModeCommand}" CommandParameter="Light">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="WeatherSunny" Width="14" Height="14" Foreground="#F59E0B" />
+                                    <TextBlock Text="Light" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="setting-segment-btn" Margin="0,0,4,0"
+                                    Classes.active="{Binding ThemeMode, Converter={StaticResource EqualityConverter}, ConverterParameter=Dark}"
+                                    Command="{Binding SetThemeModeCommand}" CommandParameter="Dark">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="WeatherNight" Width="14" Height="14" Foreground="#818CF8" />
+                                    <TextBlock Text="Dark" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="setting-segment-btn"
+                                    Classes.active="{Binding ThemeMode, Converter={StaticResource EqualityConverter}, ConverterParameter=System}"
+                                    Command="{Binding SetThemeModeCommand}" CommandParameter="System">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="Laptop" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
+                                    <TextBlock Text="System" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </UniformGrid>
+                    </StackPanel>
+
+                    <!-- PDF Reader Mode Theme -->
+                    <StackPanel Grid.Column="1" Spacing="8">
+                        <TextBlock Text="PDF Reader Theme" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                        <UniformGrid Columns="4">
+                            <Button Classes="setting-segment-btn" Margin="0,0,4,0"
+                                    Classes.active="{Binding ReadingTheme, Converter={StaticResource EqualityConverter}, ConverterParameter=Default}"
+                                    Command="{Binding SetReadingThemeCommand}" CommandParameter="Default">
+                                <TextBlock Text="Studio" />
+                            </Button>
+                            <Button Classes="setting-segment-btn" Margin="0,0,4,0"
+                                    Classes.active="{Binding ReadingTheme, Converter={StaticResource EqualityConverter}, ConverterParameter=Sepia}"
+                                    Command="{Binding SetReadingThemeCommand}" CommandParameter="Sepia">
+                                <TextBlock Text="Sepia" />
+                            </Button>
+                            <Button Classes="setting-segment-btn" Margin="0,0,4,0"
+                                    Classes.active="{Binding ReadingTheme, Converter={StaticResource EqualityConverter}, ConverterParameter=Dark}"
+                                    Command="{Binding SetReadingThemeCommand}" CommandParameter="Dark">
+                                <TextBlock Text="Night" />
+                            </Button>
+                            <Button Classes="setting-segment-btn"
+                                    Classes.active="{Binding ReadingTheme, Converter={StaticResource EqualityConverter}, ConverterParameter=HighContrast}"
+                                    Command="{Binding SetReadingThemeCommand}" CommandParameter="HighContrast">
+                                <TextBlock Text="Contrast" />
+                            </Button>
+                        </UniformGrid>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- ========================================== -->
+        <!-- 4. CANVAS & WORKSPACE DEFAULTS CARD        -->
+        <!-- ========================================== -->
+        <Border Classes="setting-card">
+            <StackPanel Spacing="16">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <materialIcons:MaterialIcon Grid.Column="0" Kind="Grid" Width="20" Height="20" Foreground="#10B981" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="Document Canvas &amp; Grid Alignment" FontSize="14.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBlock Text="Configure default grid overlays and object snapping behaviors." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                    </StackPanel>
+                </Grid>
+
+                <Separator Height="1" Background="{DynamicResource WinBorderSubtleBrush}" />
+
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                    <!-- Default Show Grid -->
+                    <Button Grid.Column="0" Classes="setting-segment-btn"
+                            Classes.active="{Binding ShowGridByDefault}"
+                            Command="{Binding ToggleGridByDefaultCommand}">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <materialIcons:MaterialIcon Grid.Column="0" Kind="GridLarge" Width="15" Height="15" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Show Grid" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="{Binding ShowGridByDefault, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='ON|OFF'}" FontWeight="Bold" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+
+                    <!-- Default Snap to Grid -->
+                    <Button Grid.Column="1" Classes="setting-segment-btn"
+                            Classes.active="{Binding SnapToGridByDefault}"
+                            Command="{Binding ToggleSnapByDefaultCommand}">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnet" Width="15" Height="15" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Snap to Grid" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="{Binding SnapToGridByDefault, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='ON|OFF'}" FontWeight="Bold" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+
+                    <!-- Default Zoom -->
+                    <Button Grid.Column="2" Classes="setting-segment-btn"
+                            Command="{Binding SetDefaultZoomModeCommand}" CommandParameter="FitWidth">
+                        <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="15" Height="15" VerticalAlignment="Center" />
+                            <TextBlock Text="Fit to Width (Default)" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- ========================================== -->
+        <!-- 5. WORKSPACE PANELS & PRIVACY FOOTER       -->
+        <!-- ========================================== -->
+        <Border Background="{DynamicResource WinInputBgBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="20,16">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                <materialIcons:MaterialIcon Grid.Column="0" Kind="ShieldCheckOutline" Width="24" Height="24" Foreground="#10B981" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="100% Offline &amp; Privacy-First Architecture" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="All user preferences, tool settings, and workspaces are stored strictly locally in your user profile (ui_settings.json). No tracking, telemetry, or network upload."
+                               FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+                <TextBlock Grid.Column="2" Text="FryPDF Studio v1.0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+
+    </StackPanel>
+</UserControl>

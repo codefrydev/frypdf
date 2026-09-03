@@ -98,10 +98,14 @@ public partial class HomeViewModel : ViewModelBase
     public bool IsFontPackagesSection => SelectedNavSection == HomeNavSection.FontPackages;
     public bool IsTesseractDataSection => SelectedNavSection == HomeNavSection.TesseractData;
     public bool IsHelpSection => SelectedNavSection == HomeNavSection.Help;
+    public bool IsSettingsSection => SelectedNavSection == HomeNavSection.Settings;
 
     public FontManagerViewModel FontManager { get; } = new();
     public TesseractManagerViewModel TesseractManager { get; } = new();
     public HelpGuideViewModel HelpGuide { get; } = new();
+    public SettingsViewModel Settings { get; }
+
+    public event Action<string, ToastNotificationType, string?>? ShowToastRequested;
 
     public int MatchingToolsCount => FilteredTools.Count;
     public bool HasNoMatchingTools => FilteredTools.Count == 0;
@@ -114,7 +118,7 @@ public partial class HomeViewModel : ViewModelBase
 
     // --- Constructor ---
 
-    public HomeViewModel() : this(new RecentDocumentsService(), new TemplateService(), new ProjectPersistenceService(), new PdfToolRegistry(), null, null, new ThemeService()) { }
+    public HomeViewModel() : this(new RecentDocumentsService(), new TemplateService(), new ProjectPersistenceService(), new PdfToolRegistry(), null, null, new ThemeService(), new UiSettingsService()) { }
 
     public HomeViewModel(
         IRecentDocumentsService recentService,
@@ -123,7 +127,8 @@ public partial class HomeViewModel : ViewModelBase
         IPdfToolRegistry toolRegistry,
         PdfToolRunnerViewModel? toolRunner = null,
         IPdfToolViewModelFactory? toolViewModelFactory = null,
-        IThemeService? themeService = null)
+        IThemeService? themeService = null,
+        IUiSettingsService? uiSettingsService = null)
     {
         _recentService = recentService;
         _templateService = templateService;
@@ -132,6 +137,9 @@ public partial class HomeViewModel : ViewModelBase
         _toolViewModelFactory = toolViewModelFactory;
         _themeService = themeService;
         ToolRunner = toolRunner;
+
+        Settings = new SettingsViewModel(uiSettingsService ?? new UiSettingsService(), _themeService);
+        Settings.TriggerToastRequested += (msg, type, icon) => ShowToastRequested?.Invoke(msg, type, icon);
 
         if (_themeService != null)
         {
@@ -352,6 +360,7 @@ public partial class HomeViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsFontPackagesSection));
         OnPropertyChanged(nameof(IsTesseractDataSection));
         OnPropertyChanged(nameof(IsHelpSection));
+        OnPropertyChanged(nameof(IsSettingsSection));
 
         if (value == HomeNavSection.TesseractData)
         {

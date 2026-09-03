@@ -63,6 +63,7 @@ public partial class App : Application
     {
         // Core Services
         services.AddSingleton<IThemeService, ThemeService>();
+        services.AddSingleton<IUiSettingsService, UiSettingsService>();
         services.AddSingleton<IPdfExportService, PdfExportService>();
         services.AddSingleton<IPdfImportService, PdfImportService>();
         services.AddSingleton<IProjectPersistenceService, ProjectPersistenceService>();
@@ -107,6 +108,7 @@ public partial class App : Application
         services.AddTransient<PdfViewerViewModel>();
         services.AddTransient<PdfToolRunnerViewModel>();
         services.AddTransient<WorkflowBuilderViewModel>();
+        services.AddTransient<SettingsViewModel>();
         services.AddTransient<HomeViewModel>();
         services.AddTransient<MainViewModel>();
 

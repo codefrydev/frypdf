@@ -454,7 +454,34 @@ public enum HomeNavSection
     Licensing,
     FontPackages,
     TesseractData,
-    Help
+    Help,
+    Settings
+}
+
+public enum ToastPosition
+{
+    BottomCenter,
+    BottomRight,
+    BottomLeft,
+    TopCenter,
+    TopRight,
+    TopLeft
+}
+
+public enum ToastStyleVariant
+{
+    Solid,
+    Subtle,
+    Auto
+}
+
+public enum ToastNotificationType
+{
+    Primary,
+    Success,
+    Danger,
+    Warning,
+    General
 }
 
 public enum PdfReaderTheme
@@ -485,6 +512,3 @@ public enum AppThemeMode
     Light,
     Dark
 }
-
-
-

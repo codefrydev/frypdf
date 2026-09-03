@@ -67,6 +67,8 @@
         <KeyBinding Gesture="Cmd+K" Command="{Binding OpenCommandPaletteCommand}" />
         <KeyBinding Gesture="Ctrl+F" Command="{Binding OpenCommandPaletteCommand}" />
         <KeyBinding Gesture="Cmd+F" Command="{Binding OpenCommandPaletteCommand}" />
+        <KeyBinding Gesture="Ctrl+OemComma" Command="{Binding NavigateToSettingsCommand}" />
+        <KeyBinding Gesture="Cmd+OemComma" Command="{Binding NavigateToSettingsCommand}" />
         <KeyBinding Gesture="F1" Command="{Binding OpenShortcutsHelpCommand}" />
         <KeyBinding Gesture="Ctrl+OemQuestion" Command="{Binding OpenShortcutsHelpCommand}" />
         <KeyBinding Gesture="Cmd+OemQuestion" Command="{Binding OpenShortcutsHelpCommand}" />
@@ -365,17 +367,51 @@
         </Grid>
         <!-- END EDITOR SHELL -->
 
-        <!-- Floating HUD Toast Notification Banner -->
+        <!-- Floating HUD Toast Notification Banner (Styled matching Image 2 with dynamic position, contrast, and dismiss button) -->
         <Border Classes="toast-banner"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Bottom"
-                Margin="0,0,0,50"
+                ZIndex="99999"
+                HorizontalAlignment="{Binding ToastHorizontalAlignment}"
+                VerticalAlignment="{Binding ToastVerticalAlignment}"
+                Margin="{Binding ToastMargin}"
+                MinWidth="280"
+                MaxWidth="540"
+                Background="{Binding ToastBackgroundBrush}"
+                BorderBrush="{Binding ToastBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="16,10"
+                BoxShadow="0 8 24 #35000000"
                 IsVisible="{Binding IsToastVisible}"
-                IsHitTestVisible="False">
-            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <materialIcons:MaterialIcon Kind="{Binding ToastIcon}" Width="18" Height="18" Foreground="#38BDF8" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding ToastMessage}" FontSize="12" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" />
-            </StackPanel>
+                IsHitTestVisible="True">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalAlignment="Center">
+                <materialIcons:MaterialIcon Grid.Column="0"
+                                            Kind="{Binding ToastIcon}"
+                                            Width="18" Height="18"
+                                            Foreground="{Binding ToastIconBrush}"
+                                            VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding ToastMessage}"
+                           FontSize="12.5"
+                           FontWeight="SemiBold"
+                           Foreground="{Binding ToastForegroundBrush}"
+                           VerticalAlignment="Center"
+                           TextWrapping="Wrap"
+                           MaxWidth="460" />
+                <Button Grid.Column="2"
+                        Command="{Binding DismissToastCommand}"
+                        IsVisible="{Binding ToastShowCloseButton}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="3"
+                        Cursor="Hand"
+                        VerticalAlignment="Center"
+                        ToolTip.Tip="Dismiss Notification">
+                    <materialIcons:MaterialIcon Kind="Close"
+                                                Width="14" Height="14"
+                                                Foreground="{Binding ToastCloseBrush}"
+                                                VerticalAlignment="Center" />
+                </Button>
+            </Grid>
         </Border>
 
         <!-- Dialog Overlays -->

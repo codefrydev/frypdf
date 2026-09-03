@@ -15,6 +15,9 @@ using System.Linq;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -218,6 +221,197 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isToastVisible;
+
+    [ObservableProperty]
+    private ToastNotificationType _toastType = ToastNotificationType.Primary;
+
+    [ObservableProperty]
+    private ToastPosition _toastPosition = ToastPosition.BottomCenter;
+
+    [ObservableProperty]
+    private ToastStyleVariant _toastStyleVariant = ToastStyleVariant.Solid;
+
+    [ObservableProperty]
+    private bool _toastShowCloseButton = true;
+
+    partial void OnToastTypeChanged(ToastNotificationType value) => RefreshToastVisuals();
+    partial void OnToastPositionChanged(ToastPosition value) => RefreshToastVisuals();
+    partial void OnToastStyleVariantChanged(ToastStyleVariant value) => RefreshToastVisuals();
+    partial void OnToastShowCloseButtonChanged(bool value) => RefreshToastVisuals();
+
+    public bool ToastIsSolid
+    {
+        get
+        {
+            if (ToastStyleVariant == ToastStyleVariant.Auto)
+                return IsDarkMode;
+            return ToastStyleVariant == ToastStyleVariant.Solid;
+        }
+    }
+
+    public IBrush ToastBackgroundBrush
+    {
+        get
+        {
+            if (ToastIsSolid)
+            {
+                return ToastType switch
+                {
+                    ToastNotificationType.Primary => Brush("#0F6CBD"),
+                    ToastNotificationType.Success => Brush("#15803D"),
+                    ToastNotificationType.Danger => Brush("#DC2626"),
+                    ToastNotificationType.Warning => Brush("#D97706"),
+                    ToastNotificationType.General => Brush("#1E293B"),
+                    _ => Brush("#1E293B")
+                };
+            }
+
+            if (IsDarkMode)
+            {
+                return ToastType switch
+                {
+                    ToastNotificationType.Primary => Brush("#172554"),
+                    ToastNotificationType.Success => Brush("#052E16"),
+                    ToastNotificationType.Danger => Brush("#450A0A"),
+                    ToastNotificationType.Warning => Brush("#451A03"),
+                    ToastNotificationType.General => Brush("#18181B"),
+                    _ => Brush("#18181B")
+                };
+            }
+            else
+            {
+                return ToastType switch
+                {
+                    ToastNotificationType.Primary => Brush("#EFF6FF"),
+                    ToastNotificationType.Success => Brush("#F0FDF4"),
+                    ToastNotificationType.Danger => Brush("#FEF2F2"),
+                    ToastNotificationType.Warning => Brush("#FFFBEB"),
+                    ToastNotificationType.General => Brush("#F8FAFC"),
+                    _ => Brush("#F8FAFC")
+                };
+            }
+        }
+    }
+
+    public IBrush ToastForegroundBrush
+    {
+        get
+        {
+            if (ToastIsSolid) return WhiteBrush;
+
+            if (IsDarkMode)
+            {
+                return ToastType switch
+                {
+                    ToastNotificationType.Primary => Brush("#93C5FD"),
+                    ToastNotificationType.Success => Brush("#86EFAC"),
+                    ToastNotificationType.Danger => Brush("#FCA5A5"),
+                    ToastNotificationType.Warning => Brush("#FCD34D"),
+                    ToastNotificationType.General => Brush("#E2E8F0"),
+                    _ => Brush("#E2E8F0")
+                };
+            }
+            else
+            {
+                return ToastType switch
+                {
+                    ToastNotificationType.Primary => Brush("#1D4ED8"),
+                    ToastNotificationType.Success => Brush("#15803D"),
+                    ToastNotificationType.Danger => Brush("#B91C1C"),
+                    ToastNotificationType.Warning => Brush("#B45309"),
+                    ToastNotificationType.General => Brush("#334155"),
+                    _ => Brush("#334155")
+                };
+            }
+        }
+    }
+
+    public IBrush ToastBorderBrush
+    {
+        get
+        {
+            if (ToastIsSolid)
+            {
+                return ToastType switch
+                {
+                    ToastNotificationType.Primary => Brush("#0D5CA0"),
+                    ToastNotificationType.Success => Brush("#166534"),
+                    ToastNotificationType.Danger => Brush("#B91C1C"),
+                    ToastNotificationType.Warning => Brush("#B45309"),
+                    ToastNotificationType.General => Brush("#0F172A"),
+                    _ => Brush("#0F172A")
+                };
+            }
+
+            if (IsDarkMode)
+            {
+                return ToastType switch
+                {
+                    ToastNotificationType.Primary => Brush("#1E40AF"),
+                    ToastNotificationType.Success => Brush("#166534"),
+                    ToastNotificationType.Danger => Brush("#991B1B"),
+                    ToastNotificationType.Warning => Brush("#92400E"),
+                    ToastNotificationType.General => Brush("#3F3F46"),
+                    _ => Brush("#3F3F46")
+                };
+            }
+            else
+            {
+                return ToastType switch
+                {
+                    ToastNotificationType.Primary => Brush("#BFDBFE"),
+                    ToastNotificationType.Success => Brush("#BBF7D0"),
+                    ToastNotificationType.Danger => Brush("#FECACA"),
+                    ToastNotificationType.Warning => Brush("#FDE68A"),
+                    ToastNotificationType.General => Brush("#CBD5E1"),
+                    _ => Brush("#CBD5E1")
+                };
+            }
+        }
+    }
+
+    public IBrush ToastIconBrush => ToastIsSolid ? WhiteBrush : ToastForegroundBrush;
+    public IBrush ToastCloseBrush => ToastIsSolid ? WhiteBrush : ToastForegroundBrush;
+
+    public HorizontalAlignment ToastHorizontalAlignment => ToastPosition switch
+    {
+        ToastPosition.TopLeft or ToastPosition.BottomLeft => HorizontalAlignment.Left,
+        ToastPosition.TopRight or ToastPosition.BottomRight => HorizontalAlignment.Right,
+        _ => HorizontalAlignment.Center
+    };
+
+    public VerticalAlignment ToastVerticalAlignment => ToastPosition switch
+    {
+        ToastPosition.TopLeft or ToastPosition.TopCenter or ToastPosition.TopRight => VerticalAlignment.Top,
+        _ => VerticalAlignment.Bottom
+    };
+
+    public Thickness ToastMargin => ToastPosition switch
+    {
+        ToastPosition.TopLeft => new Thickness(32, 54, 0, 0),
+        ToastPosition.TopCenter => new Thickness(0, 54, 0, 0),
+        ToastPosition.TopRight => new Thickness(0, 54, 32, 0),
+        ToastPosition.BottomLeft => new Thickness(32, 0, 0, 48),
+        ToastPosition.BottomCenter => new Thickness(0, 0, 0, 48),
+        ToastPosition.BottomRight => new Thickness(0, 0, 32, 48),
+        _ => new Thickness(0, 0, 0, 48)
+    };
+
+    private static readonly SolidColorBrush WhiteBrush = new(Color.Parse("#FFFFFF"));
+    private static SolidColorBrush Brush(string hex) => new(Color.Parse(hex));
+
+    public void RefreshToastVisuals()
+    {
+        OnPropertyChanged(nameof(ToastIsSolid));
+        OnPropertyChanged(nameof(ToastBackgroundBrush));
+        OnPropertyChanged(nameof(ToastForegroundBrush));
+        OnPropertyChanged(nameof(ToastBorderBrush));
+        OnPropertyChanged(nameof(ToastIconBrush));
+        OnPropertyChanged(nameof(ToastCloseBrush));
+        OnPropertyChanged(nameof(ToastHorizontalAlignment));
+        OnPropertyChanged(nameof(ToastVerticalAlignment));
+        OnPropertyChanged(nameof(ToastMargin));
+    }
 
     // Acrobat Suite Dialogs State
     [ObservableProperty]
@@ -460,11 +654,26 @@ public partial class MainViewModel : ViewModelBase
         new PageOrganizerService(),
         null,
         null,
-        new ThemeService())
+        new ThemeService(),
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        new UiSettingsService())
     {
     }
 
     private readonly IThemeService? _themeService;
+    private readonly IUiSettingsService? _uiSettingsService;
 
     public MainViewModel(
         IPdfExportService exportService,
@@ -490,7 +699,8 @@ public partial class MainViewModel : ViewModelBase
         BatchGenerationViewModel? batchGeneration = null,
         HomeViewModel? homeViewModel = null,
         PdfViewerViewModel? pdfViewer = null,
-        InspectorViewModel? inspector = null)
+        InspectorViewModel? inspector = null,
+        IUiSettingsService? uiSettingsService = null)
     {
         _exportService = exportService;
         _templateService = templateService;
@@ -502,6 +712,22 @@ public partial class MainViewModel : ViewModelBase
         _pageOrganizerService = pageOrganizerService ?? new PageOrganizerService();
         _themeService = themeService;
         _toolRegistry = toolRegistry ?? new PdfToolRegistry();
+        _uiSettingsService = uiSettingsService ?? new UiSettingsService();
+
+        if (_uiSettingsService != null)
+        {
+            var s = _uiSettingsService.Settings;
+            ToastPosition = s.ToastPosition;
+            ToastStyleVariant = s.ToastStyleVariant;
+            ToastShowCloseButton = s.ToastShowCloseButton;
+            _uiSettingsService.SettingsChanged += (newSettings) =>
+            {
+                ToastPosition = newSettings.ToastPosition;
+                ToastStyleVariant = newSettings.ToastStyleVariant;
+                ToastShowCloseButton = newSettings.ToastShowCloseButton;
+                RefreshToastVisuals();
+            };
+        }
 
         if (_themeService != null)
         {
@@ -510,6 +736,7 @@ public partial class MainViewModel : ViewModelBase
             {
                 IsDarkMode = _themeService.IsDarkMode;
                 if (Home != null) Home.IsDarkMode = IsDarkMode;
+                RefreshToastVisuals();
             };
         }
 
@@ -569,7 +796,8 @@ public partial class MainViewModel : ViewModelBase
         }
 
         // Set up Home page and wire its navigation events
-        Home = homeViewModel ?? new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, effectiveToolFactory, _themeService);
+        Home = homeViewModel ?? new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, effectiveToolFactory, _themeService, _uiSettingsService);
+        Home.ShowToastRequested += (msg, type, icon) => ShowToast(msg, type, icon);
         Home.OpenTemplateRequested += OpenEditorWithTemplate;
         Home.OpenFileRequested += () => _ = OpenProjectAndEnterEditorAsync();
         Home.OpenRecentRequested += OpenEditorWithFile;
@@ -577,6 +805,8 @@ public partial class MainViewModel : ViewModelBase
         Home.OpenInViewerRequested += (path) => OpenInViewer(path);
         Home.OpenWorkflowBuilderRequested += OpenWorkflowStudio;
         Home.OpenBatchGenerationRequested += () => OpenBatchGeneration();
+
+        RefreshToastVisuals();
 
         // Synchronize inspector when selection changes
         Inspector.PropertyChanged += (s, e) =>
@@ -887,25 +1117,90 @@ public partial class MainViewModel : ViewModelBase
 
     // --- TOAST HUD NOTIFICATION FEEDBACK ---
 
-    public void ShowToast(string message, string iconKind = "CheckCircleOutline")
+    [RelayCommand]
+    public void DismissToast()
+    {
+        _toastCts?.Cancel();
+        IsToastVisible = false;
+    }
+
+    public void ShowToast(string message, string? iconKind = null)
+    {
+        var inferred = InferToastType(message, iconKind);
+        ShowToast(message, inferred, iconKind);
+    }
+
+    public void ShowToast(string message, ToastNotificationType type, string? iconKind = null, int? customDurationMs = null)
     {
         _toastCts?.Cancel();
         _toastCts = new CancellationTokenSource();
         var token = _toastCts.Token;
 
         ToastMessage = message;
-        ToastIcon = iconKind;
+        ToastType = type;
+        ToastIcon = !string.IsNullOrWhiteSpace(iconKind) ? iconKind : GetDefaultIconForType(type);
+        RefreshToastVisuals();
         IsToastVisible = true;
         UpdateStatus(message);
 
-        Task.Delay(2200, token).ContinueWith(t =>
+        int duration = customDurationMs ?? (_uiSettingsService?.Settings.ToastDurationMs ?? 3500);
+        if (duration > 0)
         {
-            if (!t.IsCanceled)
+            Task.Delay(duration, token).ContinueWith(t =>
             {
-                Dispatcher.UIThread.Post(() => IsToastVisible = false);
-            }
-        }, TaskScheduler.Default);
+                if (!t.IsCanceled)
+                {
+                    Dispatcher.UIThread.Post(() => IsToastVisible = false);
+                }
+            }, TaskScheduler.Default);
+        }
     }
+
+    public static ToastNotificationType InferToastType(string message, string? iconKind)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return ToastNotificationType.General;
+
+        var lowerMsg = message.ToLowerInvariant();
+        var lowerIcon = iconKind?.ToLowerInvariant() ?? "";
+
+        if (lowerMsg.Contains("error") || lowerMsg.Contains("failed") || lowerMsg.Contains("could not") ||
+            lowerMsg.Contains("corrupt") || lowerMsg.Contains("unrecognized") || lowerIcon.Contains("alertcircle") || lowerIcon.Contains("alertoctagon"))
+        {
+            return ToastNotificationType.Danger;
+        }
+
+        if (lowerMsg.Contains("warning") || lowerMsg.Contains("caution") || lowerMsg.Contains("nothing to"))
+        {
+            return ToastNotificationType.Warning;
+        }
+
+        if (lowerMsg.Contains("saved") || lowerMsg.Contains("success") || lowerMsg.Contains("copied") ||
+            lowerMsg.Contains("pasted") || lowerMsg.Contains("done") || lowerMsg.Contains("applied") ||
+            lowerMsg.Contains("created new document") || lowerIcon.Contains("check"))
+        {
+            return ToastNotificationType.Success;
+        }
+
+        if (lowerMsg.Contains("open") || lowerMsg.Contains("zoom") || lowerMsg.Contains("fit to") ||
+            lowerMsg.Contains("switched to") || lowerMsg.Contains("active tool") || lowerMsg.Contains("ribbon") ||
+            lowerMsg.Contains("sidebar") || lowerMsg.Contains("inspector") || lowerMsg.Contains("undone") || lowerMsg.Contains("redone"))
+        {
+            return ToastNotificationType.Primary;
+        }
+
+        return ToastNotificationType.General;
+    }
+
+    public static string GetDefaultIconForType(ToastNotificationType type) => type switch
+    {
+        ToastNotificationType.Primary => "InformationOutline",
+        ToastNotificationType.Success => "CheckCircleOutline",
+        ToastNotificationType.Danger => "AlertOctagonOutline",
+        ToastNotificationType.Warning => "AlertOutline",
+        ToastNotificationType.General => "InformationOutline",
+        _ => "InformationOutline"
+    };
 
     public void UpdateStatus(string message)
     {

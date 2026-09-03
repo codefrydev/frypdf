@@ -126,6 +126,17 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
+    public void NavigateToSettings()
+    {
+        IsAboutDialogOpen = false;
+        IsShortcutsHelpDialogOpen = false;
+        IsHomePageVisible = true;
+        IsEditorVisible = false;
+        IsPdfViewerVisible = false;
+        Home.SelectNavSectionCommand.Execute("Settings");
+    }
+
+    [RelayCommand]
     public async System.Threading.Tasks.Task CopySupportEmail()
     {
         const string email = "codefrydev@gmail.com";
@@ -377,6 +388,7 @@ public partial class MainViewModel
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Visit CodeFryDev Website", Subtitle = "Open official codefrydev.in developer portal", Category = "Help", IconKind = "Web", Action = () => OpenCompanyWebsiteCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Microsoft Store Page", Subtitle = "View FryPDF on Microsoft Store (9P5GW2Q81B33)", Category = "Help", IconKind = "Microsoft", Action = () => OpenMicrosoftStoreCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Copy System Diagnostics", Subtitle = "Copy OS, framework, store identity, and app version report", Category = "Help", IconKind = "BugOutline", Action = () => CopyDiagnosticsCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Settings & UI Preferences", Subtitle = "Configure notification placement, snackbar style, themes, and workspace defaults", Category = "Preferences", IconKind = "CogOutline", Shortcut = "⌘,", Action = () => NavigateToSettingsCommand.Execute(null) });
 
         FilterPaletteCommands("");
     }

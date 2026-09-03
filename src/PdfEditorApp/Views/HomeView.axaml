@@ -314,6 +314,23 @@
                             </Grid>
                         </Button>
 
+                        <!-- Preferences Header -->
+                        <TextBlock Text="PREFERENCES" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,12,0,4" />
+
+                        <!-- 15. Settings & UI Preferences -->
+                        <Button Classes="nav-tab-btn"
+                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Settings}"
+                                Command="{Binding SelectNavSectionCommand}"
+                                CommandParameter="Settings">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <materialIcons:MaterialIcon Grid.Column="0" Kind="TuneVariant" Width="18" Height="18" Foreground="#8B5CF6" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="Settings &amp; UI" VerticalAlignment="Center" />
+                                <Border Grid.Column="2" Background="#EDE9FE" CornerRadius="4" Padding="5,1">
+                                    <TextBlock Text="UI" FontSize="9.5" FontWeight="Bold" Foreground="#7C3AED" />
+                                </Border>
+                            </Grid>
+                        </Button>
+
                     </StackPanel>
                 </ScrollViewer>
 
@@ -501,6 +518,11 @@
                         <!-- Page 10: Comprehensive Help & User Guides Studio -->
                         <Panel IsVisible="{Binding IsHelpSection}">
                             <views:HelpGuidePageView DataContext="{Binding HelpGuide}" />
+                        </Panel>
+
+                        <!-- Page 11: UI Settings & Preferences Studio -->
+                        <Panel IsVisible="{Binding IsSettingsSection}">
+                            <views:SettingsPageView DataContext="{Binding Settings}" />
                         </Panel>
                     </Panel>
                 </ScrollViewer>

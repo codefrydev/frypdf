@@ -311,12 +311,12 @@
 
     <!-- Toast Notification Banner -->
     <Style Selector="Border.toast-banner">
-        <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Padding" Value="14,9" />
-        <Setter Property="BoxShadow" Value="0 8 24 #30000000" />
+        <Setter Property="BoxShadow" Value="0 8 24 #35000000" />
+    </Style>
+    <Style Selector="Border.toast-banner Button:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#25000000" />
     </Style>
 
     <!-- Context Menu Item Styling -->

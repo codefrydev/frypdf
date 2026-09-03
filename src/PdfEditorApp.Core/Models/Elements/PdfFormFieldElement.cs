@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace PdfEditorApp.Models.Elements;
+namespace PdfEditorApp.Core.Models.Elements;
 
 public class PdfFormFieldElement : PdfElementBase
 {

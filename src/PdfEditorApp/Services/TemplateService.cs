@@ -1,8 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 using PdfEditorApp.Templates;
+using PdfEditorApp.Templates.Academic;
+using PdfEditorApp.Templates.Career;
+using PdfEditorApp.Templates.Certificates;
+using PdfEditorApp.Templates.Corporate;
+using PdfEditorApp.Templates.Events;
+using PdfEditorApp.Templates.Finance;
+using PdfEditorApp.Templates.General;
 
 namespace PdfEditorApp.Services;
 

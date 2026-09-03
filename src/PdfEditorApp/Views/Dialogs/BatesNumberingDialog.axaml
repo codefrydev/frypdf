@@ -4,6 +4,7 @@
              xmlns:models="using:PdfEditorApp.Models"
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:models1="clr-namespace:PdfEditorApp.Core.Models;assembly=PdfEditorApp.Core"
              x:Class="PdfEditorApp.Views.Dialogs.BatesNumberingDialog"
              x:DataType="vm:MainViewModel">
 
@@ -80,33 +81,33 @@
                         <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" RowSpacing="6" ColumnSpacing="6">
                             <Button Grid.Row="0" Grid.Column="0" Classes="secondary-btn" Height="30"
                                     Classes.active="{Binding BatesPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=TopLeft}"
-                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models:BatesPosition.TopLeft}">
+                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models1:BatesPosition.TopLeft}">
                                 <TextBlock Text="Top-Left" FontSize="11" />
                             </Button>
                             <Button Grid.Row="0" Grid.Column="1" Classes="secondary-btn" Height="30"
                                     Classes.active="{Binding BatesPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=TopCenter}"
-                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models:BatesPosition.TopCenter}">
+                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models1:BatesPosition.TopCenter}">
                                 <TextBlock Text="Top-Center" FontSize="11" />
                             </Button>
                             <Button Grid.Row="0" Grid.Column="2" Classes="secondary-btn" Height="30"
                                     Classes.active="{Binding BatesPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=TopRight}"
-                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models:BatesPosition.TopRight}">
+                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models1:BatesPosition.TopRight}">
                                 <TextBlock Text="Top-Right" FontSize="11" />
                             </Button>
 
                             <Button Grid.Row="1" Grid.Column="0" Classes="secondary-btn" Height="30"
                                     Classes.active="{Binding BatesPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomLeft}"
-                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models:BatesPosition.BottomLeft}">
+                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models1:BatesPosition.BottomLeft}">
                                 <TextBlock Text="Bottom-Left" FontSize="11" />
                             </Button>
                             <Button Grid.Row="1" Grid.Column="1" Classes="secondary-btn" Height="30"
                                     Classes.active="{Binding BatesPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomCenter}"
-                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models:BatesPosition.BottomCenter}">
+                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models1:BatesPosition.BottomCenter}">
                                 <TextBlock Text="Bottom-Center" FontSize="11" />
                             </Button>
                             <Button Grid.Row="1" Grid.Column="2" Classes="secondary-btn" Height="30"
                                     Classes.active="{Binding BatesPosition, Converter={StaticResource EqualityConverter}, ConverterParameter=BottomRight}"
-                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models:BatesPosition.BottomRight}">
+                                    Command="{Binding SetBatesPositionCommand}" CommandParameter="{x:Static models1:BatesPosition.BottomRight}">
                                 <TextBlock Text="Bottom-Right" FontSize="11" />
                             </Button>
                         </Grid>

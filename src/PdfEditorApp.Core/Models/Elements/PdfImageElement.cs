@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace PdfEditorApp.Models.Elements;
+namespace PdfEditorApp.Core.Models.Elements;
 
 public class PdfImageElement : PdfElementBase
 {

@@ -5,8 +5,7 @@ using Microsoft.Extensions.Logging;
 using SkiaSharp;
 using UglyToad.PdfPig.Content;
 using PdfEditorApp.Core.Deconstruction.Utils;
-using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Core.Models.Elements;
 
 namespace PdfEditorApp.Core.Deconstruction.Extractors;
 

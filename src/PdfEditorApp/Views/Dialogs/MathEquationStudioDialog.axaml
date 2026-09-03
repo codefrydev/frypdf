@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:PdfEditorApp.ViewModels"
              xmlns:views="using:PdfEditorApp.Views"
-             xmlns:math="using:PdfEditorApp.Services.MathEngine"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
              x:Class="PdfEditorApp.Views.Dialogs.MathEquationStudioDialog"

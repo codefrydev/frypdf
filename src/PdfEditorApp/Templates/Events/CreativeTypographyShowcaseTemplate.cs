@@ -1,8 +1,7 @@
-using System.Collections.Generic;
-using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 
-namespace PdfEditorApp.Templates;
+namespace PdfEditorApp.Templates.Events;
 
 /// <summary>
 /// Professional Showcase Poster demonstrating Bézier curved typography, text outlines,

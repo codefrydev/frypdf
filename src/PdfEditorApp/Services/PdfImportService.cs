@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using PdfEditorApp.Core.Deconstruction;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 
 namespace PdfEditorApp.Services;

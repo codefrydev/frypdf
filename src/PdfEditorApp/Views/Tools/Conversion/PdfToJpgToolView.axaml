@@ -1,0 +1,150 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels.Tools.Conversion"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:shell="using:PdfEditorApp.Views.Shell"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Tools.Conversion.PdfToJpgToolView"
+             x:DataType="vm:PdfToJpgToolViewModel">
+
+    <UserControl.Resources>
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+    </UserControl.Resources>
+
+    <shell:PdfToolWorkspaceView>
+
+        <!-- Toolbar primary action -->
+        <shell:PdfToolWorkspaceView.ToolbarActionContent>
+            <Button Command="{Binding ExecuteToolCommand}" IsEnabled="{Binding !IsRunning}" Background="#CA8A04" Foreground="White" CornerRadius="8" Padding="16,8" FontWeight="Bold" FontSize="12.5" Cursor="Hand">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <materialIcons:MaterialIcon Kind="FileImageOutline" Width="15" Height="15" />
+                    <TextBlock Text="Convert to Images" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </shell:PdfToolWorkspaceView.ToolbarActionContent>
+
+        <!-- Sidebar Options tab: status, document selection, and image export settings -->
+        <shell:PdfToolWorkspaceView.OptionsContent>
+            <StackPanel Spacing="16">
+
+                <!-- Error Alert Banner -->
+                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="10" Padding="14,10" IsVisible="{Binding HasError}">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="20" Height="20" Foreground="#DC2626" Margin="0,0,10,0" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Image Export Failed" FontSize="12.5" FontWeight="Bold" Foreground="#991B1B" />
+                            <TextBlock Text="{Binding ErrorMessage}" FontSize="11.5" Foreground="#B91C1C" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Success Banner -->
+                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="12" Padding="16,14" BoxShadow="0 4 12 #1016A34A" IsVisible="{Binding IsComplete}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <Border Width="36" Height="36" Background="#DCFCE7" CornerRadius="9">
+                                <materialIcons:MaterialIcon Kind="CheckCircle" Width="20" Height="20" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Spacing="2" VerticalAlignment="Center">
+                                <TextBlock Text="Converted to Images!" FontSize="13.5" FontWeight="Bold" Foreground="#166534" />
+                                <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="11.5" Foreground="#15803D" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="14" Height="14" />
+                                    <TextBlock Text="Open Images Folder" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Processing Card -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" IsVisible="{Binding IsRunning}">
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="13" FontWeight="Bold" Foreground="#CA8A04" VerticalAlignment="Center" />
+                        </Grid>
+                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="7" CornerRadius="4" Foreground="#CA8A04" Background="{DynamicResource WinHoverBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Dropzone Box -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="10" Padding="20,26" IsVisible="{Binding !HasSelectedFiles}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                        <Border Width="52" Height="52" Background="#FEFCE8" BorderBrush="#FEF08A" BorderThickness="1" CornerRadius="14" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="FileImageOutline" Width="28" Height="28" Foreground="#CA8A04" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Spacing="3" HorizontalAlignment="Center">
+                            <TextBlock Text="Select PDF to Convert to Images" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
+                            <TextBlock Text="Export pages as high resolution JPG or PNG images" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Command="{Binding AddFilesCommand}" Background="#CA8A04" Foreground="White" CornerRadius="8" Padding="18,9" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
+                                <TextBlock Text="Select PDF Document" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Loaded Document -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" IsVisible="{Binding HasSelectedFiles}">
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="Document to Convert" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <Button Command="{Binding AddFilesCommand}" Background="#FEFCE8" Foreground="#CA8A04" BorderBrush="#FEF08A" BorderThickness="1" CornerRadius="6" Padding="10,5" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
+                                Change File
+                            </Button>
+                        </Grid>
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border Grid.Column="0" Width="32" Height="32" Background="#FEFCE8" CornerRadius="8" Margin="0,0,10,0">
+                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="#CA8A04" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                <Button Grid.Column="2" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Padding="6" Cursor="Hand">
+                                    <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" />
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Image export settings -->
+                <StackPanel Spacing="3">
+                    <TextBlock Text="Image Format &amp; DPI" FontSize="14" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="Choose the output format and resolution" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel Spacing="10">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Output Image Format" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <RadioButton Content="JPG" IsChecked="{Binding OutputFormat, Converter={StaticResource EqualityConverter}, ConverterParameter=jpg}" />
+                            <RadioButton Content="PNG (Lossless)" IsChecked="{Binding OutputFormat, Converter={StaticResource EqualityConverter}, ConverterParameter=png}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Resolution (DPI)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <NumericUpDown Value="{Binding Dpi}" Minimum="72" Maximum="600" Increment="50" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="4" IsVisible="{Binding OutputFormat, Converter={StaticResource EqualityConverter}, ConverterParameter=jpg}">
+                        <TextBlock Text="JPG Quality (0 - 100)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <NumericUpDown Value="{Binding JpgQuality}" Minimum="10" Maximum="100" />
+                    </StackPanel>
+
+                    <CheckBox Content="Export as Monochrome Grayscale" IsChecked="{Binding Grayscale}" FontSize="12" />
+                </StackPanel>
+
+            </StackPanel>
+        </shell:PdfToolWorkspaceView.OptionsContent>
+
+    </shell:PdfToolWorkspaceView>
+</UserControl>

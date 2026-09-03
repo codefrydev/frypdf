@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 using PdfEditorApp.ViewModels;
 using Xunit;

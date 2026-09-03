@@ -8,8 +8,9 @@ using SkiaSharp;
 using PdfEditorApp.Core.Deconstruction;
 using PdfEditorApp.Core.Deconstruction.Extractors;
 using PdfEditorApp.Core.Deconstruction.Utils;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 using PdfEditorApp.ViewModels.ElementViewModels;
 using Xunit;
 

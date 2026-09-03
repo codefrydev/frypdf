@@ -7,8 +7,9 @@ using System.Text;
 using System.Xml.Linq;
 using Avalonia;
 using Avalonia.Media;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 
 namespace PdfEditorApp.Services.Typography;
 

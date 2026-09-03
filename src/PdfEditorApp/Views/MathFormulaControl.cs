@@ -3,6 +3,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services.MathEngine;
 

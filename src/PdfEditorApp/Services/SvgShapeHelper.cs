@@ -1,8 +1,9 @@
 using System;
 using System.Globalization;
 using System.Text;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 
 namespace PdfEditorApp.Services;
 

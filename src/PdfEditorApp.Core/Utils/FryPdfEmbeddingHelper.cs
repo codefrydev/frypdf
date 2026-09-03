@@ -4,7 +4,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using PdfEditorApp.Models;
+using PdfEditorApp.Core.Models;
 
 namespace PdfEditorApp.Core.Utils;
 

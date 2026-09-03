@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using Avalonia.Media.Imaging;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 using QRCoder;
 

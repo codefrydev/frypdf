@@ -14,8 +14,9 @@ using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.VisualElements;
 using PdfEditorApp.Core.Analysis;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 using SkiaSharp;
 
 namespace PdfEditorApp.ViewModels.ElementViewModels;

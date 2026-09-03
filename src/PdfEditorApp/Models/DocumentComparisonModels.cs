@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PdfEditorApp.Core.Models;
 
 namespace PdfEditorApp.Models;
 

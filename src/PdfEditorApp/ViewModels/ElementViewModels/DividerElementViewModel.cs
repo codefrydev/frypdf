@@ -1,7 +1,8 @@
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
 
 namespace PdfEditorApp.ViewModels.ElementViewModels;

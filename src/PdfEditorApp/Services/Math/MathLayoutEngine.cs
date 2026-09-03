@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using PdfEditorApp.Models;
+using PdfEditorApp.Core.Models;
 
 namespace PdfEditorApp.Services.MathEngine;
 
@@ -132,7 +131,7 @@ public static class MathLayoutEngine
             var rootNode = parser.ParseExpression();
 
             // 2. Measure AST Nodes recursively
-            double baseFontSize = Math.Max(8, options.FontSize);
+            double baseFontSize = System.Math.Max(8, options.FontSize);
             var measureCtx = new LayoutContext(baseFontSize, options.TextColorHex, options.DisplayStyle);
             rootNode.Measure(measureCtx);
 
@@ -141,28 +140,28 @@ public static class MathLayoutEngine
             double contentAscent = rootNode.Ascent;
 
             // 3. Compute SVG Dimensions and Margins
-            double pad = Math.Max(0, options.Padding);
+            double pad = System.Math.Max(0, options.Padding);
             double eqNumWidth = 0;
             if (options.ShowEquationNumber && !string.IsNullOrWhiteSpace(options.EquationNumber))
             {
                 eqNumWidth = (options.EquationNumber.Length * baseFontSize * 0.55) + 20;
             }
 
-            double totalWidth = Math.Max(options.TargetWidth, contentWidth + (pad * 2) + eqNumWidth);
-            double totalHeight = Math.Max(options.TargetHeight, contentHeight + (pad * 2));
+            double totalWidth = System.Math.Max(options.TargetWidth, contentWidth + (pad * 2) + eqNumWidth);
+            double totalHeight = System.Math.Max(options.TargetHeight, contentHeight + (pad * 2));
 
             // Align content X inside bounding box
             double startX = pad;
             if (options.Alignment == TextAlignmentMode.Center)
             {
-                startX = pad + Math.Max(0, (totalWidth - (pad * 2) - eqNumWidth - contentWidth) / 2);
+                startX = pad + System.Math.Max(0, (totalWidth - (pad * 2) - eqNumWidth - contentWidth) / 2);
             }
             else if (options.Alignment == TextAlignmentMode.Right)
             {
                 startX = totalWidth - pad - eqNumWidth - contentWidth;
             }
 
-            double baselineY = pad + contentAscent + Math.Max(0, (totalHeight - (pad * 2) - contentHeight) / 2);
+            double baselineY = pad + contentAscent + System.Math.Max(0, (totalHeight - (pad * 2) - contentHeight) / 2);
 
             // 4. Generate SVG Output
             var svgBuilder = new StringBuilder();
@@ -215,8 +214,8 @@ public static class MathLayoutEngine
             result.IsSuccess = false;
             result.ErrorMessage = ex.Message;
             result.SvgXml = GenerateFallbackErrorSvg(formula, options, ex.Message);
-            result.Width = Math.Max(200, options.TargetWidth);
-            result.Height = Math.Max(40, options.TargetHeight);
+            result.Width = System.Math.Max(200, options.TargetWidth);
+            result.Height = System.Math.Max(40, options.TargetHeight);
         }
 
         return result;
@@ -230,8 +229,8 @@ public static class MathLayoutEngine
 
     private static string GenerateFallbackErrorSvg(string rawFormula, MathRenderOptions options, string error)
     {
-        double w = Math.Max(240, options.TargetWidth > 0 ? options.TargetWidth : 240);
-        double h = Math.Max(50, options.TargetHeight > 0 ? options.TargetHeight : 50);
+        double w = System.Math.Max(240, options.TargetWidth > 0 ? options.TargetWidth : 240);
+        double h = System.Math.Max(50, options.TargetHeight > 0 ? options.TargetHeight : 50);
 
         return $@"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 {w} {h}"" width=""{w}"" height=""{h}"">
   <rect width=""{w}"" height=""{h}"" rx=""4"" fill=""#FEF2F2"" stroke=""#F87171"" stroke-width=""1"" />
@@ -431,8 +430,8 @@ public static class MathLayoutEngine
             {
                 child.Measure(ctx);
                 Width += child.Width;
-                Ascent = Math.Max(Ascent, child.Ascent);
-                Descent = Math.Max(Descent, child.Descent);
+                Ascent = System.Math.Max(Ascent, child.Ascent);
+                Descent = System.Math.Max(Descent, child.Descent);
             }
 
             if (Children.Count == 0)
@@ -567,7 +566,7 @@ public static class MathLayoutEngine
             Numerator.Measure(subCtx);
             Denominator.Measure(subCtx);
 
-            double maxContentW = Math.Max(Numerator.Width, Denominator.Width);
+            double maxContentW = System.Math.Max(Numerator.Width, Denominator.Width);
             Width = maxContentW + (ctx.FontSize * 0.35); // Margin around fraction bar
 
             double barGap = ctx.FontSize * 0.22;
@@ -591,7 +590,7 @@ public static class MathLayoutEngine
             Numerator.Render(numX, numY, childCtx);
 
             // Draw Fraction Horizontal Bar Line
-            double barThickness = Math.Max(1.0, ctx.BaseFontSize * 0.07);
+            double barThickness = System.Math.Max(1.0, ctx.BaseFontSize * 0.07);
             string x1 = x.ToString("F1", CultureInfo.InvariantCulture);
             string y1 = barY.ToString("F1", CultureInfo.InvariantCulture);
             string x2 = (x + Width).ToString("F1", CultureInfo.InvariantCulture);
@@ -653,7 +652,7 @@ public static class MathLayoutEngine
             double radicandEndX = x + Width;
 
             // Draw Radical √ Symbol Path + Overbar
-            double lineThick = Math.Max(1.0, ctx.BaseFontSize * 0.065);
+            double lineThick = System.Math.Max(1.0, ctx.BaseFontSize * 0.065);
             double hookX = radX + (ctx.BaseFontSize * 0.12);
             double hookY = y - (ctx.BaseFontSize * 0.2);
             double cornerX = radX + (ctx.BaseFontSize * 0.28);
@@ -694,12 +693,12 @@ public static class MathLayoutEngine
             if (Superscript != null)
             {
                 Superscript.Measure(scriptCtx);
-                scriptWidth = Math.Max(scriptWidth, Superscript.Width);
+                scriptWidth = System.Math.Max(scriptWidth, Superscript.Width);
             }
             if (Subscript != null)
             {
                 Subscript.Measure(scriptCtx);
-                scriptWidth = Math.Max(scriptWidth, Subscript.Width);
+                scriptWidth = System.Math.Max(scriptWidth, Subscript.Width);
             }
 
             Width = BaseNode.Width + scriptWidth + (ctx.FontSize * 0.06);
@@ -707,8 +706,8 @@ public static class MathLayoutEngine
             double supAscent = Superscript != null ? (ctx.FontSize * 0.45) + Superscript.Ascent : 0;
             double subDescent = Subscript != null ? (ctx.FontSize * 0.35) + Subscript.Descent : 0;
 
-            Ascent = Math.Max(BaseNode.Ascent, supAscent);
-            Descent = Math.Max(BaseNode.Descent, subDescent);
+            Ascent = System.Math.Max(BaseNode.Ascent, supAscent);
+            Descent = System.Math.Max(BaseNode.Descent, subDescent);
             Height = Ascent + Descent;
         }
 
@@ -765,7 +764,7 @@ public static class MathLayoutEngine
             if (isIntegral || !IsDisplayMode)
             {
                 // Side limits
-                double limitsW = Math.Max(LowerLimit?.Width ?? 0, UpperLimit?.Width ?? 0);
+                double limitsW = System.Math.Max(LowerLimit?.Width ?? 0, UpperLimit?.Width ?? 0);
                 Width = opW + limitsW + (ctx.FontSize * 0.1);
                 Ascent = (ctx.FontSize * opScale * 0.8) + (UpperLimit != null ? UpperLimit.Height * 0.4 : 0);
                 Descent = (ctx.FontSize * opScale * 0.35) + (LowerLimit != null ? LowerLimit.Height * 0.4 : 0);
@@ -773,7 +772,7 @@ public static class MathLayoutEngine
             else
             {
                 // Top/bottom centered limits (Sum, Prod, Lim)
-                double maxW = Math.Max(opW, Math.Max(LowerLimit?.Width ?? 0, UpperLimit?.Width ?? 0));
+                double maxW = System.Math.Max(opW, System.Math.Max(LowerLimit?.Width ?? 0, UpperLimit?.Width ?? 0));
                 Width = maxW + (ctx.FontSize * 0.15);
                 Ascent = (ctx.FontSize * opScale * 0.75) + (UpperLimit?.Height ?? 0) + (ctx.FontSize * 0.12);
                 Descent = (ctx.FontSize * opScale * 0.3) + (LowerLimit?.Height ?? 0) + (ctx.FontSize * 0.12);
@@ -877,7 +876,7 @@ public static class MathLayoutEngine
         public override void Render(double x, double y, RenderContext ctx)
         {
             double curX = x;
-            double delimScale = Math.Max(1.0, Content.Height / (ctx.BaseFontSize * 1.1));
+            double delimScale = System.Math.Max(1.0, Content.Height / (ctx.BaseFontSize * 1.1));
 
             if (LeftDelim != "." && !string.IsNullOrEmpty(LeftDelim))
             {
@@ -943,7 +942,7 @@ public static class MathLayoutEngine
             int numCols = 0;
             foreach (var row in Rows)
             {
-                numCols = Math.Max(numCols, row.Count);
+                numCols = System.Math.Max(numCols, row.Count);
             }
 
             for (int c = 0; c < numCols; c++) _colWidths.Add(0);
@@ -956,16 +955,16 @@ public static class MathLayoutEngine
                 for (int c = 0; c < row.Count; c++)
                 {
                     row[c].Measure(ctx);
-                    _colWidths[c] = Math.Max(_colWidths[c], row[c].Width);
-                    rowAsc = Math.Max(rowAsc, row[c].Ascent);
-                    rowDesc = Math.Max(rowDesc, row[c].Descent);
+                    _colWidths[c] = System.Math.Max(_colWidths[c], row[c].Width);
+                    rowAsc = System.Math.Max(rowAsc, row[c].Ascent);
+                    rowDesc = System.Math.Max(rowDesc, row[c].Descent);
                 }
 
                 _rowAscents.Add(rowAsc);
                 _rowHeights.Add(rowAsc + rowDesc + (ctx.FontSize * 0.3));
             }
 
-            double totalW = _colWidths.Sum() + (Math.Max(0, numCols - 1) * ctx.FontSize * 0.5);
+            double totalW = _colWidths.Sum() + (System.Math.Max(0, numCols - 1) * ctx.FontSize * 0.5);
             double delimW = MatrixType switch
             {
                 "matrix" => 0,
@@ -998,7 +997,7 @@ public static class MathLayoutEngine
             }
             else if (MatrixType == "vmatrix")
             {
-                double lineThick = Math.Max(1.0, ctx.BaseFontSize * 0.08);
+                double lineThick = System.Math.Max(1.0, ctx.BaseFontSize * 0.08);
                 double y1 = (y - Ascent).ToString("F1", CultureInfo.InvariantCulture) == "0.0" ? 0 : y - Ascent;
                 double y2 = y + Descent;
                 ctx.Svg.AppendLine($"  <line x1=\"{x.ToString("F1", CultureInfo.InvariantCulture)}\" y1=\"{y1.ToString("F1", CultureInfo.InvariantCulture)}\" x2=\"{x.ToString("F1", CultureInfo.InvariantCulture)}\" y2=\"{y2.ToString("F1", CultureInfo.InvariantCulture)}\" stroke=\"{ctx.TextColorHex}\" stroke-width=\"{lineThick.ToString("F1", CultureInfo.InvariantCulture)}\" />");

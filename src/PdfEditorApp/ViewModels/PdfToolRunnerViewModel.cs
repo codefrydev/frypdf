@@ -1,3 +1,5 @@
+using PdfEditorApp.Services.Tools.Core;
+using PdfEditorApp.ViewModels.Tools.Core;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,6 +11,7 @@ using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 

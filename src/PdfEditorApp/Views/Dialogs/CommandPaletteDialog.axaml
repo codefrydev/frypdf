@@ -4,6 +4,7 @@
              xmlns:models="using:PdfEditorApp.Models"
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:models1="clr-namespace:PdfEditorApp.Core.Models;assembly=PdfEditorApp.Core"
              x:Class="PdfEditorApp.Views.Dialogs.CommandPaletteDialog"
              x:DataType="vm:MainViewModel">
 
@@ -68,7 +69,7 @@
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="360" Padding="6">
                     <ItemsControl ItemsSource="{Binding FilteredPaletteCommands}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="models:CommandPaletteItem">
+                            <DataTemplate DataType="models1:CommandPaletteItem">
                                 <Border Background="Transparent"
                                         BorderThickness="0"
                                         CornerRadius="8"

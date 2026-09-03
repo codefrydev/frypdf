@@ -1,3 +1,13 @@
+using PdfEditorApp.Services.Tools.Core;
+using PdfEditorApp.Services.Tools.Organize;
+using PdfEditorApp.Services.Tools.Security;
+using PdfEditorApp.Services.Tools.Conversion;
+using PdfEditorApp.Services.Tools.Intelligence;
+using PdfEditorApp.ViewModels.Tools.Core;
+using PdfEditorApp.Core.Data;
+using PdfEditorApp.ViewModels.DataStudio;
+using PdfEditorApp.ViewModels.BatchGeneration;
+using PdfEditorApp.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,7 +36,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly IRecentDocumentsService _recentService;
     private readonly IPageOrganizerService _pageOrganizerService;
     private readonly IPdfDocumentOperationsService _pdfOperationsService;
-    private readonly PdfEditorApp.Services.Tools.IPdfToolRegistry _toolRegistry;
+    private readonly IPdfToolRegistry _toolRegistry;
 
     public ISmartPlacementService SmartPlacement => _placementService;
     public IPageOrganizerService PageOrganizer => _pageOrganizerService;
@@ -35,9 +45,9 @@ public partial class MainViewModel : ViewModelBase
     // PDF Tool Studio Subsystems
     public PdfToolRunnerViewModel ToolRunner { get; }
     public WorkflowBuilderViewModel WorkflowBuilder { get; }
-    public PdfViewerViewModel PdfViewer { get; } = new();
-    public PdfEditorApp.ViewModels.DataStudio.DataStudioViewModel DataStudio { get; }
-    public PdfEditorApp.ViewModels.BatchGeneration.BatchGenerationViewModel BatchGeneration { get; }
+    public PdfViewerViewModel PdfViewer { get; }
+    public DataStudioViewModel DataStudio { get; }
+    public BatchGenerationViewModel BatchGeneration { get; }
 
     // --- HOME / EDITOR / VIEWER VIEW-SWITCHING ---
 
@@ -427,7 +437,7 @@ public partial class MainViewModel : ViewModelBase
     public ObservableCollection<CommentItem> CommentItems { get; } = new();
 
     // Child Subsystems
-    public InspectorViewModel Inspector { get; } = new();
+    public InspectorViewModel Inspector { get; }
     public UndoRedoService UndoRedo { get; } = new();
     public static IStorageProvider? StorageProvider { get; set; }
 
@@ -466,8 +476,21 @@ public partial class MainViewModel : ViewModelBase
         IRecentDocumentsService? recentService = null,
         IPageOrganizerService? pageOrganizerService = null,
         IPdfDocumentOperationsService? pdfOperationsService = null,
-        PdfEditorApp.Services.Tools.IPdfToolRegistry? toolRegistry = null,
-        IThemeService? themeService = null)
+        IPdfToolRegistry? toolRegistry = null,
+        IThemeService? themeService = null,
+        IPdfToolViewModelFactory? toolViewModelFactory = null,
+        IPdfWorkflowEngine? workflowEngine = null,
+        IDataSourceService? dataSourceService = null,
+        IDataBindingService? dataBindingService = null,
+        IDataMergeEngine? dataMergeEngine = null,
+        IBatchPdfGenerator? batchPdfGenerator = null,
+        PdfToolRunnerViewModel? toolRunner = null,
+        WorkflowBuilderViewModel? workflowBuilder = null,
+        DataStudioViewModel? dataStudio = null,
+        BatchGenerationViewModel? batchGeneration = null,
+        HomeViewModel? homeViewModel = null,
+        PdfViewerViewModel? pdfViewer = null,
+        InspectorViewModel? inspector = null)
     {
         _exportService = exportService;
         _templateService = templateService;
@@ -478,8 +501,7 @@ public partial class MainViewModel : ViewModelBase
         _recentService = recentService ?? new RecentDocumentsService();
         _pageOrganizerService = pageOrganizerService ?? new PageOrganizerService();
         _themeService = themeService;
-
-        _toolRegistry = toolRegistry ?? new PdfEditorApp.Services.Tools.PdfToolRegistry();
+        _toolRegistry = toolRegistry ?? new PdfToolRegistry();
 
         if (_themeService != null)
         {
@@ -491,38 +513,37 @@ public partial class MainViewModel : ViewModelBase
             };
         }
 
-        var pageService = new PdfEditorApp.Services.Tools.PdfPageService();
-        var optService = new PdfEditorApp.Services.Tools.PdfOptimizationService();
-        var secService = new PdfEditorApp.Services.Tools.PdfSecurityService();
-        var convService = new PdfEditorApp.Services.Tools.PdfConversionService();
-        var ocrService = new PdfEditorApp.Services.Tools.PdfOcrService();
-        var formService = new PdfEditorApp.Services.Tools.PdfFormService();
-        var aiService = new PdfEditorApp.Services.Tools.AiDocumentService();
-        var transService = new PdfEditorApp.Services.Tools.DocumentTranslationService();
-        var workflowEngine = new PdfEditorApp.Services.Tools.PdfWorkflowEngine(pageService, optService, secService, convService, ocrService);
-
+        var effectiveWorkflowEngine = workflowEngine ?? (pdfOperationsService?.WorkflowEngine) ?? new PdfWorkflowEngine();
         _pdfOperationsService = pdfOperationsService ?? new PdfDocumentOperationsService(
-            _toolRegistry, pageService, optService, secService, convService, ocrService, formService, aiService, transService, workflowEngine);
+            _toolRegistry,
+            new PdfPageService(),
+            new PdfOptimizationService(),
+            new PdfSecurityService(),
+            new PdfConversionService(),
+            new PdfOcrService(),
+            new PdfFormService(),
+            new AiDocumentService(),
+            new DocumentTranslationService(),
+            effectiveWorkflowEngine);
 
-        var toolViewModelFactory = new PdfEditorApp.Services.Tools.PdfToolViewModelFactory(_pdfOperationsService, _toolRegistry);
+        var effectiveToolFactory = toolViewModelFactory ?? new PdfToolViewModelFactory(_pdfOperationsService, _toolRegistry);
 
-        ToolRunner = new PdfToolRunnerViewModel(_pdfOperationsService);
+        ToolRunner = toolRunner ?? new PdfToolRunnerViewModel(_pdfOperationsService);
         ToolRunner.OpenInEditorRequested += (path) => OpenEditorWithFile(path);
         ToolRunner.OpenInViewerRequested += (path) => OpenInViewer(path);
-        WorkflowBuilder = new WorkflowBuilderViewModel(workflowEngine, _toolRegistry);
 
-        var dataSourceService = new PdfEditorApp.Core.Data.DataSourceService();
-        var dataBindingService = new PdfEditorApp.Core.Data.DataBindingService();
-        var mergeEngine = new PdfEditorApp.Core.Data.DataMergeEngine();
-        var batchGenerator = new PdfEditorApp.Services.BatchPdfGeneratorService(mergeEngine, _exportService);
+        WorkflowBuilder = workflowBuilder ?? new WorkflowBuilderViewModel(effectiveWorkflowEngine, _toolRegistry);
 
-        DataStudio = new PdfEditorApp.ViewModels.DataStudio.DataStudioViewModel(dataSourceService, dataBindingService)
-        {
-            UndoRedo = UndoRedo
-        };
+        var effectiveDataSource = dataSourceService ?? new DataSourceService();
+        var effectiveDataBinding = dataBindingService ?? new DataBindingService();
+        var effectiveMerge = dataMergeEngine ?? new DataMergeEngine();
+        var effectiveBatch = batchPdfGenerator ?? new BatchPdfGeneratorService(effectiveMerge, _exportService);
+
+        DataStudio = dataStudio ?? new DataStudioViewModel(effectiveDataSource, effectiveDataBinding);
+        DataStudio.UndoRedo = UndoRedo;
         DataStudio.OnElementCreated += (el, desc) => AddElementWithUndo(el, desc);
 
-        BatchGeneration = new PdfEditorApp.ViewModels.BatchGeneration.BatchGenerationViewModel(dataSourceService, mergeEngine, batchGenerator, _templateService);
+        BatchGeneration = batchGeneration ?? new BatchGenerationViewModel(effectiveDataSource, effectiveMerge, effectiveBatch, _templateService);
         DataStudio.OpenBatchMergeRequested += (matrix) =>
         {
             BatchGeneration.StorageProvider = StorageProvider;
@@ -530,11 +551,11 @@ public partial class MainViewModel : ViewModelBase
             BatchGeneration.OpenWithDocument(doc, matrix);
         };
 
-        // Connect undo/redo service & DataStudio to inspector
+        Inspector = inspector ?? new InspectorViewModel();
         Inspector.UndoRedo = UndoRedo;
         Inspector.DataStudio = DataStudio;
 
-        // Wire PDF Viewer subsystem
+        PdfViewer = pdfViewer ?? new PdfViewerViewModel();
         PdfViewer.EditInStudioRequested += (path) => OpenEditorWithFile(path);
         PdfViewer.BackToHomeRequested += NavigateToHome;
         PdfViewer.RunToolRequested += (toolId, path) => OpenToolWithInitialFile(toolId, path);
@@ -548,7 +569,7 @@ public partial class MainViewModel : ViewModelBase
         }
 
         // Set up Home page and wire its navigation events
-        Home = new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, toolViewModelFactory, _themeService);
+        Home = homeViewModel ?? new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, effectiveToolFactory, _themeService);
         Home.OpenTemplateRequested += OpenEditorWithTemplate;
         Home.OpenFileRequested += () => _ = OpenProjectAndEnterEditorAsync();
         Home.OpenRecentRequested += OpenEditorWithFile;

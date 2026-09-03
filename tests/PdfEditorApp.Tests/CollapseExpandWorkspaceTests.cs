@@ -1,4 +1,5 @@
 using System.Linq;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 using PdfEditorApp.ViewModels;
 using Xunit;

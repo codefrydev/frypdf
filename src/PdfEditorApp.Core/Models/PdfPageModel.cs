@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Core.Models.Elements;
 
-namespace PdfEditorApp.Models;
+namespace PdfEditorApp.Core.Models;
 
 public class PdfPageModel
 {

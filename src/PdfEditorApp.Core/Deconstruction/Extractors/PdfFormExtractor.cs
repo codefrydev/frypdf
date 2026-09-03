@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.AcroForms;
 using UglyToad.PdfPig.AcroForms.Fields;
-using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 
 namespace PdfEditorApp.Core.Deconstruction.Extractors;
 

@@ -3,6 +3,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 
 namespace PdfEditorApp.Converters;

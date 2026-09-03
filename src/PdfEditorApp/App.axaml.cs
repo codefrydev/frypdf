@@ -1,3 +1,13 @@
+using PdfEditorApp.Services.Tools.Core;
+using PdfEditorApp.Services.Tools.Organize;
+using PdfEditorApp.Services.Tools.Security;
+using PdfEditorApp.Services.Tools.Conversion;
+using PdfEditorApp.Services.Tools.Intelligence;
+using PdfEditorApp.ViewModels.Tools.Core;
+using PdfEditorApp.ViewModels.Tools.Organize;
+using PdfEditorApp.ViewModels.Tools.Security;
+using PdfEditorApp.ViewModels.Tools.Conversion;
+using PdfEditorApp.ViewModels.Tools.Intelligence;
 using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -67,18 +77,23 @@ public partial class App : Application
         services.AddTransient<IUndoRedoService, UndoRedoService>();
 
         // PDF Tools Platform Services
-        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfToolRegistry, PdfEditorApp.Services.Tools.PdfToolRegistry>();
-        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfPageService, PdfEditorApp.Services.Tools.PdfPageService>();
-        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfOptimizationService, PdfEditorApp.Services.Tools.PdfOptimizationService>();
-        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfSecurityService, PdfEditorApp.Services.Tools.PdfSecurityService>();
-        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfConversionService, PdfEditorApp.Services.Tools.PdfConversionService>();
-        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfOcrService, PdfEditorApp.Services.Tools.PdfOcrService>();
-        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfFormService, PdfEditorApp.Services.Tools.PdfFormService>();
-        services.AddSingleton<PdfEditorApp.Services.Tools.IAiDocumentService, PdfEditorApp.Services.Tools.AiDocumentService>();
-        services.AddSingleton<PdfEditorApp.Services.Tools.IDocumentTranslationService, PdfEditorApp.Services.Tools.DocumentTranslationService>();
-        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfWorkflowEngine, PdfEditorApp.Services.Tools.PdfWorkflowEngine>();
+        services.AddSingleton<IQuestPdfOperationsEngine, QuestPdfOperationsEngine>();
+        services.AddSingleton<IPdfToolRegistry, PdfToolRegistry>();
+        services.AddSingleton<IPdfPageService, PdfPageService>();
+        services.AddSingleton<IPdfOptimizationService, PdfOptimizationService>();
+        services.AddSingleton<IPdfSecurityService, PdfSecurityService>();
+        services.AddSingleton<IPdfConversionService, PdfConversionService>();
+        services.AddSingleton<IPdfOcrService, PdfOcrService>();
+        services.AddSingleton<IPdfFormService, PdfFormService>();
+        services.AddSingleton<IAiDocumentService, AiDocumentService>();
+        services.AddSingleton<IDocumentTranslationService, DocumentTranslationService>();
+        services.AddSingleton<IPdfWorkflowEngine, PdfWorkflowEngine>();
         services.AddSingleton<IPdfDocumentOperationsService, PdfDocumentOperationsService>();
-        services.AddSingleton<PdfEditorApp.Services.Tools.IPdfToolViewModelFactory, PdfEditorApp.Services.Tools.PdfToolViewModelFactory>();
+        services.AddSingleton<IPdfToolViewModelFactory>(sp =>
+            new PdfToolViewModelFactory(
+                sp.GetRequiredService<IPdfDocumentOperationsService>(),
+                sp.GetRequiredService<IPdfToolRegistry>(),
+                sp));
 
         services.AddSingleton<PdfEditorApp.Core.Data.IDataSourceService, PdfEditorApp.Core.Data.DataSourceService>();
         services.AddSingleton<PdfEditorApp.Core.Data.IDataBindingService, PdfEditorApp.Core.Data.DataBindingService>();
@@ -89,9 +104,46 @@ public partial class App : Application
         services.AddTransient<PdfEditorApp.ViewModels.DataStudio.DataStudioViewModel>();
         services.AddTransient<PdfEditorApp.ViewModels.BatchGeneration.BatchGenerationViewModel>();
         services.AddTransient<InspectorViewModel>();
+        services.AddTransient<PdfViewerViewModel>();
         services.AddTransient<PdfToolRunnerViewModel>();
         services.AddTransient<WorkflowBuilderViewModel>();
         services.AddTransient<HomeViewModel>();
         services.AddTransient<MainViewModel>();
+
+        // Individual Tool ViewModels (resolvable directly or via IPdfToolViewModelFactory)
+        services.AddTransient<MergePdfToolViewModel>();
+        services.AddTransient<SplitPdfToolViewModel>();
+        services.AddTransient<RotatePdfToolViewModel>();
+        services.AddTransient<OrganizePdfToolViewModel>();
+        services.AddTransient<CropPdfToolViewModel>();
+        services.AddTransient<PageNumbersToolViewModel>();
+
+        services.AddTransient<CompressPdfToolViewModel>();
+        services.AddTransient<RepairPdfToolViewModel>();
+        services.AddTransient<ProtectPdfToolViewModel>();
+        services.AddTransient<UnlockPdfToolViewModel>();
+        services.AddTransient<SignPdfToolViewModel>();
+        services.AddTransient<RedactPdfToolViewModel>();
+        services.AddTransient<WatermarkToolViewModel>();
+
+        services.AddTransient<PdfToWordToolViewModel>();
+        services.AddTransient<WordToPdfToolViewModel>();
+        services.AddTransient<PdfToExcelToolViewModel>();
+        services.AddTransient<ExcelToPdfToolViewModel>();
+        services.AddTransient<PdfToPowerPointToolViewModel>();
+        services.AddTransient<PowerPointToPdfToolViewModel>();
+        services.AddTransient<PdfToJpgToolViewModel>();
+        services.AddTransient<JpgToPdfToolViewModel>();
+        services.AddTransient<HtmlToPdfToolViewModel>();
+        services.AddTransient<ScanToPdfToolViewModel>();
+        services.AddTransient<PdfToMarkdownToolViewModel>();
+        services.AddTransient<PdfToPdfAToolViewModel>();
+
+        services.AddTransient<OcrPdfToolViewModel>();
+        services.AddTransient<ComparePdfToolViewModel>();
+        services.AddTransient<EditPdfToolViewModel>();
+        services.AddTransient<PdfFormsToolViewModel>();
+        services.AddTransient<AiSummarizerToolViewModel>();
+        services.AddTransient<TranslatePdfToolViewModel>();
     }
 }

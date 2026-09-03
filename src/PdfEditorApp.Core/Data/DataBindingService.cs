@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using PdfEditorApp.Core.Analysis;
-using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 
 namespace PdfEditorApp.Core.Data;
 

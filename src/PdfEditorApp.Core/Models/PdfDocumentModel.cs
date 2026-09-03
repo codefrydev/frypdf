@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace PdfEditorApp.Models;
+namespace PdfEditorApp.Core.Models;
 
 public class PdfDocumentModel
 {

@@ -1,0 +1,149 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels.Tools.Conversion"
+             xmlns:models="using:PdfEditorApp.Models"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:shell="using:PdfEditorApp.Views.Shell"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Tools.Conversion.PdfToPdfAToolView"
+             x:DataType="vm:PdfToPdfAToolViewModel">
+
+    <UserControl.Resources>
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+    </UserControl.Resources>
+
+    <shell:PdfToolWorkspaceView>
+
+        <!-- Toolbar primary action -->
+        <shell:PdfToolWorkspaceView.ToolbarActionContent>
+            <Button Command="{Binding ExecuteToolCommand}" IsEnabled="{Binding !IsRunning}" Background="#0284C7" Foreground="White" CornerRadius="8" Padding="16,8" FontWeight="Bold" FontSize="12.5" Cursor="Hand">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <materialIcons:MaterialIcon Kind="FileCheckOutline" Width="15" Height="15" />
+                    <TextBlock Text="Convert to PDF/A" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </shell:PdfToolWorkspaceView.ToolbarActionContent>
+
+        <!-- Sidebar Options tab: status, document selection, and PDF/A standard settings.
+             File selection/reorder itself lives in the shared Files tab (reuses
+             AddFilesCommand/MoveFileUpCommand/MoveFileDownCommand/RemoveFileCommand already on the base class). -->
+        <shell:PdfToolWorkspaceView.OptionsContent>
+            <StackPanel Spacing="16">
+
+                <!-- Error Alert Banner -->
+                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="10" Padding="14,10" IsVisible="{Binding HasError}">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="20" Height="20" Foreground="#DC2626" Margin="0,0,10,0" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="PDF/A Conversion Failed" FontSize="12.5" FontWeight="Bold" Foreground="#991B1B" />
+                            <TextBlock Text="{Binding ErrorMessage}" FontSize="11.5" Foreground="#B91C1C" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Success Banner -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="#86EFAC" BorderThickness="1.5" CornerRadius="12" Padding="16" BoxShadow="0 6 18 #1216A34A" IsVisible="{Binding IsComplete}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <Border Width="34" Height="34" Background="#DCFCE7" CornerRadius="9">
+                                <materialIcons:MaterialIcon Kind="CheckCircle" Width="20" Height="20" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Spacing="2" VerticalAlignment="Center">
+                                <TextBlock Text="PDF/A Conformance Created!" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="12,8" FontSize="12" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="14" Height="14" />
+                                    <TextBlock Text="Open PDF/A File" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#DCFCE7" Foreground="#166534" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="8" Padding="12,8" FontSize="12" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="14" Height="14" />
+                                    <TextBlock Text="Show in Folder" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Processing Card -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" IsVisible="{Binding IsRunning}">
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="13" FontWeight="Bold" Foreground="#0284C7" VerticalAlignment="Center" />
+                        </Grid>
+                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="7" CornerRadius="4" Foreground="#0284C7" Background="{DynamicResource WinHoverBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Dropzone -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="10" Padding="20,26" IsVisible="{Binding !HasSelectedFiles}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                        <Border Width="52" Height="52" Background="#F0F9FF" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="14" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="FileCheckOutline" Width="28" Height="28" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Spacing="3" HorizontalAlignment="Center">
+                            <TextBlock Text="Select PDF to Convert to PDF/A" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                            <TextBlock Text="Ensure ISO standardized long-term archiving compliance for legal and government records" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Command="{Binding AddFilesCommand}" Background="#0284C7" Foreground="White" CornerRadius="8" Padding="18,9" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
+                                <TextBlock Text="Select PDF Document" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Selected document(s) -->
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" IsVisible="{Binding HasSelectedFiles}">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="Document for PDF/A" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Command="{Binding ClearFilesCommand}" Background="Transparent" BorderThickness="0" Foreground="#EF4444" FontSize="11" Cursor="Hand">
+                                Change
+                            </Button>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding SelectedFilePreviewItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="models:PdfFilePreviewItem">
+                                    <StackPanel Spacing="4" Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding FileName}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" />
+                                        <WrapPanel Orientation="Horizontal">
+                                            <Border Background="#F0F9FF" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                                                <TextBlock Text="{Binding PageCountText}" FontSize="10.5" FontWeight="SemiBold" Foreground="#0284C7" />
+                                            </Border>
+                                            <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="4" Padding="6,2">
+                                                <TextBlock Text="{Binding FileSizeFormatted}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                            </Border>
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- PDF/A standard settings -->
+                <StackPanel Spacing="3">
+                    <TextBlock Text="PDF/A Archival Standard" FontSize="14" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="Choose the conformance level for long-term archiving" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel Spacing="8">
+                    <RadioButton Content="PDF/A-2b (Recommended for general archiving)" IsChecked="{Binding Standard, Converter={StaticResource EqualityConverter}, ConverterParameter=PdfA2b}" FontSize="12" />
+                    <RadioButton Content="PDF/A-1b (Basic legacy conformance)" IsChecked="{Binding Standard, Converter={StaticResource EqualityConverter}, ConverterParameter=PdfA1b}" FontSize="12" />
+                    <RadioButton Content="PDF/A-3b (Allows embedded attachments)" IsChecked="{Binding Standard, Converter={StaticResource EqualityConverter}, ConverterParameter=PdfA3b}" FontSize="12" />
+                </StackPanel>
+
+            </StackPanel>
+        </shell:PdfToolWorkspaceView.OptionsContent>
+
+    </shell:PdfToolWorkspaceView>
+</UserControl>

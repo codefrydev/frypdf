@@ -6,6 +6,7 @@
              xmlns:models="using:PdfEditorApp.Models"
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:models1="clr-namespace:PdfEditorApp.Core.Models;assembly=PdfEditorApp.Core"
              x:Class="PdfEditorApp.Views.ThumbnailSidebarView"
              x:DataType="vm:MainViewModel">
 
@@ -62,7 +63,7 @@
                             <Button Classes="mini-tool-btn" Width="30" Height="30"
                                     Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}"
                                     Command="{Binding SelectSidebarTabCommand}"
-                                    CommandParameter="{x:Static models:SidebarTabKind.Thumbnails}"
+                                    CommandParameter="{x:Static models1:SidebarTabKind.Thumbnails}"
                                     ToolTip.Tip="Page Thumbnails">
                                 <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                             </Button>
@@ -70,7 +71,7 @@
                             <Button Classes="mini-tool-btn" Width="30" Height="30"
                                     Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Outline}"
                                     Command="{Binding SelectSidebarTabCommand}"
-                                    CommandParameter="{x:Static models:SidebarTabKind.Outline}"
+                                    CommandParameter="{x:Static models1:SidebarTabKind.Outline}"
                                     ToolTip.Tip="Document Outline &amp; Bookmarks">
                                 <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                             </Button>
@@ -78,7 +79,7 @@
                             <Button Classes="mini-tool-btn" Width="30" Height="30"
                                     Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Comments}"
                                     Command="{Binding SelectSidebarTabCommand}"
-                                    CommandParameter="{x:Static models:SidebarTabKind.Comments}"
+                                    CommandParameter="{x:Static models1:SidebarTabKind.Comments}"
                                     ToolTip.Tip="Comments &amp; Review Annotations">
                                 <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                             </Button>
@@ -420,7 +421,7 @@
                         <TextBlock Text="DOCUMENT OUTLINE" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="2,0,0,6" LetterSpacing="0.5" />
                         <ItemsControl ItemsSource="{Binding OutlineItems}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="models:OutlineItem">
+                                <DataTemplate DataType="models1:OutlineItem">
                                     <Button Background="Transparent"
                                             BorderThickness="0"
                                             Padding="6,4"
@@ -446,7 +447,7 @@
                         <TextBlock Text="COMMENTS &amp; ANNOTATIONS" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="2,0,0,6" LetterSpacing="0.5" />
                         <ItemsControl ItemsSource="{Binding CommentItems}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="models:CommentItem">
+                                <DataTemplate DataType="models1:CommentItem">
                                     <Button Background="{DynamicResource WinPanelBrush}"
                                             BorderBrush="{DynamicResource WinBorderBrush}"
                                             BorderThickness="1"
@@ -525,7 +526,7 @@
                 <Button Classes="mini-tool-btn" Width="30" Height="30"
                         Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}"
                         Command="{Binding SelectSidebarTabCommand}"
-                        CommandParameter="{x:Static models:SidebarTabKind.Thumbnails}"
+                        CommandParameter="{x:Static models1:SidebarTabKind.Thumbnails}"
                         ToolTip.Tip="Open Page Thumbnails (⌘B)">
                     <materialIcons:MaterialIcon Kind="FileDocumentMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                 </Button>
@@ -533,7 +534,7 @@
                 <Button Classes="mini-tool-btn" Width="30" Height="30"
                         Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Outline}"
                         Command="{Binding SelectSidebarTabCommand}"
-                        CommandParameter="{x:Static models:SidebarTabKind.Outline}"
+                        CommandParameter="{x:Static models1:SidebarTabKind.Outline}"
                         ToolTip.Tip="Open Document Outline &amp; Bookmarks">
                     <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                 </Button>
@@ -541,7 +542,7 @@
                 <Button Classes="mini-tool-btn" Width="30" Height="30"
                         Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Comments}"
                         Command="{Binding SelectSidebarTabCommand}"
-                        CommandParameter="{x:Static models:SidebarTabKind.Comments}"
+                        CommandParameter="{x:Static models1:SidebarTabKind.Comments}"
                         ToolTip.Tip="Open Comments &amp; Review Annotations">
                     <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                 </Button>

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using PdfEditorApp.Models;
+using PdfEditorApp.Core.Models;
 
 namespace PdfEditorApp.Services.MathEngine;
 

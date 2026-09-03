@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PdfEditorApp.Core.Data;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 
 namespace PdfEditorApp.Services;

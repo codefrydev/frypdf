@@ -1,9 +1,8 @@
-using System.Collections.Generic;
-using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Services;
 
-namespace PdfEditorApp.Templates;
+namespace PdfEditorApp.Templates.Events;
 
 /// <summary>
 /// Luxury Royal Botanical Floral Wedding Invitation with gold leaf wreath, cursive script, and RSVP block.

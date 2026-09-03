@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using PdfEditorApp.Core.Data;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 using Xunit;
 
 namespace PdfEditorApp.Tests;

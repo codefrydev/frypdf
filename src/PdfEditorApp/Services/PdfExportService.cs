@@ -8,9 +8,10 @@ using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using QRCoder;
 using PdfEditorApp.Core.Analysis;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Core.Utils;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services.MathEngine;
 using PdfEditorApp.Services.Typography;
 

@@ -1,3 +1,13 @@
+using PdfEditorApp.Services.Tools.Core;
+using PdfEditorApp.Services.Tools.Organize;
+using PdfEditorApp.Services.Tools.Security;
+using PdfEditorApp.Services.Tools.Conversion;
+using PdfEditorApp.Services.Tools.Intelligence;
+using PdfEditorApp.ViewModels.Tools.Core;
+using PdfEditorApp.ViewModels.Tools.Organize;
+using PdfEditorApp.ViewModels.Tools.Security;
+using PdfEditorApp.ViewModels.Tools.Conversion;
+using PdfEditorApp.ViewModels.Tools.Intelligence;
 using System;
 using System.IO;
 using System.Linq;
@@ -11,6 +21,7 @@ using Xunit.Abstractions;
 
 namespace PdfEditorApp.Tests;
 
+[Collection("OcrTests")]
 public class OcrEngineTests
 {
     private readonly ITestOutputHelper _output;
@@ -139,7 +150,7 @@ public class OcrEngineTests
 
         try
         {
-            var ocrService = new PdfEditorApp.Services.Tools.PdfOcrService();
+            var ocrService = new PdfOcrService();
             var options = new Models.OcrToolOptions
             {
                 InputFilePath = pdfPath,
@@ -177,7 +188,7 @@ public class OcrEngineTests
 
         try
         {
-            var ocrService = new PdfEditorApp.Services.Tools.PdfOcrService();
+            var ocrService = new PdfOcrService();
             var options = new Models.OcrToolOptions
             {
                 InputFilePath = pdfPath,
@@ -212,9 +223,9 @@ public class OcrEngineTests
         if (pdfPath == null || !File.Exists(pdfPath)) return;
 
         var ops = new PdfEditorApp.Services.PdfDocumentOperationsService();
-        var toolDef = new PdfEditorApp.Services.Tools.PdfToolRegistry().GetTool(Models.PdfToolId.OcrPdf)!;
+        var toolDef = new PdfToolRegistry().GetTool(Models.PdfToolId.OcrPdf)!;
 
-        var vm = new PdfEditorApp.ViewModels.Tools.OcrPdfToolViewModel(ops, toolDef);
+        var vm = new OcrPdfToolViewModel(ops, toolDef);
         Assert.True(vm.IsSideBySideVisible, "Side-by-side panel should be visible by default");
         Assert.True(vm.GenerateTextFile, "GenerateTextFile should be enabled by default");
 
@@ -269,8 +280,8 @@ public class OcrEngineTests
     public async Task OcrPdfToolViewModel_PreviewTextFile_SwitchesPreviewToTextDocument()
     {
         var ops = new PdfEditorApp.Services.PdfDocumentOperationsService();
-        var toolDef = new PdfEditorApp.Services.Tools.PdfToolRegistry().GetTool(Models.PdfToolId.OcrPdf)!;
-        var vm = new PdfEditorApp.ViewModels.Tools.OcrPdfToolViewModel(ops, toolDef);
+        var toolDef = new PdfToolRegistry().GetTool(Models.PdfToolId.OcrPdf)!;
+        var vm = new OcrPdfToolViewModel(ops, toolDef);
 
         string tempTxt = Path.Combine(Path.GetTempPath(), $"Ocr_Preview_Test_{Guid.NewGuid():N}.txt");
         try

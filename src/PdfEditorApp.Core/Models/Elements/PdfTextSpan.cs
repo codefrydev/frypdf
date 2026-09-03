@@ -1,6 +1,4 @@
-using System;
-
-namespace PdfEditorApp.Models.Elements;
+namespace PdfEditorApp.Core.Models.Elements;
 
 /// <summary>
 /// Specifies the vertical script alignment for inline rich text (e.g. chemical formulas H₂O, exponents x²).

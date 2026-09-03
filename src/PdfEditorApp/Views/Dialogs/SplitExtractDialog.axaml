@@ -4,6 +4,7 @@
              xmlns:models="using:PdfEditorApp.Models"
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:models1="clr-namespace:PdfEditorApp.Core.Models;assembly=PdfEditorApp.Core"
              x:Class="PdfEditorApp.Views.Dialogs.SplitExtractDialog"
              x:DataType="vm:MainViewModel">
 
@@ -51,17 +52,17 @@
                     <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
                         <Button Grid.Column="0" Classes="secondary-btn" Height="32"
                                 Classes.active="{Binding SplitExtractMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SplitEveryNPages}"
-                                Command="{Binding SetSplitExtractModeCommand}" CommandParameter="{x:Static models:SplitExtractMode.SplitEveryNPages}">
+                                Command="{Binding SetSplitExtractModeCommand}" CommandParameter="{x:Static models1:SplitExtractMode.SplitEveryNPages}">
                             <TextBlock Text="Split Every N Pages" FontSize="11" />
                         </Button>
                         <Button Grid.Column="1" Classes="secondary-btn" Height="32"
                                 Classes.active="{Binding SplitExtractMode, Converter={StaticResource EqualityConverter}, ConverterParameter=SplitByPageRanges}"
-                                Command="{Binding SetSplitExtractModeCommand}" CommandParameter="{x:Static models:SplitExtractMode.SplitByPageRanges}">
+                                Command="{Binding SetSplitExtractModeCommand}" CommandParameter="{x:Static models1:SplitExtractMode.SplitByPageRanges}">
                             <TextBlock Text="Split by Ranges" FontSize="11" />
                         </Button>
                         <Button Grid.Column="2" Classes="secondary-btn" Height="32"
                                 Classes.active="{Binding SplitExtractMode, Converter={StaticResource EqualityConverter}, ConverterParameter=ExtractSelectedPages}"
-                                Command="{Binding SetSplitExtractModeCommand}" CommandParameter="{x:Static models:SplitExtractMode.ExtractSelectedPages}">
+                                Command="{Binding SetSplitExtractModeCommand}" CommandParameter="{x:Static models1:SplitExtractMode.ExtractSelectedPages}">
                             <TextBlock Text="Extract Current Page" FontSize="11" />
                         </Button>
                     </Grid>

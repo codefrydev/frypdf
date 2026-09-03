@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 
 namespace PdfEditorApp.Views;

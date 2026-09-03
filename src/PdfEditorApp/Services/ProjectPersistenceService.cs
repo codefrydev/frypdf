@@ -5,8 +5,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 
 namespace PdfEditorApp.Services;
 

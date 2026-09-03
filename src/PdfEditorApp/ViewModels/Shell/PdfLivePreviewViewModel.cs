@@ -8,7 +8,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Models;
-using PdfEditorApp.Services.Tools;
+using PdfEditorApp.Services.Tools.Core;
 
 namespace PdfEditorApp.ViewModels.Shell;
 

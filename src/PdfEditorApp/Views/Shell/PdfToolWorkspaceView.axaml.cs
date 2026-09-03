@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using PdfEditorApp.Models;
-using PdfEditorApp.ViewModels.Tools;
+using PdfEditorApp.ViewModels.Tools.Core;
 
 namespace PdfEditorApp.Views.Shell;
 

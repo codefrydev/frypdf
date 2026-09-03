@@ -5,8 +5,9 @@ using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
 using PdfEditorApp.Core.Data;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
 using Xunit;
 

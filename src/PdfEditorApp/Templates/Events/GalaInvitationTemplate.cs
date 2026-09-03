@@ -1,9 +1,8 @@
-using System.Collections.Generic;
-using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Services;
 
-namespace PdfEditorApp.Templates;
+namespace PdfEditorApp.Templates.Events;
 
 /// <summary>
 /// High-end Corporate Gala &amp; Charity Award Night Invitation with Gold Art Deco styling.

@@ -1,9 +1,8 @@
-using System.Collections.Generic;
-using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Services;
 
-namespace PdfEditorApp.Templates;
+namespace PdfEditorApp.Templates.Events;
 
 /// <summary>
 /// Authentic Traditional Indian Wedding Invitation Card template featuring Marigold Torans,

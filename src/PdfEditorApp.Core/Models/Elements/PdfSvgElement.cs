@@ -1,4 +1,4 @@
-namespace PdfEditorApp.Models.Elements;
+namespace PdfEditorApp.Core.Models.Elements;
 
 /// <summary>
 /// Native vector SVG element for logos, icons, ceremonial crests, garlands, and complex illustrations.

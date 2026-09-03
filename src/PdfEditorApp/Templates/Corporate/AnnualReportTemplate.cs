@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 
-namespace PdfEditorApp.Templates;
+namespace PdfEditorApp.Templates.Corporate;
 
 public class AnnualReportTemplate : ITemplateDefinition
 {

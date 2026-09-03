@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
-using PdfEditorApp.Services.Tools;
+using PdfEditorApp.Services.Tools.Core;
 using PdfEditorApp.ViewModels;
 using Xunit;
 

@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using PdfEditorApp.Models;
-using PdfEditorApp.Services.Tools;
+using PdfEditorApp.Services.Tools.Core;
+using PdfEditorApp.Services.Tools.Organize;
+using PdfEditorApp.Services.Tools.Security;
+using PdfEditorApp.Services.Tools.Conversion;
+using PdfEditorApp.Services.Tools.Intelligence;
 
 namespace PdfEditorApp.Services;
 

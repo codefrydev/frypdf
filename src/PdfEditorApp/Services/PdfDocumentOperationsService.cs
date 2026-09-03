@@ -1,3 +1,8 @@
+using PdfEditorApp.Services.Tools.Core;
+using PdfEditorApp.Services.Tools.Organize;
+using PdfEditorApp.Services.Tools.Security;
+using PdfEditorApp.Services.Tools.Conversion;
+using PdfEditorApp.Services.Tools.Intelligence;
 using System;
 using System.Collections.Generic;
 using System.IO;

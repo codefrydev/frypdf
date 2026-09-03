@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Services;
 
 namespace PdfEditorApp.Models;
@@ -146,12 +147,27 @@ public record ToolExecutionResult
     public Dictionary<string, object> ExtraData { get; init; } = new();
 }
 
+public enum PdfProcessingEngine
+{
+    QuestPdfNative = 0,
+    StandardPdfSharp = 1
+}
+
+public enum PdfEncryptionLevel
+{
+    Aes256Bit = 0,
+    Aes128Bit = 1,
+    Rc440Bit = 2
+}
+
 public class MergeToolOptions
 {
     public List<string> InputFiles { get; set; } = new();
     public string OutputFilePath { get; set; } = string.Empty;
     public bool PreserveBookmarks { get; set; } = true;
     public bool NormalizePageSizes { get; set; }
+    public PdfProcessingEngine Engine { get; set; } = PdfProcessingEngine.QuestPdfNative;
+    public Dictionary<string, string> FilePageRanges { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public class SplitToolOptions
@@ -163,6 +179,7 @@ public class SplitToolOptions
     public string RangeExpression { get; set; } = "1-3, 5, 7-10";
     public bool SplitOddEven { get; set; }
     public bool ExtractOddPages { get; set; }
+    public PdfProcessingEngine Engine { get; set; } = PdfProcessingEngine.QuestPdfNative;
 }
 
 public class CompressToolOptions
@@ -177,6 +194,13 @@ public class CompressToolOptions
     public bool RemoveMetadata { get; set; }
     public bool RemoveDuplicateObjects { get; set; } = true;
     public bool CompressStreams { get; set; } = true;
+    public bool LinearizeForWeb { get; set; }
+}
+
+public class LinearizeToolOptions
+{
+    public string InputFilePath { get; set; } = string.Empty;
+    public string OutputFilePath { get; set; } = string.Empty;
 }
 
 public class WordConversionOptions
@@ -301,6 +325,10 @@ public class SecurityToolOptions
     public bool AllowCopying { get; set; } = false;
     public bool AllowAnnotating { get; set; } = true;
     public bool AllowFormFilling { get; set; } = true;
+    public bool AllowAssembly { get; set; } = true;
+    public bool EncryptMetadata { get; set; } = true;
+    public PdfEncryptionLevel EncryptionLevel { get; set; } = PdfEncryptionLevel.Aes256Bit;
+    public PdfProcessingEngine Engine { get; set; } = PdfProcessingEngine.StandardPdfSharp;
 }
 
 public class UnlockToolOptions
@@ -308,6 +336,7 @@ public class UnlockToolOptions
     public string InputFilePath { get; set; } = string.Empty;
     public string OutputFilePath { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
+    public PdfProcessingEngine Engine { get; set; } = PdfProcessingEngine.QuestPdfNative;
 }
 
 public class PageOrganizeAction

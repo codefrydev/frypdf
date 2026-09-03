@@ -6,6 +6,7 @@ using System.Reflection;
 using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 
 namespace PdfEditorApp.ViewModels;

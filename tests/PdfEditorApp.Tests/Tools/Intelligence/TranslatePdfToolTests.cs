@@ -1,0 +1,87 @@
+using PdfEditorApp.Services.Tools.Core;
+using PdfEditorApp.Services.Tools.Organize;
+using PdfEditorApp.Services.Tools.Security;
+using PdfEditorApp.Services.Tools.Conversion;
+using PdfEditorApp.Services.Tools.Intelligence;
+using PdfEditorApp.ViewModels.Tools.Core;
+using PdfEditorApp.ViewModels.Tools.Organize;
+using PdfEditorApp.ViewModels.Tools.Security;
+using PdfEditorApp.ViewModels.Tools.Conversion;
+using PdfEditorApp.ViewModels.Tools.Intelligence;
+using PdfEditorApp.Tests.Tools.Core;
+using System.IO;
+using System.Threading.Tasks;
+using PdfEditorApp.Models;
+using PdfEditorApp.ViewModels.Tools;
+using Xunit;
+
+namespace PdfEditorApp.Tests.Tools.Intelligence;
+
+public class TranslatePdfToolTests : IClassFixture<ToolTestFixture>
+{
+    private readonly ToolTestFixture _fixture;
+
+    public TranslatePdfToolTests(ToolTestFixture fixture)
+    {
+        _fixture = fixture;
+    }
+
+    [Fact]
+    public void TranslatePdfTool_InstantiatesWithCorrectDefaults()
+    {
+        var vm = (TranslatePdfToolViewModel)_fixture.Factory.Create(PdfToolId.TranslatePdf);
+        Assert.NotNull(vm);
+        Assert.Equal(PdfToolId.TranslatePdf, vm.Tool.Id);
+        Assert.Equal("Auto", vm.SourceLanguage);
+        Assert.Equal("Spanish", vm.TargetLanguage);
+        Assert.True(vm.PreserveLayout);
+    }
+
+    [Fact]
+    public async Task TranslatePdfTool_TranslatesDocumentSuccessfully()
+    {
+        string sample = ToolTestFixture.CreateSamplePdf("TranslateSample", 1);
+        try
+        {
+            var vm = (TranslatePdfToolViewModel)_fixture.Factory.Create(PdfToolId.TranslatePdf);
+            vm.SelectedFiles.Add(sample);
+            vm.SyncPreviewItems();
+
+            await vm.ExecuteToolCommand.ExecuteAsync(null);
+
+            Assert.True(vm.IsComplete);
+            Assert.False(vm.HasError);
+            Assert.True(File.Exists(vm.LastOutputFilePath));
+        }
+        finally
+        {
+            if (File.Exists(sample)) File.Delete(sample);
+        }
+    }
+
+    [Fact]
+    public async Task TranslatePdfTool_UnsupportedLanguage_ReportsHonestFailure_NotSilentNoOp()
+    {
+        // Regression guard: only Spanish/French/German have a glossary. Before the fix,
+        // any other language (e.g. Japanese, suggested by the tool's own UI placeholder)
+        // silently passed every line through unchanged while still reporting success.
+        string sample = ToolTestFixture.CreateSamplePdf("TranslateUnsupported", 1);
+        try
+        {
+            var vm = (TranslatePdfToolViewModel)_fixture.Factory.Create(PdfToolId.TranslatePdf);
+            vm.SelectedFiles.Add(sample);
+            vm.SyncPreviewItems();
+            vm.TargetLanguage = "Japanese";
+
+            await vm.ExecuteToolCommand.ExecuteAsync(null);
+
+            Assert.True(vm.HasError);
+            Assert.False(vm.IsComplete);
+            Assert.Contains("not supported yet", vm.ErrorMessage);
+        }
+        finally
+        {
+            if (File.Exists(sample)) File.Delete(sample);
+        }
+    }
+}

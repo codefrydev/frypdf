@@ -5,9 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
+using PdfEditorApp.Services.MathEngine;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
 namespace PdfEditorApp.ViewModels;
@@ -883,7 +885,7 @@ public partial class MainViewModel
 
         if (!string.IsNullOrEmpty(presetId))
         {
-            var preset = Services.MathEngine.MathPresetsLibrary.FindById(presetId) ?? Services.MathEngine.MathPresetsLibrary.FindByName(presetId);
+            var preset = MathPresetsLibrary.FindById(presetId) ?? MathPresetsLibrary.FindByName(presetId);
             if (preset != null)
             {
                 mathEl.Formula = preset.Formula;
@@ -990,7 +992,7 @@ public partial class MainViewModel
     public void InsertMathStudioSymbol(string snippet)
     {
         if (string.IsNullOrEmpty(snippet)) return;
-        string resolved = Services.MathEngine.MathPresetsLibrary.ResolveSnippet(snippet);
+        string resolved = MathPresetsLibrary.ResolveSnippet(snippet);
         MathStudioFormula = string.IsNullOrWhiteSpace(MathStudioFormula) ? resolved : $"{MathStudioFormula} {resolved}";
     }
 
@@ -998,7 +1000,7 @@ public partial class MainViewModel
     public void ApplyMathStudioPreset(string presetId)
     {
         if (string.IsNullOrEmpty(presetId)) return;
-        var preset = Services.MathEngine.MathPresetsLibrary.FindById(presetId) ?? Services.MathEngine.MathPresetsLibrary.FindByName(presetId);
+        var preset = MathPresetsLibrary.FindById(presetId) ?? MathPresetsLibrary.FindByName(presetId);
         if (preset != null)
         {
             MathStudioFormula = preset.Formula;

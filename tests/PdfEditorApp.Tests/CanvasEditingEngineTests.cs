@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels;
 using PdfEditorApp.ViewModels.ElementViewModels;

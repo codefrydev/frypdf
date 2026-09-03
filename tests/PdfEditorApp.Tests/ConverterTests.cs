@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
 using PdfEditorApp.Converters;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 using Xunit;
 

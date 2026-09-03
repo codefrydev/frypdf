@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using PdfEditorApp.Models;
+using PdfEditorApp.Core.Models;
 
 namespace PdfEditorApp.Core.Data;
 

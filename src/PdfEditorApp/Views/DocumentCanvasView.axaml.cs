@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.ViewModels;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
@@ -210,7 +211,7 @@ public partial class DocumentCanvasView : UserControl
         bool isZoomModifier = e.KeyModifiers.HasFlag(KeyModifiers.Control) ||
                               e.KeyModifiers.HasFlag(KeyModifiers.Meta) ||
                               e.KeyModifiers.HasFlag(KeyModifiers.Alt);
-        bool isZoomTool = ViewModel?.ActiveToolMode == Models.ToolMode.Zoom;
+        bool isZoomTool = ViewModel?.ActiveToolMode == ToolMode.Zoom;
 
         if ((isZoomModifier || isZoomTool) && ViewModel != null && CanvasScrollViewer != null)
         {
@@ -329,13 +330,13 @@ public partial class DocumentCanvasView : UserControl
     {
         if (ViewModel == null || CanvasScrollViewer == null) return;
 
-        if (ViewModel.ActiveToolMode == Models.ToolMode.Pan || _isSpacePressed)
+        if (ViewModel.ActiveToolMode == ToolMode.Pan || _isSpacePressed)
         {
             ViewModel.FitToPageDynamic(CanvasScrollViewer.Viewport.Width, CanvasScrollViewer.Viewport.Height);
             e.Handled = true;
             return;
         }
-        else if (ViewModel.ActiveToolMode == Models.ToolMode.Zoom)
+        else if (ViewModel.ActiveToolMode == ToolMode.Zoom)
         {
             ViewModel.ResetZoom();
             e.Handled = true;
@@ -433,7 +434,7 @@ public partial class DocumentCanvasView : UserControl
         var pointerPoint = e.GetCurrentPoint(this);
 
         // Middle button click, Spacebar held, or Pan Tool mode => Pan mode
-        if (_isSpacePressed || pointerPoint.Properties.IsMiddleButtonPressed || ViewModel.ActiveToolMode == Models.ToolMode.Pan)
+        if (_isSpacePressed || pointerPoint.Properties.IsMiddleButtonPressed || ViewModel.ActiveToolMode == ToolMode.Pan)
         {
             _isPanning = true;
             _panStart = e.GetPosition(this);
@@ -447,7 +448,7 @@ public partial class DocumentCanvasView : UserControl
         }
 
         // Zoom Tool mode => Click to Zoom In / Alt-Click to Zoom Out
-        if (ViewModel.ActiveToolMode == Models.ToolMode.Zoom)
+        if (ViewModel.ActiveToolMode == ToolMode.Zoom)
         {
             if (pointerPoint.Properties.IsLeftButtonPressed)
             {
@@ -477,9 +478,9 @@ public partial class DocumentCanvasView : UserControl
             ViewModel.SmartPlacement.SetContextMenuPointer(canvasX, canvasY);
         }
 
-        if (ViewModel.ActiveToolMode == Models.ToolMode.Draw || ViewModel.ActiveToolMode == Models.ToolMode.Highlight)
+        if (ViewModel.ActiveToolMode == ToolMode.Draw || ViewModel.ActiveToolMode == ToolMode.Highlight)
         {
-            bool isHighlighter = ViewModel.ActiveToolMode == Models.ToolMode.Highlight;
+            bool isHighlighter = ViewModel.ActiveToolMode == ToolMode.Highlight;
             var ink = new InkElementViewModel
             {
                 X = Math.Max(0, canvasX),

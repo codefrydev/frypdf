@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
+using PdfEditorApp.Services.Tools.Core;
 using PdfEditorApp.ViewModels;
 using Xunit;
 
@@ -194,7 +196,7 @@ public class ThemeServiceTests : IDisposable
             new RecentDocumentsService(),
             new TemplateService(),
             new ProjectPersistenceService(),
-            new Services.Tools.PdfToolRegistry(),
+            new PdfToolRegistry(),
             themeService: themeService);
 
         Assert.False(homeVm.IsDarkMode);

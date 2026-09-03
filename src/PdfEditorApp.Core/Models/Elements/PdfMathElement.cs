@@ -1,6 +1,4 @@
-using System;
-
-namespace PdfEditorApp.Models.Elements;
+namespace PdfEditorApp.Core.Models.Elements;
 
 /// <summary>
 /// Native mathematical equation & formula element supporting standard LaTeX / Math syntax,

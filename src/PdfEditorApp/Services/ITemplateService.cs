@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 using PdfEditorApp.Templates;
 

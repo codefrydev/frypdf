@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Avalonia;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 
 namespace PdfEditorApp.Services;

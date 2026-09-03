@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 
-namespace PdfEditorApp.Templates;
+namespace PdfEditorApp.Templates.Career;
 
 public class ResumeCreativeMinimalistTemplate : ITemplateDefinition
 {

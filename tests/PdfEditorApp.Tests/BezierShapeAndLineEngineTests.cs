@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
+using PdfEditorApp.Templates.Events;
 using PdfEditorApp.ViewModels.ElementViewModels;
 using Xunit;
 
@@ -338,7 +340,7 @@ public class BezierShapeAndLineEngineTests
     [Fact]
     public void CreativeTypographyShowcaseTemplate_GeneratesValidDocumentWithAllBezierAndTextFeatures()
     {
-        var template = new PdfEditorApp.Templates.CreativeTypographyShowcaseTemplate();
+        var template = new CreativeTypographyShowcaseTemplate();
         Assert.Equal("typographyshowcase", template.Id);
         Assert.Equal("Design & Creative", template.Category);
 

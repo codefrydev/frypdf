@@ -2,10 +2,12 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
-using PdfEditorApp.Models.Elements;
 using PdfEditorApp.Services;
 using PdfEditorApp.Templates;
+using PdfEditorApp.Templates.Events;
 using PdfEditorApp.ViewModels;
 using PdfEditorApp.ViewModels.ElementViewModels;
 using Xunit;
@@ -332,51 +334,51 @@ public class PdfEngineTests
         var doc = new PdfDocumentModel { Title = "Adobe Acrobat Pro Replacement Test Document" };
         var page = new PdfPageModel { PageNumber = 1, Width = 800, Height = 1100, ShowHeaderFooter = true };
 
-        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfFormFieldElement
+        page.Elements.Add(new PdfFormFieldElement
         {
             FieldType = FormFieldType.Text,
             Label = "Candidate Name:",
             Placeholder = "Jane Doe"
         });
 
-        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfFormFieldElement
+        page.Elements.Add(new PdfFormFieldElement
         {
             FieldType = FormFieldType.Checkbox,
             Label = "NDA Signed",
             IsChecked = true
         });
 
-        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfFormFieldElement
+        page.Elements.Add(new PdfFormFieldElement
         {
             FieldType = FormFieldType.Signature,
             Label = "Authorized Signatory",
             Value = "John Hancock"
         });
 
-        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfQrCodeElement
+        page.Elements.Add(new PdfQrCodeElement
         {
             Content = "https://github.com/PrashantUnity/PDFCreator",
             Label = "VERIFICATION QR"
         });
 
-        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfBarcodeElement
+        page.Elements.Add(new PdfBarcodeElement
         {
             CodeValue = "DOC-998822",
             ShowText = true
         });
 
-        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfRedactionElement
+        page.Elements.Add(new PdfRedactionElement
         {
             ExemptionCode = "[REDACTED - (b)(4)]"
         });
 
-        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfInkElement
+        page.Elements.Add(new PdfInkElement
         {
             IsHighlighter = true,
             StrokeThickness = 8
         });
 
-        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfStickyNoteElement
+        page.Elements.Add(new PdfStickyNoteElement
         {
             Author = "Lead Counsel",
             NoteText = "Approved for filing."
@@ -410,7 +412,7 @@ public class PdfEngineTests
         var page = new PdfPageModel { PageNumber = 1, Width = 800, Height = 1100 };
 
         // Test Horizontal Bar, Donut Pie, and Column Charts
-        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfChartElement
+        page.Elements.Add(new PdfChartElement
         {
             Title = "Departmental Efficiency",
             ChartType = ChartType.HorizontalBar,
@@ -419,7 +421,7 @@ public class PdfEngineTests
             ValueLabels = new System.Collections.Generic.List<string> { "85%", "72%", "91%" }
         });
 
-        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfChartElement
+        page.Elements.Add(new PdfChartElement
         {
             Title = "Budget Allocation",
             ChartType = ChartType.DonutPie,
@@ -429,13 +431,13 @@ public class PdfEngineTests
         });
 
         // Test Shapes
-        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfShapeElement
+        page.Elements.Add(new PdfShapeElement
         {
             ShapeType = ShapeType.Star5,
             FillColorHex = "#F59E0B"
         });
 
-        page.Elements.Add(new PdfEditorApp.Models.Elements.PdfShapeElement
+        page.Elements.Add(new PdfShapeElement
         {
             ShapeType = ShapeType.Heart,
             FillColorHex = "#DC2626"
@@ -606,7 +608,7 @@ public class PdfEngineTests
             chartVm.SetChartTypeCommand.Execute(chartType.ToString());
             Assert.Equal(chartType, chartVm.ChartType);
 
-            var model = chartVm.ToModel() as PdfEditorApp.Models.Elements.PdfChartElement;
+            var model = chartVm.ToModel() as PdfChartElement;
             Assert.NotNull(model);
             Assert.Equal(chartType, model.ChartType);
 
@@ -620,7 +622,7 @@ public class PdfEngineTests
     {
         foreach (ChartType chartType in Enum.GetValues<ChartType>())
         {
-            var chartEl = new PdfEditorApp.Models.Elements.PdfChartElement
+            var chartEl = new PdfChartElement
             {
                 Title = $"Test {chartType}",
                 ChartType = chartType,
@@ -643,14 +645,14 @@ public class PdfEngineTests
     [Fact]
     public void LiveCharts2_MultiSeries_CartesianRendering_Works()
     {
-        var chartEl = new PdfEditorApp.Models.Elements.PdfChartElement
+        var chartEl = new PdfChartElement
         {
             Title = "2025 vs 2026 Sales Comparison",
             ChartType = ChartType.BarColumn,
             Categories = new List<string> { "North", "South", "East", "West" },
             Palette = ChartPalette.CorporateBlue,
             LegendPosition = ChartLegendPosition.Top,
-            MultiSeries = new List<PdfEditorApp.Models.Elements.ChartSeriesItem>
+            MultiSeries = new List<ChartSeriesItem>
             {
                 new() { Name = "2025 Actual", Values = new List<double> { 120, 150, 180, 200 }, ColorHex = "#82BDF0" },
                 new() { Name = "2026 Target", Values = new List<double> { 140, 175, 210, 240 }, ColorHex = "#0F6CBD" }
@@ -672,7 +674,7 @@ public class PdfEngineTests
             Assert.NotEmpty(colors);
             Assert.True(colors.Count >= 4);
 
-            var chartEl = new PdfEditorApp.Models.Elements.PdfChartElement
+            var chartEl = new PdfChartElement
             {
                 Title = $"Palette {palette}",
                 ChartType = ChartType.SmoothLine,
@@ -729,17 +731,17 @@ public class PdfEngineTests
     [Fact]
     public void LiveCharts2_PdfExport_ContainsRenderedChart()
     {
-        var doc = new PdfEditorApp.Models.PdfDocumentModel
+        var doc = new PdfDocumentModel
         {
-            Pages = new List<PdfEditorApp.Models.PdfPageModel>
+            Pages = new List<PdfPageModel>
             {
                 new()
                 {
                     Width = 595,
                     Height = 842,
-                    Elements = new List<PdfEditorApp.Models.Elements.PdfElementBase>
+                    Elements = new List<PdfElementBase>
                     {
-                        new PdfEditorApp.Models.Elements.PdfChartElement
+                        new PdfChartElement
                         {
                             X = 50,
                             Y = 100,
@@ -1218,7 +1220,7 @@ public class PdfEngineTests
         Assert.StartsWith("1. ", textVm.Text);
 
         textVm.IsStrikethrough = true;
-        var model = (PdfEditorApp.Models.Elements.PdfTextElement)textVm.ToModel();
+        var model = (PdfTextElement)textVm.ToModel();
         Assert.True(model.IsStrikethrough);
     }
 
@@ -1242,7 +1244,7 @@ public class PdfEngineTests
 
         Assert.Equal(2, formVm.Options.Count);
 
-        var model = (PdfEditorApp.Models.Elements.PdfFormFieldElement)formVm.ToModel();
+        var model = (PdfFormFieldElement)formVm.ToModel();
         Assert.Equal(FormFieldType.Dropdown, model.FieldType);
         Assert.Equal("StateProvince", model.FieldName);
         Assert.Equal(FormValidationType.CustomRegex, model.ValidationType);

@@ -4,6 +4,7 @@
              xmlns:models="using:PdfEditorApp.Models"
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:models1="clr-namespace:PdfEditorApp.Core.Models;assembly=PdfEditorApp.Core"
              x:Class="PdfEditorApp.Views.RibbonView"
              x:DataType="vm:MainViewModel">
 
@@ -35,7 +36,7 @@
                             <Button Classes="ribbon-tab"
                                     Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Home}"
                                     Command="{Binding SelectRibbonTabCommand}"
-                                    CommandParameter="{x:Static models:RibbonTabKind.Home}"
+                                    CommandParameter="{x:Static models1:RibbonTabKind.Home}"
                                     ToolTip.Tip="Home Tab (Double-click to toggle Ribbon)">
                                 <TextBlock Text="Home" />
                             </Button>
@@ -44,7 +45,7 @@
                             <Button Classes="ribbon-tab"
                                     Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Edit}"
                                     Command="{Binding SelectRibbonTabCommand}"
-                                    CommandParameter="{x:Static models:RibbonTabKind.Edit}"
+                                    CommandParameter="{x:Static models1:RibbonTabKind.Edit}"
                                     ToolTip.Tip="Edit Tab (Double-click to toggle Ribbon)">
                                 <TextBlock Text="Edit" />
                             </Button>
@@ -53,7 +54,7 @@
                             <Button Classes="ribbon-tab"
                                     Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Comment}"
                                     Command="{Binding SelectRibbonTabCommand}"
-                                    CommandParameter="{x:Static models:RibbonTabKind.Comment}"
+                                    CommandParameter="{x:Static models1:RibbonTabKind.Comment}"
                                     ToolTip.Tip="Comment Tab (Double-click to toggle Ribbon)">
                                 <TextBlock Text="Comment" />
                             </Button>
@@ -62,7 +63,7 @@
                             <Button Classes="ribbon-tab"
                                     Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Insert}"
                                     Command="{Binding SelectRibbonTabCommand}"
-                                    CommandParameter="{x:Static models:RibbonTabKind.Insert}"
+                                    CommandParameter="{x:Static models1:RibbonTabKind.Insert}"
                                     ToolTip.Tip="Insert Tab (Double-click to toggle Ribbon)">
                                 <TextBlock Text="Insert" />
                             </Button>
@@ -71,7 +72,7 @@
                             <Button Classes="ribbon-tab"
                                     Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Sign}"
                                     Command="{Binding SelectRibbonTabCommand}"
-                                    CommandParameter="{x:Static models:RibbonTabKind.Sign}"
+                                    CommandParameter="{x:Static models1:RibbonTabKind.Sign}"
                                     ToolTip.Tip="Fill &amp; Sign Tab (Double-click to toggle Ribbon)">
                                 <TextBlock Text="Fill &amp; Sign" />
                             </Button>
@@ -80,7 +81,7 @@
                             <Button Classes="ribbon-tab"
                                     Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Forms}"
                                     Command="{Binding SelectRibbonTabCommand}"
-                                    CommandParameter="{x:Static models:RibbonTabKind.Forms}"
+                                    CommandParameter="{x:Static models1:RibbonTabKind.Forms}"
                                     ToolTip.Tip="Forms Tab (Double-click to toggle Ribbon)">
                                 <TextBlock Text="Forms" />
                             </Button>
@@ -89,7 +90,7 @@
                             <Button Classes="ribbon-tab"
                                     Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Organize}"
                                     Command="{Binding SelectRibbonTabCommand}"
-                                    CommandParameter="{x:Static models:RibbonTabKind.Organize}"
+                                    CommandParameter="{x:Static models1:RibbonTabKind.Organize}"
                                     ToolTip.Tip="Organize Tab (Double-click to toggle Ribbon)">
                                 <TextBlock Text="Organize" />
                             </Button>
@@ -98,7 +99,7 @@
                             <Button Classes="ribbon-tab"
                                     Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Protect}"
                                     Command="{Binding SelectRibbonTabCommand}"
-                                    CommandParameter="{x:Static models:RibbonTabKind.Protect}"
+                                    CommandParameter="{x:Static models1:RibbonTabKind.Protect}"
                                     ToolTip.Tip="Protect &amp; Redact Tab (Double-click to toggle Ribbon)">
                                 <TextBlock Text="Protect &amp; Redact" />
                             </Button>
@@ -107,7 +108,7 @@
                             <Button Classes="ribbon-tab"
                                     Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Audit}"
                                     Command="{Binding SelectRibbonTabCommand}"
-                                    CommandParameter="{x:Static models:RibbonTabKind.Audit}"
+                                    CommandParameter="{x:Static models1:RibbonTabKind.Audit}"
                                     ToolTip.Tip="Preflight &amp; View Tab (Double-click to toggle Ribbon)">
                                 <TextBlock Text="Preflight &amp; View" />
                             </Button>
@@ -116,7 +117,7 @@
                             <Button Classes="ribbon-tab"
                                     Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Export}"
                                     Command="{Binding SelectRibbonTabCommand}"
-                                    CommandParameter="{x:Static models:RibbonTabKind.Export}"
+                                    CommandParameter="{x:Static models1:RibbonTabKind.Export}"
                                     ToolTip.Tip="Export Tab (Double-click to toggle Ribbon)">
                                 <TextBlock Text="Export" />
                             </Button>

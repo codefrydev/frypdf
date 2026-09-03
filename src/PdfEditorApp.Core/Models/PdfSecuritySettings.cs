@@ -1,6 +1,4 @@
-using System;
-
-namespace PdfEditorApp.Models;
+namespace PdfEditorApp.Core.Models;
 
 public class PdfSecuritySettings
 {

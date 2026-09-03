@@ -36,8 +36,9 @@ public class RecentDocumentsService : IRecentDocumentsService
         {
             if (!File.Exists(StoragePath)) return new List<RecentDocumentItem>();
             var json = File.ReadAllText(StoragePath);
-            return JsonSerializer.Deserialize<List<RecentDocumentItem>>(json, _jsonOptions)
+            var list = JsonSerializer.Deserialize<List<RecentDocumentItem>>(json, _jsonOptions)
                    ?? new List<RecentDocumentItem>();
+            return list.Where(x => !string.IsNullOrWhiteSpace(x.FilePath) && File.Exists(x.FilePath)).ToList();
         }
         catch
         {
@@ -47,6 +48,9 @@ public class RecentDocumentsService : IRecentDocumentsService
 
     public void Add(RecentDocumentItem item)
     {
+        if (string.IsNullOrWhiteSpace(item.FilePath) || !File.Exists(item.FilePath))
+            return;
+
         var list = Load();
         // Remove existing entry for the same path (bump to top)
         list.RemoveAll(x => string.Equals(x.FilePath, item.FilePath, StringComparison.OrdinalIgnoreCase));

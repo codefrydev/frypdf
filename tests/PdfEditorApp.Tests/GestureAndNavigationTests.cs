@@ -1,6 +1,8 @@
 using System;
 using Avalonia.Input;
 using PdfEditorApp.Models;
+using PdfEditorApp.Services;
+using PdfEditorApp.Tests.Mocks;
 using PdfEditorApp.ViewModels;
 using Xunit;
 
@@ -125,7 +127,11 @@ public class GestureAndNavigationTests
     public void MainViewModel_WindowTitle_ReflectsActiveViewAndContextCorrectly()
     {
         // 1. Initial State: App opens on Home Dashboard
-        var mainVm = new MainViewModel();
+        var mainVm = new MainViewModel(
+            new PdfExportService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            recentService: new MockRecentDocumentsService());
         Assert.True(mainVm.IsHomePageVisible);
         Assert.False(mainVm.IsEditorVisible);
         Assert.False(mainVm.IsPdfViewerVisible);

@@ -5,6 +5,7 @@ using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 using PdfEditorApp.Services.Tools.Core;
+using PdfEditorApp.Tests.Mocks;
 using PdfEditorApp.ViewModels;
 using Xunit;
 
@@ -193,7 +194,7 @@ public class ThemeServiceTests : IDisposable
         themeService.SetTheme(AppThemeMode.Light);
 
         var homeVm = new HomeViewModel(
-            new RecentDocumentsService(),
+            new MockRecentDocumentsService(),
             new TemplateService(),
             new ProjectPersistenceService(),
             new PdfToolRegistry(),

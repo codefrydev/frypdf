@@ -15,6 +15,14 @@ public class DataMergeEngine : IDataMergeEngine
         @"\{\{\s*([a-zA-Z0-9_\.\-]+)\s*(?:\:\s*([^\}\?]+?)\s*)?(?:\?\?\s*([^\}]+?)\s*)?\}\}",
         RegexOptions.Compiled);
 
+    private static readonly NumberFormatInfo InrNumberFormat = new()
+    {
+        NumberGroupSizes = [3, 2],
+        NumberGroupSeparator = ",",
+        NumberDecimalSeparator = ".",
+        NumberDecimalDigits = 2
+    };
+
     public IReadOnlyList<string> DetectPlaceholders(PdfDocumentModel template)
     {
         if (template == null) return Array.Empty<string>();
@@ -344,11 +352,11 @@ public class DataMergeEngine : IDataMergeEngine
                     string currencyCode = format.Split(':')[1].Trim().ToUpperInvariant();
                     return currencyCode switch
                     {
-                        "INR" or "RS" => $"₹{amount:N2}",
-                        "EUR" => $"€{amount:N2}",
-                        "GBP" => $"£{amount:N2}",
-                        "JPY" => $"¥{amount:N0}",
-                        _ => $"${amount:N2}"
+                        "INR" or "RS" => amount < 0 ? $"-₹{Math.Abs(amount).ToString("N2", InrNumberFormat)}" : $"₹{amount.ToString("N2", InrNumberFormat)}",
+                        "EUR" => amount < 0 ? $"-€{Math.Abs(amount).ToString("N2", CultureInfo.InvariantCulture)}" : $"€{amount.ToString("N2", CultureInfo.InvariantCulture)}",
+                        "GBP" => amount < 0 ? $"-£{Math.Abs(amount).ToString("N2", CultureInfo.InvariantCulture)}" : $"£{amount.ToString("N2", CultureInfo.InvariantCulture)}",
+                        "JPY" => amount < 0 ? $"-¥{Math.Abs(amount).ToString("N0", CultureInfo.InvariantCulture)}" : $"¥{amount.ToString("N0", CultureInfo.InvariantCulture)}",
+                        _ => amount < 0 ? $"-${Math.Abs(amount).ToString("N2", CultureInfo.InvariantCulture)}" : $"${amount.ToString("N2", CultureInfo.InvariantCulture)}"
                     };
                 }
                 return amount.ToString("C", CultureInfo.CurrentCulture);

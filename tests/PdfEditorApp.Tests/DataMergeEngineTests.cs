@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using PdfEditorApp.Core.Data;
 using PdfEditorApp.Core.Models;
 using PdfEditorApp.Core.Models.Elements;
@@ -62,17 +63,52 @@ public class DataMergeEngineTests
         {
             ["BasicSalary"] = "8500",
             ["InrSalary"] = "125000",
-            ["EurSalary"] = "6200"
+            ["EurSalary"] = "6200",
+            ["UsdSalary"] = "10500"
         };
 
         string templateInr = "Salary: {{InrSalary:currency:INR}}";
         string templateEur = "Salary: {{EurSalary:currency:EUR}}";
+        string templateUsd = "Salary: {{UsdSalary:currency:USD}}";
 
         string resultInr = _engine.EvaluateText(templateInr, record);
         string resultEur = _engine.EvaluateText(templateEur, record);
+        string resultUsd = _engine.EvaluateText(templateUsd, record);
 
         Assert.Contains("₹1,25,000.00", resultInr);
         Assert.Contains("€6,200.00", resultEur);
+        Assert.Contains("$10,500.00", resultUsd);
+    }
+
+    [Theory]
+    [InlineData("en-US")]
+    [InlineData("en-GB")]
+    [InlineData("de-DE")]
+    [InlineData("fr-FR")]
+    [InlineData("ja-JP")]
+    public void EvaluateText_CurrencyFormatting_IsCultureInvariantAcrossLocales(string cultureName)
+    {
+        var prevCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo(cultureName);
+
+            var record = new Dictionary<string, string>
+            {
+                ["InrSalary"] = "125000",
+                ["EurSalary"] = "6200"
+            };
+
+            string resultInr = _engine.EvaluateText("Salary: {{InrSalary:currency:INR}}", record);
+            string resultEur = _engine.EvaluateText("Salary: {{EurSalary:currency:EUR}}", record);
+
+            Assert.Contains("₹1,25,000.00", resultInr);
+            Assert.Contains("€6,200.00", resultEur);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = prevCulture;
+        }
     }
 
     [Fact]

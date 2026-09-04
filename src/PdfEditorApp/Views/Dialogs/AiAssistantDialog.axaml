@@ -27,7 +27,7 @@
                 VerticalAlignment="Center"
                 Padding="24">
 
-            <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
 
                 <!-- 1. Header Bar -->
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Margin="0,0,0,16">
@@ -106,75 +106,94 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- 2. Quick Prompt Suggestion Pills -->
-                <Border Grid.Row="1" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,0,0,14">
-                    <StackPanel Spacing="8">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <materialIcons:MaterialIcon Kind="LightbulbOutline" Width="14" Height="14" Foreground="#D97706" VerticalAlignment="Center" />
-                            <TextBlock Text="Quick Prompts (Click to populate)" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                <!-- 2. Target Element & Mode Switcher (Visible when an element is selected) -->
+                <Border Grid.Row="1" Background="{DynamicResource WinBgBrush}" BorderBrush="#C4B5FD" BorderThickness="1.5" CornerRadius="10" Padding="12,8" Margin="0,0,0,10"
+                        IsVisible="{Binding HasTargetElement}">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalAlignment="Center">
+                        <!-- Target Element Badge -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Border Background="#EDE9FE" CornerRadius="6" Padding="6,4">
+                                <materialIcons:MaterialIcon Kind="{Binding TargetElementKindIcon}" Width="16" Height="16" Foreground="#7C3AED" />
+                            </Border>
+                            <StackPanel Spacing="1" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <TextBlock Text="Target:" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" FontWeight="Medium" />
+                                    <TextBlock Text="{Binding TargetElementKindBadge}" FontSize="11" FontWeight="Bold" Foreground="#7C3AED" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding TargetElementTitle}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" MaxWidth="280" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
                         </StackPanel>
 
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button Classes="secondary-btn" Padding="10,6" CornerRadius="6" FontSize="11"
-                                        Command="{Binding UsePromptCommand}"
-                                        CommandParameter="Add a modern corporate invoice header with company name Acme Corp, invoice #1001, date today, and a blue accent bar">
-                                    <StackPanel Orientation="Horizontal" Spacing="5">
-                                        <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="13" Height="13" Foreground="#0F6CBD" />
-                                        <TextBlock Text="Invoice Header" />
+                        <!-- Segmented Mode Switcher -->
+                        <Border Grid.Column="2" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="2">
+                            <StackPanel Orientation="Horizontal" Spacing="2">
+                                <Button Classes="mini-tool-btn" Height="24" Padding="8,2" CornerRadius="4"
+                                        Command="{Binding SwitchToModifyModeCommand}"
+                                        Classes.active="{Binding IsModifyMode}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <materialIcons:MaterialIcon Kind="AutoFixHigh" Width="12" Height="12" Foreground="#7C3AED" />
+                                        <TextBlock Text="Modify Selected" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                                     </StackPanel>
                                 </Button>
-
-                                <Button Classes="secondary-btn" Padding="10,6" CornerRadius="6" FontSize="11"
-                                        Command="{Binding UsePromptCommand}"
-                                        CommandParameter="Create a 4-column financial summary table with columns: Quarter, Revenue, Expenses, Net Profit, and 4 sample rows">
-                                    <StackPanel Orientation="Horizontal" Spacing="5">
-                                        <materialIcons:MaterialIcon Kind="TableLarge" Width="13" Height="13" Foreground="#107C41" />
-                                        <TextBlock Text="Summary Table" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Classes="secondary-btn" Padding="10,6" CornerRadius="6" FontSize="11"
-                                        Command="{Binding UsePromptCommand}"
-                                        CommandParameter="Add an amber warning callout card with title 'Important Notice' and a 2-line explanation">
-                                    <StackPanel Orientation="Horizontal" Spacing="5">
-                                        <materialIcons:MaterialIcon Kind="AlertOutline" Width="13" Height="13" Foreground="#D97706" />
-                                        <TextBlock Text="Warning Card" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Classes="secondary-btn" Padding="10,6" CornerRadius="6" FontSize="11"
-                                        Command="{Binding UsePromptCommand}"
-                                        CommandParameter="Add a green pill badge with text 'PAID &amp; VERIFIED' and an adjacent QR code">
-                                    <StackPanel Orientation="Horizontal" Spacing="5">
-                                        <materialIcons:MaterialIcon Kind="CheckDecagramOutline" Width="13" Height="13" Foreground="#15803D" />
-                                        <TextBlock Text="Status Badge &amp; QR" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Classes="secondary-btn" Padding="10,6" CornerRadius="6" FontSize="11"
-                                        Command="{Binding UsePromptCommand}"
-                                        CommandParameter="Design a modern certificate header with a classic Georgia title, gold accent divider, and recipient subtitle">
-                                    <StackPanel Orientation="Horizontal" Spacing="5">
-                                        <materialIcons:MaterialIcon Kind="CertificateOutline" Width="13" Height="13" Foreground="#7C3AED" />
-                                        <TextBlock Text="Certificate Header" />
+                                <Button Classes="mini-tool-btn" Height="24" Padding="8,2" CornerRadius="4"
+                                        Command="{Binding SwitchToCreateModeCommand}"
+                                        Classes.active="{Binding !IsModifyMode}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <materialIcons:MaterialIcon Kind="PlusBoxOutline" Width="12" Height="12" Foreground="{DynamicResource WinMutedBrush}" />
+                                        <TextBlock Text="Create New" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                                     </StackPanel>
                                 </Button>
                             </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- 2b. Dynamic Prompt Suggestion Pills -->
+                <Border Grid.Row="2" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,0,0,14">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="LightbulbOutline" Width="14" Height="14" Foreground="#D97706" VerticalAlignment="Center" />
+                                <TextBlock Text="Quick Prompts (Click to populate)" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="AI Context-Aware" FontSize="10" FontWeight="SemiBold" Foreground="#7C3AED" VerticalAlignment="Center" />
+                        </Grid>
+
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding SuggestedPrompts}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Classes="secondary-btn" Padding="8,5" CornerRadius="6" FontSize="11"
+                                                Command="{Binding $parent[UserControl].((vm:AiAssistantViewModel)DataContext).UsePromptCommand}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip.Tip="{Binding}">
+                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                <materialIcons:MaterialIcon Kind="Sparkles" Width="12" Height="12" Foreground="#7C3AED" />
+                                                <TextBlock Text="{Binding}" MaxWidth="260" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </ScrollViewer>
                     </StackPanel>
                 </Border>
 
                 <!-- 3. Prompt Input Box & Generation Action -->
-                <StackPanel Grid.Row="2" Spacing="10" Margin="0,0,0,14">
+                <StackPanel Grid.Row="3" Spacing="10" Margin="0,0,0,14">
                     <TextBox Text="{Binding PromptText, Mode=TwoWay}"
                              AcceptsReturn="True"
                              TextWrapping="Wrap"
-                             Height="80"
+                             Height="75"
                              CornerRadius="8"
                              Padding="12,10"
                              FontSize="12.5"
-                             PlaceholderText="Describe the document elements, cards, tables, or layout you want to generate on this page..." />
+                             PlaceholderText="Tell AI what changes to make (e.g. 'Convert to line chart with emerald palette and add 2027 projection')..." />
 
                     <!-- Action Row: Status / Progress + Generate Button -->
                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" VerticalAlignment="Center">
@@ -209,7 +228,7 @@
                             </StackPanel>
                         </Button>
 
-                        <!-- Generate Button -->
+                        <!-- Generate / Modify Action Button -->
                         <Button Grid.Column="2"
                                 Command="{Binding GenerateCommand}"
                                 IsEnabled="{Binding !IsGenerating}"
@@ -223,14 +242,15 @@
                                 Cursor="Hand">
                             <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
                                 <materialIcons:MaterialIcon Kind="AutoFixHigh" Width="16" Height="16" Foreground="White" />
-                                <TextBlock Text="Generate Elements" />
+                                <TextBlock Text="Modify with AI" IsVisible="{Binding IsModifyMode}" />
+                                <TextBlock Text="Generate Elements" IsVisible="{Binding !IsModifyMode}" />
                             </StackPanel>
                         </Button>
                     </Grid>
                 </StackPanel>
 
                 <!-- 4. Real-time Activity Logs & Execution History -->
-                <Border Grid.Row="3" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12" MinHeight="140" MaxHeight="220">
+                <Border Grid.Row="4" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12" MinHeight="140" MaxHeight="220">
                     <Grid RowDefinitions="Auto,*">
                         <TextBlock Grid.Row="0" Text="Agent Activity &amp; Tool Invocations" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" Margin="0,0,0,6" />
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -250,7 +270,7 @@
                 </Border>
 
                 <!-- 5. Bottom Action Bar: Undo & Done -->
-                <Grid Grid.Row="4" ColumnDefinitions="Auto,*,Auto" Margin="0,16,0,0" VerticalAlignment="Center">
+                <Grid Grid.Row="5" ColumnDefinitions="Auto,*,Auto" Margin="0,16,0,0" VerticalAlignment="Center">
                     <!-- 1-Click Undo Button -->
                     <Button Grid.Column="0"
                             Command="{Binding UndoGenerationCommand}"

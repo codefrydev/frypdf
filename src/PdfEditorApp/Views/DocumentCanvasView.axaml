@@ -23,6 +23,9 @@
             <MenuItem Header="Edit In-Place" InputGesture="F2" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Inspector.StartEditModeCommand}">
                 <MenuItem.Icon><materialIcons:MaterialIcon Kind="PencilOutline" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
             </MenuItem>
+            <MenuItem Header="Ask AI to Modify..." InputGesture="Ctrl+I" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).AskAiToModifyCommand}" CommandParameter="{Binding}">
+                <MenuItem.Icon><materialIcons:MaterialIcon Kind="AutoFixHigh" Width="16" Height="16" Foreground="#7C3AED" /></MenuItem.Icon>
+            </MenuItem>
             <Separator />
             <MenuItem Header="Cut" InputGesture="Ctrl+X" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).CutCommand}">
                 <MenuItem.Icon><materialIcons:MaterialIcon Kind="ContentCut" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" /></MenuItem.Icon>
@@ -320,6 +323,9 @@
                                                         CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
                                                         PointerPressed="OnHandlePointerPressed" />
                                             </Panel>
+
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton IsVisible="{Binding !IsInEditMode}" />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -376,6 +382,8 @@
                                             <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
                                                     PointerPressed="OnHandlePointerPressed" IsVisible="{Binding !IsInEditMode}" />
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton IsVisible="{Binding !IsInEditMode}" />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -397,6 +405,9 @@
                                             <Border Tag="right" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-4,0" Cursor="SizeWestEast"
                                                     PointerPressed="OnHandlePointerPressed" />
+
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -474,6 +485,8 @@
                                             <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
                                                     PointerPressed="OnHandlePointerPressed" />
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -512,6 +525,8 @@
                                             <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
                                                     PointerPressed="OnHandlePointerPressed" />
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -546,6 +561,9 @@
                                             <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
                                                     PointerPressed="OnHandlePointerPressed" />
+
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -563,7 +581,11 @@
                                                        Opacity="{Binding Opacity}"
                                                        Foreground="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" />
                                         </LayoutTransformControl>
-                                        <Border BorderBrush="{DynamicResource WinDangerBrush}" BorderThickness="1" IsVisible="{Binding IsSelected}" IsHitTestVisible="False" />
+                                        <Grid IsVisible="{Binding IsSelected}">
+                                            <Border BorderBrush="{DynamicResource WinDangerBrush}" BorderThickness="1" IsHitTestVisible="False" />
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton />
+                                        </Grid>
                                     </Grid>
                                 </DataTemplate>
 
@@ -687,6 +709,9 @@
                                             <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
                                                     PointerPressed="OnHandlePointerPressed" />
+
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -717,6 +742,9 @@
                                             <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
                                                     PointerPressed="OnHandlePointerPressed" />
+
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -741,6 +769,9 @@
                                             <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
                                                     PointerPressed="OnHandlePointerPressed" />
+
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -818,6 +849,9 @@
                                             <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
                                                     PointerPressed="OnHandlePointerPressed" />
+
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -846,6 +880,9 @@
                                             <Border Tag="right" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-4,0" Cursor="SizeWestEast"
                                                     PointerPressed="OnHandlePointerPressed" />
+
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -881,6 +918,9 @@
                                             <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
                                                     PointerPressed="OnHandlePointerPressed" />
+
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
@@ -949,6 +989,9 @@
                                             <Border Tag="bottomright" Width="8" Height="8" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinAccentBrush}" BorderThickness="1.5"
                                                     CornerRadius="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" Cursor="BottomRightCorner"
                                                     PointerPressed="OnHandlePointerPressed" />
+
+                                            <!-- Floating Quick Ask AI Pill -->
+                                            <controls:AskAiButton IsVisible="{Binding !IsInEditMode}" />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>

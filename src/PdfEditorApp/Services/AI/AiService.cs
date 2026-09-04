@@ -354,7 +354,7 @@ public class AiService : IAiService
 
         var itemMatches = Regex.Matches(
             html,
-            @"<a\s+href=""/library/([^""/?#]+)""(?:\s+class=""[^""]*"")?>(.*?)(?=</li>|<a\s+href=""/library/|$)",
+            """<a\s+href="/library/([^"/?#]+)"(?:\s+class="[^"]*")?>(.*?)(?=</li>|<a\s+href="/library/|$)""",
             RegexOptions.Singleline);
 
         foreach (Match m in itemMatches)
@@ -367,14 +367,14 @@ public class AiService : IAiService
 
             // Extract Description
             string desc = string.Empty;
-            var descMatch = Regex.Match(block, @"<p\s+class=""max-w-lg[^""]*""[^>]*>(.*?)</p>", RegexOptions.Singleline);
+            var descMatch = Regex.Match(block, """<p\s+class="max-w-lg[^"]*"[^>]*>(.*?)</p>""", RegexOptions.Singleline);
             if (descMatch.Success)
             {
                 desc = System.Net.WebUtility.HtmlDecode(descMatch.Groups[1].Value.Trim());
             }
 
             // Extract Capability Badges (vision, tools, thinking, cloud, etc.)
-            var badgeMatches = Regex.Matches(block, @"<span[^>]*class=""[^""]*rounded-md[^""]*""[^>]*>\s*([a-zA-Z0-9_\-\.]+)\s*</span>", RegexOptions.Singleline);
+            var badgeMatches = Regex.Matches(block, """<span[^>]*class="[^"]*rounded-md[^"]*"[^>]*>\s*([a-zA-Z0-9_\-\.]+)\s*</span>""", RegexOptions.Singleline);
             var capabilities = new List<string>();
             bool isCloud = false;
 
@@ -398,7 +398,7 @@ public class AiService : IAiService
 
             // Extract Pulls (e.g. 69.7K Pulls)
             string pulls = string.Empty;
-            var pullsMatch = Regex.Match(block, @">\s*([0-9\.]+[KMB]?)\s*</span>\s*<span[^>]*>&nbsp;Pulls</span>", RegexOptions.Singleline);
+            var pullsMatch = Regex.Match(block, """>\s*([0-9\.]+[KMB]?)\s*</span>\s*<span[^>]*>&nbsp;Pulls</span>""", RegexOptions.Singleline);
             if (pullsMatch.Success)
             {
                 pulls = pullsMatch.Groups[1].Value + " pulls";

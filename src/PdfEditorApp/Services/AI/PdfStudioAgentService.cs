@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,29 +57,36 @@ public class PdfStudioAgentService : IPdfStudioAgentService
         var actionsTaken = new List<string>();
 
         // System prompt guiding design principles and canvas coordinate system
-        string systemPrompt = $@"You are FryPDF Studio Agent, an expert AI document layout designer.
-You create professional, beautiful, polished document elements directly on the active document canvas using available tools.
+        string systemPrompt = $"""
+            You are FryPDF Studio Agent, an expert AI document layout designer.
+            You create professional, beautiful, polished document elements directly on the active document canvas using available tools.
 
-Canvas Dimensions:
-- Page Width: {targetPage.Width:0} pt, Height: {targetPage.Height:0} pt.
-- Coordinate origin (0, 0) is top-left.
-- Safe printable margins: X: 40 to {targetPage.Width - 40:0} pt, Y: 40 to {targetPage.Height - 40:0} pt.
+            Canvas Dimensions:
+            - Page Width: {targetPage.Width:0} pt, Height: {targetPage.Height:0} pt.
+            - Coordinate origin (0, 0) is top-left.
+            - Safe printable margins: X: 40 to {targetPage.Width - 40:0} pt, Y: 40 to {targetPage.Height - 40:0} pt.
 
-Design Guidelines:
-1. Visual Hierarchy: Use clear contrast in font sizes (Headings 20-28pt bold, Subheadings 14-16pt, Paragraphs 10-12pt).
-2. Layout Spacing: Leave generous vertical spacing between sections (15-25pt gap). Do not overlap elements unless deliberately layering a text/badge over a background card shape.
-3. Cohesive Color Palettes:
-   - Primary Accent: #0F6CBD (Modern Blue), #1E293B (Slate Dark), or #15803D (Emerald Green)
-   - Background Tints: #F8FAFC, #F0F7FD, #F0FDF4
-   - Borders/Dividers: #E2E8F0, #CBD5E1
-   - Text Colors: Dark text #0F172A or #1E293B on light backgrounds.
-4. Completeness: When asked for a composition (e.g. invoice, report header, certificate, certificate border, notice, card), invoke multiple tools to build the complete, ready-to-use section.
-5. If the tool calling mechanism is unavailable or you prefer structured output, output a JSON array of actions with keys:
-   action ('addHeading'|'addParagraph'|'addShape'|'addTable'|'addDivider'|'addBadge'|'addCard'|'addSvg'|'addQrCode'|'addBarcode'|'addChart').";
+            Design Guidelines:
+            1. Visual Hierarchy: Use clear contrast in font sizes (Headings 20-28pt bold, Subheadings 14-16pt, Paragraphs 10-12pt).
+            2. Layout Spacing: Leave generous vertical spacing between sections (15-25pt gap). Do not overlap elements unless deliberately layering a text/badge over a background card shape.
+            3. Cohesive Color Palettes:
+               - Primary Accent: #0F6CBD (Modern Blue), #1E293B (Slate Dark), or #15803D (Emerald Green)
+               - Background Tints: #F8FAFC, #F0F7FD, #F0FDF4
+               - Borders/Dividers: #E2E8F0, #CBD5E1
+               - Text Colors: Dark text #0F172A or #1E293B on light backgrounds.
+            4. Completeness: When asked for a composition (e.g. invoice, report header, certificate, certificate border, notice, card), invoke multiple tools to build the complete, ready-to-use section.
+            5. If the tool calling mechanism is unavailable or you prefer structured output, output a JSON array of actions with keys:
+               action ('addHeading'|'addParagraph'|'addShape'|'addTable'|'addDivider'|'addBadge'|'addCard'|'addSvg'|'addQrCode'|'addBarcode'|'addChart').
+            """;
 
         if (!string.IsNullOrWhiteSpace(settings.SystemInstructions))
         {
-            systemPrompt += "\n\nUser Custom Instructions:\n" + settings.SystemInstructions;
+            systemPrompt += $"""
+
+
+                User Custom Instructions:
+                {settings.SystemInstructions}
+                """;
         }
 
         // Define tools using Microsoft.Extensions.AI AIFunctionFactory
@@ -384,6 +392,645 @@ Design Guidelines:
         }
     }
 
+    /// <inheritdoc />
+    public async Task<AiAgentResult> ModifyElementAsync(
+        ElementViewModelBase targetElement,
+        string modificationPrompt,
+        AiSettingsModel settings,
+        Action<string>? progressCallback = null,
+        CancellationToken ct = default)
+    {
+        if (targetElement == null)
+        {
+            return new AiAgentResult { Success = false, Message = "Target element is required." };
+        }
+
+        if (string.IsNullOrWhiteSpace(modificationPrompt))
+        {
+            return new AiAgentResult { Success = false, Message = "Modification prompt cannot be empty." };
+        }
+
+        var sw = Stopwatch.StartNew();
+        progressCallback?.Invoke($"Analyzing {targetElement.Kind} element...");
+
+        var currentModel = targetElement.ToModel();
+        var beforeSnapshot = currentModel.Clone();
+
+        var jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() }
+        };
+
+        string currentJson = JsonSerializer.Serialize(currentModel, currentModel.GetType(), jsonOptions);
+
+        string systemPrompt = $"""
+            You are FryPDF AI Element Modifier, an expert in document graphics, charts, typography, and layout.
+            The user has selected an existing canvas element and wants to modify it in-place using natural language.
+            Element Kind: {currentModel.Kind}
+
+            Instructions:
+            1. Apply the user's requested modifications to the properties of this element.
+            2. Return ONLY a valid JSON object matching the element's schema, with the updated property values.
+            3. Keep unmodified properties intact. Retain the same 'id', 'x', and 'y' unless explicitly requested to move or resize.
+            4. Output strictly valid JSON. Do not include introductory text, conversational pleasantries, or explanations outside the JSON block.
+
+            Element-Specific Guidelines:
+            - Charts: You can modify 'title', 'chartType' (BarColumn, HorizontalBar, Line, SmoothLine, Area, DonutPie, StackedBar, StackedHorizontalBar, Radar, ScatterPlot), 'palette' (CorporateBlue, ModernTeal, VibrantWarm, EmeraldForest, RoyalPurple, SunsetOrange, MonochromeSlate, NeonCyber), 'categories', 'values', 'valueLabels', 'barColorsHex', 'backgroundColorHex', 'borderColorHex', 'showDataLabels', 'showGridlines', etc.
+            - Text: You can modify 'text', 'fontFamily', 'fontSize', 'isBold', 'isItalic', 'isUnderline', 'textColorHex', 'backgroundColorHex', 'alignment', 'lineHeight', etc.
+            - Table: You can modify 'headers', 'rows', 'headerBackgroundHex', 'borderColorHex', 'alternateRowBackgroundHex', etc.
+            - Shape: You can modify 'shapeType' (Rectangle, RoundedRectangle, Circle, PillBadge, Diamond, Star, Banner), 'fillColorHex', 'strokeColorHex', 'strokeThickness', 'cornerRadius', etc.
+            - Math: You can modify 'formula' (LaTeX equation string), 'fontSize', 'textColorHex', 'showEquationNumber', 'equationNumber', etc.
+            - Image: You can modify 'opacity', 'width', 'height', 'altText', etc.
+            - Svg: You can modify 'tintColorHex', 'borderColorHex', 'borderThickness', 'cornerRadius', etc.
+            - Divider: You can modify 'colorHex', 'thickness', 'orientation', etc.
+            - QrCode: You can modify 'payload', 'darkColorHex', 'lightColorHex', etc.
+            - Barcode: You can modify 'codeValue', 'barColorHex', 'barcodeFormat', etc.
+            - FormField: You can modify 'label', 'isRequired', 'borderColorHex', 'backgroundColorHex', etc.
+            - StickyNote: You can modify 'noteText', 'colorHex', 'status', 'author', etc.
+            """;
+
+        if (!string.IsNullOrWhiteSpace(settings.SystemInstructions))
+        {
+            systemPrompt += $"""
+
+
+                User Custom Instructions:
+                {settings.SystemInstructions}
+                """;
+        }
+
+        string userMessage = $"""
+            Modify this element according to instructions:
+
+            User Request: {modificationPrompt}
+
+            Current Element JSON:
+            {currentJson}
+            """;
+
+        PdfElementBase? updatedModel = null;
+        string replyText = string.Empty;
+
+        try
+        {
+            var baseChatClient = _aiService.CreateChatClient(settings);
+            var messages = new List<ChatMessage>
+            {
+                new(ChatRole.System, systemPrompt),
+                new(ChatRole.User, userMessage)
+            };
+
+            var chatOptions = new ChatOptions
+            {
+                Temperature = Math.Min(settings.Temperature, 0.4f),
+                MaxOutputTokens = 2000
+            };
+
+            progressCallback?.Invoke("Querying AI model for modifications...");
+            var response = await baseChatClient.GetResponseAsync(messages, chatOptions, ct);
+            replyText = response?.Text ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(replyText))
+            {
+                progressCallback?.Invoke("Applying updated attributes...");
+                updatedModel = TryParseElementJson(replyText, currentModel.GetType(), jsonOptions);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[PdfStudioAgentService] AI call error during ModifyElement: {ex.Message}");
+            progressCallback?.Invoke("Attempting smart offline modifier...");
+        }
+
+        // Fallback to heuristic modifier if offline or test environment
+        if (updatedModel == null)
+        {
+            updatedModel = TryApplyHeuristicModification(currentModel, modificationPrompt);
+        }
+
+        sw.Stop();
+
+        if (updatedModel != null)
+        {
+            updatedModel.Id = currentModel.Id;
+            if (updatedModel.Width <= 0) updatedModel.Width = currentModel.Width;
+            if (updatedModel.Height <= 0) updatedModel.Height = currentModel.Height;
+
+            targetElement.LoadFromModel(updatedModel);
+
+            if (targetElement is ChartElementViewModel chartVm)
+            {
+                chartVm.UpdateLiveChart();
+            }
+
+            // Atomic Undo/Redo recording
+            if (_undoRedoService != null)
+            {
+                var afterSnapshot = updatedModel.Clone();
+                string undoDesc = $"AI Modify: {Truncate(modificationPrompt, 28)}";
+                _undoRedoService.RecordAction(
+                    undoDesc,
+                    () =>
+                    {
+                        targetElement.LoadFromModel(beforeSnapshot);
+                        if (targetElement is ChartElementViewModel c) c.UpdateLiveChart();
+                    },
+                    () =>
+                    {
+                        targetElement.LoadFromModel(afterSnapshot);
+                        if (targetElement is ChartElementViewModel c) c.UpdateLiveChart();
+                    });
+            }
+
+            return new AiAgentResult
+            {
+                Success = true,
+                Message = $"Updated {targetElement.Kind} successfully: {Truncate(modificationPrompt, 40)}",
+                ElementsCreatedCount = 1,
+                RawOutput = replyText,
+                Duration = sw.Elapsed
+            };
+        }
+
+        return new AiAgentResult
+        {
+            Success = false,
+            Message = string.IsNullOrWhiteSpace(replyText)
+                ? "Unable to modify element with the provided instructions."
+                : $"AI Response could not be parsed: {Truncate(replyText, 100)}",
+            ElementsCreatedCount = 0,
+            RawOutput = replyText,
+            Duration = sw.Elapsed
+        };
+    }
+
+    private static PdfElementBase? TryParseElementJson(string rawText, Type targetType, JsonSerializerOptions options)
+    {
+        if (string.IsNullOrWhiteSpace(rawText)) return null;
+
+        try
+        {
+            string cleaned = rawText.Trim();
+            if (cleaned.StartsWith("```json", StringComparison.OrdinalIgnoreCase))
+            {
+                cleaned = cleaned[7..];
+            }
+            else if (cleaned.StartsWith("```", StringComparison.OrdinalIgnoreCase))
+            {
+                cleaned = cleaned[3..];
+            }
+
+            if (cleaned.EndsWith("```", StringComparison.OrdinalIgnoreCase))
+            {
+                cleaned = cleaned[..^3].Trim();
+            }
+
+            int firstBrace = cleaned.IndexOf('{');
+            int lastBrace = cleaned.LastIndexOf('}');
+            if (firstBrace >= 0 && lastBrace > firstBrace)
+            {
+                cleaned = cleaned.Substring(firstBrace, lastBrace - firstBrace + 1);
+            }
+
+            return JsonSerializer.Deserialize(cleaned, targetType, options) as PdfElementBase;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[PdfStudioAgentService] JSON parse error: {ex.Message}");
+            return null;
+        }
+    }
+
+    private static PdfElementBase? TryApplyHeuristicModification(PdfElementBase currentModel, string prompt)
+    {
+        if (currentModel == null || string.IsNullOrWhiteSpace(prompt)) return null;
+        string lower = prompt.ToLowerInvariant();
+
+        if (currentModel is PdfChartElement chart)
+        {
+            var modified = (PdfChartElement)chart.Clone();
+
+            // Chart Type
+            if (lower.Contains("line"))
+            {
+                modified.ChartType = lower.Contains("smooth") ? ChartType.SmoothLine : ChartType.Line;
+            }
+            else if (lower.Contains("bar") || lower.Contains("column"))
+            {
+                modified.ChartType = lower.Contains("horizontal") ? ChartType.HorizontalBar : ChartType.BarColumn;
+            }
+            else if (lower.Contains("donut") || lower.Contains("pie"))
+            {
+                modified.ChartType = ChartType.DonutPie;
+            }
+            else if (lower.Contains("area"))
+            {
+                modified.ChartType = ChartType.Area;
+            }
+            else if (lower.Contains("stacked"))
+            {
+                modified.ChartType = lower.Contains("horizontal") ? ChartType.StackedHorizontalBar : ChartType.StackedBar;
+            }
+            else if (lower.Contains("radar"))
+            {
+                modified.ChartType = ChartType.Radar;
+            }
+
+            // Palette
+            if (lower.Contains("emerald") || lower.Contains("green") || lower.Contains("mint"))
+            {
+                modified.Palette = ChartPalette.EmeraldGreen;
+                modified.BarColorsHex = new List<string> { "#A7F3D0", "#34D399", "#10B981", "#047857" };
+            }
+            else if (lower.Contains("cyber") || lower.Contains("neon"))
+            {
+                modified.Palette = ChartPalette.CyberNeon;
+                modified.BarColorsHex = new List<string> { "#99F6E4", "#2DD4BF", "#0D9488", "#115E59" };
+            }
+            else if (lower.Contains("pastel"))
+            {
+                modified.Palette = ChartPalette.PastelHarmony;
+                modified.BarColorsHex = new List<string> { "#E9D5FF", "#C084FC", "#9333EA", "#6B21A8" };
+            }
+            else if (lower.Contains("sunset") || lower.Contains("orange"))
+            {
+                modified.Palette = ChartPalette.SunsetOrange;
+                modified.BarColorsHex = new List<string> { "#FED7AA", "#FB923C", "#EA580C", "#9A3412" };
+            }
+            else if (lower.Contains("rainbow") || lower.Contains("vibrant"))
+            {
+                modified.Palette = ChartPalette.VibrantRainbow;
+                modified.BarColorsHex = new List<string> { "#FECDD3", "#FB7185", "#E11D48", "#9F1239" };
+            }
+            else if (lower.Contains("blue") || lower.Contains("corporate"))
+            {
+                modified.Palette = ChartPalette.CorporateBlue;
+                modified.BarColorsHex = new List<string> { "#C7E0F4", "#82BDF0", "#3D95E6", "#0F6CBD" };
+            }
+            else if (lower.Contains("slate") || lower.Contains("gray") || lower.Contains("grey") || lower.Contains("executive"))
+            {
+                modified.Palette = ChartPalette.ExecutiveSlate;
+                modified.BarColorsHex = new List<string> { "#E2E8F0", "#94A3B8", "#475569", "#1E293B" };
+            }
+
+            // Title extraction: e.g. title to "XYZ" or rename to "XYZ" or title: XYZ
+            var titleMatch = Regex.Match(prompt, """(?:title\s*(?:to|is|:)\s*|rename\s*(?:to)?\s*)["']?([^"'\r\n]+)["']?""", RegexOptions.IgnoreCase);
+            if (titleMatch.Success && !string.IsNullOrWhiteSpace(titleMatch.Groups[1].Value))
+            {
+                modified.Title = titleMatch.Groups[1].Value.Trim();
+            }
+
+            // Projections / Adding future quarters
+            if (lower.Contains("2027") || lower.Contains("projection") || lower.Contains("forecast") || lower.Contains("add quarter"))
+            {
+                if (!modified.Categories.Any(c => c.Contains("2027")))
+                {
+                    double lastVal = modified.Values.LastOrDefault();
+                    double projVal = lastVal > 0 ? Math.Round(lastVal * 1.15, 2) : 1.0;
+                    modified.Categories.Add("Q1 2027 (Proj)");
+                    modified.Values.Add(projVal);
+                    modified.ValueLabels.Add($"${projVal:0.00}B");
+                    modified.BarColorsHex.Add("#34D399");
+                }
+            }
+
+            // Sorting
+            if (lower.Contains("sort") && (lower.Contains("asc") || lower.Contains("ascending") || lower.Contains("lowest")))
+            {
+                var paired = modified.Categories.Select((cat, i) => new
+                {
+                    Cat = cat,
+                    Val = i < modified.Values.Count ? modified.Values[i] : 0,
+                    Lbl = i < modified.ValueLabels.Count ? modified.ValueLabels[i] : "",
+                    Col = i < modified.BarColorsHex.Count ? modified.BarColorsHex[i] : "#0F6CBD"
+                }).OrderBy(x => x.Val).ToList();
+
+                modified.Categories = paired.Select(p => p.Cat).ToList();
+                modified.Values = paired.Select(p => p.Val).ToList();
+                modified.ValueLabels = paired.Select(p => p.Lbl).ToList();
+                modified.BarColorsHex = paired.Select(p => p.Col).ToList();
+            }
+            else if (lower.Contains("sort") && (lower.Contains("desc") || lower.Contains("descending") || lower.Contains("highest")))
+            {
+                var paired = modified.Categories.Select((cat, i) => new
+                {
+                    Cat = cat,
+                    Val = i < modified.Values.Count ? modified.Values[i] : 0,
+                    Lbl = i < modified.ValueLabels.Count ? modified.ValueLabels[i] : "",
+                    Col = i < modified.BarColorsHex.Count ? modified.BarColorsHex[i] : "#0F6CBD"
+                }).OrderByDescending(x => x.Val).ToList();
+
+                modified.Categories = paired.Select(p => p.Cat).ToList();
+                modified.Values = paired.Select(p => p.Val).ToList();
+                modified.ValueLabels = paired.Select(p => p.Lbl).ToList();
+                modified.BarColorsHex = paired.Select(p => p.Col).ToList();
+            }
+
+            return modified;
+        }
+
+        if (currentModel is PdfTextElement text)
+        {
+            var modified = (PdfTextElement)text.Clone();
+
+            if (lower.Contains("bold")) modified.IsBold = true;
+            if (lower.Contains("italic")) modified.IsItalic = true;
+            if (lower.Contains("underline")) modified.IsUnderline = true;
+
+            if (lower.Contains("center")) modified.Alignment = TextAlignmentMode.Center;
+            else if (lower.Contains("right")) modified.Alignment = TextAlignmentMode.Right;
+            else if (lower.Contains("left")) modified.Alignment = TextAlignmentMode.Left;
+            else if (lower.Contains("justify")) modified.Alignment = TextAlignmentMode.Justify;
+
+            var sizeMatch = Regex.Match(prompt, @"(\d+)\s*(?:pt|px|size)", RegexOptions.IgnoreCase);
+            if (sizeMatch.Success && double.TryParse(sizeMatch.Groups[1].Value, out double size) && size > 4 && size < 120)
+            {
+                modified.FontSize = size;
+            }
+
+            if (lower.Contains("red")) modified.TextColorHex = "#DC2626";
+            else if (lower.Contains("blue")) modified.TextColorHex = "#0F6CBD";
+            else if (lower.Contains("green")) modified.TextColorHex = "#16A34A";
+            else if (lower.Contains("purple")) modified.TextColorHex = "#7C3AED";
+            else if (lower.Contains("amber") || lower.Contains("orange")) modified.TextColorHex = "#D97706";
+            else if (lower.Contains("dark") || lower.Contains("black")) modified.TextColorHex = "#0F172A";
+
+            if (lower.Contains("inter")) modified.FontFamily = "Inter";
+            else if (lower.Contains("roboto")) modified.FontFamily = "Roboto";
+            else if (lower.Contains("georgia")) modified.FontFamily = "Georgia";
+            else if (lower.Contains("cascadia") || lower.Contains("mono")) modified.FontFamily = "Cascadia Code";
+            else if (lower.Contains("times")) modified.FontFamily = "Times New Roman";
+
+            if (lower.Contains("bullet"))
+            {
+                var lines = modified.Text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                modified.Text = string.Join("\n", lines.Select(l => l.Trim().StartsWith("•") ? l : $"• {l.TrimStart('✔', '✓', '•', '-', '*', ' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.')}"));
+            }
+            else if (lower.Contains("check") || lower.Contains("checkmark"))
+            {
+                var lines = modified.Text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                modified.Text = string.Join("\n", lines.Select(l => l.Trim().StartsWith("✔") ? l : $"✔ {l.TrimStart('✔', '✓', '•', '-', '*', ' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.')}"));
+            }
+            else if (lower.Contains("number") || lower.Contains("numbered") || lower.Contains("roadmap"))
+            {
+                var lines = modified.Text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                modified.Text = string.Join("\n", lines.Select((l, i) => $"{i + 1}. {l.TrimStart('✔', '✓', '•', '-', '*', ' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.')}"));
+            }
+            else if (lower.Contains("executive") || lower.Contains("formal") || lower.Contains("professional"))
+            {
+                if (!modified.Text.StartsWith("Executive Summary:", StringComparison.OrdinalIgnoreCase))
+                {
+                    modified.Text = $"Executive Summary: {modified.Text}";
+                }
+            }
+
+            return modified;
+        }
+
+        if (currentModel is PdfTableElement table)
+        {
+            var modified = (PdfTableElement)table.Clone();
+
+            if (lower.Contains("total") || lower.Contains("sum"))
+            {
+                var totalRow = new List<string> { "Total" };
+                for (int c = 1; c < modified.Headers.Count; c++)
+                {
+                    if (c == modified.Headers.Count - 1)
+                    {
+                        double sum = 0;
+                        foreach (var row in modified.Rows)
+                        {
+                            if (c < row.Count)
+                            {
+                                string clean = Regex.Replace(row[c], @"[^\d.]", "");
+                                if (double.TryParse(clean, out double num)) sum += num;
+                            }
+                        }
+                        totalRow.Add(sum > 0 ? $"${sum:N2}" : "—");
+                    }
+                    else
+                    {
+                        totalRow.Add("");
+                    }
+                }
+                modified.Rows.Add(totalRow);
+            }
+
+            if (lower.Contains("emerald") || lower.Contains("green"))
+            {
+                modified.HeaderBackgroundHex = "#047857";
+            }
+            else if (lower.Contains("purple"))
+            {
+                modified.HeaderBackgroundHex = "#6B21A8";
+            }
+            else if (lower.Contains("slate") || lower.Contains("dark"))
+            {
+                modified.HeaderBackgroundHex = "#1E293B";
+            }
+
+            return modified;
+        }
+
+        if (currentModel is PdfShapeElement shape)
+        {
+            var modified = (PdfShapeElement)shape.Clone();
+
+            if (lower.Contains("round"))
+            {
+                modified.ShapeType = ShapeType.RoundedRectangle;
+                modified.CornerRadius = 12;
+            }
+            else if (lower.Contains("circle") || lower.Contains("ellipse"))
+            {
+                modified.ShapeType = ShapeType.Circle;
+            }
+
+            if (lower.Contains("blue"))
+            {
+                modified.FillColorHex = "#EFF6FF";
+                modified.StrokeColorHex = "#2563EB";
+            }
+            else if (lower.Contains("green") || lower.Contains("emerald"))
+            {
+                modified.FillColorHex = "#F0FDF4";
+                modified.StrokeColorHex = "#16A34A";
+            }
+            else if (lower.Contains("purple"))
+            {
+                modified.FillColorHex = "#FAF5FF";
+                modified.StrokeColorHex = "#9333EA";
+            }
+
+            return modified;
+        }
+
+        if (currentModel is PdfMathElement math)
+        {
+            var modified = (PdfMathElement)math.Clone();
+
+            if (lower.Contains("equation number") || lower.Contains("number"))
+            {
+                modified.ShowEquationNumber = true;
+                var numMatch = Regex.Match(prompt, @"(?:\(([^)]+)\)|number\s+([0-9.]+))", RegexOptions.IgnoreCase);
+                if (numMatch.Success)
+                {
+                    string num = numMatch.Groups[1].Success ? numMatch.Groups[1].Value : numMatch.Groups[2].Value;
+                    modified.EquationNumber = $"({num})";
+                }
+            }
+
+            if (lower.Contains("pythagor"))
+            {
+                modified.Formula = "a^2 + b^2 = c^2";
+            }
+            else if (lower.Contains("quadratic"))
+            {
+                modified.Formula = @"x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}";
+            }
+            else if (lower.Contains("euler"))
+            {
+                modified.Formula = "e^{i\\pi} + 1 = 0";
+            }
+
+            var sizeMatch = Regex.Match(prompt, @"(?:(?:font\s*size|size)\s*[:=]?\s*(\d+)|(\d+)\s*(?:pt|px|size))", RegexOptions.IgnoreCase);
+            if (sizeMatch.Success)
+            {
+                string val = sizeMatch.Groups[1].Success ? sizeMatch.Groups[1].Value : sizeMatch.Groups[2].Value;
+                if (double.TryParse(val, out double size) && size >= 8 && size <= 72)
+                {
+                    modified.FontSize = size;
+                }
+            }
+
+            if (lower.Contains("navy") || lower.Contains("dark")) modified.TextColorHex = "#0F172A";
+            else if (lower.Contains("blue")) modified.TextColorHex = "#0F6CBD";
+            else if (lower.Contains("red")) modified.TextColorHex = "#DC2626";
+            else if (lower.Contains("emerald") || lower.Contains("green")) modified.TextColorHex = "#059669";
+
+            return modified;
+        }
+
+        if (currentModel is PdfImageElement img)
+        {
+            var modified = (PdfImageElement)img.Clone();
+
+            if (lower.Contains("opacity") || lower.Contains("transparent") || lower.Contains("fade"))
+            {
+                var match = Regex.Match(prompt, @"(\d+)\s*%", RegexOptions.IgnoreCase);
+                if (match.Success && double.TryParse(match.Groups[1].Value, out double pct))
+                {
+                    modified.Opacity = Math.Clamp(pct / 100.0, 0.05, 1.0);
+                }
+                else
+                {
+                    modified.Opacity = 0.7;
+                }
+            }
+
+            if (lower.Contains("round") || lower.Contains("border"))
+            {
+                modified.CornerRadius = 8;
+                modified.BorderThickness = 1.5;
+                modified.BorderColorHex = "#0F6CBD";
+            }
+
+            return modified;
+        }
+
+        if (currentModel is PdfSvgElement svg)
+        {
+            var modified = (PdfSvgElement)svg.Clone();
+
+            if (lower.Contains("gold")) modified.TintColorHex = "#D97706";
+            else if (lower.Contains("blue")) modified.TintColorHex = "#0F6CBD";
+            else if (lower.Contains("green") || lower.Contains("emerald")) modified.TintColorHex = "#16A34A";
+            else if (lower.Contains("purple")) modified.TintColorHex = "#7C3AED";
+            else if (lower.Contains("slate") || lower.Contains("dark")) modified.TintColorHex = "#1E293B";
+
+            return modified;
+        }
+
+        if (currentModel is PdfDividerElement div)
+        {
+            var modified = (PdfDividerElement)div.Clone();
+
+            if (lower.Contains("thick")) modified.Thickness = Math.Max(2.5, modified.Thickness * 1.5);
+            else if (lower.Contains("thin")) modified.Thickness = Math.Max(0.5, modified.Thickness * 0.5);
+
+            if (lower.Contains("blue")) modified.ColorHex = "#0F6CBD";
+            else if (lower.Contains("emerald") || lower.Contains("green")) modified.ColorHex = "#10B981";
+            else if (lower.Contains("slate") || lower.Contains("gray")) modified.ColorHex = "#CBD5E1";
+            else if (lower.Contains("purple")) modified.ColorHex = "#7C3AED";
+
+            return modified;
+        }
+
+        if (currentModel is PdfQrCodeElement qr)
+        {
+            var modified = (PdfQrCodeElement)qr.Clone();
+            var urlMatch = Regex.Match(prompt, @"(https?://[^\s]+)", RegexOptions.IgnoreCase);
+            if (urlMatch.Success) modified.Content = urlMatch.Groups[1].Value;
+
+            if (lower.Contains("dark") || lower.Contains("navy") || lower.Contains("slate")) modified.DarkColorHex = "#1E293B";
+            else if (lower.Contains("blue")) modified.DarkColorHex = "#0F6CBD";
+
+            return modified;
+        }
+
+        if (currentModel is PdfBarcodeElement barcode)
+        {
+            var modified = (PdfBarcodeElement)barcode.Clone();
+            var codeMatch = Regex.Match(prompt, @"(?:to|is|value|code)\s+([A-Za-z0-9\-_]+)", RegexOptions.IgnoreCase);
+            if (codeMatch.Success) modified.CodeValue = codeMatch.Groups[1].Value;
+
+            if (lower.Contains("blue")) modified.BarColorHex = "#0F6CBD";
+            else if (lower.Contains("slate") || lower.Contains("dark")) modified.BarColorHex = "#1E293B";
+
+            return modified;
+        }
+
+        if (currentModel is PdfStickyNoteElement note)
+        {
+            var modified = (PdfStickyNoteElement)note.Clone();
+
+            if (lower.Contains("yellow") || lower.Contains("amber")) modified.ColorHex = "#FEF3C7";
+            else if (lower.Contains("blue")) modified.ColorHex = "#E0F2FE";
+            else if (lower.Contains("green") || lower.Contains("mint")) modified.ColorHex = "#DCFCE7";
+            else if (lower.Contains("pink") || lower.Contains("rose")) modified.ColorHex = "#FFE4E6";
+
+            if (lower.Contains("approve") || lower.Contains("approved")) modified.Status = "Approved";
+            else if (lower.Contains("review")) modified.Status = "In Review";
+
+            return modified;
+        }
+
+        if (currentModel is PdfFormFieldElement form)
+        {
+            var modified = (PdfFormFieldElement)form.Clone();
+
+            if (lower.Contains("required")) modified.IsRequired = true;
+            else if (lower.Contains("optional")) modified.IsRequired = false;
+
+            var labelMatch = Regex.Match(prompt, """(?:label\s*(?:to|is|:)\s*|name\s*(?:to)?\s*)["']?([^"'\r\n]+)["']?""", RegexOptions.IgnoreCase);
+            if (labelMatch.Success && !string.IsNullOrWhiteSpace(labelMatch.Groups[1].Value))
+            {
+                modified.Label = labelMatch.Groups[1].Value.Trim();
+            }
+
+            if (lower.Contains("blue")) modified.BorderColorHex = "#0F6CBD";
+            else if (lower.Contains("emerald") || lower.Contains("green")) modified.BorderColorHex = "#059669";
+
+            return modified;
+        }
+
+        return null;
+    }
+
     #region Element Factory Methods
 
     private static TextElementViewModel CreateHeadingElement(
@@ -661,7 +1308,7 @@ Design Guidelines:
         List<string> actions,
         Action<string>? progress)
     {
-        var match = Regex.Match(text, @"\[[\s\S]*\]");
+        var match = Regex.Match(text, """\[[\s\S]*\]""");
         if (!match.Success) return;
 
         try

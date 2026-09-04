@@ -289,7 +289,7 @@ public partial class AiSettingsViewModel : ViewModelBase
             var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // 1. User's saved custom models from history (dynamic - never need to touch codebase)
-            foreach (var customM in CustomModelHistory)
+            foreach (var customM in CustomModelHistory.ToList())
             {
                 if (seenIds.Add(customM))
                 {
@@ -325,9 +325,10 @@ public partial class AiSettingsViewModel : ViewModelBase
             }
 
             // Append any user custom models to quick picks
-            foreach (var customM in CustomModelHistory.Take(4))
+            var existingSuggestions = new HashSet<string>(PopularModelSuggestions, StringComparer.OrdinalIgnoreCase);
+            foreach (var customM in CustomModelHistory.ToList().Take(4))
             {
-                if (!PopularModelSuggestions.Contains(customM, StringComparer.OrdinalIgnoreCase))
+                if (existingSuggestions.Add(customM))
                 {
                     PopularModelSuggestions.Add(customM);
                 }
@@ -335,7 +336,7 @@ public partial class AiSettingsViewModel : ViewModelBase
         }
 
         // Match selected model from catalog if present
-        var match = AvailableModels.FirstOrDefault(m => m.Id.Equals(SelectedModelId, StringComparison.OrdinalIgnoreCase));
+        var match = AvailableModels.FirstOrDefault(m => string.Equals(m.Id, SelectedModelId, StringComparison.OrdinalIgnoreCase));
         if (match != null)
         {
             SelectedModel = match;

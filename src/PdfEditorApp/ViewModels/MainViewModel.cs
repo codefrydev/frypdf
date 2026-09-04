@@ -804,6 +804,7 @@ public partial class MainViewModel : ViewModelBase
         AiAssistant = new AiAssistantViewModel(studioAgent, _uiSettingsService ?? new UiSettingsService(), aiService)
         {
             GetCurrentPage = () => CurrentPage,
+            GetSelectedElement = () => CurrentPage?.SelectedElement ?? Inspector.SelectedElement,
             UndoRedo = UndoRedo,
             RequestOpenSettings = () => NavigateToSettingsCommand.Execute(null)
         };
@@ -936,7 +937,29 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void OpenAiAssistant()
     {
-        AiAssistant.Open();
+        var target = CurrentPage?.SelectedElement ?? Inspector.SelectedElement;
+        if (target != null)
+        {
+            AiAssistant.OpenForElement(target);
+        }
+        else
+        {
+            AiAssistant.Open();
+        }
+    }
+
+    [RelayCommand]
+    public void AskAiToModify(ElementViewModelBase? element = null)
+    {
+        var target = element ?? CurrentPage?.SelectedElement ?? Inspector.SelectedElement;
+        if (target != null)
+        {
+            AiAssistant.OpenForElement(target);
+        }
+        else
+        {
+            AiAssistant.Open();
+        }
     }
 
     [RelayCommand]

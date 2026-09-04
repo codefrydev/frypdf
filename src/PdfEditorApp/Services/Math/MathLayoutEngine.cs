@@ -232,11 +232,13 @@ public static class MathLayoutEngine
         double w = System.Math.Max(240, options.TargetWidth > 0 ? options.TargetWidth : 240);
         double h = System.Math.Max(50, options.TargetHeight > 0 ? options.TargetHeight : 50);
 
-        return $@"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 {w} {h}"" width=""{w}"" height=""{h}"">
-  <rect width=""{w}"" height=""{h}"" rx=""4"" fill=""#FEF2F2"" stroke=""#F87171"" stroke-width=""1"" />
-  <text x=""12"" y=""24"" fill=""#B91C1C"" font-size=""12"" font-family=""monospace"" font-weight=""bold"">{EscapeXml(rawFormula)}</text>
-  <text x=""12"" y=""40"" fill=""#DC2626"" font-size=""9"" font-family=""sans-serif"">Syntax Error: {EscapeXml(error)}</text>
-</svg>";
+        return $"""
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">
+              <rect width="{w}" height="{h}" rx="4" fill="#FEF2F2" stroke="#F87171" stroke-width="1" />
+              <text x="12" y="24" fill="#B91C1C" font-size="12" font-family="monospace" font-weight="bold">{EscapeXml(rawFormula)}</text>
+              <text x="12" y="40" fill="#DC2626" font-size="9" font-family="sans-serif">Syntax Error: {EscapeXml(error)}</text>
+            </svg>
+            """;
     }
 
     public static string EscapeXml(string? input)

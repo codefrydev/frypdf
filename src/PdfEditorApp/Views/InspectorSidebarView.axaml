@@ -4,6 +4,7 @@
              xmlns:elvm="using:PdfEditorApp.ViewModels.ElementViewModels"
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:controls="using:PdfEditorApp.Views.Controls"
              x:Class="PdfEditorApp.Views.InspectorSidebarView"
              x:DataType="vm:InspectorViewModel">
 
@@ -33,6 +34,9 @@
                             <TextBlock Text="Properties &amp; Format" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <controls:AskAiButton Variant="Subtle"
+                                                  CommandParameter="{Binding SelectedElement}"
+                                                  IsVisible="{Binding HasSelectedElement}" />
                             <Border Background="{DynamicResource WinAccentLightBrush}" CornerRadius="4" Padding="6,2">
                                 <TextBlock Text="{Binding ActiveCategoryName}"
                                            FontSize="11"

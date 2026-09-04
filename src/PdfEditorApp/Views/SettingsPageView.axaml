@@ -3,6 +3,7 @@
              xmlns:vm="using:PdfEditorApp.ViewModels"
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:coreModels="clr-namespace:PdfEditorApp.Core.Models;assembly=PdfEditorApp.Core"
              x:Class="PdfEditorApp.Views.SettingsPageView"
              x:DataType="vm:SettingsViewModel">
 
@@ -99,7 +100,380 @@
         </Border>
 
         <!-- ========================================== -->
-        <!-- 2. NOTIFICATION & SNACKBAR SETTINGS CARD  -->
+        <!-- 2. AI STUDIO & LOCAL LLM SETTINGS CARD    -->
+        <!-- ========================================== -->
+        <Border Classes="setting-card" DataContext="{Binding AiSettings}">
+            <StackPanel Spacing="16">
+
+                <!-- Section Header -->
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <Border Grid.Column="0" Width="38" Height="38" Background="#EDE9FE" CornerRadius="10" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="AutoFixHigh" Width="22" Height="22" Foreground="#7C3AED" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="AI Studio &amp; Local LLM Engine" FontSize="14.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                            <Border Background="#EDE9FE" CornerRadius="4" Padding="6,1.5" VerticalAlignment="Center">
+                                <TextBlock Text="Microsoft.Extensions.AI" FontSize="10" FontWeight="Bold" Foreground="#7C3AED" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="Configure local Ollama models (100% offline &amp; free) or cloud providers to generate canvas elements." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                    </StackPanel>
+                    <Border Grid.Column="2" Background="#DCFCE7" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <materialIcons:MaterialIcon Kind="ShieldCheckOutline" Width="13" Height="13" Foreground="#15803D" VerticalAlignment="Center" />
+                            <TextBlock Text="Local LLM Ready" FontSize="10" FontWeight="Bold" Foreground="#15803D" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Separator Height="1" Background="{DynamicResource WinBorderSubtleBrush}" />
+
+                <!-- A. Provider Selector (3 segmented buttons) -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="AI Model Provider" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                        <!-- Ollama Local & Free Cloud -->
+                        <Button Grid.Column="0" Classes="setting-segment-btn"
+                                Classes.active="{Binding SelectedProvider, Converter={StaticResource EqualityConverter}, ConverterParameter=OllamaLocal}"
+                                Command="{Binding SetProviderCommand}" CommandParameter="OllamaLocal">
+                            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="ShieldCheckOutline" Width="15" Height="15" Foreground="#15803D" VerticalAlignment="Center" />
+                                <StackPanel VerticalAlignment="Center" Spacing="1">
+                                    <TextBlock Text="Ollama (Local &amp; Cloud)" FontWeight="SemiBold" />
+                                    <TextBlock Text="Free Local &amp; Free Cloud Tier" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- OpenAI Cloud -->
+                        <Button Grid.Column="1" Classes="setting-segment-btn"
+                                Classes.active="{Binding SelectedProvider, Converter={StaticResource EqualityConverter}, ConverterParameter=OpenAiCloud}"
+                                Command="{Binding SetProviderCommand}" CommandParameter="OpenAiCloud">
+                            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="CloudOutline" Width="15" Height="15" Foreground="#6D28D9" VerticalAlignment="Center" />
+                                <StackPanel VerticalAlignment="Center" Spacing="1">
+                                    <TextBlock Text="OpenAI (Cloud)" FontWeight="SemiBold" />
+                                    <TextBlock Text="Paid / API Key" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Custom OpenAI-Compatible -->
+                        <Button Grid.Column="2" Classes="setting-segment-btn"
+                                Classes.active="{Binding SelectedProvider, Converter={StaticResource EqualityConverter}, ConverterParameter=CustomOpenAiCompatible}"
+                                Command="{Binding SetProviderCommand}" CommandParameter="CustomOpenAiCompatible">
+                            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="Api" Width="15" Height="15" Foreground="#0F6CBD" VerticalAlignment="Center" />
+                                <StackPanel VerticalAlignment="Center" Spacing="1">
+                                    <TextBlock Text="Custom Compatible" FontWeight="SemiBold" />
+                                    <TextBlock Text="Groq / OpenRouter / LM" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+
+                <!-- B. Provider-Specific Fields -->
+                <!-- 1. Ollama Endpoint & Model Detection -->
+                <StackPanel Spacing="8" IsVisible="{Binding IsOllamaProvider}">
+                    <TextBlock Text="Ollama Service Endpoint" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBox Grid.Column="0" Text="{Binding OllamaEndpoint, Mode=TwoWay}"
+                                 CornerRadius="8" Padding="10,8" FontSize="12"
+                                 PlaceholderText="http://localhost:11434 (or https://your-ollama-cloud-url)" />
+
+                        <Button Grid.Column="1"
+                                Command="{Binding DiscoverModelsCommand}"
+                                IsEnabled="{Binding !IsDetectingModels}"
+                                Background="{DynamicResource WinAccentLightBrush}"
+                                BorderBrush="{DynamicResource WinAccentBrush}"
+                                BorderThickness="1"
+                                Foreground="{DynamicResource WinAccentBrush}"
+                                CornerRadius="8" Padding="14,8" FontSize="12" FontWeight="SemiBold"
+                                Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="Refresh" Width="15" Height="15" VerticalAlignment="Center" />
+                                <TextBlock Text="Detect Installed Models" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- Optional Ollama Cloud API Key / Token -->
+                    <StackPanel Spacing="4">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="Ollama Cloud Token / API Key (Optional)" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                            <TextBlock Grid.Column="1" Text="Leave blank if using local Ollama" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                        </Grid>
+                        <TextBox Text="{Binding OllamaApiKey, Mode=TwoWay}"
+                                 PasswordChar="•"
+                                 CornerRadius="8" Padding="10,8" FontSize="12"
+                                 PlaceholderText="Optional token for authenticated Ollama Cloud / remote endpoints" />
+                    </StackPanel>
+
+                    <!-- Guidance Banner -->
+                    <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <materialIcons:MaterialIcon Grid.Column="0" Kind="InformationOutline" Width="18" Height="18" Foreground="#0284C7" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Supports both 100% offline local Ollama ('ollama serve') and Ollama Free Cloud tier. Models are automatically tagged as [Free / Local] or [Free / Cloud] based on whether the endpoint is on-device or remote."
+                                       FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <!-- 2. Cloud / Custom Credentials -->
+                <StackPanel Spacing="10" IsVisible="{Binding !IsOllamaProvider}">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="API Key" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                            <TextBox Text="{Binding OpenAiApiKey, Mode=TwoWay}"
+                                     PasswordChar="•"
+                                     CornerRadius="8" Padding="10,8" FontSize="12"
+                                     PlaceholderText="sk-... (stored securely in local settings)" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Spacing="4" IsVisible="{Binding IsCustomProvider}">
+                            <TextBlock Text="Custom Base URL" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                            <TextBox Text="{Binding CustomBaseUrl, Mode=TwoWay}"
+                                     CornerRadius="8" Padding="10,8" FontSize="12"
+                                     PlaceholderText="https://api.groq.com/openai/v1" />
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Spacing="4" IsVisible="{Binding IsCustomProvider}">
+                        <TextBlock Text="Custom Model Identifier" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                        <TextBox Text="{Binding CustomModelName, Mode=TwoWay}"
+                                 CornerRadius="8" Padding="10,8" FontSize="12"
+                                 PlaceholderText="e.g. llama-3.3-70b-versatile, mixtral-8x7b-32768" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- C. Model Selection (Direct text input + dynamic browse + live Ollama library fetch) -->
+                <StackPanel Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock Text="Active AI Model Identifier" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="Type any model identifier or pick from the live Ollama &amp; Cloud catalog." FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                        </StackPanel>
+
+                        <!-- Action buttons: Detect installed & Fetch from Ollama library -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <!-- Detect Installed -->
+                            <Button Command="{Binding DiscoverModelsCommand}"
+                                    IsEnabled="{Binding !IsDetectingModels}"
+                                    Background="{DynamicResource WinHoverBrush}"
+                                    BorderBrush="{DynamicResource WinBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="10,5"
+                                    FontSize="11"
+                                    FontWeight="Medium"
+                                    Cursor="Hand"
+                                    ToolTip.Tip="Queries your running Ollama instance (/api/tags) for all installed &amp; cloud models">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="Refresh" Width="13" Height="13" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="Detect Installed" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Fetch from Ollama Library (Live) -->
+                            <Button Command="{Binding FetchOnlineLibraryCommand}"
+                                    IsEnabled="{Binding !IsFetchingLibrary}"
+                                    Background="{DynamicResource WinHoverBrush}"
+                                    BorderBrush="{DynamicResource WinBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="10,5"
+                                    FontSize="11"
+                                    FontWeight="Medium"
+                                    Cursor="Hand"
+                                    ToolTip.Tip="Fetches latest and trending models directly from ollama.com online registry">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="CloudDownloadOutline" Width="13" Height="13" Foreground="#2563EB" VerticalAlignment="Center" />
+                                    <TextBlock Text="Fetch from Ollama Library" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Direct Model Identifier Input & Dropdown Picker -->
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding SelectedModelId, Mode=TwoWay}"
+                                 CornerRadius="8"
+                                 Padding="12,9"
+                                 FontSize="12.5"
+                                 FontWeight="SemiBold"
+                                 PlaceholderText="Type model name (e.g. deepseek-v3.1:671b-cloud, qwen3.8-flash-next, glm-5.3-flash, llama3.2)..." />
+
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding AvailableModels}"
+                                  SelectedItem="{Binding SelectedModel, Mode=TwoWay}"
+                                  CornerRadius="8"
+                                  Padding="10,7"
+                                  Width="260"
+                                  ToolTip.Tip="Browse all discovered and library models">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="coreModels:AiModelInfo">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,2">
+                                        <!-- Badge -->
+                                        <Border Grid.Column="0"
+                                                Background="{Binding BadgeBackgroundColor}"
+                                                BorderBrush="{Binding BadgeBorderColor}"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
+                                                Padding="5,1.5"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding TierBadgeText}"
+                                                       FontSize="9.5"
+                                                       FontWeight="Bold"
+                                                       Foreground="{Binding BadgeForegroundColor}" />
+                                        </Border>
+
+                                        <!-- Name & Category -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="11.5" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+
+                                        <!-- Size or cloud indicator -->
+                                        <TextBlock Grid.Column="2" Text="{Binding FormattedSize}" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Quick Pick Suggestions -->
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <TextBlock Text="Quick Picks:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" Margin="0,0,2,0" />
+                        <ItemsControl ItemsSource="{Binding PopularModelSuggestions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).AiSettings.SelectModelCommand}"
+                                            CommandParameter="{Binding}"
+                                            Background="{DynamicResource WinPanelBrush}"
+                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="9,3"
+                                            Margin="0,0,6,4"
+                                            FontSize="10.5"
+                                            FontWeight="Medium"
+                                            Cursor="Hand">
+                                        <TextBlock Text="{Binding}" Foreground="{DynamicResource WinTextBrush}" />
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Active Model Info Card (Live, Guaranteed Non-Null) -->
+                    <Border Background="{DynamicResource WinCardHoverBrush}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="14,10">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalAlignment="Center">
+                            <!-- Tier Badge -->
+                            <Border Grid.Column="0"
+                                    Background="{Binding ActiveModelInfo.BadgeBackgroundColor}"
+                                    BorderBrush="{Binding ActiveModelInfo.BadgeBorderColor}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="8,4"
+                                    VerticalAlignment="Center">
+                                <StackPanel HorizontalAlignment="Center" Spacing="2">
+                                    <TextBlock Text="{Binding ActiveModelInfo.TierBadgeText}"
+                                               FontSize="10.5"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"
+                                               Foreground="{Binding ActiveModelInfo.BadgeForegroundColor}" />
+                                    <TextBlock Text="{Binding ActiveModelInfo.FormattedSize}"
+                                               FontSize="9.5"
+                                               HorizontalAlignment="Center"
+                                               Foreground="{Binding ActiveModelInfo.BadgeForegroundColor}"
+                                               IsVisible="{Binding ActiveModelInfo.FormattedSize, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Model Details -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{Binding ActiveModelInfo.DisplayName}"
+                                               FontWeight="Bold"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource WinTextBrush}" />
+                                    <Border Background="{DynamicResource WinPanelBrush}"
+                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="5,1"
+                                            VerticalAlignment="Center"
+                                            IsVisible="{Binding ActiveModelInfo.ParameterSize, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                        <TextBlock Text="{Binding ActiveModelInfo.ParameterSize}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" />
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="{Binding ActiveModelInfo.Description}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource WinMutedBrush}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <!-- Capabilities / Status -->
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Spacing="2">
+                                <Border Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding ActiveModelInfo.Capabilities}"
+                                               FontSize="10"
+                                               FontWeight="SemiBold"
+                                               Foreground="#4F46E5" />
+                                </Border>
+                                <TextBlock Text="{Binding ActiveModelInfo.Category}"
+                                           FontSize="10"
+                                           HorizontalAlignment="Right"
+                                           Foreground="{DynamicResource WinSubtleBrush}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <!-- D. Connection Verification Test -->
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" VerticalAlignment="Center">
+                    <Button Grid.Column="0"
+                            Command="{Binding TestConnectionCommand}"
+                            IsEnabled="{Binding !IsTestingConnection}"
+                            Background="{DynamicResource WinHoverBrush}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
+                            BorderThickness="1"
+                            Foreground="{DynamicResource WinTextBrush}"
+                            CornerRadius="8" Padding="14,8" FontSize="12" FontWeight="SemiBold"
+                            Cursor="Hand">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="LightningBoltOutline" Width="15" Height="15" Foreground="#D97706" VerticalAlignment="Center" />
+                            <TextBlock Text="Test Connection" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Status Display -->
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding TestConnectionStatus}"
+                               FontSize="11.5"
+                               FontWeight="Medium"
+                               Foreground="{Binding TestConnectionSuccess, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='#15803D|#DC2626'}"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                </Grid>
+
+            </StackPanel>
+        </Border>
+
+        <!-- ========================================== -->
+        <!-- 3. NOTIFICATION & SNACKBAR SETTINGS CARD  -->
         <!-- ========================================== -->
         <Border Classes="setting-card">
             <StackPanel Spacing="16">

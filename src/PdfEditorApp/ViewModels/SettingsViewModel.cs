@@ -200,6 +200,8 @@ public partial class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(PreviewCloseBrush));
     }
 
+    public AiSettingsViewModel AiSettings { get; }
+
     public SettingsViewModel() : this(new UiSettingsService(), new ThemeService())
     {
     }
@@ -208,6 +210,7 @@ public partial class SettingsViewModel : ViewModelBase
     {
         _uiSettingsService = uiSettingsService;
         _themeService = themeService;
+        AiSettings = new AiSettingsViewModel(_uiSettingsService, new Services.AI.AiService());
 
         LoadFromSettings(_uiSettingsService.Settings);
         _uiSettingsService.SettingsChanged += LoadFromSettings;

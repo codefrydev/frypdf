@@ -53,6 +53,7 @@ public partial class MainViewModel : ViewModelBase
     public PdfViewerViewModel PdfViewer { get; }
     public DataStudioViewModel DataStudio { get; }
     public BatchGenerationViewModel BatchGeneration { get; }
+    public AiAssistantViewModel AiAssistant { get; }
 
     // --- HOME / EDITOR / VIEWER VIEW-SWITCHING ---
 
@@ -798,6 +799,15 @@ public partial class MainViewModel : ViewModelBase
             };
         }
 
+        var aiService = new Services.AI.AiService();
+        var studioAgent = new Services.AI.PdfStudioAgentService(aiService, UndoRedo);
+        AiAssistant = new AiAssistantViewModel(studioAgent, _uiSettingsService ?? new UiSettingsService(), aiService)
+        {
+            GetCurrentPage = () => CurrentPage,
+            UndoRedo = UndoRedo,
+            RequestOpenSettings = () => NavigateToSettingsCommand.Execute(null)
+        };
+
         // Set up Home page
         Home = homeViewModel ?? new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, effectiveToolFactory, _themeService, _uiSettingsService);
 
@@ -921,6 +931,12 @@ public partial class MainViewModel : ViewModelBase
     {
         WorkflowBuilder.StorageProvider = StorageProvider;
         WorkflowBuilder.Open();
+    }
+
+    [RelayCommand]
+    public void OpenAiAssistant()
+    {
+        AiAssistant.Open();
     }
 
     [RelayCommand]

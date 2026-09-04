@@ -298,6 +298,7 @@ public partial class MainViewModel
         AllPaletteCommands.Clear();
 
         // 1. File Operations
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "AI Assistant: Generate Canvas Elements", Subtitle = "Prompt local Ollama or cloud AI to generate document elements", Category = "AI Studio", IconKind = "AutoFixHigh", Shortcut = "⌘I", Action = () => OpenAiAssistantCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Open PDF to Read (PDF Reader Mode)", Subtitle = "Acrobat-style distraction-free reading, bookmarks & text search", Category = "File", IconKind = "BookOpenPageVariantOutline", Action = () => OpenPdfReaderCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Save Project", Subtitle = "Save editable FryPDF project archive (.frypdf)", Category = "File", IconKind = "ContentSaveOutline", Shortcut = "⌘S", Action = () => SaveProjectCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Open Project", Subtitle = "Open existing FryPDF project archive (.frypdf)", Category = "File", IconKind = "FolderOpenOutline", Shortcut = "⌘O", Action = () => OpenProjectCommand.Execute(null) });

@@ -1,0 +1,302 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Dialogs.AiAssistantDialog"
+             x:DataType="vm:AiAssistantViewModel">
+
+    <UserControl.Resources>
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+    </UserControl.Resources>
+
+    <!-- Modal Backdrop Overlay -->
+    <Grid Background="#75000000"
+          IsVisible="{Binding IsOpen}">
+
+        <!-- Studio Assistant Card -->
+        <Border Width="740"
+                MaxHeight="720"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="14"
+                BoxShadow="0 24 64 #45000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Padding="24">
+
+            <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+                <!-- 1. Header Bar -->
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Margin="0,0,0,16">
+                    <!-- Sparkle / AI Gradient Icon -->
+                    <Border Grid.Column="0" Width="44" Height="44" Background="#EDE9FE" CornerRadius="12" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="AutoFixHigh" Width="24" Height="24" Foreground="#7C3AED" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+
+                    <!-- Title & Model Indicator -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <TextBlock Text="AI Studio Assistant" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+
+                            <!-- 1. Free Local Badge -->
+                            <Border Background="#DCFCE7"
+                                    BorderBrush="#86EFAC"
+                                    BorderThickness="1"
+                                    CornerRadius="5"
+                                    Padding="7,2"
+                                    VerticalAlignment="Center"
+                                    IsVisible="{Binding IsActiveModelFreeLocal}">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="ShieldCheckOutline" Width="13" Height="13" Foreground="#15803D" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding ActiveModelDisplayName}" FontSize="11" FontWeight="SemiBold" Foreground="#15803D" VerticalAlignment="Center" />
+                                    <TextBlock Text="• Free / Local" FontSize="10.5" FontWeight="Medium" Foreground="#166534" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 2. Free Cloud Tier Badge (e.g. Ollama Free Cloud, Groq Free Tier) -->
+                            <Border Background="#E0F2FE"
+                                    BorderBrush="#7DD3FC"
+                                    BorderThickness="1"
+                                    CornerRadius="5"
+                                    Padding="7,2"
+                                    VerticalAlignment="Center"
+                                    IsVisible="{Binding IsActiveModelFreeCloud}">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="CloudCheck" Width="13" Height="13" Foreground="#0369A1" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding ActiveModelDisplayName}" FontSize="11" FontWeight="SemiBold" Foreground="#0369A1" VerticalAlignment="Center" />
+                                    <TextBlock Text="• Free / Cloud" FontSize="10.5" FontWeight="Medium" Foreground="#0284C7" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 3. Paid Cloud API Badge -->
+                            <Border Background="#EDE9FE"
+                                    BorderBrush="#C4B5FD"
+                                    BorderThickness="1"
+                                    CornerRadius="5"
+                                    Padding="7,2"
+                                    VerticalAlignment="Center"
+                                    IsVisible="{Binding IsActiveModelPaidCloud}">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="CloudOutline" Width="13" Height="13" Foreground="#6D28D9" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding ActiveModelDisplayName}" FontSize="11" FontWeight="SemiBold" Foreground="#6D28D9" VerticalAlignment="Center" />
+                                    <TextBlock Text="• Paid / Cloud" FontSize="10.5" FontWeight="Medium" Foreground="#5B21B6" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <TextBlock Text="Powered by Microsoft.Extensions.AI — generate headings, shapes, tables, cards, and badges directly on your document canvas."
+                                   FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                    </StackPanel>
+
+                    <!-- Actions: Settings & Close -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <Button Classes="mini-tool-btn" Width="30" Height="30"
+                                Command="{Binding OpenSettingsCommand}"
+                                ToolTip.Tip="Configure AI Providers, Ollama Endpoint &amp; Models">
+                            <materialIcons:MaterialIcon Kind="CogOutline" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
+                        </Button>
+                        <Button Classes="mini-tool-btn" Width="30" Height="30"
+                                Command="{Binding CloseCommand}"
+                                ToolTip.Tip="Close Assistant (Esc)">
+                            <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- 2. Quick Prompt Suggestion Pills -->
+                <Border Grid.Row="1" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,0,0,14">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <materialIcons:MaterialIcon Kind="LightbulbOutline" Width="14" Height="14" Foreground="#D97706" VerticalAlignment="Center" />
+                            <TextBlock Text="Quick Prompts (Click to populate)" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Classes="secondary-btn" Padding="10,6" CornerRadius="6" FontSize="11"
+                                        Command="{Binding UsePromptCommand}"
+                                        CommandParameter="Add a modern corporate invoice header with company name Acme Corp, invoice #1001, date today, and a blue accent bar">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="13" Height="13" Foreground="#0F6CBD" />
+                                        <TextBlock Text="Invoice Header" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="secondary-btn" Padding="10,6" CornerRadius="6" FontSize="11"
+                                        Command="{Binding UsePromptCommand}"
+                                        CommandParameter="Create a 4-column financial summary table with columns: Quarter, Revenue, Expenses, Net Profit, and 4 sample rows">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <materialIcons:MaterialIcon Kind="TableLarge" Width="13" Height="13" Foreground="#107C41" />
+                                        <TextBlock Text="Summary Table" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="secondary-btn" Padding="10,6" CornerRadius="6" FontSize="11"
+                                        Command="{Binding UsePromptCommand}"
+                                        CommandParameter="Add an amber warning callout card with title 'Important Notice' and a 2-line explanation">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <materialIcons:MaterialIcon Kind="AlertOutline" Width="13" Height="13" Foreground="#D97706" />
+                                        <TextBlock Text="Warning Card" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="secondary-btn" Padding="10,6" CornerRadius="6" FontSize="11"
+                                        Command="{Binding UsePromptCommand}"
+                                        CommandParameter="Add a green pill badge with text 'PAID &amp; VERIFIED' and an adjacent QR code">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <materialIcons:MaterialIcon Kind="CheckDecagramOutline" Width="13" Height="13" Foreground="#15803D" />
+                                        <TextBlock Text="Status Badge &amp; QR" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="secondary-btn" Padding="10,6" CornerRadius="6" FontSize="11"
+                                        Command="{Binding UsePromptCommand}"
+                                        CommandParameter="Design a modern certificate header with a classic Georgia title, gold accent divider, and recipient subtitle">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <materialIcons:MaterialIcon Kind="CertificateOutline" Width="13" Height="13" Foreground="#7C3AED" />
+                                        <TextBlock Text="Certificate Header" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </StackPanel>
+                </Border>
+
+                <!-- 3. Prompt Input Box & Generation Action -->
+                <StackPanel Grid.Row="2" Spacing="10" Margin="0,0,0,14">
+                    <TextBox Text="{Binding PromptText, Mode=TwoWay}"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             Height="80"
+                             CornerRadius="8"
+                             Padding="12,10"
+                             FontSize="12.5"
+                             PlaceholderText="Describe the document elements, cards, tables, or layout you want to generate on this page..." />
+
+                    <!-- Action Row: Status / Progress + Generate Button -->
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" VerticalAlignment="Center">
+                        <!-- Status Indicator -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <ProgressBar IsIndeterminate="{Binding IsGenerating}"
+                                         IsVisible="{Binding IsGenerating}"
+                                         Width="70" Height="4"
+                                         VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding StatusMessage}"
+                                       FontSize="11.5"
+                                       Foreground="{DynamicResource WinMutedBrush}"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+
+                        <!-- Cancel Button (visible when generating) -->
+                        <Button Grid.Column="1"
+                                Command="{Binding CancelGenerationCommand}"
+                                IsVisible="{Binding IsGenerating}"
+                                Background="{DynamicResource WinHoverBrush}"
+                                Foreground="{DynamicResource WinTextBrush}"
+                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="14,8"
+                                FontSize="12"
+                                FontWeight="SemiBold">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="CloseCircleOutline" Width="14" Height="14" Foreground="#DC2626" />
+                                <TextBlock Text="Cancel" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Generate Button -->
+                        <Button Grid.Column="2"
+                                Command="{Binding GenerateCommand}"
+                                IsEnabled="{Binding !IsGenerating}"
+                                Background="#7C3AED"
+                                Foreground="White"
+                                BorderThickness="0"
+                                CornerRadius="8"
+                                Padding="18,9"
+                                FontSize="12.5"
+                                FontWeight="Bold"
+                                Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="AutoFixHigh" Width="16" Height="16" Foreground="White" />
+                                <TextBlock Text="Generate Elements" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+
+                <!-- 4. Real-time Activity Logs & Execution History -->
+                <Border Grid.Row="3" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12" MinHeight="140" MaxHeight="220">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Grid.Row="0" Text="Agent Activity &amp; Tool Invocations" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" Margin="0,0,0,6" />
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding ActivityLogs}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   FontFamily="Consolas, Menlo, monospace"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource WinTextBrush}"
+                                                   Margin="0,2" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <!-- 5. Bottom Action Bar: Undo & Done -->
+                <Grid Grid.Row="4" ColumnDefinitions="Auto,*,Auto" Margin="0,16,0,0" VerticalAlignment="Center">
+                    <!-- 1-Click Undo Button -->
+                    <Button Grid.Column="0"
+                            Command="{Binding UndoGenerationCommand}"
+                            IsEnabled="{Binding CanUndoLastGeneration}"
+                            Background="{DynamicResource WinHoverBrush}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="14,8"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            ToolTip.Tip="Revert elements added during the last AI generation">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="Undo" Width="15" Height="15" Foreground="#0F6CBD" />
+                            <TextBlock Text="Revert AI Changes" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Summary message -->
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding LastGenerationSummary}"
+                               FontSize="11.5"
+                               Foreground="#15803D"
+                               FontWeight="Medium"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               Margin="12,0" />
+
+                    <!-- Close Button -->
+                    <Button Grid.Column="2"
+                            Command="{Binding CloseCommand}"
+                            Background="{DynamicResource WinPanelBrush}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
+                            BorderThickness="1"
+                            Foreground="{DynamicResource WinTextBrush}"
+                            CornerRadius="8"
+                            Padding="18,8"
+                            FontSize="12"
+                            FontWeight="SemiBold">
+                        <TextBlock Text="Done" />
+                    </Button>
+                </Grid>
+
+            </Grid>
+        </Border>
+    </Grid>
+
+</UserControl>

@@ -62,6 +62,9 @@ public class UiSettingsModel
     [JsonPropertyName("showShortcutHints")]
     public bool ShowShortcutHints { get; set; } = true;
 
+    [JsonPropertyName("aiSettings")]
+    public AiSettingsModel AiSettings { get; set; } = new();
+
     [JsonPropertyName("updatedAt")]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
@@ -84,6 +87,7 @@ public class UiSettingsModel
             CompactRibbonByDefault = this.CompactRibbonByDefault,
             AutoExpandInspectorOnSelect = this.AutoExpandInspectorOnSelect,
             ShowShortcutHints = this.ShowShortcutHints,
+            AiSettings = this.AiSettings.Clone(),
             UpdatedAt = this.UpdatedAt
         };
     }

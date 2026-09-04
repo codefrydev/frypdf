@@ -72,6 +72,8 @@
         <KeyBinding Gesture="F1" Command="{Binding OpenShortcutsHelpCommand}" />
         <KeyBinding Gesture="Ctrl+OemQuestion" Command="{Binding OpenShortcutsHelpCommand}" />
         <KeyBinding Gesture="Cmd+OemQuestion" Command="{Binding OpenShortcutsHelpCommand}" />
+        <KeyBinding Gesture="Ctrl+I" Command="{Binding OpenAiAssistantCommand}" />
+        <KeyBinding Gesture="Cmd+I" Command="{Binding OpenAiAssistantCommand}" />
 
         <!-- View & Zoom -->
         <KeyBinding Gesture="Ctrl+Add" Command="{Binding ZoomInCommand}" />
@@ -443,6 +445,7 @@
         <dialogs:DataStudioDialog DataContext="{Binding DataStudio}" IsVisible="{Binding IsOpen}" />
         <dialogs:WorkflowBuilderDialog DataContext="{Binding WorkflowBuilder}" IsVisible="{Binding IsOpen}" />
         <dialogs:BatchGenerationDialog DataContext="{Binding BatchGeneration}" IsVisible="{Binding IsOpen}" />
+        <dialogs:AiAssistantDialog DataContext="{Binding AiAssistant}" IsVisible="{Binding IsOpen}" />
         <dialogs:RenameDocumentDialog DataContext="{Binding Home}" IsVisible="{Binding IsRenameDialogOpen}" />
         <dialogs:DeleteConfirmationDialog DataContext="{Binding Home}" IsVisible="{Binding IsDeleteConfirmDialogOpen}" />
     </Grid>

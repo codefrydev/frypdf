@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using PdfEditorApp.Core.Models;
+using PdfEditorApp.Messages;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 using PdfEditorApp.Services.Tools.Core;
@@ -107,15 +109,15 @@ public partial class PdfViewerViewModel : ViewModelBase
     public IStorageProvider? StorageProvider { get; set; }
 
     // --- Events ---
-    public event Action<string>? EditInStudioRequested;
-    public event Action? BackToHomeRequested;
-    public event Action<PdfToolId, string>? RunToolRequested;
-    public event Action<string>? ShowToastRequested;
-    public event Action? OpenFileRequested;
-    public event Action<PdfReaderTheme>? ReadingThemeChanged;
     public event Action<int>? ScrollToPageRequested;
-    public event Action<string>? RenameRequested;
-    public event Action<string>? DeleteRequested;
+
+    /// <summary>
+    /// Broadcasts a user-facing toast notification via WeakReferenceMessenger.
+    /// </summary>
+    public void ShowToast(string message, ToastNotificationType type = ToastNotificationType.Primary, string? iconKind = null)
+    {
+        WeakReferenceMessenger.Default.Send(new ShowToastMessage(message, type, iconKind));
+    }
 
     // --- Observable Properties ---
 
@@ -126,15 +128,18 @@ public partial class PdfViewerViewModel : ViewModelBase
     private string _documentTitle = "Document.pdf";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PageNavigationDisplay))]
     private int _currentPageNumber = 1;
 
     [ObservableProperty]
     private string _jumpPageText = "1";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PageNavigationDisplay))]
     private int _totalPagesCount = 0;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ZoomPercentageText))]
     private double _zoomLevel = 1.0; // 100%
 
     [ObservableProperty]
@@ -169,6 +174,10 @@ public partial class PdfViewerViewModel : ViewModelBase
 
     // Reading Themes: Default (White), Sepia (Book comfort), Dark (Night mode), High Contrast
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsThemeDefault))]
+    [NotifyPropertyChangedFor(nameof(IsThemeSepia))]
+    [NotifyPropertyChangedFor(nameof(IsThemeDark))]
+    [NotifyPropertyChangedFor(nameof(IsThemeHighContrast))]
     private PdfReaderTheme _readingTheme = PdfReaderTheme.Default;
 
     [ObservableProperty]
@@ -199,6 +208,7 @@ public partial class PdfViewerViewModel : ViewModelBase
     private string _statusMessage = "Ready";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowScannedDocumentBanner))]
     private bool _hasDocument = false;
 
     [ObservableProperty]
@@ -250,6 +260,8 @@ public partial class PdfViewerViewModel : ViewModelBase
 
     // Interactive Text Selection State
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SelectedTextSnippet))]
+    [NotifyPropertyChangedFor(nameof(IsSelectionTextGarbled))]
     private string _activeSelectedText = string.Empty;
 
     [ObservableProperty]
@@ -271,8 +283,6 @@ public partial class PdfViewerViewModel : ViewModelBase
     partial void OnActiveSelectedTextChanged(string value)
     {
         HasTextSelection = !string.IsNullOrWhiteSpace(value);
-        OnPropertyChanged(nameof(SelectedTextSnippet));
-        OnPropertyChanged(nameof(IsSelectionTextGarbled));
     }
 
     public bool IsSelectionTextGarbled => IsGarbledText(ActiveSelectedText);
@@ -320,31 +330,31 @@ public partial class PdfViewerViewModel : ViewModelBase
 
     // Selection Mode (Text vs Area/Marquee)
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsTextSelectionMode))]
+    [NotifyPropertyChangedFor(nameof(IsAreaSelectionMode))]
     private PdfViewerSelectionMode _selectionMode = PdfViewerSelectionMode.Text;
 
     public bool IsTextSelectionMode => SelectionMode == PdfViewerSelectionMode.Text;
     public bool IsAreaSelectionMode => SelectionMode == PdfViewerSelectionMode.Area;
-
-    partial void OnSelectionModeChanged(PdfViewerSelectionMode value)
-    {
-        OnPropertyChanged(nameof(IsTextSelectionMode));
-        OnPropertyChanged(nameof(IsAreaSelectionMode));
-    }
 
     [ObservableProperty]
     private Rect? _lastSelectedAreaRect;
 
     // Scanned Document Detection & OCR Banner State
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowScannedDocumentBanner))]
     private bool _isScannedDocument = false;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowScannedDocumentBanner))]
     private bool _isCurrentPageScanned = false;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowScannedDocumentBanner))]
     private bool _isScannedBannerDismissed = false;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowScannedDocumentBanner))]
     private bool _isOcrRunning = false;
 
     private CancellationTokenSource? _ocrCts;
@@ -360,12 +370,6 @@ public partial class PdfViewerViewModel : ViewModelBase
         !IsScannedBannerDismissed &&
         !IsOcrRunning &&
         HasDocument;
-
-    partial void OnIsScannedDocumentChanged(bool value) => OnPropertyChanged(nameof(ShowScannedDocumentBanner));
-    partial void OnIsCurrentPageScannedChanged(bool value) => OnPropertyChanged(nameof(ShowScannedDocumentBanner));
-    partial void OnIsScannedBannerDismissedChanged(bool value) => OnPropertyChanged(nameof(ShowScannedDocumentBanner));
-    partial void OnIsOcrRunningChanged(bool value) => OnPropertyChanged(nameof(ShowScannedDocumentBanner));
-    partial void OnHasDocumentChanged(bool value) => OnPropertyChanged(nameof(ShowScannedDocumentBanner));
 
     // Collections
     public ObservableCollection<PdfViewerPageItem> Pages { get; } = new();
@@ -406,7 +410,6 @@ public partial class PdfViewerViewModel : ViewModelBase
             ZoomMode = PdfViewerZoomMode.Custom;
         }
 
-        OnPropertyChanged(nameof(ZoomPercentageText));
         InvalidateVisiblePageCache();
 
         // Dynamic High-DPI Vector Re-render on Zoom Change (Debounced)
@@ -447,7 +450,6 @@ public partial class PdfViewerViewModel : ViewModelBase
 
     partial void OnCurrentPageNumberChanged(int value)
     {
-        OnPropertyChanged(nameof(PageNavigationDisplay));
         JumpPageText = value.ToString();
         if (value >= 1 && value <= Pages.Count)
         {
@@ -465,11 +467,6 @@ public partial class PdfViewerViewModel : ViewModelBase
             if (value < Pages.Count) EnsurePageRendered(value + 1);
         }
         UpdateSelectedSpreadForPage(value);
-    }
-
-    partial void OnTotalPagesCountChanged(int value)
-    {
-        OnPropertyChanged(nameof(PageNavigationDisplay));
     }
 
     partial void OnSelectedPageChanged(PdfViewerPageItem? value)
@@ -539,11 +536,6 @@ public partial class PdfViewerViewModel : ViewModelBase
 
     partial void OnReadingThemeChanged(PdfReaderTheme value)
     {
-        OnPropertyChanged(nameof(IsThemeDefault));
-        OnPropertyChanged(nameof(IsThemeSepia));
-        OnPropertyChanged(nameof(IsThemeDark));
-        OnPropertyChanged(nameof(IsThemeHighContrast));
-
         switch (value)
         {
             case PdfReaderTheme.Sepia:
@@ -574,7 +566,7 @@ public partial class PdfViewerViewModel : ViewModelBase
         }
 
         ReRenderActivePagesForTheme();
-        ReadingThemeChanged?.Invoke(value);
+        WeakReferenceMessenger.Default.Send(new ReadingThemeChangedMessage(value));
     }
 
     partial void OnSearchQueryChanged(string value)

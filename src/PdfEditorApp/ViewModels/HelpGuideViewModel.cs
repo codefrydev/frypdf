@@ -18,7 +18,6 @@ public partial class HelpGuideViewModel : ViewModelBase
 
     // --- Events ---
     public event Action<PdfToolId>? ToolLaunchRequested;
-    public event Action<string>? OpenUrlRequested;
 
     // --- Observable State ---
 
@@ -199,7 +198,6 @@ public partial class HelpGuideViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(url)) return;
         try
         {
-            OpenUrlRequested?.Invoke(url);
             if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Launcher != null)
             {
                 _ = desktop.MainWindow.Launcher.LaunchUriAsync(new Uri(url));

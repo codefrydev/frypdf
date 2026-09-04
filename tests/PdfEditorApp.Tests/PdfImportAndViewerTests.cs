@@ -2,7 +2,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using PdfEditorApp.Core.Models;
+using PdfEditorApp.Messages;
 using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
@@ -420,12 +422,17 @@ public class PdfImportAndViewerTests
             await viewer.LoadDocumentAsync(tempPdfPath);
 
             string? requestedPath = null;
-            viewer.EditInStudioRequested += (path) => requestedPath = path;
-
-            viewer.EditInStudio();
-
-            Assert.NotNull(requestedPath);
-            Assert.Equal(tempPdfPath, requestedPath);
+            WeakReferenceMessenger.Default.Register<PdfImportAndViewerTests, OpenInEditorMessage>(this, (r, m) => requestedPath = m.FilePath);
+            try
+            {
+                viewer.EditInStudio();
+                Assert.NotNull(requestedPath);
+                Assert.Equal(tempPdfPath, requestedPath);
+            }
+            finally
+            {
+                WeakReferenceMessenger.Default.Unregister<OpenInEditorMessage>(this);
+            }
         }
         finally
         {

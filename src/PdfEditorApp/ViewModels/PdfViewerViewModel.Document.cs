@@ -10,7 +10,9 @@ using Avalonia.Input.Platform;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using PdfEditorApp.Core.Models;
+using PdfEditorApp.Messages;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 using PdfEditorApp.Services.Ocr;
@@ -587,7 +589,7 @@ public partial class PdfViewerViewModel
     {
         if (!string.IsNullOrEmpty(CurrentFilePath))
         {
-            RenameRequested?.Invoke(CurrentFilePath);
+            WeakReferenceMessenger.Default.Send(new PromptRenameMessage(CurrentFilePath));
         }
     }
 
@@ -596,7 +598,7 @@ public partial class PdfViewerViewModel
     {
         if (!string.IsNullOrEmpty(CurrentFilePath))
         {
-            DeleteRequested?.Invoke(CurrentFilePath);
+            WeakReferenceMessenger.Default.Send(new PromptDeleteMessage(CurrentFilePath));
         }
     }
 
@@ -607,11 +609,11 @@ public partial class PdfViewerViewModel
         {
             if (FileOperationHelper.DuplicateFile(CurrentFilePath, out var newPath, out var error))
             {
-                ShowToastRequested?.Invoke($"Created duplicate: {Path.GetFileName(newPath!)}");
+                ShowToast($"Created duplicate: {Path.GetFileName(newPath!)}");
             }
             else
             {
-                ShowToastRequested?.Invoke($"Could not duplicate: {error}");
+                ShowToast($"Could not duplicate: {error}");
             }
         }
     }
@@ -623,11 +625,11 @@ public partial class PdfViewerViewModel
         {
             if (FileOperationHelper.RevealInFileManager(CurrentFilePath, out var error))
             {
-                ShowToastRequested?.Invoke("Opened containing folder");
+                ShowToast("Opened containing folder");
             }
             else
             {
-                ShowToastRequested?.Invoke($"Could not reveal file: {error}");
+                ShowToast($"Could not reveal file: {error}");
             }
         }
     }
@@ -645,7 +647,7 @@ public partial class PdfViewerViewModel
                 }
             }
             catch { }
-            ShowToastRequested?.Invoke("Copied file path to clipboard");
+            ShowToast("Copied file path to clipboard");
         }
     }
 
@@ -656,7 +658,7 @@ public partial class PdfViewerViewModel
     {
         if (StorageProvider == null)
         {
-            OpenFileRequested?.Invoke();
+            WeakReferenceMessenger.Default.Send(new OpenPdfPickerMessage());
             return;
         }
 
@@ -677,7 +679,7 @@ public partial class PdfViewerViewModel
         {
             string chosenPath = files[0].Path.LocalPath;
             await LoadDocumentAsync(chosenPath);
-            ShowToastRequested?.Invoke($"Reading: {Path.GetFileName(chosenPath)}");
+            ShowToast($"Reading: {Path.GetFileName(chosenPath)}");
         }
     }
 
@@ -705,15 +707,15 @@ public partial class PdfViewerViewModel
             try
             {
                 await File.WriteAllBytesAsync(file.Path.LocalPath, _currentPdfBytes);
-                ShowToastRequested?.Invoke($"Saved copy: {Path.GetFileName(file.Path.LocalPath)}");
+                ShowToast($"Saved copy: {Path.GetFileName(file.Path.LocalPath)}");
             }
             catch (IOException)
             {
-                ShowToastRequested?.Invoke($"Cannot save: '{Path.GetFileName(file.Path.LocalPath)}' is open in another program.");
+                ShowToast($"Cannot save: '{Path.GetFileName(file.Path.LocalPath)}' is open in another program.");
             }
             catch (Exception ex)
             {
-                ShowToastRequested?.Invoke($"Save failed: {ex.Message}");
+                ShowToast($"Save failed: {ex.Message}");
             }
         }
     }

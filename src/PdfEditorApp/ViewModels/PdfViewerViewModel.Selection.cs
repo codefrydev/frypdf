@@ -39,7 +39,7 @@ public partial class PdfViewerViewModel
             {
                 await topLevel.Clipboard.SetTextAsync(ActiveSelectedText);
                 string snippet = ActiveSelectedText.Length > 40 ? ActiveSelectedText.Substring(0, 40) + "..." : ActiveSelectedText;
-                ShowToastRequested?.Invoke($"Copied: \"{snippet}\"");
+                ShowToast($"Copied: \"{snippet}\"");
             }
         }
     }
@@ -56,7 +56,7 @@ public partial class PdfViewerViewModel
             if (topLevel?.Clipboard != null)
             {
                 await topLevel.Clipboard.SetTextAsync(citation);
-                ShowToastRequested?.Invoke("Copied citation with page reference");
+                ShowToast("Copied citation with page reference");
             }
         }
     }
@@ -99,7 +99,7 @@ public partial class PdfViewerViewModel
         ActiveSelectedText = page.SelectedText;
         ActiveSelectedPageNumber = page.PageNumber;
         HasTextSelection = !string.IsNullOrEmpty(ActiveSelectedText);
-        ShowToastRequested?.Invoke($"Selected all text on Page {page.PageNumber}");
+        ShowToast($"Selected all text on Page {page.PageNumber}");
     }
 
     [RelayCommand]
@@ -118,14 +118,14 @@ public partial class PdfViewerViewModel
     public void SetTextSelectionMode()
     {
         SelectionMode = PdfViewerSelectionMode.Text;
-        ShowToastRequested?.Invoke("Text Selection Mode (I-Beam)");
+        ShowToast("Text Selection Mode (I-Beam)");
     }
 
     [RelayCommand]
     public void SetAreaSelectionMode()
     {
         SelectionMode = PdfViewerSelectionMode.Area;
-        ShowToastRequested?.Invoke("Area / Marquee Selection Mode (Box / Snapshot)");
+        ShowToast("Area / Marquee Selection Mode (Box / Snapshot)");
     }
 
     [RelayCommand]
@@ -149,7 +149,7 @@ public partial class PdfViewerViewModel
         _ocrCts?.Cancel();
         IsOcrRunning = false;
         OcrStatusText = "Cancelled";
-        ShowToastRequested?.Invoke("OCR cancelled.");
+        ShowToast("OCR cancelled.");
     }
 
     [RelayCommand]
@@ -185,15 +185,15 @@ public partial class PdfViewerViewModel
             OcrProgress = 100;
             IsCurrentPageScanned = page.Words.Count == 0;
             page.NotifySelectionChanged();
-            ShowToastRequested?.Invoke($"OCR Complete: {page.Words.Count} words recognized on Page {page.PageNumber}.");
+            ShowToast($"OCR Complete: {page.Words.Count} words recognized on Page {page.PageNumber}.");
         }
         catch (OperationCanceledException)
         {
-            ShowToastRequested?.Invoke("OCR cancelled.");
+            ShowToast("OCR cancelled.");
         }
         catch (Exception ex)
         {
-            ShowToastRequested?.Invoke($"OCR failed: {ex.Message}");
+            ShowToast($"OCR failed: {ex.Message}");
         }
         finally
         {
@@ -252,15 +252,15 @@ public partial class PdfViewerViewModel
             {
                 IsCurrentPageScanned = SelectedPage.Words.Count == 0;
             }
-            ShowToastRequested?.Invoke($"OCR Complete: {totalWords} words recognized across {recognizedPages} scanned page(s).");
+            ShowToast($"OCR Complete: {totalWords} words recognized across {recognizedPages} scanned page(s).");
         }
         catch (OperationCanceledException)
         {
-            ShowToastRequested?.Invoke("OCR processing cancelled.");
+            ShowToast("OCR processing cancelled.");
         }
         catch (Exception ex)
         {
-            ShowToastRequested?.Invoke($"OCR error: {ex.Message}");
+            ShowToast($"OCR error: {ex.Message}");
         }
         finally
         {
@@ -308,16 +308,16 @@ public partial class PdfViewerViewModel
                 page.SelectedText = ocrText;
                 ActiveSelectedText = ocrText;
                 HasTextSelection = true;
-                ShowToastRequested?.Invoke("Text recognized with OCR.");
+                ShowToast("Text recognized with OCR.");
             }
             else
             {
-                ShowToastRequested?.Invoke("OCR did not detect text in the selected area.");
+                ShowToast("OCR did not detect text in the selected area.");
             }
         }
         catch (Exception ex)
         {
-            ShowToastRequested?.Invoke($"OCR failed: {ex.Message}");
+            ShowToast($"OCR failed: {ex.Message}");
         }
         finally
         {
@@ -456,7 +456,7 @@ public partial class PdfViewerViewModel
                     string tempPng = Path.Combine(Path.GetTempPath(), $"PdfSnapshot_{Guid.NewGuid():N}.png");
                     await File.WriteAllBytesAsync(tempPng, croppedBytes);
                     await topLevel.Clipboard.SetTextAsync(tempPng);
-                    ShowToastRequested?.Invoke($"Snapshot saved to {Path.GetFileName(tempPng)}");
+                    ShowToast($"Snapshot saved to {Path.GetFileName(tempPng)}");
                 }
             }
         }
@@ -467,7 +467,7 @@ public partial class PdfViewerViewModel
     {
         if (SelectedPage == null || string.IsNullOrWhiteSpace(SelectedPage.ExtractedText))
         {
-            ShowToastRequested?.Invoke("No text on current page to copy.");
+            ShowToast("No text on current page to copy.");
             return;
         }
 
@@ -477,7 +477,7 @@ public partial class PdfViewerViewModel
             if (topLevel?.Clipboard != null)
             {
                 await topLevel.Clipboard.SetTextAsync(SelectedPage.ExtractedText);
-                ShowToastRequested?.Invoke($"Copied all text from Page {SelectedPage.PageNumber} to Clipboard.");
+                ShowToast($"Copied all text from Page {SelectedPage.PageNumber} to Clipboard.");
             }
         }
     }
@@ -498,7 +498,7 @@ public partial class PdfViewerViewModel
 
         if (sb.Length == 0)
         {
-            ShowToastRequested?.Invoke("No text found in document.");
+            ShowToast("No text found in document.");
             return;
         }
 
@@ -508,7 +508,7 @@ public partial class PdfViewerViewModel
             if (topLevel?.Clipboard != null)
             {
                 await topLevel.Clipboard.SetTextAsync(sb.ToString());
-                ShowToastRequested?.Invoke($"Copied text from all {Pages.Count} pages to Clipboard.");
+                ShowToast($"Copied text from all {Pages.Count} pages to Clipboard.");
             }
         }
     }

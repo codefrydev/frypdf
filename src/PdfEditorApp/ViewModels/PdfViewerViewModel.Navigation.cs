@@ -2,7 +2,9 @@ using System;
 using System.IO;
 using System.Linq;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using PdfEditorApp.Core.Models;
+using PdfEditorApp.Messages;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 
@@ -181,7 +183,7 @@ public partial class PdfViewerViewModel
         if (Enum.TryParse<PdfViewLayoutMode>(modeStr, true, out var mode))
         {
             SelectedLayoutMode = mode;
-            ShowToastRequested?.Invoke(mode switch
+            ShowToast(mode switch
             {
                 PdfViewLayoutMode.ContinuousScroll => "Continuous Scroll Layout",
                 PdfViewLayoutMode.SinglePage => "Single Page Fit Layout",
@@ -223,7 +225,7 @@ public partial class PdfViewerViewModel
         if (Enum.TryParse<PdfReaderTheme>(themeStr, true, out var theme))
         {
             ReadingTheme = theme;
-            ShowToastRequested?.Invoke(theme switch
+            ShowToast(theme switch
             {
                 PdfReaderTheme.Sepia => "Warm Sepia Book Reading Mode",
                 PdfReaderTheme.Dark => "Dark Night Reading Mode",
@@ -340,7 +342,7 @@ public partial class PdfViewerViewModel
             }
 
             StatusMessage = $"Fit to Width ({(int)Math.Round(ZoomLevel * 100)}%)";
-            ShowToastRequested?.Invoke($"Fit to Width ({(int)Math.Round(ZoomLevel * 100)}%)");
+            ShowToast($"Fit to Width ({(int)Math.Round(ZoomLevel * 100)}%)");
         }
     }
 
@@ -438,7 +440,7 @@ public partial class PdfViewerViewModel
             }
 
             StatusMessage = $"Fit to Page ({(int)Math.Round(ZoomLevel * 100)}%)";
-            ShowToastRequested?.Invoke($"Fit to Page ({(int)Math.Round(ZoomLevel * 100)}%)");
+            ShowToast($"Fit to Page ({(int)Math.Round(ZoomLevel * 100)}%)");
         }
     }
 
@@ -465,7 +467,7 @@ public partial class PdfViewerViewModel
             SelectedPage = page;
             page.RotationAngle = (page.RotationAngle + 90) % 360;
             StatusMessage = $"Page {page.PageNumber} rotated 90° CW ({page.RotationAngle}°).";
-            ShowToastRequested?.Invoke($"Page {page.PageNumber} rotated 90° CW ({page.RotationAngle}°)");
+            ShowToast($"Page {page.PageNumber} rotated 90° CW ({page.RotationAngle}°)");
 
             if (IsFitToPageActive)
             {
@@ -487,7 +489,7 @@ public partial class PdfViewerViewModel
             SelectedPage = page;
             page.RotationAngle = (page.RotationAngle + 270) % 360;
             StatusMessage = $"Page {page.PageNumber} rotated 90° CCW ({page.RotationAngle}°).";
-            ShowToastRequested?.Invoke($"Page {page.PageNumber} rotated 90° CCW ({page.RotationAngle}°)");
+            ShowToast($"Page {page.PageNumber} rotated 90° CCW ({page.RotationAngle}°)");
 
             if (IsFitToPageActive)
             {
@@ -508,7 +510,7 @@ public partial class PdfViewerViewModel
             p.RotationAngle = (p.RotationAngle + 90) % 360;
         }
         StatusMessage = "Rotated all pages 90° clockwise.";
-        ShowToastRequested?.Invoke("Rotated all pages 90° CW");
+        ShowToast("Rotated all pages 90° CW");
 
         if (IsFitToPageActive)
         {
@@ -543,7 +545,8 @@ public partial class PdfViewerViewModel
     public void ToggleFullscreen()
     {
         IsFullscreen = !IsFullscreen;
-        ShowToastRequested?.Invoke(IsFullscreen ? "Entered Presentation Reading Mode (Esc to exit)" : "Exited Fullscreen Mode");
+        string msg = IsFullscreen ? "Entered Presentation Reading Mode (Esc to exit)" : "Exited Fullscreen Mode";
+        ShowToast(msg);
     }
 
     // --- Bridge to Studio & Tools ---
@@ -551,15 +554,21 @@ public partial class PdfViewerViewModel
     [RelayCommand]
     public void EditInStudio()
     {
+        string? targetPath = null;
         if (!string.IsNullOrEmpty(CurrentFilePath) && File.Exists(CurrentFilePath))
         {
-            EditInStudioRequested?.Invoke(CurrentFilePath);
+            targetPath = CurrentFilePath;
         }
         else if (_currentPdfBytes != null)
         {
             string tempPath = Path.Combine(Path.GetTempPath(), DocumentTitle);
             File.WriteAllBytes(tempPath, _currentPdfBytes);
-            EditInStudioRequested?.Invoke(tempPath);
+            targetPath = tempPath;
+        }
+
+        if (targetPath != null)
+        {
+            WeakReferenceMessenger.Default.Send(new OpenInEditorMessage(targetPath));
         }
     }
 
@@ -568,14 +577,14 @@ public partial class PdfViewerViewModel
     {
         if (!string.IsNullOrEmpty(CurrentFilePath) && File.Exists(CurrentFilePath) && Enum.TryParse<PdfToolId>(toolIdStr, true, out var toolId))
         {
-            RunToolRequested?.Invoke(toolId, CurrentFilePath);
+            WeakReferenceMessenger.Default.Send(new RunToolMessage(toolId, CurrentFilePath));
         }
     }
 
     [RelayCommand]
     public void BackToHome()
     {
-        BackToHomeRequested?.Invoke();
+        WeakReferenceMessenger.Default.Send(new NavigateToHomeMessage());
     }
 }
 

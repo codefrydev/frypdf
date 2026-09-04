@@ -49,7 +49,7 @@ public class PdfViewerTextLineItem
     public List<PdfViewerWordItem> Words { get; } = new();
 }
 
-public class PdfViewerPageItem : ObservableObject, IDisposable
+public partial class PdfViewerPageItem : ObservableObject, IDisposable
 {
     /// <summary>
     /// Rasterization scale for a page shown at 100% zoom. Matches the ~2x device pixel ratio of
@@ -62,13 +62,29 @@ public class PdfViewerPageItem : ObservableObject, IDisposable
     /// </summary>
     internal const float BasePageRenderScale = 2.0f;
 
+    [ObservableProperty]
     private bool _isSelected;
+
+    [ObservableProperty]
     private int _rotationAngle;
+
+    [ObservableProperty]
     private float _renderedScale = BasePageRenderScale;
+
     private Bitmap? _thumbnailBitmap;
     private Bitmap? _bitmap;
+
+    [ObservableProperty]
     private string _selectedText = string.Empty;
+
+    partial void OnSelectedTextChanged(string value)
+    {
+        HasSelection = !string.IsNullOrEmpty(value);
+    }
+
+    [ObservableProperty]
     private bool _hasSelection;
+
     private bool _isDisposed;
 
     public PdfReaderTheme AppliedReadingTheme { get; set; } = PdfReaderTheme.Default;
@@ -91,24 +107,6 @@ public class PdfViewerPageItem : ObservableObject, IDisposable
 
     public List<PdfViewerWordItem> Words { get; set; } = new();
     public List<PdfViewerTextLineItem> TextLines { get; set; } = new();
-
-    public string SelectedText
-    {
-        get => _selectedText;
-        set
-        {
-            if (SetProperty(ref _selectedText, value))
-            {
-                HasSelection = !string.IsNullOrEmpty(value);
-            }
-        }
-    }
-
-    public bool HasSelection
-    {
-        get => _hasSelection;
-        private set => SetProperty(ref _hasSelection, value);
-    }
 
     public List<Rect> SelectionRects { get; } = new();
 
@@ -283,12 +281,6 @@ public class PdfViewerPageItem : ObservableObject, IDisposable
         NotifySelectionChanged();
     }
 
-    public float RenderedScale
-    {
-        get => _renderedScale;
-        set => SetProperty(ref _renderedScale, value);
-    }
-
     public Bitmap? ThumbnailBitmap
     {
         get => _thumbnailBitmap ?? _bitmap;
@@ -319,18 +311,6 @@ public class PdfViewerPageItem : ObservableObject, IDisposable
         }
     }
 
-    public int RotationAngle
-    {
-        get => _rotationAngle;
-        set => SetProperty(ref _rotationAngle, value);
-    }
-
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => SetProperty(ref _isSelected, value);
-    }
-
     public ObservableCollection<PdfViewerAnnotationItem> PageAnnotations { get; } = new();
 
     /// <summary>Releases the rendered bitmaps. Safe to call more than once.</summary>
@@ -352,20 +332,15 @@ public class PdfViewerPageItem : ObservableObject, IDisposable
     }
 }
 
-public class PdfViewerPageSpreadItem : ObservableObject
+public partial class PdfViewerPageSpreadItem : ObservableObject
 {
+    [ObservableProperty]
     private bool _isSelected;
 
     public int SpreadIndex { get; set; }
     public PdfViewerPageItem? LeftPage { get; set; }
     public PdfViewerPageItem? RightPage { get; set; }
     public string SpreadLabel { get; set; } = string.Empty;
-
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => SetProperty(ref _isSelected, value);
-    }
 }
 
 public class PdfViewerBookmarkItem
@@ -376,16 +351,33 @@ public class PdfViewerBookmarkItem
     public bool HasChildren => Children.Count > 0;
 }
 
-public class PdfViewerAnnotationItem : ObservableObject
+public partial class PdfViewerAnnotationItem : ObservableObject
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString("N");
-    public string Type { get; set; } = "Highlight"; // Highlight, StickyNote, Stamp, Ink, Signature
-    public int PageNumber { get; set; } = 1;
-    public string Author { get; set; } = "Reader";
-    public string Content { get; set; } = string.Empty;
-    public string ColorHex { get; set; } = "#FEF08A";
-    public string IconKind { get; set; } = "FormatColorHighlight";
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    [ObservableProperty]
+    private string _id = Guid.NewGuid().ToString("N");
+
+    [ObservableProperty]
+    private string _type = "Highlight"; // Highlight, StickyNote, Stamp, Ink, Signature
+
+    [ObservableProperty]
+    private int _pageNumber = 1;
+
+    [ObservableProperty]
+    private string _author = "Reader";
+
+    [ObservableProperty]
+    private string _content = string.Empty;
+
+    [ObservableProperty]
+    private string _colorHex = "#FEF08A";
+
+    [ObservableProperty]
+    private string _iconKind = "FormatColorHighlight";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TimeFormatted))]
+    private DateTime _createdAt = DateTime.Now;
+
     public string TimeFormatted => CreatedAt.ToString("HH:mm · MMM d");
     public List<Rect> HighlightRects { get; set; } = new();
 }

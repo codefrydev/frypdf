@@ -11,7 +11,9 @@ using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using PdfEditorApp.Core.Models;
+using PdfEditorApp.Messages;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 
@@ -148,8 +150,6 @@ public partial class PdfToolRunnerViewModel : ViewModelBase
 
     // Navigation events
     public event Action? BackRequested;
-    public event Action<string>? OpenInEditorRequested;
-    public event Action<string>? OpenInViewerRequested;
 
     public PdfToolRunnerViewModel(IPdfDocumentOperationsService operationsService)
     {
@@ -167,7 +167,7 @@ public partial class PdfToolRunnerViewModel : ViewModelBase
     {
         if (!string.IsNullOrEmpty(LastOutputFilePath) && File.Exists(LastOutputFilePath))
         {
-            OpenInEditorRequested?.Invoke(LastOutputFilePath);
+            WeakReferenceMessenger.Default.Send(new OpenInEditorMessage(LastOutputFilePath));
         }
     }
 
@@ -180,14 +180,7 @@ public partial class PdfToolRunnerViewModel : ViewModelBase
 
         if (!string.IsNullOrEmpty(targetPath))
         {
-            if (OpenInViewerRequested != null)
-            {
-                OpenInViewerRequested.Invoke(targetPath);
-            }
-            else
-            {
-                OpenOutputFile();
-            }
+            WeakReferenceMessenger.Default.Send(new OpenInViewerMessage(targetPath));
         }
     }
 

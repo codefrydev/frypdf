@@ -22,6 +22,8 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using PdfEditorApp.Messages;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels.ElementViewModels;
@@ -759,8 +761,6 @@ public partial class MainViewModel : ViewModelBase
         var effectiveToolFactory = toolViewModelFactory ?? new PdfToolViewModelFactory(_pdfOperationsService, _toolRegistry);
 
         ToolRunner = toolRunner ?? new PdfToolRunnerViewModel(_pdfOperationsService);
-        ToolRunner.OpenInEditorRequested += (path) => OpenEditorWithFile(path);
-        ToolRunner.OpenInViewerRequested += (path) => OpenInViewer(path);
 
         WorkflowBuilder = workflowBuilder ?? new WorkflowBuilderViewModel(effectiveWorkflowEngine, _toolRegistry);
 
@@ -786,62 +786,30 @@ public partial class MainViewModel : ViewModelBase
         Inspector.DataStudio = DataStudio;
 
         PdfViewer = pdfViewer ?? new PdfViewerViewModel();
-        PdfViewer.EditInStudioRequested += (path) => OpenEditorWithFile(path);
-        PdfViewer.BackToHomeRequested += NavigateToHome;
-        PdfViewer.RunToolRequested += (toolId, path) => OpenToolWithInitialFile(toolId, path);
-        PdfViewer.ShowToastRequested += (msg) => ShowToast(msg);
-        PdfViewer.OpenFileRequested += () => _ = OpenPdfToReadWithPickerAsync();
         if (_themeService != null)
         {
             PdfViewer.ReadingTheme = _themeService.ReadingTheme;
-            PdfViewer.ReadingThemeChanged += (rt) => _themeService.SetReadingTheme(rt);
-            _themeService.ReadingThemeChanged += (rt) => { PdfViewer.ReadingTheme = rt; };
+            _themeService.ReadingThemeChanged += (rt) =>
+            {
+                if (PdfViewer.ReadingTheme != rt)
+                {
+                    PdfViewer.ReadingTheme = rt;
+                }
+            };
         }
 
-        // Set up Home page and wire its navigation events
+        // Set up Home page
         Home = homeViewModel ?? new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, effectiveToolFactory, _themeService, _uiSettingsService);
-        Home.ShowToastRequested += (msg, type, icon) => ShowToast(msg, type, icon);
-        Home.OpenTemplateRequested += OpenEditorWithTemplate;
-        Home.OpenFileRequested += () => _ = OpenProjectAndEnterEditorAsync();
-        Home.OpenRecentRequested += OpenEditorWithFile;
-        Home.OpenInEditorRequested += OpenEditorWithFile;
-        Home.OpenInViewerRequested += (path) => OpenInViewer(path);
-        Home.OpenWorkflowBuilderRequested += OpenWorkflowStudio;
-        Home.OpenBatchGenerationRequested += () => OpenBatchGeneration();
 
-        Home.DocumentRenamed += (oldPath, newPath) =>
+        UndoRedo.StateChanged += (s, e) =>
         {
-            if (string.Equals(CurrentFilePath, oldPath, StringComparison.OrdinalIgnoreCase))
-            {
-                CurrentFilePath = newPath;
-                DocumentTitle = Path.GetFileName(newPath);
-            }
-            if (string.Equals(PdfViewer.CurrentFilePath, oldPath, StringComparison.OrdinalIgnoreCase))
-            {
-                PdfViewer.CurrentFilePath = newPath;
-                PdfViewer.DocumentTitle = Path.GetFileName(newPath);
-            }
+            OnPropertyChanged(nameof(CanUndo));
+            OnPropertyChanged(nameof(CanRedo));
+            UndoCommand.NotifyCanExecuteChanged();
+            RedoCommand.NotifyCanExecuteChanged();
         };
 
-        Home.DocumentDeleted += (deletedPath) =>
-        {
-            if (string.Equals(CurrentFilePath, deletedPath, StringComparison.OrdinalIgnoreCase))
-            {
-                CurrentFilePath = "";
-                DocumentTitle = "Untitled.pdf";
-                IsEditorVisible = false;
-                IsHomePageVisible = true;
-            }
-            if (string.Equals(PdfViewer.CurrentFilePath, deletedPath, StringComparison.OrdinalIgnoreCase))
-            {
-                PdfViewer.CurrentFilePath = "";
-                IsPdfViewerVisible = false;
-                IsHomePageVisible = true;
-            }
-        };
-
-        PdfViewer.RenameRequested += (path) => Home.PromptRename(path);
-        PdfViewer.DeleteRequested += (path) => Home.PromptDelete(path);
+        RegisterMessengerHandlers();
 
         RefreshToastVisuals();
 
@@ -877,6 +845,58 @@ public partial class MainViewModel : ViewModelBase
         // Initialize default document model
         var defaultDoc = _templateService.CreateAnnualReportTemplate();
         LoadFromDocumentModel(defaultDoc);
+    }
+
+    private void RegisterMessengerHandlers()
+    {
+        WeakReferenceMessenger.Default.Register<MainViewModel, ShowToastMessage>(this, (r, m) => r.ShowToast(m.Message, m.Type, m.ActionLabel));
+        WeakReferenceMessenger.Default.Register<MainViewModel, NavigateToHomeMessage>(this, (r, m) => r.NavigateToHome());
+        WeakReferenceMessenger.Default.Register<MainViewModel, OpenInEditorMessage>(this, (r, m) => r.OpenEditorWithFile(m.FilePath));
+        WeakReferenceMessenger.Default.Register<MainViewModel, OpenInViewerMessage>(this, (r, m) => r.OpenInViewer(m.FilePath));
+        WeakReferenceMessenger.Default.Register<MainViewModel, RunToolMessage>(this, (r, m) => r.OpenToolWithInitialFile(m.ToolId, m.FilePath));
+        WeakReferenceMessenger.Default.Register<MainViewModel, ReadingThemeChangedMessage>(this, (r, m) =>
+        {
+            if (r._themeService != null && r._themeService.ReadingTheme != m.Theme)
+            {
+                r._themeService.SetReadingTheme(m.Theme);
+            }
+        });
+        WeakReferenceMessenger.Default.Register<MainViewModel, ProjectRenamedMessage>(this, (r, m) =>
+        {
+            if (string.Equals(r.CurrentFilePath, m.OldPath, StringComparison.OrdinalIgnoreCase))
+            {
+                r.CurrentFilePath = m.NewPath;
+                r.DocumentTitle = Path.GetFileName(m.NewPath);
+            }
+            if (string.Equals(r.PdfViewer.CurrentFilePath, m.OldPath, StringComparison.OrdinalIgnoreCase))
+            {
+                r.PdfViewer.CurrentFilePath = m.NewPath;
+                r.PdfViewer.DocumentTitle = Path.GetFileName(m.NewPath);
+            }
+        });
+        WeakReferenceMessenger.Default.Register<MainViewModel, ProjectDeletedMessage>(this, (r, m) =>
+        {
+            if (string.Equals(r.CurrentFilePath, m.DeletedPath, StringComparison.OrdinalIgnoreCase))
+            {
+                r.CurrentFilePath = "";
+                r.DocumentTitle = "Untitled.pdf";
+                r.IsEditorVisible = false;
+                r.IsHomePageVisible = true;
+            }
+            if (string.Equals(r.PdfViewer.CurrentFilePath, m.DeletedPath, StringComparison.OrdinalIgnoreCase))
+            {
+                r.PdfViewer.CurrentFilePath = "";
+                r.IsPdfViewerVisible = false;
+                r.IsHomePageVisible = true;
+            }
+        });
+        WeakReferenceMessenger.Default.Register<MainViewModel, PromptRenameMessage>(this, (r, m) => r.Home.PromptRename(m.FilePath));
+        WeakReferenceMessenger.Default.Register<MainViewModel, PromptDeleteMessage>(this, (r, m) => r.Home.PromptDelete(m.FilePath));
+        WeakReferenceMessenger.Default.Register<MainViewModel, OpenTemplateMessage>(this, (r, m) => r.OpenEditorWithTemplate(m.TemplateName));
+        WeakReferenceMessenger.Default.Register<MainViewModel, OpenProjectFileMessage>(this, (r, m) => _ = r.OpenProjectAndEnterEditorAsync());
+        WeakReferenceMessenger.Default.Register<MainViewModel, OpenWorkflowStudioMessage>(this, (r, m) => r.OpenWorkflowStudio());
+        WeakReferenceMessenger.Default.Register<MainViewModel, OpenBatchGenerationMessage>(this, (r, m) => r.OpenBatchGeneration());
+        WeakReferenceMessenger.Default.Register<MainViewModel, OpenPdfPickerMessage>(this, (r, m) => _ = r.OpenPdfToReadWithPickerAsync());
     }
 
     [RelayCommand]
@@ -1299,7 +1319,10 @@ public partial class MainViewModel : ViewModelBase
 
     // --- UNDO / REDO & CLIPBOARD COMMANDS ---
 
-    [RelayCommand]
+    public bool CanUndo => UndoRedo.CanUndo;
+    public bool CanRedo => UndoRedo.CanRedo;
+
+    [RelayCommand(CanExecute = nameof(CanUndo))]
     public void Undo()
     {
         if (UndoRedo.CanUndo)
@@ -1313,7 +1336,7 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanRedo))]
     public void Redo()
     {
         if (UndoRedo.CanRedo)

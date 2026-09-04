@@ -2,7 +2,9 @@ using System;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using PdfEditorApp.Core.Models;
+using PdfEditorApp.Messages;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 
@@ -16,7 +18,10 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly IUiSettingsService _uiSettingsService;
     private readonly IThemeService? _themeService;
 
-    public event Action<string, ToastNotificationType, string?>? TriggerToastRequested;
+    public void TriggerToast(string message, ToastNotificationType type = ToastNotificationType.Primary, string? icon = null)
+    {
+        WeakReferenceMessenger.Default.Send(new ShowToastMessage(message, type, icon));
+    }
 
     [ObservableProperty]
     private ToastPosition _toastPosition;
@@ -244,7 +249,7 @@ public partial class SettingsViewModel : ViewModelBase
 
         ToastPosition = pos;
         _uiSettingsService.UpdateSettings(s => s.ToastPosition = pos);
-        TriggerToastRequested?.Invoke($"Notification placement set to {GetPositionName(pos)}", ToastNotificationType.Primary, "DockBottom");
+        TriggerToast($"Notification placement set to {GetPositionName(pos)}", ToastNotificationType.Primary, "DockBottom");
         RefreshPreview();
     }
 
@@ -258,7 +263,7 @@ public partial class SettingsViewModel : ViewModelBase
 
         ToastStyleVariant = variant;
         _uiSettingsService.UpdateSettings(s => s.ToastStyleVariant = variant);
-        TriggerToastRequested?.Invoke($"Snackbar visual style changed to {variant}", ToastNotificationType.Primary, "PaletteOutline");
+        TriggerToast($"Snackbar visual style changed to {variant}", ToastNotificationType.Primary, "PaletteOutline");
         RefreshPreview();
     }
 
@@ -273,7 +278,7 @@ public partial class SettingsViewModel : ViewModelBase
         ToastDurationMs = durationMs;
         _uiSettingsService.UpdateSettings(s => s.ToastDurationMs = durationMs);
         string durLabel = durationMs > 0 ? $"{durationMs / 1000.0:0.#} seconds" : "Manual Close Only";
-        TriggerToastRequested?.Invoke($"Notification timeout set to {durLabel}", ToastNotificationType.General, "ClockOutline");
+        TriggerToast($"Notification timeout set to {durLabel}", ToastNotificationType.General, "ClockOutline");
     }
 
     [RelayCommand]
@@ -383,7 +388,7 @@ public partial class SettingsViewModel : ViewModelBase
         _uiSettingsService.ResetToDefaults();
         LoadFromSettings(_uiSettingsService.Settings);
         RefreshPreview();
-        TriggerToastRequested?.Invoke("All UI preferences reset to factory defaults", ToastNotificationType.Success, "Restore");
+        TriggerToast("All UI preferences reset to factory defaults", ToastNotificationType.Success, "Restore");
     }
 
     // --- Interactive Live Test Playground Commands ---
@@ -395,7 +400,7 @@ public partial class SettingsViewModel : ViewModelBase
         PreviewToastMessage = "Primary message comes here";
         PreviewToastIcon = "InformationOutline";
         RefreshPreview();
-        TriggerToastRequested?.Invoke("Primary message comes here", ToastNotificationType.Primary, "InformationOutline");
+        TriggerToast("Primary message comes here", ToastNotificationType.Primary, "InformationOutline");
     }
 
     [RelayCommand]
@@ -405,7 +410,7 @@ public partial class SettingsViewModel : ViewModelBase
         PreviewToastMessage = "Success message comes here";
         PreviewToastIcon = "CheckCircleOutline";
         RefreshPreview();
-        TriggerToastRequested?.Invoke("Success message comes here", ToastNotificationType.Success, "CheckCircleOutline");
+        TriggerToast("Success message comes here", ToastNotificationType.Success, "CheckCircleOutline");
     }
 
     [RelayCommand]
@@ -415,7 +420,7 @@ public partial class SettingsViewModel : ViewModelBase
         PreviewToastMessage = "Danger message comes here";
         PreviewToastIcon = "AlertOctagonOutline";
         RefreshPreview();
-        TriggerToastRequested?.Invoke("Danger message comes here", ToastNotificationType.Danger, "AlertOctagonOutline");
+        TriggerToast("Danger message comes here", ToastNotificationType.Danger, "AlertOctagonOutline");
     }
 
     [RelayCommand]
@@ -425,7 +430,7 @@ public partial class SettingsViewModel : ViewModelBase
         PreviewToastMessage = "Warning message comes here";
         PreviewToastIcon = "AlertOutline";
         RefreshPreview();
-        TriggerToastRequested?.Invoke("Warning message comes here", ToastNotificationType.Warning, "AlertOutline");
+        TriggerToast("Warning message comes here", ToastNotificationType.Warning, "AlertOutline");
     }
 
     [RelayCommand]
@@ -435,7 +440,7 @@ public partial class SettingsViewModel : ViewModelBase
         PreviewToastMessage = "General message comes here";
         PreviewToastIcon = "InformationOutline";
         RefreshPreview();
-        TriggerToastRequested?.Invoke("General message comes here", ToastNotificationType.General, "InformationOutline");
+        TriggerToast("General message comes here", ToastNotificationType.General, "InformationOutline");
     }
 
     private static string GetPositionName(ToastPosition pos) => pos switch

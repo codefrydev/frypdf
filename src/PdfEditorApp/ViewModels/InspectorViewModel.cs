@@ -34,6 +34,8 @@ public partial class InspectorViewModel : ViewModelBase
     private PageViewModel? _selectedPage;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteSelectedElementCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DuplicateSelectedElementCommand))]
     private bool _hasSelectedElement;
 
     [ObservableProperty]
@@ -632,7 +634,7 @@ public partial class InspectorViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(HasSelectedElement))]
     public void DeleteSelectedElement()
     {
         if (SelectedPage == null) return;
@@ -693,7 +695,7 @@ public partial class InspectorViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(HasSelectedElement))]
     public void DuplicateSelectedElement()
     {
         if (SelectedPage == null) return;

@@ -212,6 +212,7 @@ public class ThemeService : IThemeService
 
     public void SetTheme(AppThemeMode mode)
     {
+        if (_currentTheme == mode) return;
         _currentTheme = mode;
         ApplyThemeToApplication(mode);
         SavePreference();
@@ -220,6 +221,7 @@ public class ThemeService : IThemeService
 
     public void SetReadingTheme(PdfReaderTheme theme)
     {
+        if (_readingTheme == theme) return;
         _readingTheme = theme;
         SavePreference();
         ReadingThemeChanged?.Invoke(theme);

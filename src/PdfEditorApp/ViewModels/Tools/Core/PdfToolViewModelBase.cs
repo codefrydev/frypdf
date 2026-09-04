@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using PdfEditorApp.Messages;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 using PdfEditorApp.Services.Tools.Core;
@@ -40,6 +42,8 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
     private bool _isOpen;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanExecuteTool))]
+    [NotifyCanExecuteChangedFor(nameof(ExecuteToolCommand))]
     private bool _isRunning;
 
     [ObservableProperty]
@@ -117,6 +121,7 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
     public ObservableCollection<PdfPagePreviewThumbnail> OutputPageThumbnails { get; } = new();
 
     public bool HasSelectedFiles => SelectedFiles.Count > 0;
+    public virtual bool CanExecuteTool => !IsRunning;
     public string SelectedFilesCountText => SelectedFiles.Count == 1 ? "1 file selected" : $"{SelectedFiles.Count} files selected";
     public string PrimaryInputFile => SelectedFiles.FirstOrDefault() ?? string.Empty;
 
@@ -137,8 +142,6 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
 
     // Events
     public event Action? BackRequested;
-    public event Action<string>? OpenInEditorRequested;
-    public event Action<string>? OpenInViewerRequested;
     public event Action<PdfToolId, string>? NavigateToToolRequested;
     public event Action<PdfToolId>? HelpGuideRequested;
 
@@ -176,13 +179,13 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
     [RelayCommand]
     public void OpenInEditor()
     {
-        if (!string.IsNullOrEmpty(LastOutputFilePath) && File.Exists(LastOutputFilePath))
+        string? targetPath = (!string.IsNullOrEmpty(LastOutputFilePath) && File.Exists(LastOutputFilePath))
+            ? LastOutputFilePath
+            : ((HasSelectedFiles && File.Exists(PrimaryInputFile)) ? PrimaryInputFile : null);
+
+        if (!string.IsNullOrEmpty(targetPath))
         {
-            OpenInEditorRequested?.Invoke(LastOutputFilePath);
-        }
-        else if (HasSelectedFiles && File.Exists(PrimaryInputFile))
-        {
-            OpenInEditorRequested?.Invoke(PrimaryInputFile);
+            WeakReferenceMessenger.Default.Send(new OpenInEditorMessage(targetPath));
         }
     }
 
@@ -195,14 +198,7 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
 
         if (!string.IsNullOrEmpty(targetPath))
         {
-            if (OpenInViewerRequested != null)
-            {
-                OpenInViewerRequested.Invoke(targetPath);
-            }
-            else
-            {
-                OpenOutputFile();
-            }
+            WeakReferenceMessenger.Default.Send(new OpenInViewerMessage(targetPath));
         }
     }
 
@@ -404,7 +400,7 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanExecuteTool))]
     public async Task ExecuteToolAsync()
     {
         if (!ValidateInputs(out var validationError))

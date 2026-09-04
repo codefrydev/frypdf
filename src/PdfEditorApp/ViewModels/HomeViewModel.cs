@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using PdfEditorApp.Core.Models;
+using PdfEditorApp.Messages;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 using PdfEditorApp.Services.Tools;
@@ -35,9 +37,6 @@ public partial class HomeViewModel : ViewModelBase
     // --- Events to tell the shell what to do ---
     public event Action<string?>? OpenTemplateRequested;   // templateName (null = blank)
     public event Action? OpenFileRequested;
-    public event Action<string>? OpenRecentRequested;      // file path
-    public event Action<string>? OpenInEditorRequested;    // file path
-    public event Action<string>? OpenInViewerRequested;    // file path
     public event Action? OpenWorkflowBuilderRequested;
     public event Action? OpenBatchGenerationRequested;
     public event Action<string, string>? DocumentRenamed;  // oldPath, newPath
@@ -136,7 +135,10 @@ public partial class HomeViewModel : ViewModelBase
     public HelpGuideViewModel HelpGuide { get; } = new();
     public SettingsViewModel Settings { get; }
 
-    public event Action<string, ToastNotificationType, string?>? ShowToastRequested;
+    public void TriggerToast(string msg, ToastNotificationType type = ToastNotificationType.Primary, string? icon = null)
+    {
+        WeakReferenceMessenger.Default.Send(new ShowToastMessage(msg, type, icon));
+    }
 
     public int MatchingToolsCount => FilteredTools.Count;
     public bool HasNoMatchingTools => FilteredTools.Count == 0;
@@ -170,7 +172,6 @@ public partial class HomeViewModel : ViewModelBase
         ToolRunner = toolRunner;
 
         Settings = new SettingsViewModel(uiSettingsService ?? new UiSettingsService(), _themeService);
-        Settings.TriggerToastRequested += (msg, type, icon) => ShowToastRequested?.Invoke(msg, type, icon);
 
         if (_themeService != null)
         {
@@ -222,6 +223,7 @@ public partial class HomeViewModel : ViewModelBase
             {
                 if (id == PdfToolId.WorkflowBuilder)
                 {
+                    WeakReferenceMessenger.Default.Send(new OpenWorkflowStudioMessage());
                     OpenWorkflowBuilderRequested?.Invoke();
                 }
                 else
@@ -599,6 +601,7 @@ public partial class HomeViewModel : ViewModelBase
     {
         if (toolId == PdfToolId.BatchMailMerge)
         {
+            WeakReferenceMessenger.Default.Send(new OpenBatchGenerationMessage());
             OpenBatchGenerationRequested?.Invoke();
             return;
         }
@@ -614,9 +617,8 @@ public partial class HomeViewModel : ViewModelBase
                 if (ActiveToolViewModel != null)
                 {
                     ActiveToolViewModel.BackRequested -= BackToTools;
-                    ActiveToolViewModel.OpenInEditorRequested -= OnToolOpenInEditorRequested;
-                    ActiveToolViewModel.OpenInViewerRequested -= OnToolOpenInViewerRequested;
                     ActiveToolViewModel.NavigateToToolRequested -= OnToolNavigateToToolRequested;
+                    ActiveToolViewModel.HelpGuideRequested -= OnToolHelpGuideRequested;
                 }
 
                 ActiveToolViewModel = _toolViewModelFactory.Create(toolId);
@@ -627,10 +629,8 @@ public partial class HomeViewModel : ViewModelBase
                     ActiveToolViewModel.SetupInitialFiles(new[] { initialFilePath });
                 }
                 ActiveToolViewModel.BackRequested += BackToTools;
-                ActiveToolViewModel.OpenInEditorRequested += OnToolOpenInEditorRequested;
-                ActiveToolViewModel.OpenInViewerRequested += OnToolOpenInViewerRequested;
                 ActiveToolViewModel.NavigateToToolRequested += OnToolNavigateToToolRequested;
-                ActiveToolViewModel.HelpGuideRequested += (id) => OpenHelpForTool(id);
+                ActiveToolViewModel.HelpGuideRequested += OnToolHelpGuideRequested;
                 ActiveToolViewModel.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(PdfToolViewModelBase.IsToolStarred) && ActiveToolCard != null && ActiveToolViewModel != null)
@@ -651,14 +651,9 @@ public partial class HomeViewModel : ViewModelBase
         OpenToolPage(nextToolId, targetFile);
     }
 
-    private void OnToolOpenInEditorRequested(string filePath)
+    private void OnToolHelpGuideRequested(PdfToolId toolId)
     {
-        OpenInEditorRequested?.Invoke(filePath);
-    }
-
-    private void OnToolOpenInViewerRequested(string filePath)
-    {
-        OpenInViewerRequested?.Invoke(filePath);
+        OpenHelpForTool(toolId);
     }
 
     [RelayCommand]
@@ -669,9 +664,8 @@ public partial class HomeViewModel : ViewModelBase
         if (ActiveToolViewModel != null)
         {
             ActiveToolViewModel.BackRequested -= BackToTools;
-            ActiveToolViewModel.OpenInEditorRequested -= OnToolOpenInEditorRequested;
-            ActiveToolViewModel.OpenInViewerRequested -= OnToolOpenInViewerRequested;
             ActiveToolViewModel.NavigateToToolRequested -= OnToolNavigateToToolRequested;
+            ActiveToolViewModel.HelpGuideRequested -= OnToolHelpGuideRequested;
             ActiveToolViewModel = null;
         }
     }
@@ -709,6 +703,7 @@ public partial class HomeViewModel : ViewModelBase
     {
         if (toolId == PdfToolId.WorkflowBuilder)
         {
+            WeakReferenceMessenger.Default.Send(new OpenWorkflowStudioMessage());
             OpenWorkflowBuilderRequested?.Invoke();
         }
         else
@@ -720,31 +715,35 @@ public partial class HomeViewModel : ViewModelBase
     [RelayCommand]
     public void OpenWorkflowBuilder()
     {
+        WeakReferenceMessenger.Default.Send(new OpenWorkflowStudioMessage());
         OpenWorkflowBuilderRequested?.Invoke();
     }
 
     [RelayCommand]
     public void SelectTemplate(string? templateName)
     {
+        WeakReferenceMessenger.Default.Send(new OpenTemplateMessage(templateName));
         OpenTemplateRequested?.Invoke(templateName);
     }
 
     [RelayCommand]
     public void OpenFile()
     {
+        WeakReferenceMessenger.Default.Send(new OpenProjectFileMessage());
         OpenFileRequested?.Invoke();
     }
 
     [RelayCommand]
     public void OpenRecent(string filePath)
     {
-        OpenRecentRequested?.Invoke(filePath);
+        WeakReferenceMessenger.Default.Send(new OpenInEditorMessage(filePath));
     }
 
     [RelayCommand]
     public void OpenInViewer(string? filePath)
     {
-        OpenInViewerRequested?.Invoke(filePath ?? string.Empty);
+        var path = filePath ?? string.Empty;
+        WeakReferenceMessenger.Default.Send(new OpenInViewerMessage(path));
     }
 
     [RelayCommand]
@@ -775,8 +774,9 @@ public partial class HomeViewModel : ViewModelBase
         RefreshRecent();
 
         IsRenameDialogOpen = false;
+        WeakReferenceMessenger.Default.Send(new ProjectRenamedMessage(oldPath, finalNewPath));
         DocumentRenamed?.Invoke(oldPath, finalNewPath);
-        ShowToastRequested?.Invoke($"Renamed to {newTitle}", ToastNotificationType.Success, "PencilOutline");
+        TriggerToast($"Renamed to {newTitle}", ToastNotificationType.Success, "PencilOutline");
     }
 
     [RelayCommand]
@@ -804,14 +804,15 @@ public partial class HomeViewModel : ViewModelBase
 
         if (!FileOperationHelper.DeleteFile(targetPath, out var error))
         {
-            ShowToastRequested?.Invoke($"Could not delete file: {error}", ToastNotificationType.Danger, "AlertCircleOutline");
+            TriggerToast($"Could not delete file: {error}", ToastNotificationType.Danger, "AlertCircleOutline");
             return;
         }
 
         _recentService.Remove(targetPath);
         RefreshRecent();
+        WeakReferenceMessenger.Default.Send(new ProjectDeletedMessage(targetPath));
         DocumentDeleted?.Invoke(targetPath);
-        ShowToastRequested?.Invoke($"Deleted {targetName}", ToastNotificationType.Success, "TrashCanOutline");
+        TriggerToast($"Deleted {targetName}", ToastNotificationType.Success, "TrashCanOutline");
     }
 
     [RelayCommand]
@@ -826,7 +827,7 @@ public partial class HomeViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(filePath)) return;
         if (!FileOperationHelper.DuplicateFile(filePath, out var newPath, out var error))
         {
-            ShowToastRequested?.Invoke($"Could not duplicate document: {error}", ToastNotificationType.Danger, "AlertCircleOutline");
+            TriggerToast($"Could not duplicate document: {error}", ToastNotificationType.Danger, "AlertCircleOutline");
             return;
         }
 
@@ -838,7 +839,7 @@ public partial class HomeViewModel : ViewModelBase
             LastOpened = DateTime.UtcNow
         });
         RefreshRecent();
-        ShowToastRequested?.Invoke($"Created duplicate: {copyTitle}", ToastNotificationType.Success, "ContentCopy");
+        TriggerToast($"Created duplicate: {copyTitle}", ToastNotificationType.Success, "ContentCopy");
     }
 
     [RelayCommand]
@@ -847,10 +848,10 @@ public partial class HomeViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(filePath)) return;
         if (!FileOperationHelper.RevealInFileManager(filePath, out var error))
         {
-            ShowToastRequested?.Invoke($"Could not reveal file: {error}", ToastNotificationType.Danger, "AlertCircleOutline");
+            TriggerToast($"Could not reveal file: {error}", ToastNotificationType.Danger, "AlertCircleOutline");
             return;
         }
-        ShowToastRequested?.Invoke("Opened containing folder", ToastNotificationType.Primary, "FolderOpenOutline");
+        TriggerToast("Opened containing folder", ToastNotificationType.Primary, "FolderOpenOutline");
     }
 
     [RelayCommand]
@@ -858,7 +859,7 @@ public partial class HomeViewModel : ViewModelBase
     {
         if (string.IsNullOrWhiteSpace(filePath)) return;
         await CopyToClipboardAsync(filePath);
-        ShowToastRequested?.Invoke("Copied file path to clipboard", ToastNotificationType.Primary, "ClipboardTextOutline");
+        TriggerToast("Copied file path to clipboard", ToastNotificationType.Primary, "ClipboardTextOutline");
     }
 
     [RelayCommand]
@@ -866,7 +867,7 @@ public partial class HomeViewModel : ViewModelBase
     {
         _recentService.Remove(filePath);
         RefreshRecent();
-        ShowToastRequested?.Invoke("Removed from recent documents", ToastNotificationType.Primary, "BookmarkRemoveOutline");
+        TriggerToast("Removed from recent documents", ToastNotificationType.Primary, "BookmarkRemoveOutline");
     }
 
     [RelayCommand]
@@ -874,7 +875,7 @@ public partial class HomeViewModel : ViewModelBase
     {
         _recentService.Clear();
         RefreshRecent();
-        ShowToastRequested?.Invoke("Cleared recent document history", ToastNotificationType.Primary, "TrashCanOutline");
+        TriggerToast("Cleared recent document history", ToastNotificationType.Primary, "TrashCanOutline");
     }
 
     // --- Licensing & Third-Party Open Source Initialization ---

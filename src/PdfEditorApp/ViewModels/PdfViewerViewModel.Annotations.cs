@@ -45,7 +45,7 @@ public partial class PdfViewerViewModel
         page.ClearSelection();
         ClearSelection();
         SelectedSidebarTab = PdfViewerSidebarTab.Annotations;
-        ShowToastRequested?.Invoke($"Added Highlight on Page {page.PageNumber}");
+        ShowToast($"Added Highlight on Page {page.PageNumber}");
     }
 
     [RelayCommand]
@@ -98,7 +98,7 @@ public partial class PdfViewerViewModel
         OnPropertyChanged(nameof(HasAnnotations));
         IsAddNoteOpen = false;
         SelectedSidebarTab = PdfViewerSidebarTab.Annotations;
-        ShowToastRequested?.Invoke($"Added Sticky Note on Page {SelectedPage.PageNumber}");
+        ShowToast($"Added Sticky Note on Page {SelectedPage.PageNumber}");
     }
 
     [RelayCommand]
@@ -130,7 +130,7 @@ public partial class PdfViewerViewModel
         OnPropertyChanged(nameof(HasAnnotations));
         IsAddStampOpen = false;
         SelectedSidebarTab = PdfViewerSidebarTab.Annotations;
-        ShowToastRequested?.Invoke($"Applied '{text}' stamp on Page {SelectedPage.PageNumber}");
+        ShowToast($"Applied '{text}' stamp on Page {SelectedPage.PageNumber}");
     }
 
     [RelayCommand]

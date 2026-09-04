@@ -12,9 +12,14 @@ namespace PdfEditorApp.Models;
 public partial class RecentDocumentItem : ObservableObject
 {
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FileName))]
+    [NotifyPropertyChangedFor(nameof(DirectoryName))]
+    [NotifyPropertyChangedFor(nameof(FileExists))]
+    [NotifyPropertyChangedFor(nameof(FormattedFileSize))]
     private string _filePath = "";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FileName))]
     private string _title = "Untitled";
 
     [ObservableProperty]
@@ -28,6 +33,7 @@ public partial class RecentDocumentItem : ObservableObject
 
     [ObservableProperty]
     [property: JsonIgnore]
+    [NotifyPropertyChangedFor(nameof(HasLivePreview))]
     private PageViewModel? _pagePreview;
 
     [JsonIgnore]

@@ -8,9 +8,11 @@ using PdfEditorApp.ViewModels.Tools.Organize;
 using PdfEditorApp.ViewModels.Tools.Security;
 using PdfEditorApp.ViewModels.Tools.Conversion;
 using PdfEditorApp.ViewModels.Tools.Intelligence;
-using PdfEditorApp.Tests.Tools.Core;
 using System.IO;
 using System.Threading.Tasks;
+using PdfEditorApp.Tests.Tools.Core;
+using CommunityToolkit.Mvvm.Messaging;
+using PdfEditorApp.Messages;
 using PdfEditorApp.Models;
 using PdfEditorApp.ViewModels.Tools;
 using Xunit;
@@ -46,18 +48,25 @@ public class EditPdfToolTests : IClassFixture<ToolTestFixture>
 
             bool openInEditorTriggered = false;
             string targetPath = "";
-            vm.OpenInEditorRequested += path =>
+            WeakReferenceMessenger.Default.Register<EditPdfToolTests, OpenInEditorMessage>(this, (r, m) =>
             {
                 openInEditorTriggered = true;
-                targetPath = path;
-            };
+                targetPath = m.FilePath;
+            });
 
-            await vm.ExecuteToolCommand.ExecuteAsync(null);
+            try
+            {
+                await vm.ExecuteToolCommand.ExecuteAsync(null);
 
-            Assert.True(vm.IsComplete);
-            Assert.False(vm.HasError);
-            Assert.True(openInEditorTriggered);
-            Assert.Equal(sample, targetPath);
+                Assert.True(vm.IsComplete);
+                Assert.False(vm.HasError);
+                Assert.True(openInEditorTriggered);
+                Assert.Equal(sample, targetPath);
+            }
+            finally
+            {
+                WeakReferenceMessenger.Default.Unregister<OpenInEditorMessage>(this);
+            }
         }
         finally
         {

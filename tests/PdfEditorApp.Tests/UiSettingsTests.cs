@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using Avalonia.Layout;
+using CommunityToolkit.Mvvm.Messaging;
 using PdfEditorApp.Core.Models;
+using PdfEditorApp.Messages;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels;
@@ -182,42 +184,49 @@ public class UiSettingsTests : IDisposable
         ToastNotificationType? receivedType = null;
         string? receivedIcon = null;
 
-        vm.TriggerToastRequested += (msg, type, icon) =>
+        WeakReferenceMessenger.Default.Register<UiSettingsTests, ShowToastMessage>(this, (r, m) =>
         {
-            receivedMsg = msg;
-            receivedType = type;
-            receivedIcon = icon;
-        };
+            receivedMsg = m.Message;
+            receivedType = m.Type;
+            receivedIcon = m.ActionLabel;
+        });
 
-        // Test Primary
-        vm.TestPrimaryNotificationCommand.Execute(null);
-        Assert.Equal("Primary message comes here", receivedMsg);
-        Assert.Equal(ToastNotificationType.Primary, receivedType);
-        Assert.Equal("InformationOutline", receivedIcon);
+        try
+        {
+            // Test Primary
+            vm.TestPrimaryNotificationCommand.Execute(null);
+            Assert.Equal("Primary message comes here", receivedMsg);
+            Assert.Equal(ToastNotificationType.Primary, receivedType);
+            Assert.Equal("InformationOutline", receivedIcon);
 
-        // Test Success
-        vm.TestSuccessNotificationCommand.Execute(null);
-        Assert.Equal("Success message comes here", receivedMsg);
-        Assert.Equal(ToastNotificationType.Success, receivedType);
-        Assert.Equal("CheckCircleOutline", receivedIcon);
+            // Test Success
+            vm.TestSuccessNotificationCommand.Execute(null);
+            Assert.Equal("Success message comes here", receivedMsg);
+            Assert.Equal(ToastNotificationType.Success, receivedType);
+            Assert.Equal("CheckCircleOutline", receivedIcon);
 
-        // Test Danger
-        vm.TestDangerNotificationCommand.Execute(null);
-        Assert.Equal("Danger message comes here", receivedMsg);
-        Assert.Equal(ToastNotificationType.Danger, receivedType);
-        Assert.Equal("AlertOctagonOutline", receivedIcon);
+            // Test Danger
+            vm.TestDangerNotificationCommand.Execute(null);
+            Assert.Equal("Danger message comes here", receivedMsg);
+            Assert.Equal(ToastNotificationType.Danger, receivedType);
+            Assert.Equal("AlertOctagonOutline", receivedIcon);
 
-        // Test Warning
-        vm.TestWarningNotificationCommand.Execute(null);
-        Assert.Equal("Warning message comes here", receivedMsg);
-        Assert.Equal(ToastNotificationType.Warning, receivedType);
-        Assert.Equal("AlertOutline", receivedIcon);
+            // Test Warning
+            vm.TestWarningNotificationCommand.Execute(null);
+            Assert.Equal("Warning message comes here", receivedMsg);
+            Assert.Equal(ToastNotificationType.Warning, receivedType);
+            Assert.Equal("AlertOutline", receivedIcon);
 
-        // Test General
-        vm.TestGeneralNotificationCommand.Execute(null);
-        Assert.Equal("General message comes here", receivedMsg);
-        Assert.Equal(ToastNotificationType.General, receivedType);
-        Assert.Equal("InformationOutline", receivedIcon);
+            // Test General
+            vm.TestGeneralNotificationCommand.Execute(null);
+            Assert.Equal("General message comes here", receivedMsg);
+            Assert.Equal(ToastNotificationType.General, receivedType);
+            Assert.Equal("InformationOutline", receivedIcon);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.Unregister<ShowToastMessage>(this);
+        }
     }
 
     [Fact]

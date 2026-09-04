@@ -296,7 +296,8 @@ public partial class HomeViewModel : ViewModelBase
                 var pageVm = new PageViewModel();
                 pageVm.LoadFromModel(page);
 
-                bool isFeatured = def.Id is "annualreport" or "invoice" or "resume" or "resumemodern" or "academic" or "mathresearch" or "physicsresearch" or "certificate" or "typographyshowcase";
+                bool isFeatured = def.Id is "annualreport" or "invoice" or "resume" or "resumemodern" or "academic" or "mathresearch" or "physicsresearch" or "certificate" or "typographyshowcase"
+                    or "bodmas_worksheet" or "bilingual_exam_paper" or "states_of_matter_notes" or "arduino_cheatsheet" or "factorization_worksheet";
                 string subtitle = def.Id switch
                 {
                     "annualreport" => "Executive Summary & Charts",
@@ -317,6 +318,12 @@ public partial class HomeViewModel : ViewModelBase
                     "weddingroyalfloral" => "Botanical Laurel Wreath",
                     "galainvitation" => "Black-Tie Art Deco",
                     "typographyshowcase" => "Bézier Waves & Ink Specimen",
+                    "bodmas_worksheet" => "BODMAS & Student Header",
+                    "factorization_worksheet" => "150 Questions & Identities",
+                    "bilingual_exam_paper" => "Hindi & English Exam Paper",
+                    "states_of_matter_notes" => "Phase Cycle & Particle Models",
+                    "quadrilaterals_guide" => "Geometric Properties & Formulas",
+                    "arduino_cheatsheet" => "Embedded C & Pinout Map",
                     _ => def.Category
                 };
 
@@ -340,6 +347,12 @@ public partial class HomeViewModel : ViewModelBase
                     "weddingroyalfloral" => "Luxury",
                     "galainvitation" => "Art Deco",
                     "typographyshowcase" => "Featured",
+                    "bodmas_worksheet" => "Worksheet",
+                    "factorization_worksheet" => "Algebra",
+                    "bilingual_exam_paper" => "Bilingual",
+                    "states_of_matter_notes" => "Science",
+                    "quadrilaterals_guide" => "Geometry",
+                    "arduino_cheatsheet" => "Cheat Sheet",
                     _ => def.Category
                 };
 

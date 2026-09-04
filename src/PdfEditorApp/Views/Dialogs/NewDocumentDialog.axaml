@@ -141,6 +141,26 @@
                             </StackPanel>
                         </Button>
 
+                        <!-- Education & Worksheets -->
+                        <Button Classes="category-filter-chip"
+                                Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Education}"
+                                Command="{Binding SetTemplateCategoryCommand}" CommandParameter="Education">
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="SchoolOutline" Width="14" Height="14" Foreground="#0284C7" />
+                                <TextBlock Text="Education &amp; Worksheets" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Cheat Sheets & Guides -->
+                        <Button Classes="category-filter-chip"
+                                Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter='Cheat Sheets'}"
+                                Command="{Binding SetTemplateCategoryCommand}" CommandParameter="Cheat Sheets">
+                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="CodeBraces" Width="14" Height="14" Foreground="#0D9488" />
+                                <TextBlock Text="Cheat Sheets &amp; Posters" />
+                            </StackPanel>
+                        </Button>
+
                         <!-- Blank Canvas -->
                         <Button Classes="category-filter-chip"
                                 Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=General}"

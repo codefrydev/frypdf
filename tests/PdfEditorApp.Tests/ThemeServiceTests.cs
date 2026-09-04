@@ -64,16 +64,17 @@ public class ThemeServiceTests : IDisposable
     {
         // Arrange
         var service = new ThemeService();
+        var targetTheme = service.CurrentTheme == AppThemeMode.Dark ? AppThemeMode.Light : AppThemeMode.Dark;
         AppThemeMode? receivedTheme = null;
         service.ThemeChanged += (t) => receivedTheme = t;
 
         // Act
-        service.SetTheme(AppThemeMode.Dark);
+        service.SetTheme(targetTheme);
 
         // Assert
-        Assert.Equal(AppThemeMode.Dark, service.CurrentTheme);
-        Assert.True(service.IsDarkMode);
-        Assert.Equal(AppThemeMode.Dark, receivedTheme);
+        Assert.Equal(targetTheme, service.CurrentTheme);
+        Assert.Equal(targetTheme == AppThemeMode.Dark, service.IsDarkMode);
+        Assert.Equal(targetTheme, receivedTheme);
     }
 
     [Fact]

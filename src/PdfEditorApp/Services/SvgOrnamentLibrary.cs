@@ -21,12 +21,22 @@ public static class SvgOrnamentLibrary
         { "BotanicalWreath", GetBotanicalWreathSvg() },
         { "ArtDecoFrame", GetArtDecoFrameSvg() },
         { "CalligraphicFlourish", GetCalligraphicFlourishSvg() },
-        { "OmCrest", GetOmCrestSvg() }
+        { "OmCrest", GetOmCrestSvg() },
+        { "TriangularPhaseCycle", GetTriangularPhaseCycleSvg() },
+        { "Triangular Phase Cycle", GetTriangularPhaseCycleSvg() },
+        { "ParticleArrangementGrid", GetParticleArrangementGridSvg() },
+        { "ParticleArrangement", GetParticleArrangementGridSvg() },
+        { "Particle Arrangement", GetParticleArrangementGridSvg() },
+        { "QuadrilateralSetDiagram", GetQuadrilateralSetDiagramSvg() },
+        { "Quadrilaterals Geometry Diagram", GetQuadrilateralSetDiagramSvg() },
+        { "QuadrilateralsGeometryDiagram", GetQuadrilateralSetDiagramSvg() }
     };
 
     public static string GetSvg(string? presetName, string? tintHex = null)
     {
-        if (string.IsNullOrWhiteSpace(presetName) || !Presets.TryGetValue(presetName, out var svg))
+        if (string.IsNullOrWhiteSpace(presetName) ||
+            (!Presets.TryGetValue(presetName, out var svg) &&
+             !Presets.TryGetValue(presetName.Replace(" ", "").Replace("-", "").Replace("_", ""), out svg)))
         {
             svg = GetGaneshaCrestSvg();
         }
@@ -422,4 +432,174 @@ public static class SvgOrnamentLibrary
   <circle cx=""110"" cy=""32"" r=""4"" fill=""{maroon}"" />
 </svg>";
     }
+
+    /// <summary>
+    /// Triangular Phase Change Cycle Diagram: Solid (ठोस) &lt;-&gt; Liquid (द्रव) &lt;-&gt; Gas (गैस) with 6 transition arrows.
+    /// Matches sample 'interchange_solid_liquid_gas' and 'states_of_matter_visual_notes'.
+    /// </summary>
+    public static string GetTriangularPhaseCycleSvg(string primary = "#0284C7", string accent = "#DC2626", string textDark = "#0F172A")
+    {
+        return $@"<svg viewBox=""0 0 520 400"" xmlns=""http://www.w3.org/2000/svg"">
+  <defs>
+    <marker id=""arrow-red"" viewBox=""0 0 10 10"" refX=""6"" refY=""5"" markerWidth=""6"" markerHeight=""6"" orient=""auto-start-reverse"">
+      <path d=""M 0 1 L 10 5 L 0 9 z"" fill=""#DC2626"" />
+    </marker>
+    <marker id=""arrow-blue"" viewBox=""0 0 10 10"" refX=""6"" refY=""5"" markerWidth=""6"" markerHeight=""6"" orient=""auto-start-reverse"">
+      <path d=""M 0 1 L 10 5 L 0 9 z"" fill=""#2563EB"" />
+    </marker>
+  </defs>
+
+  <!-- Gas Node (Top) -->
+  <rect x=""190"" y=""20"" width=""140"" height=""60"" rx=""12"" fill=""#EFF6FF"" stroke=""#2563EB"" stroke-width=""2"" />
+  <text x=""260"" y=""45"" font-family=""sans-serif"" font-size=""14"" font-weight=""bold"" fill=""#1E3A8A"" text-anchor=""middle"">GAS (गैस)</text>
+  <text x=""260"" y=""65"" font-family=""sans-serif"" font-size=""10"" fill=""#3B82F6"" text-anchor=""middle"">High Kinetic Energy</text>
+
+  <!-- Solid Node (Bottom Left) -->
+  <rect x=""30"" y=""310"" width=""140"" height=""60"" rx=""12"" fill=""#FEF2F2"" stroke=""#DC2626"" stroke-width=""2"" />
+  <text x=""100"" y=""335"" font-family=""sans-serif"" font-size=""14"" font-weight=""bold"" fill=""#7F1D1D"" text-anchor=""middle"">SOLID (ठोस)</text>
+  <text x=""100"" y=""355"" font-family=""sans-serif"" font-size=""10"" fill=""#EF4444"" text-anchor=""middle"">Fixed Shape &amp; Volume</text>
+
+  <!-- Liquid Node (Bottom Right) -->
+  <rect x=""350"" y=""310"" width=""140"" height=""60"" rx=""12"" fill=""#F0FDF4"" stroke=""#16A34A"" stroke-width=""2"" />
+  <text x=""420"" y=""335"" font-family=""sans-serif"" font-size=""14"" font-weight=""bold"" fill=""#14532D"" text-anchor=""middle"">LIQUID (द्रव)</text>
+  <text x=""420"" y=""355"" font-family=""sans-serif"" font-size=""10"" fill=""#22C55E"" text-anchor=""middle"">Fixed Volume, Fluid</text>
+
+  <!-- Bottom Forward: Melting (Solid -> Liquid) -->
+  <path d=""M 175 325 L 345 325"" fill=""none"" stroke=""#DC2626"" stroke-width=""2"" marker-end=""url(#arrow-red)"" />
+  <text x=""260"" y=""318"" font-family=""sans-serif"" font-size=""11"" font-weight=""bold"" fill=""#B91C1C"" text-anchor=""middle"">Melting / गलनांक / संलयन →</text>
+
+  <!-- Bottom Reverse: Freezing (Liquid -> Solid) -->
+  <path d=""M 345 355 L 175 355"" fill=""none"" stroke=""#2563EB"" stroke-width=""2"" marker-end=""url(#arrow-blue)"" />
+  <text x=""260"" y=""372"" font-family=""sans-serif"" font-size=""11"" font-weight=""bold"" fill=""#1D4ED8"" text-anchor=""middle"">← Freezing / जमना / हिमीकरण</text>
+
+  <!-- Left Up: Sublimation (Solid -> Gas) -->
+  <path d=""M 115 305 Q 110 160 200 70"" fill=""none"" stroke=""#DC2626"" stroke-width=""2"" marker-end=""url(#arrow-red)"" />
+  <text x=""105"" y=""180"" font-family=""sans-serif"" font-size=""10"" font-weight=""bold"" fill=""#B91C1C"" text-anchor=""middle"" transform=""rotate(-50 105 180)"">Sublimation / ऊर्ध्वपातन ↗</text>
+
+  <!-- Left Down: Deposition (Gas -> Solid) -->
+  <path d=""M 215 80 Q 150 160 145 305"" fill=""none"" stroke=""#2563EB"" stroke-width=""2"" marker-end=""url(#arrow-blue)"" />
+  <text x=""190"" y=""200"" font-family=""sans-serif"" font-size=""10"" font-weight=""bold"" fill=""#1D4ED8"" text-anchor=""middle"" transform=""rotate(50 190 200)"">↙ Deposition / निक्षेपण</text>
+
+  <!-- Right Down: Condensation (Gas -> Liquid) -->
+  <path d=""M 315 80 Q 370 160 375 305"" fill=""none"" stroke=""#2563EB"" stroke-width=""2"" marker-end=""url(#arrow-blue)"" />
+  <text x=""335"" y=""200"" font-family=""sans-serif"" font-size=""10"" font-weight=""bold"" fill=""#1D4ED8"" text-anchor=""middle"" transform=""rotate(-50 335 200)"">Condensation / संघनन ↘</text>
+
+  <!-- Right Up: Vaporization (Liquid -> Gas) -->
+  <path d=""M 405 305 Q 410 160 320 70"" fill=""none"" stroke=""#DC2626"" stroke-width=""2"" marker-end=""url(#arrow-red)"" />
+  <text x=""415"" y=""180"" font-family=""sans-serif"" font-size=""10"" font-weight=""bold"" fill=""#B91C1C"" text-anchor=""middle"" transform=""rotate(50 415 180)"">↖ Vaporization / वाष्पीकरण</text>
+</svg>";
+    }
+
+    /// <summary>
+    /// Comparative Particle Arrangement Diagram (Solid lattice, Liquid fluid, Gas dispersed).
+    /// Matches sample 'states_of_matter_visual_notes' and 'states_of_matter_notes'.
+    /// </summary>
+    public static string GetParticleArrangementGridSvg()
+    {
+        return $@"<svg viewBox=""0 0 540 180"" xmlns=""http://www.w3.org/2000/svg"">
+  <!-- Solid Box -->
+  <g transform=""translate(10, 10)"">
+    <rect x=""0"" y=""0"" width=""150"" height=""130"" rx=""8"" fill=""#FEF2F2"" stroke=""#DC2626"" stroke-width=""1.5"" />
+    <text x=""75"" y=""155"" font-family=""sans-serif"" font-size=""12"" font-weight=""bold"" fill=""#991B1B"" text-anchor=""middle"">Solid (ठोस)</text>
+    <!-- 4x4 Grid of packed circles -->
+    <circle cx=""30"" cy=""25"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""60"" cy=""25"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""90"" cy=""25"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""120"" cy=""25"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""30"" cy=""55"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""60"" cy=""55"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""90"" cy=""55"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""120"" cy=""55"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""30"" cy=""85"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""60"" cy=""85"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""90"" cy=""85"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""120"" cy=""85"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""30"" cy=""115"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""60"" cy=""115"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""90"" cy=""115"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+    <circle cx=""120"" cy=""115"" r=""11"" fill=""#EF4444"" stroke=""#B91C1C"" />
+  </g>
+
+  <!-- Liquid Box -->
+  <g transform=""translate(195, 10)"">
+    <rect x=""0"" y=""0"" width=""150"" height=""130"" rx=""8"" fill=""#F0FDF4"" stroke=""#16A34A"" stroke-width=""1.5"" />
+    <text x=""75"" y=""155"" font-family=""sans-serif"" font-size=""12"" font-weight=""bold"" fill=""#166534"" text-anchor=""middle"">Liquid (द्रव)</text>
+    <circle cx=""28"" cy=""40"" r=""11"" fill=""#22C55E"" stroke=""#15803D"" />
+    <circle cx=""58"" cy=""32"" r=""11"" fill=""#22C55E"" stroke=""#15803D"" />
+    <circle cx=""88"" cy=""42"" r=""11"" fill=""#22C55E"" stroke=""#15803D"" />
+    <circle cx=""122"" cy=""35"" r=""11"" fill=""#22C55E"" stroke=""#15803D"" />
+    <circle cx=""35"" cy=""75"" r=""11"" fill=""#22C55E"" stroke=""#15803D"" />
+    <circle cx=""70"" cy=""70"" r=""11"" fill=""#22C55E"" stroke=""#15803D"" />
+    <circle cx=""105"" cy=""72"" r=""11"" fill=""#22C55E"" stroke=""#15803D"" />
+    <circle cx=""42"" cy=""110"" r=""11"" fill=""#22C55E"" stroke=""#15803D"" />
+    <circle cx=""80"" cy=""105"" r=""11"" fill=""#22C55E"" stroke=""#15803D"" />
+    <circle cx=""118"" cy=""112"" r=""11"" fill=""#22C55E"" stroke=""#15803D"" />
+  </g>
+
+  <!-- Gas Box -->
+  <g transform=""translate(380, 10)"">
+    <rect x=""0"" y=""0"" width=""150"" height=""130"" rx=""8"" fill=""#EFF6FF"" stroke=""#2563EB"" stroke-width=""1.5"" />
+    <text x=""75"" y=""155"" font-family=""sans-serif"" font-size=""12"" font-weight=""bold"" fill=""#1E40AF"" text-anchor=""middle"">Gas (गैस)</text>
+    <circle cx=""35"" cy=""30"" r=""9"" fill=""#3B82F6"" stroke=""#1D4ED8"" />
+    <line x1=""35"" y1=""30"" x2=""50"" y2=""20"" stroke=""#93C5FD"" stroke-width=""1.5"" stroke-dasharray=""2,2"" />
+    <circle cx=""115"" cy=""45"" r=""9"" fill=""#3B82F6"" stroke=""#1D4ED8"" />
+    <line x1=""115"" y1=""45"" x2=""95"" y2=""55"" stroke=""#93C5FD"" stroke-width=""1.5"" stroke-dasharray=""2,2"" />
+    <circle cx=""65"" cy=""85"" r=""9"" fill=""#3B82F6"" stroke=""#1D4ED8"" />
+    <line x1=""65"" y1=""85"" x2=""80"" y2=""100"" stroke=""#93C5FD"" stroke-width=""1.5"" stroke-dasharray=""2,2"" />
+    <circle cx=""120"" cy=""105"" r=""9"" fill=""#3B82F6"" stroke=""#1D4ED8"" />
+    <line x1=""120"" y1=""105"" x2=""105"" y2=""115"" stroke=""#93C5FD"" stroke-width=""1.5"" stroke-dasharray=""2,2"" />
+    <circle cx=""25"" cy=""115"" r=""9"" fill=""#3B82F6"" stroke=""#1D4ED8"" />
+    <line x1=""25"" y1=""115"" x2=""40"" y2=""120"" stroke=""#93C5FD"" stroke-width=""1.5"" stroke-dasharray=""2,2"" />
+  </g>
+</svg>";
+    }
+
+    /// <summary>
+    /// Geometric Quadrilaterals Reference Diagram: Parallelogram, Rhombus, Trapezoid, Kite.
+    /// Matches sample 'Types_of_Quadrilaterals_Hindi_English'.
+    /// </summary>
+    public static string GetQuadrilateralSetDiagramSvg()
+    {
+        return $@"<svg viewBox=""0 0 520 220"" xmlns=""http://www.w3.org/2000/svg"">
+  <!-- 1. Parallelogram -->
+  <g transform=""translate(10, 10)"">
+    <polygon points=""25,10 115,10 95,90 5,90"" fill=""#EFF6FF"" stroke=""#2563EB"" stroke-width=""2"" />
+    <line x1=""25"" y1=""10"" x2=""25"" y2=""90"" stroke=""#93C5FD"" stroke-width=""1.5"" stroke-dasharray=""3,3"" />
+    <text x=""22"" y=""55"" font-family=""sans-serif"" font-size=""10"" fill=""#1D4ED8"">h</text>
+    <text x=""50"" y=""105"" font-family=""sans-serif"" font-size=""10"" fill=""#1D4ED8"">b</text>
+    <text x=""60"" y=""130"" font-family=""sans-serif"" font-size=""11"" font-weight=""bold"" fill=""#1E3A8A"" text-anchor=""middle"">Parallelogram (समांतर)</text>
+    <text x=""60"" y=""145"" font-family=""sans-serif"" font-size=""9"" fill=""#475569"" text-anchor=""middle"">Area = b × h</text>
+  </g>
+
+  <!-- 2. Rhombus -->
+  <g transform=""translate(140, 10)"">
+    <polygon points=""60,10 115,50 60,90 5,50"" fill=""#FEF2F2"" stroke=""#DC2626"" stroke-width=""2"" />
+    <line x1=""60"" y1=""10"" x2=""60"" y2=""90"" stroke=""#FCA5A5"" stroke-width=""1.5"" stroke-dasharray=""3,3"" />
+    <line x1=""5"" y1=""50"" x2=""115"" y2=""50"" stroke=""#FCA5A5"" stroke-width=""1.5"" stroke-dasharray=""3,3"" />
+    <text x=""60"" y=""130"" font-family=""sans-serif"" font-size=""11"" font-weight=""bold"" fill=""#7F1D1D"" text-anchor=""middle"">Rhombus (समचतुर्भुज)</text>
+    <text x=""60"" y=""145"" font-family=""sans-serif"" font-size=""9"" fill=""#475569"" text-anchor=""middle"">Area = ½ d₁ d₂</text>
+  </g>
+
+  <!-- 3. Trapezoid -->
+  <g transform=""translate(270, 10)"">
+    <polygon points=""30,15 90,15 115,90 5,90"" fill=""#F0FDF4"" stroke=""#16A34A"" stroke-width=""2"" />
+    <line x1=""30"" y1=""15"" x2=""30"" y2=""90"" stroke=""#86EFAC"" stroke-width=""1.5"" stroke-dasharray=""3,3"" />
+    <text x=""26"" y=""55"" font-family=""sans-serif"" font-size=""10"" fill=""#15803D"">h</text>
+    <text x=""60"" y=""10"" font-family=""sans-serif"" font-size=""9"" fill=""#15803D"" text-anchor=""middle"">a</text>
+    <text x=""60"" y=""105"" font-family=""sans-serif"" font-size=""9"" fill=""#15803D"" text-anchor=""middle"">b</text>
+    <text x=""60"" y=""130"" font-family=""sans-serif"" font-size=""11"" font-weight=""bold"" fill=""#14532D"" text-anchor=""middle"">Trapezoid (समलंब)</text>
+    <text x=""60"" y=""145"" font-family=""sans-serif"" font-size=""9"" fill=""#475569"" text-anchor=""middle"">Area = ½(a+b)h</text>
+  </g>
+
+  <!-- 4. Kite -->
+  <g transform=""translate(400, 10)"">
+    <polygon points=""55,10 100,45 55,95 10,45"" fill=""#FFFBEB"" stroke=""#D97706"" stroke-width=""2"" />
+    <line x1=""55"" y1=""10"" x2=""55"" y2=""95"" stroke=""#FCD34D"" stroke-width=""1.5"" stroke-dasharray=""3,3"" />
+    <line x1=""10"" y1=""45"" x2=""100"" y2=""45"" stroke=""#FCD34D"" stroke-width=""1.5"" stroke-dasharray=""3,3"" />
+    <text x=""55"" y=""130"" font-family=""sans-serif"" font-size=""11"" font-weight=""bold"" fill=""#78350F"" text-anchor=""middle"">Kite (पतंग)</text>
+    <text x=""55"" y=""145"" font-family=""sans-serif"" font-size=""9"" fill=""#475569"" text-anchor=""middle"">Diagonals ⊥</text>
+  </g>
+</svg>";
+    }
 }
+

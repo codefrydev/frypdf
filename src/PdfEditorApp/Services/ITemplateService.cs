@@ -31,5 +31,11 @@ public interface ITemplateService
     PdfDocumentModel CreateTypographyShowcaseTemplate();
     PdfDocumentModel CreateRichTextShowcaseTemplate();
     PdfDocumentModel CreateOcrAnalysisReportTemplate();
+    PdfDocumentModel CreateMathBODMASWorksheetTemplate();
+    PdfDocumentModel CreateFactorizationWorksheetTemplate();
+    PdfDocumentModel CreateBilingualExamPaperTemplate();
+    PdfDocumentModel CreateStatesOfMatterDiagramNotesTemplate();
+    PdfDocumentModel CreateQuadrilateralsGuideTemplate();
+    PdfDocumentModel CreateArduinoCheatSheetTemplate();
     PdfDocumentModel CreateBlankDocument(PageFormat format = PageFormat.A4, PageOrientation orientation = PageOrientation.Portrait);
 }

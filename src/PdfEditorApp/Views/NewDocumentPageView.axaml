@@ -154,6 +154,18 @@
                     Certificates
                 </Button>
                 <Button Classes="home-filter-pill"
+                        Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Education}"
+                        Command="{Binding SetTemplateCategoryCommand}"
+                        CommandParameter="Education">
+                    Education
+                </Button>
+                <Button Classes="home-filter-pill"
+                        Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter='Cheat Sheets'}"
+                        Command="{Binding SetTemplateCategoryCommand}"
+                        CommandParameter="Cheat Sheets">
+                    Cheat Sheets
+                </Button>
+                <Button Classes="home-filter-pill"
                         Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter='Events &amp; Invitations'}"
                         Command="{Binding SetTemplateCategoryCommand}"
                         CommandParameter="Events &amp; Invitations">
@@ -369,7 +381,12 @@
                                                         <!-- Svg Ornament Element -->
                                                         <DataTemplate DataType="elvm:SvgElementViewModel">
                                                             <Grid Width="{Binding Width}" Height="{Binding Height}">
-                                                                <Viewbox Stretch="Uniform">
+                                                                <Image Source="{Binding PreviewBitmap}"
+                                                                       RenderOptions.BitmapInterpolationMode="HighQuality"
+                                                                       Stretch="{Binding KeepAspectRatio, Converter={x:Static converters:BooleanToStretchConverter.Instance}}"
+                                                                       IsVisible="{Binding PreviewBitmap, Converter={StaticResource NullToBooleanConverter}}" />
+                                                                <Viewbox Stretch="Uniform"
+                                                                         IsVisible="{Binding PreviewBitmap, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter={x:Null}, FallbackValue=True}">
                                                                     <Path Data="{Binding PathGeometryData}"
                                                                           Fill="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#D97706'}"
                                                                           Stroke="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#8B0000'}"
@@ -638,7 +655,12 @@
                                                                 <!-- Svg Ornament Element -->
                                                                 <DataTemplate DataType="elvm:SvgElementViewModel">
                                                                     <Grid Width="{Binding Width}" Height="{Binding Height}">
-                                                                        <Viewbox Stretch="Uniform">
+                                                                        <Image Source="{Binding PreviewBitmap}"
+                                                                               RenderOptions.BitmapInterpolationMode="HighQuality"
+                                                                               Stretch="{Binding KeepAspectRatio, Converter={x:Static converters:BooleanToStretchConverter.Instance}}"
+                                                                               IsVisible="{Binding PreviewBitmap, Converter={StaticResource NullToBooleanConverter}}" />
+                                                                        <Viewbox Stretch="Uniform"
+                                                                                 IsVisible="{Binding PreviewBitmap, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter={x:Null}, FallbackValue=True}">
                                                                             <Path Data="{Binding PathGeometryData}"
                                                                                   Fill="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#D97706'}"
                                                                                   Stroke="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#8B0000'}"

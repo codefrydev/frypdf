@@ -251,6 +251,7 @@ public static class PdfDeconstructionEngine
         if (Math.Abs(minDim - 612.0) < 20 && Math.Abs(maxDim - 1008.0) < 20) return PageFormat.Legal;
         if (Math.Abs(minDim - 841.89) < 30 && Math.Abs(maxDim - 1190.55) < 30) return PageFormat.A3;
         if (Math.Abs(minDim - 419.53) < 20 && Math.Abs(maxDim - 595.28) < 20) return PageFormat.A5;
+        if (Math.Abs(minDim - 2592.0) < 50 && Math.Abs(maxDim - 3456.0) < 50) return PageFormat.Poster;
 
         return PageFormat.A4;
     }

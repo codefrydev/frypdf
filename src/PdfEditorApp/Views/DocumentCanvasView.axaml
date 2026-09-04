@@ -852,13 +852,28 @@
 
                                 <!-- 15. SVG VECTOR ART & ORNAMENTS TEMPLATE -->
                                 <DataTemplate DataType="elvm:SvgElementViewModel">
-                                    <Grid Width="{Binding Width}" Height="{Binding Height}" PointerPressed="OnElementPointerPressed">
-                                        <Viewbox Stretch="Uniform">
-                                            <Path Data="{Binding PathGeometryData}"
-                                                  Fill="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#D97706'}"
-                                                  Stroke="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#8B0000'}"
-                                                  StrokeThickness="1.5" />
-                                        </Viewbox>
+                                    <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                        <Border Background="Transparent"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="{Binding BorderThickness, Converter={StaticResource DoubleToThickness}}"
+                                                CornerRadius="{Binding CornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                                ClipToBounds="True"
+                                                PointerPressed="OnElementPointerPressed">
+                                            <Panel>
+                                                <Image Source="{Binding PreviewBitmap}"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality"
+                                                       Stretch="{Binding KeepAspectRatio, Converter={x:Static converters:BooleanToStretchConverter.Instance}}"
+                                                       IsVisible="{Binding PreviewBitmap, Converter={StaticResource NullToBooleanConverter}}" />
+
+                                                <Viewbox Stretch="Uniform"
+                                                         IsVisible="{Binding PreviewBitmap, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter={x:Null}, FallbackValue=True}">
+                                                    <Path Data="{Binding PathGeometryData}"
+                                                          Fill="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#D97706'}"
+                                                          Stroke="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#8B0000'}"
+                                                          StrokeThickness="1.5" />
+                                                </Viewbox>
+                                            </Panel>
+                                        </Border>
 
                                         <!-- Selection Adorner -->
                                         <Grid IsVisible="{Binding IsSelected}">

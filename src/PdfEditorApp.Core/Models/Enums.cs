@@ -30,6 +30,7 @@ public enum MathDisplayStyle
 
 public enum MathCategory
 {
+    SchoolArithmetic,
     Algebra,
     Calculus,
     Physics,
@@ -155,6 +156,7 @@ public enum PageFormat
     A3,
     A5,
     Tabloid,
+    Poster,
     Custom
 }
 

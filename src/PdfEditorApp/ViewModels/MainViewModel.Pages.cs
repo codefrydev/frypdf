@@ -512,6 +512,7 @@ public partial class MainViewModel
                 PageFormat.Executive => 700,
                 PageFormat.A3 => 1131,
                 PageFormat.A5 => 565,
+                PageFormat.Poster => 2592,
                 _ => 800
             };
             double h = format switch
@@ -522,6 +523,7 @@ public partial class MainViewModel
                 PageFormat.Executive => 950,
                 PageFormat.A3 => 1600,
                 PageFormat.A5 => 800,
+                PageFormat.Poster => 3456,
                 _ => 1131
             };
 

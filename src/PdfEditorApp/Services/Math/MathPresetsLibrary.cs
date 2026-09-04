@@ -20,6 +20,37 @@ public static class MathPresetsLibrary
     private static readonly List<MathPresetItem> _presets = new()
     {
         // ==========================================
+        // 0. SCHOOL ARITHMETIC & WORKSHEET MATH
+        // ==========================================
+        new(
+            "bodmas_order",
+            "BODMAS Order of Operations",
+            @"\text{BODMAS: } [\;] \to \{\;\} \to (\;) \to \text{Of} \to \div \to \times \to + \to -",
+            MathCategory.SchoolArithmetic,
+            "Fundamental rule for evaluating nested arithmetic expressions",
+            "(1)",
+            360, 48
+        ),
+        new(
+            "simple_interest",
+            "Simple Interest & Amount Formula",
+            @"SI = \frac{P \times R \times T}{100}, \quad A = P + SI = P\left(1 + \frac{RT}{100}\right)",
+            MathCategory.SchoolArithmetic,
+            "Standard commercial math formula for principal P, rate R%, and time T years",
+            "(2)",
+            380, 52
+        ),
+        new(
+            "compound_interest",
+            "Compound Interest Formula",
+            @"A = P\left(1 + \frac{r}{n}\right)^{nt}, \quad CI = A - P",
+            MathCategory.SchoolArithmetic,
+            "Compound interest compounded n times per year over t periods",
+            "(3)",
+            320, 50
+        ),
+
+        // ==========================================
         // 1. CALCULUS & ANALYSIS
         // ==========================================
         new(
@@ -282,13 +313,71 @@ public static class MathPresetsLibrary
             300, 54
         ),
         new(
+            "algebraic_identity_square",
+            "Algebraic Identities: Square of Binomial",
+            @"(a \pm b)^2 = a^2 \pm 2ab + b^2, \quad a^2 - b^2 = (a - b)(a + b)",
+            MathCategory.Algebra,
+            "Fundamental identities for expanding and factorizing quadratic binomials",
+            "(5)",
+            350, 48
+        ),
+        new(
+            "algebraic_identity_cubes",
+            "Algebraic Identities: Sum and Difference of Cubes",
+            @"a^3 \pm b^3 = (a \pm b)(a^2 \mp ab + b^2), \quad (a \pm b)^3 = a^3 \pm 3a^2b + 3ab^2 \pm b^3",
+            MathCategory.Algebra,
+            "Cubic binomial and trinomial expansion and factorization identities",
+            "(6)",
+            420, 52
+        ),
+        new(
+            "complex_number_sqrt",
+            "Square Root of Complex Number",
+            @"\sqrt{a + ib} = \pm \left( \sqrt{\frac{|z| + a}{2}} + i \, \text{sgn}(b) \sqrt{\frac{|z| - a}{2}} \right), \quad |z| = \sqrt{a^2 + b^2}",
+            MathCategory.Algebra,
+            "Standard analytic formula for computing principal square roots of complex numbers",
+            "(7)",
+            430, 52
+        ),
+        new(
             "euler_polyhedron",
             "Euler's Polyhedral Formula",
             @"V - E + F = 2",
             MathCategory.DiscreteMath,
             "Topological invariant relating vertices, edges, and faces of convex polyhedra",
-            "(5)",
+            "(8)",
             170, 42
+        ),
+
+        // ==========================================
+        // 5B. GEOMETRY & TRIGONOMETRY
+        // ==========================================
+        new(
+            "quadrilateral_parallelogram_trapezoid",
+            "Area of Parallelogram & Trapezoid",
+            @"A_{\text{parallelogram}} = b \times h, \quad A_{\text{trapezoid}} = \frac{a + b}{2} \times h",
+            MathCategory.Geometry,
+            "Area formulas for quadrilaterals with parallel bases",
+            "(1)",
+            350, 48
+        ),
+        new(
+            "quadrilateral_rhombus_kite",
+            "Area of Rhombus & Kite",
+            @"A_{\text{rhombus}} = \frac{1}{2} d_1 d_2, \quad \text{Perimeter} = 4a",
+            MathCategory.Geometry,
+            "Area and perimeter formulas for equilateral and kite-shaped quadrilaterals",
+            "(2)",
+            320, 48
+        ),
+        new(
+            "pythagorean_theorem",
+            "Pythagorean Theorem",
+            @"a^2 + b^2 = c^2, \quad c = \sqrt{a^2 + b^2}",
+            MathCategory.Geometry,
+            "Fundamental geometric relationship between the sides of a right triangle",
+            "(3)",
+            260, 44
         ),
 
         // ==========================================
@@ -416,7 +505,12 @@ public static class MathPresetsLibrary
         ["brackets"] = @"\left[  \right]",
         ["set"] = @"\left\{  \right\}",
         ["bra"] = @"\langle \psi |",
-        ["ket"] = @"| \psi \rangle"
+        ["ket"] = @"| \psi \rangle",
+        ["bodmas"] = @"45 - [18 + (12 - 6)]",
+        ["si"] = @"SI = \frac{P \times R \times T}{100}",
+        ["modz"] = @"|z| = \sqrt{a^2 + b^2}",
+        ["quad"] = @"x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}",
+        ["algsq"] = @"(a + b)^2 = a^2 + 2ab + b^2"
     };
 
     public static string ResolveSnippet(string snippet)

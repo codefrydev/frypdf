@@ -32,6 +32,7 @@ public class BlankDocumentTemplate : ITemplateDefinition
             PageFormat.A4 => 800.0,
             PageFormat.Letter => 800.0,
             PageFormat.Legal => 800.0,
+            PageFormat.Poster => 2592.0,
             _ => 800.0
         };
 
@@ -40,6 +41,7 @@ public class BlankDocumentTemplate : ITemplateDefinition
             PageFormat.A4 => 1131.0,
             PageFormat.Letter => 1035.0,
             PageFormat.Legal => 1318.0,
+            PageFormat.Poster => 3456.0,
             _ => 1131.0
         };
 

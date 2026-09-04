@@ -11,6 +11,8 @@ using PdfEditorApp.Templates.Corporate;
 using PdfEditorApp.Templates.Events;
 using PdfEditorApp.Templates.Finance;
 using PdfEditorApp.Templates.General;
+using PdfEditorApp.Templates.Education;
+using PdfEditorApp.Templates.Technical;
 
 namespace PdfEditorApp.Services;
 
@@ -53,6 +55,16 @@ public class TemplateService : ITemplateService
         RegisterTemplate(new GalaInvitationTemplate());
         RegisterTemplate(new CreativeTypographyShowcaseTemplate());
         RegisterTemplate(new RichTextPublishingShowcaseTemplate());
+
+        // Education & Practice Worksheets
+        RegisterTemplate(new MathBODMASWorksheetTemplate());
+        RegisterTemplate(new FactorizationWorksheetTemplate());
+        RegisterTemplate(new BilingualExamPaperTemplate());
+        RegisterTemplate(new StatesOfMatterDiagramNotesTemplate());
+        RegisterTemplate(new QuadrilateralsGuideTemplate());
+
+        // Technical & Cheat Sheets
+        RegisterTemplate(new ArduinoCheatSheetTemplate());
 
         // General
         RegisterTemplate(_blankTemplate);
@@ -115,6 +127,13 @@ public class TemplateService : ITemplateService
     public PdfDocumentModel CreateTypographyShowcaseTemplate() => CreateTemplate("typographyshowcase");
     public PdfDocumentModel CreateRichTextShowcaseTemplate() => CreateTemplate("richtextshowcase");
     public PdfDocumentModel CreateOcrAnalysisReportTemplate() => CreateTemplate("ocranalysisreport");
+
+    public PdfDocumentModel CreateMathBODMASWorksheetTemplate() => CreateTemplate("bodmas_worksheet");
+    public PdfDocumentModel CreateFactorizationWorksheetTemplate() => CreateTemplate("factorization_worksheet");
+    public PdfDocumentModel CreateBilingualExamPaperTemplate() => CreateTemplate("bilingual_exam_paper");
+    public PdfDocumentModel CreateStatesOfMatterDiagramNotesTemplate() => CreateTemplate("states_of_matter_notes");
+    public PdfDocumentModel CreateQuadrilateralsGuideTemplate() => CreateTemplate("quadrilaterals_guide");
+    public PdfDocumentModel CreateArduinoCheatSheetTemplate() => CreateTemplate("arduino_cheatsheet");
 
     public PdfDocumentModel CreateBlankDocument(PageFormat format = PageFormat.A4, PageOrientation orientation = PageOrientation.Portrait)
     {

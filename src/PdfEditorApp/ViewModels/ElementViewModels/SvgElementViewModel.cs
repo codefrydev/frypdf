@@ -1,16 +1,18 @@
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Core.Models;
 using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
+using PdfEditorApp.Services.Tools.Core;
 
 namespace PdfEditorApp.ViewModels.ElementViewModels;
 
-public partial class SvgElementViewModel : ElementViewModelBase
+public partial class SvgElementViewModel : ElementViewModelBase, IDisposable
 {
     [ObservableProperty]
     private string _svgSource = SvgOrnamentLibrary.GetGaneshaCrestSvg();
@@ -39,6 +41,24 @@ public partial class SvgElementViewModel : ElementViewModelBase
     [ObservableProperty]
     private string _pathGeometryData = "";
 
+    [ObservableProperty]
+    private Bitmap? _previewBitmap;
+
+    private Bitmap? _previousPreviewBitmap;
+
+    /// <summary>
+    /// Disposes the outgoing native bitmap whenever a new SVG is rasterized,
+    /// preventing unmanaged Skia memory leaks per AGENTS.md Section 4.E.
+    /// </summary>
+    partial void OnPreviewBitmapChanged(Bitmap? value)
+    {
+        if (_previousPreviewBitmap != null && _previousPreviewBitmap != value)
+        {
+            _previousPreviewBitmap.Dispose();
+        }
+        _previousPreviewBitmap = value;
+    }
+
     public override ElementKind Kind => ElementKind.Svg;
     public override string DisplayName => !string.IsNullOrEmpty(PresetName) ? $"SVG ({PresetName})" : (!string.IsNullOrEmpty(FilePath) ? Path.GetFileName(FilePath) : "Vector SVG");
 
@@ -46,12 +66,42 @@ public partial class SvgElementViewModel : ElementViewModelBase
     {
         Width = 160;
         Height = 160;
-        UpdatePathGeometry();
+        RefreshSvgPreview();
     }
 
-    partial void OnSvgSourceChanged(string value) => UpdatePathGeometry();
-    partial void OnPresetNameChanged(string? value) => UpdatePathGeometry();
-    partial void OnTintColorHexChanged(string? value) => UpdatePathGeometry();
+    partial void OnSvgSourceChanged(string value) => RefreshSvgPreview();
+    partial void OnPresetNameChanged(string? value) => RefreshSvgPreview();
+    partial void OnTintColorHexChanged(string? value) => RefreshSvgPreview();
+
+    public void RefreshSvgPreview()
+    {
+        UpdatePathGeometry();
+
+        if (string.IsNullOrWhiteSpace(SvgSource))
+        {
+            PreviewBitmap = null;
+            return;
+        }
+
+        try
+        {
+            string svgData = SvgSource;
+            if (!string.IsNullOrWhiteSpace(TintColorHex))
+            {
+                svgData = svgData.Replace("currentColor", TintColorHex);
+            }
+
+            var bmp = PdfPageRenderer.RenderSvgToBitmap(svgData, Width, Height);
+            if (bmp != null)
+            {
+                PreviewBitmap = bmp;
+            }
+        }
+        catch
+        {
+            // Retain existing or fallback
+        }
+    }
 
     public void UpdatePathGeometry()
     {
@@ -79,6 +129,7 @@ public partial class SvgElementViewModel : ElementViewModelBase
         PresetName = preset;
         SvgSource = SvgOrnamentLibrary.GetSvg(preset, TintColorHex);
         FilePath = null;
+        RefreshSvgPreview();
     }
 
     public void LoadFromFile(string path)
@@ -88,6 +139,7 @@ public partial class SvgElementViewModel : ElementViewModelBase
             FilePath = path;
             SvgSource = File.ReadAllText(path);
             PresetName = Path.GetFileNameWithoutExtension(path);
+            RefreshSvgPreview();
         }
     }
 
@@ -129,7 +181,11 @@ public partial class SvgElementViewModel : ElementViewModelBase
             Opacity = svg.Opacity;
             IsLocked = svg.IsLocked;
 
-            SvgSource = svg.SvgSource;
+            SvgSource = !string.IsNullOrWhiteSpace(svg.SvgSource)
+                ? svg.SvgSource
+                : (!string.IsNullOrWhiteSpace(svg.PresetName)
+                    ? SvgOrnamentLibrary.GetSvg(svg.PresetName, svg.TintColorHex)
+                    : SvgOrnamentLibrary.GetGaneshaCrestSvg());
             FilePath = svg.FilePath;
             TintColorHex = svg.TintColorHex;
             PresetName = svg.PresetName;
@@ -138,7 +194,15 @@ public partial class SvgElementViewModel : ElementViewModelBase
             BorderColorHex = svg.BorderColorHex;
             BorderThickness = svg.BorderThickness;
 
-            UpdatePathGeometry();
+            RefreshSvgPreview();
         }
+    }
+
+    public void Dispose()
+    {
+        _previousPreviewBitmap?.Dispose();
+        _previousPreviewBitmap = null;
+        PreviewBitmap?.Dispose();
+        PreviewBitmap = null;
     }
 }

@@ -378,7 +378,12 @@
                                                             <!-- SVG Vector Mini Template -->
                                                             <DataTemplate DataType="elvm:SvgElementViewModel">
                                                                 <Grid Width="{Binding Width}" Height="{Binding Height}">
-                                                                    <Viewbox Stretch="Uniform">
+                                                                    <Image Source="{Binding PreviewBitmap}"
+                                                                           RenderOptions.BitmapInterpolationMode="HighQuality"
+                                                                           Stretch="{Binding KeepAspectRatio, Converter={x:Static converters:BooleanToStretchConverter.Instance}}"
+                                                                           IsVisible="{Binding PreviewBitmap, Converter={StaticResource NullToBooleanConverter}}" />
+                                                                    <Viewbox Stretch="Uniform"
+                                                                             IsVisible="{Binding PreviewBitmap, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter={x:Null}, FallbackValue=True}">
                                                                         <Path Data="{Binding PathGeometryData}"
                                                                               Fill="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#D97706'}"
                                                                               Stroke="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#8B0000'}"

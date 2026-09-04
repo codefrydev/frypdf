@@ -1604,7 +1604,11 @@ public class PdfEngineTests
         vm.FilterPaletteCommands("Microsoft Store");
         Assert.True(vm.FilteredPaletteCommands.Count > 0);
 
+        vm.FilterPaletteCommands("GitHub");
+        Assert.True(vm.FilteredPaletteCommands.Count > 0);
+
         Assert.NotNull(vm.OpenMicrosoftStoreCommand);
+        Assert.NotNull(vm.OpenGitHubCommand);
     }
 
     [Fact]

@@ -18,4 +18,14 @@ public partial class AboutDialog : UserControl
             vm.CloseAboutDialog();
         }
     }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (e.Key == Key.Escape && DataContext is MainViewModel vm)
+        {
+            vm.CloseAboutDialog();
+            e.Handled = true;
+        }
+    }
 }

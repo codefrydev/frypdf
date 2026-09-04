@@ -214,6 +214,37 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
+    public async System.Threading.Tasks.Task OpenGitHub()
+    {
+        const string url = "https://github.com/codefrydev";
+        try
+        {
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Launcher != null)
+            {
+                await desktop.MainWindow.Launcher.LaunchUriAsync(new Uri(url));
+            }
+            else
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = url, UseShellExecute = true });
+            }
+        }
+        catch
+        {
+            try
+            {
+                if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+                {
+                    await desktop.MainWindow.Clipboard.SetTextAsync(url);
+                }
+            }
+            catch { }
+            ShowToast($"Copied GitHub link: {url}", "Github");
+            return;
+        }
+        ShowToast("Opening GitHub...", "Github");
+    }
+
+    [RelayCommand]
     public async System.Threading.Tasks.Task CopyDiagnostics()
     {
         var diagnostics = $"FryPDF Open-Source Edition v{AppVersion}\n" +
@@ -222,6 +253,7 @@ public partial class MainViewModel
                           $"Store ID: 9P5GW2Q81B33 (https://apps.microsoft.com/detail/9P5GW2Q81B33)\n" +
                           $"MSA App ID: 4d091113-f7b6-4421-9318-220eb8b7234e\n" +
                           $"Website: https://codefrydev.in\n" +
+                          $"GitHub: https://github.com/codefrydev\n" +
                           $"Support: codefrydev@gmail.com\n" +
                           $"OS: {System.Runtime.InteropServices.RuntimeInformation.OSDescription} ({System.Runtime.InteropServices.RuntimeInformation.OSArchitecture})\n" +
                           $"Runtime: .NET {Environment.Version}\n" +
@@ -391,6 +423,7 @@ public partial class MainViewModel
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Copy Open Source Attributions", Subtitle = "Copy full open source license notices & copyright text", Category = "Help", IconKind = "ContentCopy", Action = () => { _ = Home.CopyFullAttributionsCommand.ExecuteAsync(null); ShowToast("Copied open source license attributions", "CertificateOutline"); } });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Contact Support (codefrydev@gmail.com)", Subtitle = "Copy developer support email to clipboard", Category = "Help", IconKind = "EmailOutline", Action = () => CopySupportEmailCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Visit CodeFryDev Website", Subtitle = "Open official codefrydev.in developer portal", Category = "Help", IconKind = "Web", Action = () => OpenCompanyWebsiteCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "GitHub Repository", Subtitle = "View open-source repository and star the project", Category = "Help", IconKind = "Github", Action = () => OpenGitHubCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Microsoft Store Page", Subtitle = "View FryPDF on Microsoft Store (9P5GW2Q81B33)", Category = "Help", IconKind = "Microsoft", Action = () => OpenMicrosoftStoreCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Copy System Diagnostics", Subtitle = "Copy OS, framework, store identity, and app version report", Category = "Help", IconKind = "BugOutline", Action = () => CopyDiagnosticsCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Settings & UI Preferences", Subtitle = "Configure notification placement, snackbar style, themes, and workspace defaults", Category = "Preferences", IconKind = "CogOutline", Shortcut = "⌘,", Action = () => NavigateToSettingsCommand.Execute(null) });

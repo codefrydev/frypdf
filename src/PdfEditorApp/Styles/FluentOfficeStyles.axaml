@@ -138,8 +138,8 @@
         <Setter Property="BorderBrush" Value="{DynamicResource WinDangerBrush}" />
     </Style>
 
-    <!-- Accent Primary Button (Save, Export) -->
-    <Style Selector="Button.accent-btn">
+    <!-- Accent / Primary Button (Save, Export, Dialog Confirmations) -->
+    <Style Selector="Button.accent-btn, Button.primary-btn">
         <Setter Property="Background" Value="{DynamicResource WinAccentBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
@@ -153,8 +153,46 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
-    <Style Selector="Button.accent-btn:pointerover">
+    <Style Selector="Button.accent-btn:pointerover, Button.primary-btn:pointerover">
         <Setter Property="Background" Value="{DynamicResource WinAccentHoverBrush}" />
+    </Style>
+
+    <!-- Dialog Action Pill Button (for links, copy chips, cards) -->
+    <Style Selector="Button.action-pill-btn">
+        <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.action-pill-btn:pointerover">
+        <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
+    </Style>
+
+    <!-- Success Pill Button (for Open-Source & License banners) -->
+    <Style Selector="Button.success-pill-btn">
+        <Setter Property="Background" Value="{DynamicResource WinSuccessLightBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource WinSuccessBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinSuccessBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="12,4" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.success-pill-btn:pointerover">
+        <Setter Property="Background" Value="{DynamicResource WinSuccessBrush}" />
+        <Setter Property="Foreground" Value="White" />
     </Style>
 
     <!-- Inspector Section Labels & Headers -->

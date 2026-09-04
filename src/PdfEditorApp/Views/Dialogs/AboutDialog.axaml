@@ -13,7 +13,7 @@
                 Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="16"
+                CornerRadius="{StaticResource M3ShapeCornerExtraLarge}"
                 BoxShadow="0 28 80 #50000000"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -318,10 +318,10 @@
                                 <Button Grid.Column="2"
                                         Classes="success-pill-btn"
                                         Command="{Binding NavigateToLicensingCommand}"
-                                        ToolTip.Tip="View full list of 17 open-source libraries, packages, and full license texts">
+                                        ToolTip.Tip="View full list of 20 open-source libraries, packages, and full license texts">
                                     <StackPanel Orientation="Horizontal" Spacing="5">
                                         <materialIcons:MaterialIcon Kind="CertificateOutline" Width="14" Height="14" Foreground="{DynamicResource WinSuccessBrush}" />
-                                        <TextBlock Text="View 17 Licenses &amp; Tools →" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinSuccessBrush}" />
+                                        <TextBlock Text="View 20 Licenses &amp; Tools →" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinSuccessBrush}" />
                                     </StackPanel>
                                 </Button>
                             </Grid>

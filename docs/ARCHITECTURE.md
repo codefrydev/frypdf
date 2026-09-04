@@ -82,4 +82,34 @@ Located in `src/PdfEditorApp.Core/Data/` and `src/PdfEditorApp/ViewModels/DataSt
 - **`IDataBindingService` / `DataBindingService`**: Maps tabular datasets to LiveCharts2 series and Table elements, plus bidirectional Table $\leftrightarrow$ Chart conversion with full Undo/Redo tracking.
 - **`DataStudioViewModel` & `DataStudioDialog`**: Modal Studio providing tabbed connector workflows, interactive column mapping, and live Skia-rendered chart previews.
 
+---
+
+## 5. UI Architecture & Material Design 3 (M3) Expressive System
+
+FryPDF strictly implements **Google Material Design 3 (M3) Expressive** design principles across all screens, controls, and dialogs.
+
+- **Tokens (`Material3ExpressiveTokens.axaml`)**:
+  - Full M3 Expressive shape scale (`M3ShapeCornerNone` (0px) to `M3ShapeCornerFull` (9999px), with `M3ShapeCornerExtraLarge` (28px) for dialogs and `M3ShapeCornerLarge` (16px) for cards/inputs).
+  - Semantic tonal color palettes for Light and Dark themes (`Primary`, `SecondaryContainer`, `Surface`, `SurfaceContainer`, etc.).
+  - Multi-level elevation shadows (`M3ElevationLevel0` through `M3ElevationLevel5`).
+  - Tactile chubby slider tokens with interactive hover scaling.
+- **Control Styles (`Material3ExpressiveStyles.axaml`)**:
+  - M3 button hierarchy (`m3-filled-btn`, `m3-tonal-btn`, `m3-elevated-btn`, `m3-outlined-btn`, `m3-text-btn`, `m3-fab`, `m3-icon-btn`).
+  - Segmented capsules (`m3-segmented-container` + `m3-segment-btn`), filter/assist chips (`m3-chip`, `m3-filter-chip`), and cards (`m3-card-elevated`, `m3-dialog-card`).
+  - Pill search bars (`TextBox.m3-search`) and outlined inputs (`TextBox.m3-outlined`).
+- **Mandate**: All future UI additions and modifications must strictly conform to the [Material Design 3 Expressive Guidelines](MATERIAL_DESIGN_3_EXPRESSIVE_GUIDELINES.md) and Section 4.F of [`.agents/AGENTS.md`](../.agents/AGENTS.md).
+
+---
+
+## 6. AI Studio & Document Generation Subsystem
+
+Located in `src/PdfEditorApp/Services/AI/` and `src/PdfEditorApp/ViewModels/`:
+- **`IPdfStudioAgentService` / `PdfStudioAgentService`**: Autonomous document studio agent translating natural language prompts into live, native, and editable FryPDF canvas elements (headers, invoices, tables, warning cards, certificates, badges, grids).
+- **`IAiService` / `AiService`**: Unified multi-provider AI gateway powered by `Microsoft.Extensions.AI`:
+  - **Local Offline Inference (`OllamaLocal`)**: Connects to locally hosted Ollama instances via `OllamaSharp` (Llama 3.2, Mistral, Gemma, Phi-3) with 100% privacy, zero cloud data transfer, and zero network sockets.
+  - **Cloud Providers (`OpenAiCloud`, `CustomOpenAiCompatible`)**: Direct integration with OpenAI, Groq, OpenRouter, LM Studio, or vLLM endpoints via standard OpenAI-compatible REST protocols.
+- **`AiAssistantViewModel` & `AiAssistantDialog`**: Interactive M3 Expressive dialog supporting prompt execution, in-place element modification, suggested prompts, live model switching, activity logging, and atomic canvas undo/redo.
+- **`AiDocumentService`**: Extractive NLP summarization, keyword extraction, and document translation engine.
+
 For detailed algorithms, testing procedures, and the continuous improvement workflow, see the [PDF Deconstruction & Editing Guide](PDF_DECONSTRUCTION_AND_EDITING.md).
+

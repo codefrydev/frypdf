@@ -1,0 +1,426 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+
+    <!-- =================================================================== -->
+    <!-- Google Material Design 3 Expressive (M3 Expressive) Component Suite -->
+    <!-- =================================================================== -->
+
+    <!-- Global Application Typography -->
+    <Style Selector="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource M3FontFamily}" />
+    </Style>
+
+    <!-- =================================================================== -->
+    <!-- 1. BUTTONS SUITE (M3 Expressive Pill & Tactile Hierarchy)           -->
+    <!-- =================================================================== -->
+
+    <!-- M3 Filled Button (High Emphasis) -->
+    <Style Selector="Button.m3-filled-btn">
+        <Setter Property="Background" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnPrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-filled-btn:pointerover">
+        <Setter Property="Background" Value="{DynamicResource WinAccentHoverBrush}" />
+        <Setter Property="RenderTransform" Value="scale(1.02)" />
+    </Style>
+    <Style Selector="Button.m3-filled-btn:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+
+    <!-- M3 Filled Tonal Button (Medium Emphasis) -->
+    <Style Selector="Button.m3-tonal-btn">
+        <Setter Property="Background" Value="{DynamicResource M3SecondaryContainerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSecondaryContainerBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Padding" Value="16,7" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Height" Value="34" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-tonal-btn:pointerover">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighestBrush}" />
+        <Setter Property="RenderTransform" Value="scale(1.015)" />
+    </Style>
+    <Style Selector="Button.m3-tonal-btn:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+
+    <!-- M3 Elevated Button -->
+    <Style Selector="Button.m3-elevated-btn">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Padding" Value="16,7" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Height" Value="34" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-elevated-btn:pointerover">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+        <Setter Property="RenderTransform" Value="scale(1.02)" />
+    </Style>
+    <Style Selector="Button.m3-elevated-btn:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+
+    <!-- M3 Outlined Button -->
+    <Style Selector="Button.m3-outlined-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Padding" Value="14,6" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Height" Value="34" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" Easing="CubicEaseOut" />
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-outlined-btn:pointerover">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+    </Style>
+    <Style Selector="Button.m3-outlined-btn:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+
+    <!-- M3 Text Button -->
+    <Style Selector="Button.m3-text-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerMedium}" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-text-btn:pointerover">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowBrush}" />
+    </Style>
+
+    <!-- M3 Floating Action Button (Standard FAB) -->
+    <Style Selector="Button.m3-fab">
+        <Setter Property="Background" Value="{DynamicResource M3PrimaryContainerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnPrimaryContainerBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+        <Setter Property="Width" Value="56" />
+        <Setter Property="Height" Value="56" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-fab:pointerover">
+        <Setter Property="RenderTransform" Value="scale(1.04)" />
+    </Style>
+    <Style Selector="Button.m3-fab:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.95)" />
+    </Style>
+
+    <!-- M3 Extended FAB -->
+    <Style Selector="Button.m3-fab-extended">
+        <Setter Property="Background" Value="{DynamicResource M3PrimaryContainerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnPrimaryContainerBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Height" Value="48" />
+        <Setter Property="Padding" Value="18,10" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-fab-extended:pointerover">
+        <Setter Property="RenderTransform" Value="scale(1.03)" />
+    </Style>
+    <Style Selector="Button.m3-fab-extended:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.96)" />
+    </Style>
+
+    <!-- M3 Circular Icon Button -->
+    <Style Selector="Button.m3-icon-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceVariantBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-icon-btn:pointerover">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+        <Setter Property="RenderTransform" Value="scale(1.06)" />
+    </Style>
+    <Style Selector="Button.m3-icon-btn:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.93)" />
+    </Style>
+
+    <!-- =================================================================== -->
+    <!-- 2. SEGMENTED BUTTONS & CAPSULES                                     -->
+    <!-- =================================================================== -->
+
+    <!-- M3 Segmented Capsule Container -->
+    <Style Selector="Border.m3-segmented-container">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Padding" Value="3" />
+    </Style>
+
+    <!-- M3 Segment Button Item -->
+    <Style Selector="Button.m3-segment-btn, RadioButton.m3-segment-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceVariantBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Padding" Value="12,5" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+                <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-segment-btn:pointerover, RadioButton.m3-segment-btn:pointerover">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+    <Style Selector="Button.m3-segment-btn.active, RadioButton.m3-segment-btn:checked">
+        <Setter Property="Background" Value="{DynamicResource M3SecondaryContainerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSecondaryContainerBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <!-- =================================================================== -->
+    <!-- 3. CHIPS SUITE (M3 Filter, Assist, Suggestion)                      -->
+    <!-- =================================================================== -->
+    <Style Selector="Button.m3-chip, Button.m3-filter-chip, ToggleButton.m3-chip, ToggleButton.m3-filter-chip">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceVariantBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerSmall}" />
+        <Setter Property="Padding" Value="12,4" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+                <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-chip:pointerover, Button.m3-filter-chip:pointerover, ToggleButton.m3-chip:pointerover, ToggleButton.m3-filter-chip:pointerover">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+    <Style Selector="Button.m3-chip.active, Button.m3-filter-chip.active, ToggleButton.m3-chip:checked, ToggleButton.m3-filter-chip:checked">
+        <Setter Property="Background" Value="{DynamicResource M3SecondaryContainerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSecondaryContainerBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3SecondaryContainerBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <!-- =================================================================== -->
+    <!-- 4. CARDS SUITE (Elevated, Filled, Outlined)                         -->
+    <!-- =================================================================== -->
+    <Style Selector="Border.m3-card-elevated">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowestBrush}" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.m3-card-elevated:pointerover">
+        <Setter Property="RenderTransform" Value="translateY(-2px)" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
+    </Style>
+
+    <Style Selector="Border.m3-card-filled">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+
+    <Style Selector="Border.m3-card-outlined">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowestBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.18" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.m3-card-outlined:pointerover">
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+    </Style>
+
+    <!-- =================================================================== -->
+    <!-- 5. INPUTS & FORM CONTROLS                                           -->
+    <!-- =================================================================== -->
+    <Style Selector="TextBox.m3-outlined">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowestBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerMedium}" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="TextBox.m3-outlined:focus">
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
+
+    <!-- M3 Search Bar (Full Pill) -->
+    <Style Selector="TextBox.m3-search">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Padding" Value="14,6" />
+        <Setter Property="MinHeight" Value="34" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="TextBox.m3-search:focus">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighestBrush}" />
+    </Style>
+
+    <!-- =================================================================== -->
+    <!-- 6. DIALOGS, MODALS & FLOATING HUDS                                  -->
+    <!-- =================================================================== -->
+    <Style Selector="Border.m3-dialog-card">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerExtraLarge}" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel4}" />
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+
+    <Style Selector="Border.m3-floating-hud">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel3}" />
+        <Setter Property="Padding" Value="8,4" />
+    </Style>
+
+    <!-- M3 Expressive Badges -->
+    <Style Selector="Border.m3-badge">
+        <Setter Property="Background" Value="{DynamicResource M3PrimaryContainerBrush}" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Padding" Value="8,2" />
+    </Style>
+    <Style Selector="Border.m3-badge-tertiary">
+        <Setter Property="Background" Value="{DynamicResource M3TertiaryContainerBrush}" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Padding" Value="8,2" />
+    </Style>
+
+</Styles>

@@ -25,6 +25,9 @@ FryPDF relies on high-quality open-source software libraries, document engines, 
 | **SIL Open Font License (OFL 1.1) Typefaces** | 1.1 | SIL OFL 1.1 | Typography & Typefaces | SIL International & Google Fonts |
 | **Roboto & Roboto Mono Font Family** | 2.138 | Apache 2.0 | Typography & Typefaces | Google LLC & Christian Robertson |
 | **Ubuntu Font Family** | 0.83 | Ubuntu Font Licence 1.0 | Typography & Typefaces | Canonical Ltd & Dalton Maag |
+| **Microsoft.Extensions.AI & OpenAI** | 10.9.0 | MIT | AI & Document Intelligence | Microsoft Corporation |
+| **OllamaSharp** | 5.4.30 | MIT | AI & Document Intelligence | Andreas Müller (awaescher) |
+| **Tesseract OCR Engine** | 5.4.0 | Apache 2.0 | AI & Document Intelligence | Ray Smith, Google LLC & Community |
 
 ---
 
@@ -114,3 +117,18 @@ FryPDF relies on high-quality open-source software libraries, document engines, 
 - **Maintainer**: Canonical Ltd & Dalton Maag
 - **Website**: https://design.ubuntu.com/font/
 - **Purpose**: Humanist sans-serif typeface designed by Dalton Maag for Canonical Ltd. Included in the Creative & Design typography package.
+
+### 18. Microsoft.Extensions.AI & OpenAI (MIT License)
+- **Maintainer**: Microsoft Corporation & .NET AI Team
+- **Website**: https://github.com/dotnet/extensions
+- **Purpose**: Unified .NET AI abstractions and OpenAI integration powering autonomous AI document studio agent workflows, prompt-to-PDF canvas element generation, smart summarization, and translation.
+
+### 19. OllamaSharp (MIT License)
+- **Maintainer**: Andreas Müller (awaescher) & Open Source Community
+- **Website**: https://github.com/awaescher/OllamaSharp
+- **Purpose**: High-performance .NET client for Ollama enabling 100% private, offline, and zero-telemetry local LLM inference (Llama 3.2, Mistral, Gemma, Phi-3) to create PDF documents and analyze text locally on CPU/GPU hardware.
+
+### 20. Tesseract OCR Engine (Apache License 2.0)
+- **Maintainer**: Ray Smith, Google LLC & Tesseract Open Source Community
+- **Website**: https://github.com/tesseract-ocr/tesseract
+- **Purpose**: Industrial open-source optical character recognition engine with support for multi-language traineddata models, powering local scanned document text extraction, word bounding-box discovery, and searchable PDF compilation.

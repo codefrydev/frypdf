@@ -106,11 +106,33 @@ When importing 3rd-party PDFs for live editing:
 
 ---
 
-### C. MVVM Canvas & ViewModels
+### C. MVVM Architecture & Maximum CommunityToolkit.Mvvm Utilization
 
-1. Every canvas element inherits from `ElementViewModelBase` and implements `LoadFromModel(PdfElementModelBase)` and `ToModel()`.
-2. Property changes must notify via `SetProperty(ref field, value)` to support live canvas rendering, property sidebar binding, and atomic undo/redo records.
-3. Keep business logic and coordinate conversions inside `Core` and `Services`, leaving ViewModels focused on presentation state.
+Always take maximum advantage of **`CommunityToolkit.Mvvm`** features and source generators across all ViewModels:
+
+1. **Source Generators Over Boilerplate**:
+   - **`[ObservableProperty]`**: Always prefer `[ObservableProperty]` attributes on private fields (`[ObservableProperty] private string _title;`) to let Roslyn source generators generate clean, type-safe public properties and partial change methods (`OnTitleChanged`).
+   - **`[NotifyPropertyChangedFor]`**: Use `[NotifyPropertyChangedFor(nameof(DependentProperty))]` on backing fields to automatically cascade dependent property notifications instead of manually calling `OnPropertyChanged` in property bodies.
+   - **`[NotifyCanExecuteChangedFor]`**: Use `[NotifyCanExecuteChangedFor(nameof(MyCommand))]` on state-driving properties so buttons bound to commands automatically refresh their enabled/disabled visual state without manual polling.
+
+2. **Relay Commands & Async Operations**:
+   - **`[RelayCommand]`**: Always use `[RelayCommand]` on methods instead of declaring manual `IRelayCommand` fields and instantiating `new RelayCommand(...)`.
+   - **Async Relay Commands**: Declare asynchronous operations directly as `[RelayCommand] private async Task LoadDocumentAsync(...)`. CommunityToolkit automatically manages `IsRunning`, concurrent execution locking, and cancellation token propagation.
+   - **CanExecute Wiring**: Use `[RelayCommand(CanExecute = nameof(CanPerformAction))]` for clean condition-based execution guards.
+
+3. **Loose Coupling & Memory-Safe Messaging (`WeakReferenceMessenger`)**:
+   - Use `WeakReferenceMessenger.Default.Send(new Message(...))` and `Register<Message>(this, ...)` for decoupled communication between services, ribbons, sidebars, and dialogs.
+   - Never pass strong references to ViewModels or Views to prevent memory retention cycles.
+   - For ViewModels requiring lifetime-bound messaging, inherit from `ObservableRecipient` and activate/deactivate with `IsActive = true/false`.
+
+4. **Input Validation with `ObservableValidator`**:
+   - Inherit from `ObservableValidator` for dialog forms and data entry ViewModels.
+   - Use standard DataAnnotations (`[Required]`, `[Range]`, `[RegularExpression]`, `[CustomValidation]`) and call `ValidateProperty(value, nameof(...))` or `ValidateAllProperties()`.
+
+5. **Canvas Element ViewModels**:
+   - Every canvas element inherits from `ElementViewModelBase` and implements `LoadFromModel(PdfElementModelBase)` and `ToModel()`.
+   - Property changes must notify to support live canvas rendering, property sidebar binding, and atomic undo/redo records.
+   - Keep business logic and coordinate conversions inside `Core` and `Services`, leaving ViewModels focused on presentation state and commands.
 
 ---
 
@@ -168,6 +190,48 @@ To maintain high responsiveness and prevent memory leaks during long editing ses
 
 5. **Bounded Undo/Redo History**:
    - The undo/redo command stack must remain bounded (e.g. max 50 actions) to prevent unlimited memory growth from document state snapshots.
+
+---
+
+### F. Google Material Design 3 (M3) Expressive UI Mandate (STRICT)
+
+**CRITICAL MANDATE**: ALL future UI changes, new views, dialogs, sidebars, controls, or visual enhancements across FryPDF **MUST strictly adhere to Google Material Design 3 (M3) Expressive** design principles. Flat, rigid, or rectangular legacy styles are strictly forbidden.
+
+1. **Expressive Shape Scale Hierarchy**:
+   - Never hardcode arbitrary small corner radii (`CornerRadius="2"`, `"4"`, etc.) on major interactive elements.
+   - Always reference the centralized M3 shape scale tokens defined in [`Material3ExpressiveTokens.axaml`](src/PdfEditorApp/Styles/Material3ExpressiveTokens.axaml):
+     - **`M3ShapeCornerNone` (0px)**: Edge-to-edge full-bleed panels and splitters.
+     - **`M3ShapeCornerExtraSmall` (4px)**: Micro badges, code spans, keyboard shortcut badges (`kbd-badge`).
+     - **`M3ShapeCornerSmall` (8px)**: Badges, thumbnail cards, compact chips, small status pills.
+     - **`M3ShapeCornerMedium` (12px)**: Context menus, tooltips, list items, card inner sections.
+     - **`M3ShapeCornerLarge` (16px)**: Content cards (`m3-card-elevated`), `TextBox.m3-outlined`, `ComboBox`, `NumericUpDown`, inspector section groups.
+     - **`M3ShapeCornerExtraLarge` (28px)**: Modal dialog cards (`Border.m3-dialog-card`, `AboutDialog`, `CommandPaletteDialog`, `AiAssistantDialog`), hero promo banners.
+     - **`M3ShapeCornerFull` (9999px)**: Tactile pill buttons (`primary-btn`, `accent-btn`, `action-pill-btn`, `m3-filled-btn`, `m3-tonal-btn`), segmented button capsules (`m3-segmented-container`), global search bars (`TextBox.m3-search`), Floating Action Buttons (`m3-fab`), and chubby slider thumbs.
+
+2. **Tonal Palette & Dynamic Color Roles**:
+   - Never hardcode light/dark hex colors (e.g. `#FFFFFF`, `#000000`, `#F1F5F9`) in templates or hover triggers that break dark mode adaptability.
+   - Always reference semantic M3 color roles via `{DynamicResource ...}`:
+     - **Primary Actions**: `M3PrimaryBrush`, `M3OnPrimaryBrush`, `M3PrimaryContainerBrush`, `M3OnPrimaryContainerBrush`.
+     - **Secondary / Active Accents**: `M3SecondaryBrush`, `M3SecondaryContainerBrush`, `M3OnSecondaryContainerBrush`.
+     - **Surfaces & Layers**: `M3SurfaceBrush`, `M3SurfaceDimBrush`, `M3SurfaceContainerLowestBrush` through `M3SurfaceContainerHighestBrush`.
+     - **Outlines & Dividers**: `M3OutlineBrush`, `M3OutlineVariantBrush`.
+     - **Legacy Aliases**: When maintaining existing views, legacy aliases (`WinBgBrush`, `WinPanelBrush`, `WinBorderBrush`, `WinAccentBrush`, `WinTextBrush`, `WinMutedBrush`, `WinHoverBrush`, `WinActiveBrush`, `WinInputBgBrush`) are supported and automatically map to M3 Expressive tokens.
+
+3. **Standard Component Classes ([`Material3ExpressiveStyles.axaml`](src/PdfEditorApp/Styles/Material3ExpressiveStyles.axaml))**:
+   - **Buttons**: Use standard M3 hierarchy (`m3-filled-btn`, `m3-tonal-btn`, `m3-elevated-btn`, `m3-outlined-btn`, `m3-text-btn`, `m3-fab`, `m3-fab-extended`, `m3-icon-btn`).
+   - **Segmented Capsules**: Wrap segmented buttons in `Border.m3-segmented-container` with child `Button.m3-segment-btn` or `RadioButton.m3-segment-btn`.
+   - **Chips**: Use `Button.m3-chip`, `Button.m3-filter-chip`, or `ToggleButton.m3-filter-chip` with `M3ShapeCornerSmall` or pill geometry.
+   - **Cards & Dialogs**: Use `Border.m3-card-elevated`, `Border.m3-card-filled`, `Border.m3-card-outlined`, and `Border.m3-dialog-card`.
+   - **Inputs & Search**: Use `TextBox.m3-outlined` for forms/inspector and `TextBox.m3-search` for pill search fields.
+   - **Tactile Chubby Sliders**: Retain chubby tactile sliders with `SliderTrackThemeHeight` ($\ge 8\text{px}$), `SliderHorizontalThumbWidth` ($\ge 20\text{px}$), and smooth hover scale transitions.
+
+4. **Elevation Shadows & Motion Physics**:
+   - Apply elevation on `Border` elements using multi-layered diffuse shadows: `{StaticResource M3ElevationLevel0}` through `{StaticResource M3ElevationLevel5}`. (Note: `BoxShadow` is an Avalonia `Border` property; do not apply it directly to `Button` or `ContextMenu` selectors).
+   - Use subtle, springy micro-transitions (`BrushTransition` 150ms, `TransformOperationsTransition` 150ms) on hover and pressed states.
+
+5. **Regression Verification**:
+   - Every new token or UI component style must be covered in [`tests/PdfEditorApp.Tests/Material3ExpressiveThemeTests.cs`](tests/PdfEditorApp.Tests/Material3ExpressiveThemeTests.cs) and pass `dotnet test`.
+   - Build must always remain 100% warning-free (`TreatWarningsAsErrors=true`).
 
 ---
 

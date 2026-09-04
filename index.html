@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FryPDF — Privacy-First Desktop PDF Studio &amp; 32 Document Tools</title>
-  <meta name="description" content="FryPDF is a 100% free, offline, privacy-first desktop PDF editor and 32-tool studio built with Avalonia UI, QuestPDF, and .NET 10. Design documents, fill AcroForms, typeset LaTeX, convert formats, and automate workflows locally." />
-  <meta name="keywords" content="PDF Editor, PDF Studio, PDF Tools, Avalonia UI, QuestPDF, .NET 10, AcroForms, Bates Numbering, LaTeX PDF, OCR PDF, Offline PDF Editor, Open Source PDF, Batch PDF Converter, PDF to Word, PDF to Excel, FOIA Redaction, Free PDF Editor" />
+  <title>FryPDF — Privacy-First Desktop PDF Studio, AI PDF Creation &amp; 32 Document Tools</title>
+  <meta name="description" content="FryPDF is a 100% free, offline, privacy-first desktop PDF editor, AI PDF creator, and 32-tool studio built with Avalonia UI, QuestPDF, and .NET 10. Create PDF layouts with AI prompts, fill AcroForms, typeset LaTeX, convert formats, and automate workflows locally." />
+  <meta name="keywords" content="PDF Editor, AI PDF Creator, Create PDF with AI, AI Document Studio, PDF Studio, PDF Tools, Avalonia UI, QuestPDF, .NET 10, Ollama PDF, Local LLM PDF, AcroForms, Bates Numbering, LaTeX PDF, OCR PDF, Offline PDF Editor, Open Source PDF, Batch PDF Converter, PDF to Word, PDF to Excel, FOIA Redaction, Free PDF Editor" />
   <meta name="author" content="Code Fry Dev" />
   <meta name="theme-color" content="#090D14" />
   <link rel="canonical" href="https://codefrydev.in/frypdf" />
@@ -13,15 +13,15 @@
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://codefrydev.in/frypdf" />
-  <meta property="og:title" content="FryPDF — Modern Desktop PDF Studio &amp; 32 Document Tools" />
-  <meta property="og:description" content="100% free, offline, privacy-first desktop PDF editor. Full vector canvas, 32 PDF tools, LaTeX math, AcroForms formulas, Bates numbering, and batch pipelines without cloud uploads or subscriptions." />
+  <meta property="og:title" content="FryPDF — Modern Desktop PDF Studio, AI PDF Creator &amp; 32 Tools" />
+  <meta property="og:description" content="100% free, offline, privacy-first desktop PDF editor and AI PDF creator. Generate PDF layouts from prompts, full vector canvas, 32 PDF tools, LaTeX math, AcroForms formulas, and batch pipelines without cloud uploads or subscriptions." />
   <meta property="og:image" content="https://codefrydev.in/frypdf/og-image.png" />
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image" />
   <meta property="twitter:url" content="https://codefrydev.in/frypdf" />
-  <meta property="twitter:title" content="FryPDF — Modern Desktop PDF Studio" />
-  <meta property="twitter:description" content="Privacy-first desktop PDF editor and 32-tool studio. 100% offline, zero telemetry, fast native performance." />
+  <meta property="twitter:title" content="FryPDF — Modern Desktop PDF Studio &amp; AI PDF Creator" />
+  <meta property="twitter:description" content="Privacy-first desktop PDF editor, AI document creation, and 32-tool studio. 100% offline local AI, zero telemetry, fast native performance." />
   <meta property="twitter:image" content="https://codefrydev.in/frypdf/og-image.png" />
 
   <link rel="icon" type="image/svg+xml" href="src/PdfEditorApp/Assets/app-logo.svg" />
@@ -77,8 +77,9 @@
         "license": "https://opensource.org/licenses/MIT",
         "downloadUrl": "https://github.com/CodeFryDev/FryPDF/releases",
         "installUrl": "https://apps.microsoft.com/store/detail/9P5GW2Q81B33?cid=DevShareMCLPCS",
-        "description": "Privacy-first, 100% offline desktop PDF creator, editor, and 32-tool automation suite built with Avalonia UI and QuestPDF.",
+        "description": "Privacy-first, 100% offline desktop PDF creator, editor, AI document assistant, and 32-tool automation suite built with Avalonia UI and QuestPDF.",
         "featureList": [
+          "AI PDF Creator & Studio Assistant for generating full document layouts, invoices, tables, and callouts from natural language prompts",
           "Interactive Vector Canvas Editor with multi-element selection, rotation, and snap-to-grid",
           "32 Dedicated Full-Page PDF Tools with zero popup dialogs",
           "Lossless format conversions (PDF to Word DOCX, Excel XLSX, PPTX, Markdown, Images, Text)",
@@ -86,7 +87,7 @@
           "LaTeX Math Equation Studio with sub-pixel vector typesetting",
           "Dynamic Vector Charts (Bar, Donut, Waterfall, Radar, Candlestick, Line, Area, etc.)",
           "Legal FOIA Redaction with irreversible pixel destruction and Bates docket numbering",
-          "OCR PDF engine for generating searchable text layers locally",
+          "OCR PDF engine for generating searchable text layers locally with Tesseract and native APIs",
           "Vector Signature Studio with calligraphy typography models and smooth ink digitizer",
           "Chainable Multi-Step Batch Pipeline Automation Workflow Builder",
           "Executive Templates (Invoices, Annual Reports, Resumes, Academic Papers)",
@@ -100,6 +101,14 @@
         "@type": "FAQPage",
         "@id": "https://codefrydev.in/frypdf/#faq",
         "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can I create and edit PDF documents using AI in FryPDF?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. FryPDF includes an autonomous AI Studio Document Assistant powered by Microsoft.Extensions.AI and OllamaSharp. You can provide natural language prompts (e.g., 'Create a corporate invoice header for Acme Corp', 'Generate a 4-column financial comparison table', or 'Add a warning callout card') and FryPDF generates native, fully editable vector canvas elements. It supports 100% offline local inference via Ollama (Llama 3.2, Mistral, Gemma) with zero cloud upload, as well as cloud-hosted OpenAI and Groq models."
+            }
+          },
           {
             "@type": "Question",
             "name": "Is FryPDF completely free and 100% offline?",
@@ -1476,15 +1485,15 @@
     <div class="container">
       <div class="hero-meta-badge">
         <span class="meta-indicator"></span>
-        <span>EARLY ACCESS PREVIEW • AVALONIA 12.1 • QUESTPDF • .NET 10 • 32 TOOLS • 382 TESTS PASSED • 100% OFFLINE</span>
+        <span>EARLY ACCESS PREVIEW • AI PDF CREATION • AVALONIA 12.1 • QUESTPDF • .NET 10 • 32 TOOLS • 667+ TESTS PASSED • 100% OFFLINE</span>
       </div>
 
       <h1 class="hero-headline">
-        The privacy-first desktop PDF studio with <span class="accent">32 professional tools</span>.
+        The privacy-first desktop PDF studio with <span class="accent">AI document creation</span> &amp; 32 tools.
       </h1>
 
       <p class="hero-lead">
-        No cloud accounts. No subscriptions. No background telemetry. Design interactive documents on a high-precision vector canvas, evaluate live AcroForm formulas, typeset LaTeX math, and run 32 dedicated document tools in full-page workspaces locally on your CPU.
+        No cloud accounts. No subscriptions. No background telemetry. Generate beautiful PDF layouts from natural language prompts, design interactive documents on a high-precision vector canvas, evaluate live AcroForm formulas, typeset LaTeX math, and run 32 dedicated document tools in full-page workspaces locally on your CPU.
       </p>
 
       <div class="hero-actions">
@@ -1527,7 +1536,7 @@
         </div>
         <div class="spec-item">
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-          <span>382 Passing Unit Tests</span>
+          <span>667+ Passing Unit Tests</span>
         </div>
         <div class="spec-item">
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
@@ -1552,13 +1561,13 @@
 
       <!-- Category Filter Tabs -->
       <div class="tool-filter-tabs">
-        <button class="tool-filter-btn active" onclick="filterTools('all', this)">All (32)</button>
+        <button class="tool-filter-btn active" onclick="filterTools('all', this)">All (33)</button>
         <button class="tool-filter-btn" onclick="filterTools('organize', this)">Organize &amp; Page (6)</button>
         <button class="tool-filter-btn" onclick="filterTools('optimize', this)">Optimize &amp; Security (7)</button>
         <button class="tool-filter-btn" onclick="filterTools('from-pdf', this)">Convert from PDF (6)</button>
         <button class="tool-filter-btn" onclick="filterTools('to-pdf', this)">Convert to PDF (6)</button>
         <button class="tool-filter-btn" onclick="filterTools('edit-forms', this)">Edit &amp; Forms (5)</button>
-        <button class="tool-filter-btn" onclick="filterTools('ai-auto', this)">AI &amp; Automation (2)</button>
+        <button class="tool-filter-btn" onclick="filterTools('ai-auto', this)">AI &amp; Automation (3)</button>
       </div>
 
       <!-- 32 Tools Responsive Grid -->
@@ -1890,6 +1899,16 @@
           </div>
         </div>
 
+        <div class="tool-card" data-cat="ai-auto">
+          <div class="tool-icon-box" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/></svg>
+          </div>
+          <div class="tool-content">
+            <div class="tool-title-row"><span class="tool-name">AI PDF Studio &amp; Creator</span><span class="tool-badge-new">NEW</span></div>
+            <p class="tool-desc">Autonomous studio agent generating complete PDF document layouts, corporate invoices, data tables, and callouts directly from natural language prompts.</p>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -2000,6 +2019,22 @@
             redaction: "PixelBurnInPermanent"
           </div>
         </div>
+
+        <!-- 7. AI Document Creation Studio -->
+        <div class="pillar-card">
+          <div>
+            <span class="pillar-badge" style="color: #A78BFA;">07 // AI DOCUMENT CREATOR STUDIO</span>
+            <h3>Prompt-to-PDF Studio Agent</h3>
+            <p>
+              Generate full professional PDF layouts, structured financial tables, invoice headers, warning callouts, and certificates simply by describing them in plain language. Powered by Microsoft.Extensions.AI with your choice of 100% offline local inference (Ollama) or cloud models.
+            </p>
+          </div>
+          <div class="pillar-tech-snippet">
+            agent: "PdfStudioAgentService"<br/>
+            runtime: "Local Ollama / OpenAI / Groq"<br/>
+            canvas_undo: "Atomic Canvas Transaction"
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -2013,7 +2048,7 @@
         <span class="label-mono">OPEN SOURCE TRANSPARENCY // MIT LICENSED</span>
         <h2 class="section-headline">100% Free &amp; Open Source Software.</h2>
         <p class="section-description">
-          Transparency by design: all underlying open-source libraries, document engines, graphics frameworks, and runtimes used in FryPDF are fully attributed with verbatim licenses in-app.
+          Transparency by design: all 20 underlying open-source libraries, document engines, graphics frameworks, AI runtimes, and typography collections used in FryPDF are fully attributed with verbatim licenses in-app.
         </p>
       </div>
 
@@ -2107,6 +2142,51 @@
             <span>github.com/CommunityToolkit/dotnet</span>
           </div>
         </div>
+
+        <!-- 7. Microsoft.Extensions.AI & OpenAI -->
+        <div class="license-card">
+          <div>
+            <div class="license-card-header">
+              <span class="license-name">Microsoft.Extensions.AI</span>
+              <span class="license-badge license-badge-mit">MIT</span>
+            </div>
+            <p class="license-desc">Unified .NET AI abstractions and OpenAI integration for prompt-to-PDF layout generation, intelligent document agents, and summarization.</p>
+          </div>
+          <div class="license-meta">
+            <span>Microsoft Corporation</span>
+            <span>github.com/dotnet/extensions</span>
+          </div>
+        </div>
+
+        <!-- 8. OllamaSharp -->
+        <div class="license-card">
+          <div>
+            <div class="license-card-header">
+              <span class="license-name">OllamaSharp</span>
+              <span class="license-badge license-badge-mit">MIT</span>
+            </div>
+            <p class="license-desc">High-performance .NET client for Ollama enabling 100% offline, privacy-first local LLM inference (Llama 3.2, Mistral) with zero network telemetry.</p>
+          </div>
+          <div class="license-meta">
+            <span>Andreas Müller</span>
+            <span>github.com/awaescher/OllamaSharp</span>
+          </div>
+        </div>
+
+        <!-- 9. Tesseract OCR -->
+        <div class="license-card">
+          <div>
+            <div class="license-card-header">
+              <span class="license-name">Tesseract OCR</span>
+              <span class="license-badge license-badge-apache">Apache 2.0</span>
+            </div>
+            <p class="license-desc">Industrial open-source OCR engine with multi-language trained models for local document digitizing and searchable PDF text layer generation.</p>
+          </div>
+          <div class="license-meta">
+            <span>Google &amp; Community</span>
+            <span>github.com/tesseract-ocr/tesseract</span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -2138,7 +2218,7 @@
           <div class="lbl">Cloud Network Sockets</div>
         </div>
         <div class="spec-card">
-          <div class="val">382 Passed</div>
+          <div class="val">667+ Passed</div>
           <div class="lbl">Automated Test Suites (xUnit)</div>
         </div>
       </div>
@@ -2187,6 +2267,13 @@
               <td><span class="status-yes">✓ Partial Suite</span></td>
               <td><span class="status-no">✗ Basic Editor</span></td>
               <td><span class="status-no">✗ Viewer Only</span></td>
+            </tr>
+            <tr>
+              <td><strong>AI PDF Creation &amp; Studio Agent</strong></td>
+              <td class="col-fry"><span class="status-yes">✓ Local Ollama &amp; Cloud LLMs</span></td>
+              <td><span class="status-no">✗ Cloud Add-on ($)</span></td>
+              <td><span class="status-no">✗ Template Search</span></td>
+              <td><span class="status-no">✗ No</span></td>
             </tr>
             <tr>
               <td><strong>Live AcroForms Formula Calculations</strong></td>
@@ -2297,6 +2384,13 @@
           <h4>Is FryPDF available on the Microsoft Store?</h4>
           <p>
             Yes. You can install FryPDF directly from the <a href="https://apps.microsoft.com/store/detail/9P5GW2Q81B33?cid=DevShareMCLPCS" target="_blank" rel="noopener noreferrer" style="color: var(--fry-cyan); text-decoration: underline;">Microsoft Store (ID: 9P5GW2Q81B33)</a> for 1-click installation, sandboxed security, and seamless automatic updates on Windows 10 and 11.
+          </p>
+        </div>
+
+        <div class="faq-item-box">
+          <h4>Can I create and edit PDF documents using AI in FryPDF?</h4>
+          <p>
+            Yes! FryPDF features an autonomous AI Document Studio Agent powered by Microsoft.Extensions.AI and OllamaSharp. You can type natural language instructions (e.g. <em>"Create a modern corporate invoice header for Acme Corp, invoice #1001, date today, and a blue accent bar"</em> or <em>"Generate a 4-column financial comparison table"</em>) and FryPDF translates your prompt directly into native, editable vector canvas elements. It supports 100% offline local inference via Ollama (Llama 3.2, Mistral, Gemma) with zero cloud upload, as well as cloud-hosted OpenAI and Groq models.
           </p>
         </div>
 

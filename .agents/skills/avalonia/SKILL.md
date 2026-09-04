@@ -8,6 +8,13 @@ version: 2.0
 
 Modular guidance for cross-platform desktop and mobile development using Avalonia, a WPF-inspired XAML-based framework for .NET.
 
+> [!IMPORTANT]
+> **REPOSITORY MANDATE: Google Material Design 3 (M3) Expressive**
+> In this repository, **ALL** Avalonia UI controls, views, dialogs, sidebars, buttons, and styles **MUST strictly follow Material Design 3 (M3) Expressive**.
+> - **Never hardcode small corner radii** (`2`, `4`, `5`). Use M3 shape tokens: Pills (`M3ShapeCornerFull`/`9999`) for buttons, search bars, segmented capsules, and slider thumbs; `M3ShapeCornerExtraLarge` (28) for dialog cards; `M3ShapeCornerLarge` (16) for cards/inputs; `M3ShapeCornerMedium` (12) for menus.
+> - **Never hardcode hex colors**. Always bind to dynamic tokens (`M3PrimaryBrush`, `M3SecondaryContainerBrush`, `M3SurfaceContainer...`, or legacy `Win...Brush` aliases).
+> - Refer to `src/PdfEditorApp/Styles/Material3ExpressiveTokens.axaml`, `Material3ExpressiveStyles.axaml`, and `docs/MATERIAL_DESIGN_3_EXPRESSIVE_GUIDELINES.md`.
+
 ## Quick Reference: When to Load Which Resource
 
 | Task/Goal | Load Resource |

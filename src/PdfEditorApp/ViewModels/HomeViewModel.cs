@@ -1457,6 +1457,110 @@ THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 """
         });
 
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "Microsoft.Extensions.AI & OpenAI",
+            Version = "10.9.0",
+            LicenseType = "MIT License",
+            Category = "AI & Document Intelligence",
+            Purpose = "Official Microsoft unified AI abstractions and OpenAI connector enabling autonomous AI studio agent workflows, generative PDF document composition from natural language prompts, text summarization, and neural translation.",
+            Maintainer = "Microsoft Corporation & .NET AI Team",
+            ProjectUrl = "https://github.com/dotnet/extensions",
+            IconKind = "RobotOutline",
+            AccentColorHex = "#6366F1",
+            LicenseText = """
+MIT License
+
+Copyright (c) .NET Foundation and Contributors. All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "OllamaSharp",
+            Version = "5.4.30",
+            LicenseType = "MIT License",
+            Category = "AI & Document Intelligence",
+            Purpose = "High-performance .NET API client for Ollama enabling 100% private, offline, and zero-telemetry local LLM inference (Llama 3.2, Mistral, Gemma, Phi-3) to create PDF documents and analyze text locally on CPU/GPU hardware.",
+            Maintainer = "Andreas Müller (awaescher) & Open Source Community",
+            ProjectUrl = "https://github.com/awaescher/OllamaSharp",
+            IconKind = "LaptopAccount",
+            AccentColorHex = "#EC4899",
+            LicenseText = """
+MIT License
+
+Copyright (c) 2023-2026 Andreas Müller
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+        });
+
+        AllLicenses.Add(new ThirdPartyToolLicense
+        {
+            Name = "Tesseract OCR Engine",
+            Version = "5.4.0",
+            LicenseType = "Apache 2.0",
+            Category = "AI & Document Intelligence",
+            Purpose = "Industrial open-source Optical Character Recognition engine with support for multi-language traineddata models, powering local scanned document text extraction, word bounding-box discovery, and searchable PDF compilation.",
+            Maintainer = "Ray Smith, Google LLC & Tesseract Community",
+            ProjectUrl = "https://github.com/tesseract-ocr/tesseract",
+            IconKind = "TextRecognition",
+            AccentColorHex = "#0EA5E9",
+            LicenseText = """
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
+
+Copyright (c) 1985-2026 Ray Smith, Google LLC, and Tesseract contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+        });
+
         UpdateFilteredLicenses();
     }
 

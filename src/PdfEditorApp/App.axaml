@@ -15,6 +15,10 @@
 
     <Application.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="/Styles/Material3ExpressiveTokens.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+
             <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
             <converters:HexToColorConverter x:Key="HexToColorConverter" />
             <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
@@ -81,121 +85,6 @@
             <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
             <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
             <CornerRadius x:Key="SliderThumbCornerRadius">10</CornerRadius>
-
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Light">
-                    <Color x:Key="WinBgColor">#F0F4F9</Color>
-                    <Color x:Key="WinPanelColor">#FFFFFF</Color>
-                    <Color x:Key="WinSurfaceColor">#FFFFFF</Color>
-                    <Color x:Key="WinInputBgColor">#F8FAFC</Color>
-                    <Color x:Key="WinBorderColor">#E2E8F0</Color>
-                    <Color x:Key="WinBorderSubtleColor">#F1F5F9</Color>
-                    <Color x:Key="WinHoverColor">#F1F5F9</Color>
-                    <Color x:Key="WinActiveColor">#E2E8F0</Color>
-                    <Color x:Key="WinCardHoverColor">#EFF6FF</Color>
-                    <Color x:Key="WinTextColor">#0F172A</Color>
-                    <Color x:Key="WinMutedColor">#64748B</Color>
-                    <Color x:Key="WinSubtleColor">#94A3B8</Color>
-                    <Color x:Key="WinAccentColor">#0F6CBD</Color>
-                    <Color x:Key="WinAccentHoverColor">#0C599B</Color>
-                    <Color x:Key="WinAccentLightColor">#EFF6FF</Color>
-                    <Color x:Key="WinAccentBorderColor">#BFDBFE</Color>
-                    <Color x:Key="WinDangerColor">#DC2626</Color>
-                    <Color x:Key="WinDangerLightColor">#FEF2F2</Color>
-                    <Color x:Key="WinDangerBorderColor">#FECACA</Color>
-                    <Color x:Key="WinSuccessColor">#16A34A</Color>
-                    <Color x:Key="WinSuccessLightColor">#F0FDF4</Color>
-
-                    <SolidColorBrush x:Key="WinBgBrush" Color="{StaticResource WinBgColor}" />
-                    <SolidColorBrush x:Key="WinPanelBrush" Color="{StaticResource WinPanelColor}" />
-                    <SolidColorBrush x:Key="WinSurfaceBrush" Color="{StaticResource WinSurfaceColor}" />
-                    <SolidColorBrush x:Key="WinInputBgBrush" Color="{StaticResource WinInputBgColor}" />
-                    <SolidColorBrush x:Key="WinBorderBrush" Color="{StaticResource WinBorderColor}" />
-                    <SolidColorBrush x:Key="WinBorderSubtleBrush" Color="{StaticResource WinBorderSubtleColor}" />
-                    <SolidColorBrush x:Key="WinHoverBrush" Color="{StaticResource WinHoverColor}" />
-                    <SolidColorBrush x:Key="WinActiveBrush" Color="{StaticResource WinActiveColor}" />
-                    <SolidColorBrush x:Key="WinCardHoverBrush" Color="{StaticResource WinCardHoverColor}" />
-                    <SolidColorBrush x:Key="WinTextBrush" Color="{StaticResource WinTextColor}" />
-                    <SolidColorBrush x:Key="WinMutedBrush" Color="{StaticResource WinMutedColor}" />
-                    <SolidColorBrush x:Key="WinSubtleBrush" Color="{StaticResource WinSubtleColor}" />
-                    <SolidColorBrush x:Key="WinAccentBrush" Color="{StaticResource WinAccentColor}" />
-                    <SolidColorBrush x:Key="WinAccentHoverBrush" Color="{StaticResource WinAccentHoverColor}" />
-                    <SolidColorBrush x:Key="WinAccentLightBrush" Color="{StaticResource WinAccentLightColor}" />
-                    <SolidColorBrush x:Key="WinAccentBorderBrush" Color="{StaticResource WinAccentBorderColor}" />
-                    <SolidColorBrush x:Key="WinDangerBrush" Color="{StaticResource WinDangerColor}" />
-                    <SolidColorBrush x:Key="WinDangerLightBrush" Color="{StaticResource WinDangerLightColor}" />
-                    <SolidColorBrush x:Key="WinDangerBorderBrush" Color="{StaticResource WinDangerBorderColor}" />
-                    <SolidColorBrush x:Key="WinSuccessBrush" Color="{StaticResource WinSuccessColor}" />
-                    <SolidColorBrush x:Key="WinSuccessLightBrush" Color="{StaticResource WinSuccessLightColor}" />
-
-                    <!-- Chubby Slider Brushes (Light Theme) -->
-                    <SolidColorBrush x:Key="SliderTrackFill" Color="#E2E8F0" />
-                    <SolidColorBrush x:Key="SliderTrackFillPointerOver" Color="#CBD5E1" />
-                    <SolidColorBrush x:Key="SliderTrackFillPressed" Color="#94A3B8" />
-                    <SolidColorBrush x:Key="SliderTrackValueFill" Color="{StaticResource WinAccentColor}" />
-                    <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="{StaticResource WinAccentHoverColor}" />
-                    <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="{StaticResource WinAccentHoverColor}" />
-                    <SolidColorBrush x:Key="SliderThumbBackground" Color="{StaticResource WinAccentColor}" />
-                    <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="{StaticResource WinAccentHoverColor}" />
-                    <SolidColorBrush x:Key="SliderThumbBackgroundPressed" Color="{StaticResource WinAccentHoverColor}" />
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Dark">
-                    <Color x:Key="WinBgColor">#0B1222</Color>
-                    <Color x:Key="WinPanelColor">#131C2B</Color>
-                    <Color x:Key="WinSurfaceColor">#1E293B</Color>
-                    <Color x:Key="WinInputBgColor">#080E1A</Color>
-                    <Color x:Key="WinBorderColor">#1E293B</Color>
-                    <Color x:Key="WinBorderSubtleColor">#162032</Color>
-                    <Color x:Key="WinHoverColor">#1E2D45</Color>
-                    <Color x:Key="WinActiveColor">#263550</Color>
-                    <Color x:Key="WinCardHoverColor">#162540</Color>
-                    <Color x:Key="WinTextColor">#F8FAFC</Color>
-                    <Color x:Key="WinMutedColor">#94A3B8</Color>
-                    <Color x:Key="WinSubtleColor">#64748B</Color>
-                    <Color x:Key="WinAccentColor">#38BDF8</Color>
-                    <Color x:Key="WinAccentHoverColor">#0EA5E9</Color>
-                    <Color x:Key="WinAccentLightColor">#0F2744</Color>
-                    <Color x:Key="WinAccentBorderColor">#0284C7</Color>
-                    <Color x:Key="WinDangerColor">#EF4444</Color>
-                    <Color x:Key="WinDangerLightColor">#450A0A</Color>
-                    <Color x:Key="WinDangerBorderColor">#7F1D1D</Color>
-                    <Color x:Key="WinSuccessColor">#22C55E</Color>
-                    <Color x:Key="WinSuccessLightColor">#052E16</Color>
-
-                    <SolidColorBrush x:Key="WinBgBrush" Color="{StaticResource WinBgColor}" />
-                    <SolidColorBrush x:Key="WinPanelBrush" Color="{StaticResource WinPanelColor}" />
-                    <SolidColorBrush x:Key="WinSurfaceBrush" Color="{StaticResource WinSurfaceColor}" />
-                    <SolidColorBrush x:Key="WinInputBgBrush" Color="{StaticResource WinInputBgColor}" />
-                    <SolidColorBrush x:Key="WinBorderBrush" Color="{StaticResource WinBorderColor}" />
-                    <SolidColorBrush x:Key="WinBorderSubtleBrush" Color="{StaticResource WinBorderSubtleColor}" />
-                    <SolidColorBrush x:Key="WinHoverBrush" Color="{StaticResource WinHoverColor}" />
-                    <SolidColorBrush x:Key="WinActiveBrush" Color="{StaticResource WinActiveColor}" />
-                    <SolidColorBrush x:Key="WinCardHoverBrush" Color="{StaticResource WinCardHoverColor}" />
-                    <SolidColorBrush x:Key="WinTextBrush" Color="{StaticResource WinTextColor}" />
-                    <SolidColorBrush x:Key="WinMutedBrush" Color="{StaticResource WinMutedColor}" />
-                    <SolidColorBrush x:Key="WinSubtleBrush" Color="{StaticResource WinSubtleColor}" />
-                    <SolidColorBrush x:Key="WinAccentBrush" Color="{StaticResource WinAccentColor}" />
-                    <SolidColorBrush x:Key="WinAccentHoverBrush" Color="{StaticResource WinAccentHoverColor}" />
-                    <SolidColorBrush x:Key="WinAccentLightBrush" Color="{StaticResource WinAccentLightColor}" />
-                    <SolidColorBrush x:Key="WinAccentBorderBrush" Color="{StaticResource WinAccentBorderColor}" />
-                    <SolidColorBrush x:Key="WinDangerBrush" Color="{StaticResource WinDangerColor}" />
-                    <SolidColorBrush x:Key="WinDangerLightBrush" Color="{StaticResource WinDangerLightColor}" />
-                    <SolidColorBrush x:Key="WinDangerBorderBrush" Color="{StaticResource WinDangerBorderColor}" />
-                    <SolidColorBrush x:Key="WinSuccessBrush" Color="{StaticResource WinSuccessColor}" />
-                    <SolidColorBrush x:Key="WinSuccessLightBrush" Color="{StaticResource WinSuccessLightColor}" />
-
-                    <!-- Chubby Slider Brushes (Dark Theme) -->
-                    <SolidColorBrush x:Key="SliderTrackFill" Color="#334155" />
-                    <SolidColorBrush x:Key="SliderTrackFillPointerOver" Color="#475569" />
-                    <SolidColorBrush x:Key="SliderTrackFillPressed" Color="#64748B" />
-                    <SolidColorBrush x:Key="SliderTrackValueFill" Color="{StaticResource WinAccentColor}" />
-                    <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="{StaticResource WinAccentHoverColor}" />
-                    <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="{StaticResource WinAccentHoverColor}" />
-                    <SolidColorBrush x:Key="SliderThumbBackground" Color="{StaticResource WinAccentColor}" />
-                    <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="{StaticResource WinAccentHoverColor}" />
-                    <SolidColorBrush x:Key="SliderThumbBackgroundPressed" Color="{StaticResource WinAccentHoverColor}" />
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 
@@ -207,6 +96,7 @@
         <FluentTheme />
         <materialIcons:MaterialIconStyles />
         <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+        <StyleInclude Source="/Styles/Material3ExpressiveStyles.axaml" />
         <StyleInclude Source="/Styles/FluentOfficeStyles.axaml" />
     </Application.Styles>
 </Application>

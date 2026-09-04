@@ -37,7 +37,7 @@
                             <controls:AskAiButton Variant="Subtle"
                                                   CommandParameter="{Binding SelectedElement}"
                                                   IsVisible="{Binding HasSelectedElement}" />
-                            <Border Background="{DynamicResource WinAccentLightBrush}" CornerRadius="4" Padding="6,2">
+                            <Border Background="{DynamicResource WinAccentLightBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="8,2">
                                 <TextBlock Text="{Binding ActiveCategoryName}"
                                            FontSize="11"
                                            FontWeight="SemiBold"
@@ -58,7 +58,7 @@
                     <StackPanel Margin="12" Spacing="12">
 
                     <!-- EMPTY STATE: DOCUMENT & PAGE SETUP STUDIO (Visible when nothing is selected) -->
-                    <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14"
+                    <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerLarge}" Padding="14"
                             IsVisible="{Binding !HasSelectedElement}">
                         <StackPanel Spacing="12">
                             <!-- Header & Live Page Pill -->
@@ -67,7 +67,7 @@
                                     <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="18" Height="18" Foreground="{DynamicResource WinAccentBrush}" />
                                     <TextBlock Text="Page &amp; Canvas Setup" FontWeight="SemiBold" FontSize="12.5" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
-                                <Border Grid.Column="1" Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
+                                <Border Grid.Column="1" Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="8,2">
                                     <TextBlock Text="{Binding SelectedPage.PageNumber, StringFormat='Page {0}'}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
                                 </Border>
                             </Grid>

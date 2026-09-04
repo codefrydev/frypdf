@@ -1,0 +1,21 @@
+# Cursor & AI Agent Rules for FryPDF
+
+## STRICT MANDATE: Google Material Design 3 (M3) Expressive UI
+Whenever you create or modify any UI in this repository:
+1. **NEVER use flat, sharp, or rectangular legacy styles**.
+2. **Always use Material 3 Expressive shapes**:
+   - Buttons, search bars, segmented capsules, FABs, and slider thumbs MUST be pills (`CornerRadius="{StaticResource M3ShapeCornerFull}"` or `9999`).
+   - Dialog cards MUST be 28px (`CornerRadius="{StaticResource M3ShapeCornerExtraLarge}"`).
+   - Cards and inputs MUST be 16px (`CornerRadius="{StaticResource M3ShapeCornerLarge}"`).
+   - Menus and list items MUST be 12px (`CornerRadius="{StaticResource M3ShapeCornerMedium}"`).
+   - Badges and chips MUST be 8px (`CornerRadius="{StaticResource M3ShapeCornerSmall}"`).
+3. **NEVER hardcode light/dark hex colors**. Always use dynamic tokens (`M3PrimaryBrush`, `M3SecondaryContainerBrush`, `M3SurfaceContainer...`, or legacy aliases `WinBgBrush`, `WinAccentBrush`, etc.).
+4. **Take maximum advantage of CommunityToolkit.Mvvm**:
+   - Use `[ObservableProperty]`, `[RelayCommand]`, `[AsyncRelayCommand]`.
+   - Use `[NotifyPropertyChangedFor]` and `[NotifyCanExecuteChangedFor]`.
+   - Use `WeakReferenceMessenger.Default` for decoupled communication.
+5. **Reference files**:
+   - `src/PdfEditorApp/Styles/Material3ExpressiveTokens.axaml`
+   - `src/PdfEditorApp/Styles/Material3ExpressiveStyles.axaml`
+   - `docs/MATERIAL_DESIGN_3_EXPRESSIVE_GUIDELINES.md`
+   - `.agents/AGENTS.md`

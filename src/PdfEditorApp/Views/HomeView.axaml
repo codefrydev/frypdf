@@ -14,14 +14,14 @@
     </UserControl.Resources>
 
     <UserControl.Styles>
-        <!-- Nav Tab Button Style -->
+        <!-- Nav Tab Button Style (M3 Expressive Navigation Rail Pill) -->
         <Style Selector="Button.nav-tab-btn">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+            <Setter Property="Padding" Value="14,8" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="FontSize" Value="12.5" />
@@ -31,6 +31,7 @@
                 <Transitions>
                     <BrushTransition Property="Background" Duration="0:0:0.15" />
                     <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" Easing="CubicEaseOut" />
                 </Transitions>
             </Setter>
         </Style>
@@ -38,9 +39,12 @@
             <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
         </Style>
+        <Style Selector="Button.nav-tab-btn:pointerover">
+            <Setter Property="RenderTransform" Value="scale(1.01)" />
+        </Style>
         <Style Selector="Button.nav-tab-btn.active /template/ ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
-            <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource M3SecondaryContainerBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource M3OnSecondaryContainerBrush}" />
         </Style>
         <Style Selector="Button.nav-tab-btn.active">
             <Setter Property="FontWeight" Value="SemiBold" />

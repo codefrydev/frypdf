@@ -18,13 +18,13 @@
     </UserControl.Resources>
 
     <UserControl.Styles>
-        <!-- PDF Tool Card Lift & Glow Animation -->
+        <!-- PDF Tool Card Lift & Glow Animation (M3 Expressive Elevated Card) -->
         <Style Selector="Border.pdf-tool-box">
             <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="BoxShadow" Value="0 2 6 #08000000" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
@@ -36,14 +36,16 @@
         </Style>
         <Style Selector="Button.pdf-tool-btn:pointerover Border.pdf-tool-box">
             <Setter Property="RenderTransform" Value="translateY(-3px)" />
-            <Setter Property="BoxShadow" Value="0 8 20 #150F6CBD" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
         </Style>
 
-        <!-- Template / Recent Card Lift Animation -->
+        <!-- Template / Recent Card Lift Animation (M3 Expressive Elevated Card) -->
         <Style Selector="Border.template-card-box">
             <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="CubicEaseOut" />
@@ -55,12 +57,12 @@
         </Style>
         <Style Selector="Border.template-card-box:pointerover">
             <Setter Property="RenderTransform" Value="translateY(-4px)" />
-            <Setter Property="BoxShadow" Value="0 10 24 #280F6CBD" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel3}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
         </Style>
         <Style Selector="Button.template-card-btn:pointerover Border.template-card-box">
             <Setter Property="RenderTransform" Value="translateY(-4px)" />
-            <Setter Property="BoxShadow" Value="0 10 24 #280F6CBD" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel3}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
         </Style>
     </UserControl.Styles>
@@ -73,10 +75,10 @@
         <Border Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="16"
+                CornerRadius="{StaticResource M3ShapeCornerExtraLarge}"
                 Padding="28,24"
                 Margin="0,0,0,24"
-                BoxShadow="0 2 10 #08000000">
+                BoxShadow="{StaticResource M3ElevationLevel1}">
             <Grid RowDefinitions="Auto,Auto">
                 <!-- Top Welcome Row -->
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,20">
@@ -87,11 +89,11 @@
                     <Button Grid.Column="1"
                             Command="{Binding SelectNavSectionCommand}"
                             CommandParameter="AllTools"
-                            Background="{DynamicResource WinAccentLightBrush}"
-                            Foreground="{DynamicResource WinAccentBrush}"
+                            Background="{DynamicResource M3SecondaryContainerBrush}"
+                            Foreground="{DynamicResource M3OnSecondaryContainerBrush}"
                             BorderThickness="0"
-                            CornerRadius="8"
-                            Padding="14,8"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                            Padding="16,8"
                             FontSize="12.5"
                             FontWeight="SemiBold"
                             Cursor="Hand">

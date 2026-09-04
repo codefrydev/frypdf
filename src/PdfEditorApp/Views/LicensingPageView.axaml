@@ -277,6 +277,12 @@
                             Content="Runtime &amp; MVVM" />
 
                     <Button Classes="category-filter-btn"
+                            Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=AI &amp; Document Intelligence}"
+                            Command="{Binding SetLicenseCategoryCommand}"
+                            CommandParameter="AI &amp; Document Intelligence"
+                            Content="AI &amp; Intelligence" />
+
+                    <Button Classes="category-filter-btn"
                             Classes.active="{Binding SelectedLicenseCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Typography &amp; Typefaces}"
                             Command="{Binding SetLicenseCategoryCommand}"
                             CommandParameter="Typography &amp; Typefaces"

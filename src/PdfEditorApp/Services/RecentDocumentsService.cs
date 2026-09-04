@@ -67,6 +67,22 @@ public class RecentDocumentsService : IRecentDocumentsService
         Save(list);
     }
 
+    public void Rename(string oldFilePath, string newFilePath, string newTitle)
+    {
+        if (string.IsNullOrWhiteSpace(oldFilePath) || string.IsNullOrWhiteSpace(newFilePath))
+            return;
+
+        var list = Load();
+        var match = list.FirstOrDefault(x => string.Equals(x.FilePath, oldFilePath, StringComparison.OrdinalIgnoreCase));
+        if (match != null)
+        {
+            match.FilePath = newFilePath;
+            match.Title = newTitle;
+            match.LastOpened = DateTime.UtcNow;
+            Save(list);
+        }
+    }
+
     public void Clear()
     {
         Save(new List<RecentDocumentItem>());

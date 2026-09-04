@@ -23,5 +23,16 @@ public class MockRecentDocumentsService : IRecentDocumentsService
     public void Remove(string filePath) =>
         Items.RemoveAll(x => string.Equals(x.FilePath, filePath, System.StringComparison.OrdinalIgnoreCase));
 
+    public void Rename(string oldFilePath, string newFilePath, string newTitle)
+    {
+        var match = Items.Find(x => string.Equals(x.FilePath, oldFilePath, System.StringComparison.OrdinalIgnoreCase));
+        if (match != null)
+        {
+            match.FilePath = newFilePath;
+            match.Title = newTitle;
+            match.LastOpened = System.DateTime.UtcNow;
+        }
+    }
+
     public void Clear() => Items.Clear();
 }

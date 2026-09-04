@@ -132,6 +132,7 @@ public partial class MainViewModel
 
             var docModel = ToDocumentModel();
             await _persistenceService.SaveProjectAsync(docModel, savePath);
+            CurrentFilePath = savePath;
             // Record in recent documents
             _recentService.Add(new RecentDocumentItem
             {

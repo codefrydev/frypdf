@@ -14,6 +14,9 @@ public interface IRecentDocumentsService
     /// <summary>Removes a specific file path from the recent list.</summary>
     void Remove(string filePath);
 
+    /// <summary>Updates an existing recent document's path and title when renamed.</summary>
+    void Rename(string oldFilePath, string newFilePath, string newTitle);
+
     /// <summary>Clears all recent documents.</summary>
     void Clear();
 }

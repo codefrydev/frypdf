@@ -15,6 +15,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Core.Models;
 using PdfEditorApp.Models;
+using PdfEditorApp.Services;
 using PdfEditorApp.Services.Tools.Core;
 using PdfEditorApp.Services.Ocr;
 using UglyToad.PdfPig;
@@ -516,6 +517,8 @@ public partial class PdfViewerViewModel : ViewModelBase
     public event Action? OpenFileRequested;
     public event Action<PdfReaderTheme>? ReadingThemeChanged;
     public event Action<int>? ScrollToPageRequested;
+    public event Action<string>? RenameRequested;
+    public event Action<string>? DeleteRequested;
 
     // --- Observable Properties ---
 
@@ -2017,6 +2020,73 @@ public partial class PdfViewerViewModel : ViewModelBase
         if (pageNumber >= 1 && pageNumber <= TotalPagesCount)
         {
             ScrollToPageRequested?.Invoke(pageNumber);
+        }
+    }
+
+    [RelayCommand]
+    public void RenameDocument()
+    {
+        if (!string.IsNullOrEmpty(CurrentFilePath))
+        {
+            RenameRequested?.Invoke(CurrentFilePath);
+        }
+    }
+
+    [RelayCommand]
+    public void DeleteDocument()
+    {
+        if (!string.IsNullOrEmpty(CurrentFilePath))
+        {
+            DeleteRequested?.Invoke(CurrentFilePath);
+        }
+    }
+
+    [RelayCommand]
+    public void DuplicateDocument()
+    {
+        if (!string.IsNullOrEmpty(CurrentFilePath))
+        {
+            if (FileOperationHelper.DuplicateFile(CurrentFilePath, out var newPath, out var error))
+            {
+                ShowToastRequested?.Invoke($"Created duplicate: {Path.GetFileName(newPath!)}");
+            }
+            else
+            {
+                ShowToastRequested?.Invoke($"Could not duplicate: {error}");
+            }
+        }
+    }
+
+    [RelayCommand]
+    public void RevealInFileManager()
+    {
+        if (!string.IsNullOrEmpty(CurrentFilePath))
+        {
+            if (FileOperationHelper.RevealInFileManager(CurrentFilePath, out var error))
+            {
+                ShowToastRequested?.Invoke("Opened containing folder");
+            }
+            else
+            {
+                ShowToastRequested?.Invoke($"Could not reveal file: {error}");
+            }
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopyPath()
+    {
+        if (!string.IsNullOrEmpty(CurrentFilePath))
+        {
+            try
+            {
+                if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
+                {
+                    await desktop.MainWindow.Clipboard.SetTextAsync(CurrentFilePath);
+                }
+            }
+            catch { }
+            ShowToastRequested?.Invoke("Copied file path to clipboard");
         }
     }
 

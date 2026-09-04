@@ -20,6 +20,16 @@ public class HomeViewModelTests
         public List<RecentDocumentItem> Load() => new(Items);
         public void Add(RecentDocumentItem item) => Items.Insert(0, item);
         public void Remove(string filePath) => Items.RemoveAll(x => x.FilePath == filePath);
+        public void Rename(string oldFilePath, string newFilePath, string newTitle)
+        {
+            var match = Items.Find(x => string.Equals(x.FilePath, oldFilePath, StringComparison.OrdinalIgnoreCase));
+            if (match != null)
+            {
+                match.FilePath = newFilePath;
+                match.Title = newTitle;
+                match.LastOpened = DateTime.UtcNow;
+            }
+        }
         public void Clear() => Items.Clear();
     }
 

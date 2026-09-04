@@ -125,6 +125,9 @@ public partial class MainViewModel : ViewModelBase
     private string _documentTitle = "Document_2026.pdf";
 
     [ObservableProperty]
+    private string _currentFilePath = "";
+
+    [ObservableProperty]
     private string _documentAuthor = "CodeFryDev";
 
     [ObservableProperty]
@@ -806,6 +809,40 @@ public partial class MainViewModel : ViewModelBase
         Home.OpenWorkflowBuilderRequested += OpenWorkflowStudio;
         Home.OpenBatchGenerationRequested += () => OpenBatchGeneration();
 
+        Home.DocumentRenamed += (oldPath, newPath) =>
+        {
+            if (string.Equals(CurrentFilePath, oldPath, StringComparison.OrdinalIgnoreCase))
+            {
+                CurrentFilePath = newPath;
+                DocumentTitle = Path.GetFileName(newPath);
+            }
+            if (string.Equals(PdfViewer.CurrentFilePath, oldPath, StringComparison.OrdinalIgnoreCase))
+            {
+                PdfViewer.CurrentFilePath = newPath;
+                PdfViewer.DocumentTitle = Path.GetFileName(newPath);
+            }
+        };
+
+        Home.DocumentDeleted += (deletedPath) =>
+        {
+            if (string.Equals(CurrentFilePath, deletedPath, StringComparison.OrdinalIgnoreCase))
+            {
+                CurrentFilePath = "";
+                DocumentTitle = "Untitled.pdf";
+                IsEditorVisible = false;
+                IsHomePageVisible = true;
+            }
+            if (string.Equals(PdfViewer.CurrentFilePath, deletedPath, StringComparison.OrdinalIgnoreCase))
+            {
+                PdfViewer.CurrentFilePath = "";
+                IsPdfViewerVisible = false;
+                IsHomePageVisible = true;
+            }
+        };
+
+        PdfViewer.RenameRequested += (path) => Home.PromptRename(path);
+        PdfViewer.DeleteRequested += (path) => Home.PromptDelete(path);
+
         RefreshToastVisuals();
 
         // Synchronize inspector when selection changes
@@ -950,6 +987,7 @@ public partial class MainViewModel : ViewModelBase
             if (model != null)
             {
                 await LoadFromDocumentModelAsync(model);
+                CurrentFilePath = path;
                 _recentService.Add(new RecentDocumentItem
                 {
                     FilePath = path,
@@ -1547,6 +1585,79 @@ public partial class MainViewModel : ViewModelBase
         else
         {
             FitToPage();
+        }
+    }
+
+    [RelayCommand]
+    public void RenameCurrentDocument()
+    {
+        if (IsPdfViewerVisible && !string.IsNullOrEmpty(PdfViewer.CurrentFilePath))
+        {
+            Home.PromptRename(PdfViewer.CurrentFilePath);
+        }
+        else if (IsEditorVisible)
+        {
+            if (!string.IsNullOrEmpty(CurrentFilePath) && File.Exists(CurrentFilePath))
+            {
+                Home.PromptRename(CurrentFilePath);
+            }
+            else
+            {
+                var fallbackPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), DocumentTitle);
+                Home.PromptRename(fallbackPath);
+            }
+        }
+    }
+
+    [RelayCommand]
+    public void DuplicateCurrentDocument()
+    {
+        var target = IsPdfViewerVisible ? PdfViewer.CurrentFilePath : CurrentFilePath;
+        if (!string.IsNullOrEmpty(target) && File.Exists(target))
+        {
+            Home.DuplicateDocument(target);
+        }
+        else
+        {
+            ShowToast("Please save the document before duplicating", "AlertCircleOutline");
+        }
+    }
+
+    [RelayCommand]
+    public void RevealCurrentDocumentInFileManager()
+    {
+        var target = IsPdfViewerVisible ? PdfViewer.CurrentFilePath : CurrentFilePath;
+        if (!string.IsNullOrEmpty(target) && File.Exists(target))
+        {
+            Home.RevealInFileManager(target);
+        }
+        else
+        {
+            ShowToast("Document has not been saved to disk yet", "InformationOutline");
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopyCurrentDocumentPath()
+    {
+        var target = IsPdfViewerVisible ? PdfViewer.CurrentFilePath : CurrentFilePath;
+        if (!string.IsNullOrEmpty(target))
+        {
+            await Home.CopyPath(target);
+        }
+        else
+        {
+            ShowToast("Document has no saved disk path yet", "InformationOutline");
+        }
+    }
+
+    [RelayCommand]
+    public void DeleteCurrentDocument()
+    {
+        var target = IsPdfViewerVisible ? PdfViewer.CurrentFilePath : CurrentFilePath;
+        if (!string.IsNullOrEmpty(target) && File.Exists(target))
+        {
+            Home.PromptDelete(target);
         }
     }
 }

@@ -279,9 +279,75 @@
                             Padding="12"
                             Margin="0,0,12,12"
                             BoxShadow="0 2 6 #08000000">
+                        <!-- Right-Click Context Menu -->
+                        <Border.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Read in PDF Reader"
+                                          Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenInViewerCommand}"
+                                          CommandParameter="{Binding FilePath}">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="16" Height="16" Foreground="#DC2626" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Edit in Studio Editor"
+                                          Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenRecentCommand}"
+                                          CommandParameter="{Binding FilePath}">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="FileEditOutline" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator />
+                                <MenuItem Header="Rename Document..."
+                                          InputGesture="F2"
+                                          Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).PromptRenameCommand}"
+                                          CommandParameter="{Binding FilePath}">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="PencilOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Duplicate / Make a Copy"
+                                          Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).DuplicateDocumentCommand}"
+                                          CommandParameter="{Binding FilePath}">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="ContentCopy" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Reveal in Finder / Explorer"
+                                          Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).RevealInFileManagerCommand}"
+                                          CommandParameter="{Binding FilePath}">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Copy File Path"
+                                          Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).CopyPathCommand}"
+                                          CommandParameter="{Binding FilePath}">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="ClipboardTextOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator />
+                                <MenuItem Header="Remove from Recents"
+                                          Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).RemoveRecentCommand}"
+                                          CommandParameter="{Binding FilePath}">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="BookmarkRemoveOutline" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Delete File..."
+                                          Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).PromptDeleteCommand}"
+                                          CommandParameter="{Binding FilePath}"
+                                          Foreground="#DC2626">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="16" Height="16" Foreground="#DC2626" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Border.ContextMenu>
+
                         <Grid RowDefinitions="Auto,Auto">
                             <!-- Top Document Info -->
-                            <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,10">
+                            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
                                 <Border Grid.Column="0" Width="34" Height="34" Background="#FEE2E2" CornerRadius="8" Margin="0,0,10,0" VerticalAlignment="Center">
                                     <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
@@ -289,6 +355,81 @@
                                     <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" />
                                     <TextBlock Text="{Binding RelativeTime}" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" />
                                 </StackPanel>
+                                <Button Grid.Column="2"
+                                        Width="26" Height="26"
+                                        Padding="0"
+                                        CornerRadius="6"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        VerticalAlignment="Center"
+                                        Cursor="Hand"
+                                        ToolTip.Tip="Document options">
+                                    <materialIcons:MaterialIcon Kind="DotsVertical" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <Button.Flyout>
+                                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                            <MenuItem Header="Read in PDF Reader"
+                                                      Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenInViewerCommand}"
+                                                      CommandParameter="{Binding FilePath}">
+                                                <MenuItem.Icon>
+                                                    <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="16" Height="16" Foreground="#DC2626" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Edit in Studio Editor"
+                                                      Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenRecentCommand}"
+                                                      CommandParameter="{Binding FilePath}">
+                                                <MenuItem.Icon>
+                                                    <materialIcons:MaterialIcon Kind="FileEditOutline" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator />
+                                            <MenuItem Header="Rename Document..."
+                                                      InputGesture="F2"
+                                                      Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).PromptRenameCommand}"
+                                                      CommandParameter="{Binding FilePath}">
+                                                <MenuItem.Icon>
+                                                    <materialIcons:MaterialIcon Kind="PencilOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Duplicate / Make a Copy"
+                                                      Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).DuplicateDocumentCommand}"
+                                                      CommandParameter="{Binding FilePath}">
+                                                <MenuItem.Icon>
+                                                    <materialIcons:MaterialIcon Kind="ContentCopy" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Reveal in Finder / Explorer"
+                                                      Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).RevealInFileManagerCommand}"
+                                                      CommandParameter="{Binding FilePath}">
+                                                <MenuItem.Icon>
+                                                    <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Copy File Path"
+                                                      Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).CopyPathCommand}"
+                                                      CommandParameter="{Binding FilePath}">
+                                                <MenuItem.Icon>
+                                                    <materialIcons:MaterialIcon Kind="ClipboardTextOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator />
+                                            <MenuItem Header="Remove from Recents"
+                                                      Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).RemoveRecentCommand}"
+                                                      CommandParameter="{Binding FilePath}">
+                                                <MenuItem.Icon>
+                                                    <materialIcons:MaterialIcon Kind="BookmarkRemoveOutline" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Delete File..."
+                                                      Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).PromptDeleteCommand}"
+                                                      CommandParameter="{Binding FilePath}"
+                                                      Foreground="#DC2626">
+                                                <MenuItem.Icon>
+                                                    <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="16" Height="16" Foreground="#DC2626" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </Button>
                             </Grid>
 
                             <!-- Bottom Action Buttons: Read in Reader vs Edit in Studio -->

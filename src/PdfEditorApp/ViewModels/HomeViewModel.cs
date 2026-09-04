@@ -40,8 +40,39 @@ public partial class HomeViewModel : ViewModelBase
     public event Action<string>? OpenInViewerRequested;    // file path
     public event Action? OpenWorkflowBuilderRequested;
     public event Action? OpenBatchGenerationRequested;
+    public event Action<string, string>? DocumentRenamed;  // oldPath, newPath
+    public event Action<string>? DocumentDeleted;          // deletedPath
 
     // --- Observable State ---
+
+    // Rename Dialog State
+    [ObservableProperty]
+    private bool _isRenameDialogOpen;
+
+    [ObservableProperty]
+    private string _renameTargetFilePath = "";
+
+    [ObservableProperty]
+    private string _renameNewName = "";
+
+    [ObservableProperty]
+    private string _renameExtension = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasRenameError))]
+    private string _renameErrorMessage = "";
+
+    public bool HasRenameError => !string.IsNullOrWhiteSpace(RenameErrorMessage);
+
+    // Delete Confirmation Dialog State
+    [ObservableProperty]
+    private bool _isDeleteConfirmDialogOpen;
+
+    [ObservableProperty]
+    private string _deleteTargetFilePath = "";
+
+    [ObservableProperty]
+    private string _deleteTargetFileName = "";
 
     [ObservableProperty]
     private bool _isDarkMode;
@@ -717,10 +748,125 @@ public partial class HomeViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void PromptRename(string? filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath)) return;
+        RenameTargetFilePath = filePath;
+        RenameNewName = Path.GetFileNameWithoutExtension(filePath);
+        RenameExtension = Path.GetExtension(filePath);
+        RenameErrorMessage = "";
+        IsRenameDialogOpen = true;
+    }
+
+    [RelayCommand]
+    public void ConfirmRename()
+    {
+        if (!FileOperationHelper.RenameFile(RenameTargetFilePath, RenameNewName, out var newPath, out var error))
+        {
+            RenameErrorMessage = error ?? "Failed to rename document.";
+            return;
+        }
+
+        var oldPath = RenameTargetFilePath;
+        var finalNewPath = newPath!;
+        var newTitle = Path.GetFileName(finalNewPath);
+
+        _recentService.Rename(oldPath, finalNewPath, newTitle);
+        RefreshRecent();
+
+        IsRenameDialogOpen = false;
+        DocumentRenamed?.Invoke(oldPath, finalNewPath);
+        ShowToastRequested?.Invoke($"Renamed to {newTitle}", ToastNotificationType.Success, "PencilOutline");
+    }
+
+    [RelayCommand]
+    public void CancelRename()
+    {
+        IsRenameDialogOpen = false;
+        RenameErrorMessage = "";
+    }
+
+    [RelayCommand]
+    public void PromptDelete(string? filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath)) return;
+        DeleteTargetFilePath = filePath;
+        DeleteTargetFileName = Path.GetFileName(filePath);
+        IsDeleteConfirmDialogOpen = true;
+    }
+
+    [RelayCommand]
+    public void ConfirmDelete()
+    {
+        var targetPath = DeleteTargetFilePath;
+        var targetName = DeleteTargetFileName;
+        IsDeleteConfirmDialogOpen = false;
+
+        if (!FileOperationHelper.DeleteFile(targetPath, out var error))
+        {
+            ShowToastRequested?.Invoke($"Could not delete file: {error}", ToastNotificationType.Danger, "AlertCircleOutline");
+            return;
+        }
+
+        _recentService.Remove(targetPath);
+        RefreshRecent();
+        DocumentDeleted?.Invoke(targetPath);
+        ShowToastRequested?.Invoke($"Deleted {targetName}", ToastNotificationType.Success, "TrashCanOutline");
+    }
+
+    [RelayCommand]
+    public void CancelDelete()
+    {
+        IsDeleteConfirmDialogOpen = false;
+    }
+
+    [RelayCommand]
+    public void DuplicateDocument(string? filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath)) return;
+        if (!FileOperationHelper.DuplicateFile(filePath, out var newPath, out var error))
+        {
+            ShowToastRequested?.Invoke($"Could not duplicate document: {error}", ToastNotificationType.Danger, "AlertCircleOutline");
+            return;
+        }
+
+        var copyTitle = Path.GetFileName(newPath!);
+        _recentService.Add(new RecentDocumentItem
+        {
+            FilePath = newPath!,
+            Title = copyTitle,
+            LastOpened = DateTime.UtcNow
+        });
+        RefreshRecent();
+        ShowToastRequested?.Invoke($"Created duplicate: {copyTitle}", ToastNotificationType.Success, "ContentCopy");
+    }
+
+    [RelayCommand]
+    public void RevealInFileManager(string? filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath)) return;
+        if (!FileOperationHelper.RevealInFileManager(filePath, out var error))
+        {
+            ShowToastRequested?.Invoke($"Could not reveal file: {error}", ToastNotificationType.Danger, "AlertCircleOutline");
+            return;
+        }
+        ShowToastRequested?.Invoke("Opened containing folder", ToastNotificationType.Primary, "FolderOpenOutline");
+    }
+
+    [RelayCommand]
+    public async Task CopyPath(string? filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath)) return;
+        await CopyToClipboardAsync(filePath);
+        ShowToastRequested?.Invoke("Copied file path to clipboard", ToastNotificationType.Primary, "ClipboardTextOutline");
+    }
+
+    [RelayCommand]
     public void RemoveRecent(string filePath)
     {
         _recentService.Remove(filePath);
         RefreshRecent();
+        ShowToastRequested?.Invoke("Removed from recent documents", ToastNotificationType.Primary, "BookmarkRemoveOutline");
     }
 
     [RelayCommand]
@@ -728,6 +874,7 @@ public partial class HomeViewModel : ViewModelBase
     {
         _recentService.Clear();
         RefreshRecent();
+        ShowToastRequested?.Invoke("Cleared recent document history", ToastNotificationType.Primary, "TrashCanOutline");
     }
 
     // --- Licensing & Third-Party Open Source Initialization ---

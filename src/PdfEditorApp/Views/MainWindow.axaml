@@ -118,6 +118,7 @@
         <KeyBinding Gesture="Cmd+Shift+R" Command="{Binding RotateCurrentPageCommand}" />
         <KeyBinding Gesture="Ctrl+Shift+Delete" Command="{Binding DeleteCurrentPageCommand}" />
         <KeyBinding Gesture="Cmd+Shift+Delete" Command="{Binding DeleteCurrentPageCommand}" />
+        <KeyBinding Gesture="F2" Command="{Binding RenameCurrentDocumentCommand}" />
     </Window.KeyBindings>
 
     <!-- Main Window Root Layout -->
@@ -175,12 +176,20 @@
                         <!-- Separator -->
                         <Rectangle Width="1" Height="16" Fill="{DynamicResource WinBorderBrush}" />
 
-                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding DocumentTitle}"
-                                       FontSize="13"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource WinTextBrush}"
-                                       VerticalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <Button Classes="mini-tool-btn"
+                                    Padding="4,2"
+                                    Command="{Binding RenameCurrentDocumentCommand}"
+                                    ToolTip.Tip="Rename Document (F2)">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding DocumentTitle}"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource WinTextBrush}"
+                                               VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Kind="PencilOutline" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
 
                             <!-- App Subtitle Pill -->
                             <Border Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
@@ -434,6 +443,8 @@
         <dialogs:DataStudioDialog DataContext="{Binding DataStudio}" IsVisible="{Binding IsOpen}" />
         <dialogs:WorkflowBuilderDialog DataContext="{Binding WorkflowBuilder}" IsVisible="{Binding IsOpen}" />
         <dialogs:BatchGenerationDialog DataContext="{Binding BatchGeneration}" IsVisible="{Binding IsOpen}" />
+        <dialogs:RenameDocumentDialog DataContext="{Binding Home}" IsVisible="{Binding IsRenameDialogOpen}" />
+        <dialogs:DeleteConfirmationDialog DataContext="{Binding Home}" IsVisible="{Binding IsDeleteConfirmDialogOpen}" />
     </Grid>
 
 </Window>

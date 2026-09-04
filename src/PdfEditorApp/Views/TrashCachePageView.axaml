@@ -1,53 +1,205 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:models="using:PdfEditorApp.Models"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="PdfEditorApp.Views.TrashCachePageView"
              x:DataType="vm:HomeViewModel">
 
-    <StackPanel Margin="32,24,32,32" Spacing="20">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,24,32,32" Spacing="20">
 
-        <!-- Header -->
-        <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
-            <StackPanel Grid.Column="0" Spacing="2">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="20" Height="20" Foreground="#EF4444" VerticalAlignment="Center" />
-                    <TextBlock Text="Trash &amp; Storage Cache" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+            <!-- Header -->
+            <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                <StackPanel Grid.Column="0" Spacing="2">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="20" Height="20" Foreground="#EF4444" VerticalAlignment="Center" />
+                        <TextBlock Text="Trash &amp; Storage Management" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="Manage temporary PDF renders, scratch files, and recent project files on disk" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
                 </StackPanel>
-                <TextBlock Text="Manage temporary PDF renders, scratch files, and recent project history" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
-            </StackPanel>
-        </Grid>
+            </Grid>
 
-        <!-- Cache Cleanup Card -->
-        <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="28" HorizontalAlignment="Stretch">
-            <StackPanel Spacing="18">
-                <StackPanel Orientation="Horizontal" Spacing="14">
-                    <Border Width="48" Height="48" Background="#FEF2F2" CornerRadius="12">
-                        <materialIcons:MaterialIcon Kind="Broom" Width="26" Height="26" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                    <StackPanel VerticalAlignment="Center" Spacing="2">
-                        <TextBlock Text="Clear Temporary Cache &amp; Recent Lists" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                        <TextBlock Text="Removes temporary scratch files generated during OCR, split/merge, and image exports to reclaim disk space." FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
+            <!-- Cache Cleanup Card -->
+            <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="24" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                        <Border Width="44" Height="44" Background="#FEF2F2" CornerRadius="12">
+                            <materialIcons:MaterialIcon Kind="Broom" Width="24" Height="24" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Clear Temporary Cache &amp; Recent Lists" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                            <TextBlock Text="Removes temporary scratch files and resets recent document history to reclaim disk space." FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="58,0,0,0">
+                        <Button Command="{Binding ClearRecentCommand}"
+                                Background="#DC2626"
+                                Foreground="White"
+                                CornerRadius="8"
+                                Padding="14,7"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="15" Height="15" />
+                                <TextBlock Text="Clear Recent Projects History" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </StackPanel>
+            </Border>
 
-                <StackPanel Orientation="Horizontal" Spacing="10" Margin="62,0,0,0">
-                    <Button Command="{Binding ClearRecentCommand}"
-                            Background="#DC2626"
-                            Foreground="White"
-                            CornerRadius="8"
-                            Padding="16,8"
-                            FontSize="12.5"
-                            FontWeight="SemiBold"
-                            Cursor="Hand">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="15" Height="15" />
-                            <TextBlock Text="Clear Recent Projects History" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+            <!-- Recent Documents Management Section -->
+            <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0" VerticalAlignment="Center">
+                <StackPanel Grid.Column="0" Spacing="2">
+                    <TextBlock Text="Registered Project &amp; PDF Documents" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                    <TextBlock Text="Rename, duplicate, reveal, or delete document files directly from storage" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
                 </StackPanel>
-            </StackPanel>
-        </Border>
+                <Button Grid.Column="1"
+                        IsVisible="{Binding HasRecentDocuments}"
+                        Command="{Binding ClearRecentCommand}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="{DynamicResource WinMutedBrush}"
+                        FontSize="12"
+                        Cursor="Hand"
+                        Padding="8,4">
+                    Clear History
+                </Button>
+            </Grid>
 
-    </StackPanel>
+            <!-- Empty State -->
+            <Border IsVisible="{Binding !HasRecentDocuments}"
+                    Background="{DynamicResource WinPanelBrush}"
+                    BorderBrush="{DynamicResource WinBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="36,32">
+                <StackPanel HorizontalAlignment="Center" Spacing="8">
+                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="40" Height="40" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
+                    <TextBlock Text="No recent documents registered" FontSize="13.5" FontWeight="Medium" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                    <TextBlock Text="Documents opened in FryPDF will appear here for file and storage management." FontSize="11.5" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <!-- Document List Items -->
+            <ItemsControl IsVisible="{Binding HasRecentDocuments}"
+                          ItemsSource="{Binding RecentDocuments}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="models:RecentDocumentItem">
+                        <Border Background="{DynamicResource WinPanelBrush}"
+                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="16,12"
+                                Margin="0,0,0,8"
+                                BoxShadow="0 1 3 #06000000">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14" VerticalAlignment="Center">
+                                <!-- File Icon -->
+                                <Border Grid.Column="0" Width="38" Height="38" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+
+                                <!-- File Details -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="{Binding FileName}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" MaxWidth="400" />
+                                        <TextBlock Text="{Binding FormattedFileSize}" FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                        <Border Background="{DynamicResource WinInputBgBrush}" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding RelativeTime}" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" TextTrimming="CharacterEllipsis" MaxWidth="550" />
+                                </StackPanel>
+
+                                <!-- Actions Toolbar -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <!-- Open in Studio -->
+                                    <Button Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenRecentCommand}"
+                                            CommandParameter="{Binding FilePath}"
+                                            Background="{DynamicResource WinInputBgBrush}"
+                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="8,5"
+                                            Cursor="Hand"
+                                            ToolTip.Tip="Open in Studio Editor">
+                                        <materialIcons:MaterialIcon Kind="FileEditOutline" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                    </Button>
+
+                                    <!-- Rename Document (F2) -->
+                                    <Button Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).PromptRenameCommand}"
+                                            CommandParameter="{Binding FilePath}"
+                                            Background="{DynamicResource WinInputBgBrush}"
+                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="8,5"
+                                            Cursor="Hand"
+                                            ToolTip.Tip="Rename Document (F2)">
+                                        <materialIcons:MaterialIcon Kind="PencilOutline" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
+                                    </Button>
+
+                                    <!-- Duplicate / Make a Copy -->
+                                    <Button Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).DuplicateDocumentCommand}"
+                                            CommandParameter="{Binding FilePath}"
+                                            Background="{DynamicResource WinInputBgBrush}"
+                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="8,5"
+                                            Cursor="Hand"
+                                            ToolTip.Tip="Duplicate / Make a Copy">
+                                        <materialIcons:MaterialIcon Kind="ContentCopy" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
+                                    </Button>
+
+                                    <!-- Reveal in Finder / File Manager -->
+                                    <Button Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).RevealInFileManagerCommand}"
+                                            CommandParameter="{Binding FilePath}"
+                                            Background="{DynamicResource WinInputBgBrush}"
+                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="8,5"
+                                            Cursor="Hand"
+                                            ToolTip.Tip="Reveal in Finder / Explorer">
+                                        <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
+                                    </Button>
+
+                                    <!-- Remove from Recents List -->
+                                    <Button Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).RemoveRecentCommand}"
+                                            CommandParameter="{Binding FilePath}"
+                                            Background="{DynamicResource WinInputBgBrush}"
+                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="8,5"
+                                            Cursor="Hand"
+                                            ToolTip.Tip="Remove from recent documents">
+                                        <materialIcons:MaterialIcon Kind="BookmarkRemoveOutline" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
+                                    </Button>
+
+                                    <!-- Delete File on Disk -->
+                                    <Button Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).PromptDeleteCommand}"
+                                            CommandParameter="{Binding FilePath}"
+                                            Background="#FEE2E2"
+                                            BorderBrush="#FECACA"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="8,5"
+                                            Cursor="Hand"
+                                            ToolTip.Tip="Delete file from disk...">
+                                        <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="14" Height="14" Foreground="#DC2626" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

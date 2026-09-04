@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -76,6 +77,8 @@ public partial class AiSettingsViewModel : ViewModelBase
 
     public ObservableCollection<string> PopularModelSuggestions { get; } = new();
 
+    public ObservableCollection<string> CustomModelHistory { get; } = new();
+
     public bool IsOllamaProvider => SelectedProvider == AiProviderType.OllamaLocal;
     public bool IsOpenAiProvider => SelectedProvider == AiProviderType.OpenAiCloud;
     public bool IsCustomProvider => SelectedProvider == AiProviderType.CustomOpenAiCompatible;
@@ -98,13 +101,41 @@ public partial class AiSettingsViewModel : ViewModelBase
                 return match;
             }
 
-            bool isRemote = !string.IsNullOrWhiteSpace(OllamaEndpoint) &&
-                            !OllamaEndpoint.Contains("localhost", StringComparison.OrdinalIgnoreCase) &&
-                            !OllamaEndpoint.Contains("127.0.0.1");
+            bool isRemote = SelectedProvider switch
+            {
+                AiProviderType.OllamaLocal => !string.IsNullOrWhiteSpace(OllamaEndpoint) &&
+                                              !OllamaEndpoint.Contains("localhost", StringComparison.OrdinalIgnoreCase) &&
+                                              !OllamaEndpoint.Contains("127.0.0.1"),
+                AiProviderType.CustomOpenAiCompatible => !string.IsNullOrWhiteSpace(CustomBaseUrl) &&
+                                                         !CustomBaseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase) &&
+                                                         !CustomBaseUrl.Contains("127.0.0.1"),
+                _ => true
+            };
 
-            return AiModelInfo.CreateForCustomId(SelectedModelId, SelectedProvider, isRemote);
+            string? endpoint = SelectedProvider == AiProviderType.CustomOpenAiCompatible ? CustomBaseUrl : OllamaEndpoint;
+            return AiModelInfo.CreateForCustomId(SelectedModelId, SelectedProvider, isRemote, endpoint);
         }
     }
+
+    /// <summary>
+    /// Contextual placeholder text for the active model input field.
+    /// </summary>
+    public string ModelInputPlaceholder => SelectedProvider switch
+    {
+        AiProviderType.OllamaLocal => "Type model name (e.g. llama3.2, mistral, deepseek-r1, qwen2.5)...",
+        AiProviderType.OpenAiCloud => "Type model name (e.g. gpt-4o, gpt-4o-mini, o3-mini)...",
+        _ => "Type ANY model name (e.g. openai/gpt-oss-120b, llama-3.3-70b-versatile, qwen/qwen3.6-27b)..."
+    };
+
+    /// <summary>
+    /// Subtitle description for Section C tailored to the active AI provider.
+    /// </summary>
+    public string ModelSectionSubtitle => SelectedProvider switch
+    {
+        AiProviderType.OllamaLocal => "Pick from installed models or enter any model tag from the Ollama library.",
+        AiProviderType.OpenAiCloud => "Select an official OpenAI model or enter an enterprise/fine-tuned model ID.",
+        _ => "Enter any custom model identifier supported by your endpoint. Future models are saved dynamically."
+    };
 
     public AiSettingsViewModel() : this(new UiSettingsService(), new AiService())
     {
@@ -118,11 +149,12 @@ public partial class AiSettingsViewModel : ViewModelBase
         LoadFromSettings(_uiSettingsService.Settings.AiSettings);
         _uiSettingsService.SettingsChanged += s => LoadFromSettings(s.AiSettings);
 
-        // Auto-discover models from Ollama daemon on startup
-        _ = DiscoverModelsAsync();
+        // Auto-discover models from Ollama daemon on startup (silent)
+        _ = DiscoverModelsCoreAsync(showToast: false);
     }
 
     private bool _isSuppressingSave;
+    private bool _isSyncingModelProperties;
 
     private void LoadFromSettings(AiSettingsModel s)
     {
@@ -139,6 +171,18 @@ public partial class AiSettingsViewModel : ViewModelBase
             Temperature = s.Temperature;
             SystemInstructions = s.SystemInstructions;
 
+            CustomModelHistory.Clear();
+            if (s.CustomModelHistory != null && s.CustomModelHistory.Count > 0)
+            {
+                foreach (var m in s.CustomModelHistory)
+                {
+                    if (!string.IsNullOrWhiteSpace(m) && !CustomModelHistory.Contains(m.Trim(), StringComparer.OrdinalIgnoreCase))
+                    {
+                        CustomModelHistory.Add(m.Trim());
+                    }
+                }
+            }
+
             RefreshModelCatalog(s);
         }
         finally
@@ -147,30 +191,166 @@ public partial class AiSettingsViewModel : ViewModelBase
         }
     }
 
+    public void RememberCustomModel(string modelId)
+    {
+        if (string.IsNullOrWhiteSpace(modelId)) return;
+        string clean = modelId.Trim();
+        if (!CustomModelHistory.Contains(clean, StringComparer.OrdinalIgnoreCase))
+        {
+            CustomModelHistory.Insert(0, clean);
+            if (!_isSuppressingSave)
+            {
+                SaveSettings();
+            }
+        }
+    }
+
+    [RelayCommand]
+    public void ApplyPreset(string? preset)
+    {
+        if (string.IsNullOrWhiteSpace(preset)) return;
+
+        switch (preset.ToLowerInvariant())
+        {
+            case "groq":
+                CustomBaseUrl = "https://api.groq.com/openai/v1";
+                SelectedModelId = "openai/gpt-oss-120b";
+                CustomModelName = "openai/gpt-oss-120b";
+                RememberCustomModel("openai/gpt-oss-120b");
+                TriggerToast("Preset applied: Groq (https://api.groq.com/openai/v1)", ToastNotificationType.Primary, "Flash");
+                break;
+
+            case "openrouter":
+                CustomBaseUrl = "https://openrouter.ai/api/v1";
+                SelectedModelId = "meta-llama/llama-3.2-3b-instruct:free";
+                CustomModelName = "meta-llama/llama-3.2-3b-instruct:free";
+                RememberCustomModel("meta-llama/llama-3.2-3b-instruct:free");
+                TriggerToast("Preset applied: OpenRouter (https://openrouter.ai/api/v1)", ToastNotificationType.Primary, "CloudOutline");
+                break;
+
+            case "together":
+                CustomBaseUrl = "https://api.together.xyz/v1";
+                SelectedModelId = "meta-llama/Llama-3.3-70B-Instruct-Turbo";
+                CustomModelName = "meta-llama/Llama-3.3-70B-Instruct-Turbo";
+                RememberCustomModel("meta-llama/Llama-3.3-70B-Instruct-Turbo");
+                TriggerToast("Preset applied: Together AI", ToastNotificationType.Primary, "Api");
+                break;
+
+            case "lmstudio":
+                CustomBaseUrl = "http://localhost:1234/v1";
+                SelectedModelId = "local-model";
+                CustomModelName = "local-model";
+                TriggerToast("Preset applied: LM Studio (http://localhost:1234/v1)", ToastNotificationType.Primary, "Laptop");
+                break;
+        }
+
+        RefreshModelCatalog();
+    }
+
     public void RefreshModelCatalog(AiSettingsModel? currentSettings = null)
     {
         var settings = currentSettings ?? BuildSettingsModel();
         var catalog = _aiService.GetUnifiedModelCatalog(settings);
 
         AvailableModels.Clear();
-        foreach (var m in catalog)
-        {
-            AvailableModels.Add(m);
-        }
-
         PopularModelSuggestions.Clear();
-        foreach (var m in AvailableModels.Take(8))
+
+        if (IsOllamaProvider)
         {
-            PopularModelSuggestions.Add(m.Id);
+            // Only Ollama local/cloud models
+            foreach (var m in catalog.Where(x => x.Provider == AiProviderType.OllamaLocal))
+            {
+                AvailableModels.Add(m);
+            }
+
+            foreach (var m in AvailableModels.Take(8))
+            {
+                if (!string.IsNullOrEmpty(m?.Id))
+                {
+                    PopularModelSuggestions.Add(m.Id);
+                }
+            }
+        }
+        else if (IsOpenAiProvider)
+        {
+            // OpenAI models + cloud models
+            foreach (var m in catalog.Where(x => x.Provider != AiProviderType.OllamaLocal))
+            {
+                AvailableModels.Add(m);
+            }
+
+            PopularModelSuggestions.Add("gpt-4o-mini");
+            PopularModelSuggestions.Add("gpt-4o");
+            PopularModelSuggestions.Add("o1-mini");
+            PopularModelSuggestions.Add("o3-mini");
+        }
+        else // IsCustomProvider
+        {
+            var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // 1. User's saved custom models from history (dynamic - never need to touch codebase)
+            foreach (var customM in CustomModelHistory)
+            {
+                if (seenIds.Add(customM))
+                {
+                    AvailableModels.Add(AiModelInfo.CreateForCustomId(customM, AiProviderType.CustomOpenAiCompatible, isEndpointRemote: true));
+                }
+            }
+
+            // 2. Cloud-compatible models from catalog (Groq, OpenRouter) - NO Ollama models
+            foreach (var m in catalog.Where(x => x.Provider != AiProviderType.OllamaLocal))
+            {
+                if (seenIds.Add(m.Id))
+                {
+                    AvailableModels.Add(m);
+                }
+            }
+
+            // 3. Contextual Quick Picks based on entered endpoint
+            string baseUrl = (CustomBaseUrl ?? string.Empty).ToLowerInvariant();
+            if (baseUrl.Contains("openrouter"))
+            {
+                PopularModelSuggestions.Add("meta-llama/llama-3.2-3b-instruct:free");
+                PopularModelSuggestions.Add("deepseek/deepseek-r1");
+                PopularModelSuggestions.Add("google/gemini-2.0-flash-exp:free");
+                PopularModelSuggestions.Add("mistralai/mistral-7b-instruct:free");
+            }
+            else // Default to Groq / high-speed LPU suggestions
+            {
+                PopularModelSuggestions.Add("openai/gpt-oss-120b");
+                PopularModelSuggestions.Add("llama-3.3-70b-versatile");
+                PopularModelSuggestions.Add("qwen/qwen-2.5-coder-32b");
+                PopularModelSuggestions.Add("deepseek-r1-distill-llama-70b");
+                PopularModelSuggestions.Add("llama-3.1-8b-instant");
+            }
+
+            // Append any user custom models to quick picks
+            foreach (var customM in CustomModelHistory.Take(4))
+            {
+                if (!PopularModelSuggestions.Contains(customM, StringComparer.OrdinalIgnoreCase))
+                {
+                    PopularModelSuggestions.Add(customM);
+                }
+            }
         }
 
-        // Match selected model
-        SelectedModel = AvailableModels.FirstOrDefault(m => m.Id.Equals(SelectedModelId, StringComparison.OrdinalIgnoreCase))
-                     ?? AvailableModels.FirstOrDefault();
-
-        if (SelectedModel != null && string.IsNullOrWhiteSpace(SelectedModelId))
+        // Match selected model from catalog if present
+        var match = AvailableModels.FirstOrDefault(m => m.Id.Equals(SelectedModelId, StringComparison.OrdinalIgnoreCase));
+        if (match != null)
         {
-            SelectedModelId = SelectedModel.Id;
+            SelectedModel = match;
+        }
+        else if (SelectedModel == null && !IsCustomProvider)
+        {
+            SelectedModel = AvailableModels.FirstOrDefault();
+            if (SelectedModel != null && (string.IsNullOrWhiteSpace(SelectedModelId) || SelectedModelId == "llama3.2"))
+            {
+                SelectedModelId = SelectedModel.Id;
+            }
+        }
+        else if (match == null)
+        {
+            SelectedModel = null;
         }
 
         OnPropertyChanged(nameof(ActiveModelInfo));
@@ -181,6 +361,9 @@ public partial class AiSettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsOllamaProvider));
         OnPropertyChanged(nameof(IsOpenAiProvider));
         OnPropertyChanged(nameof(IsCustomProvider));
+        OnPropertyChanged(nameof(ModelInputPlaceholder));
+        OnPropertyChanged(nameof(ModelSectionSubtitle));
+        OnPropertyChanged(nameof(ActiveModelInfo));
         if (!_isSuppressingSave)
         {
             SaveSettings();
@@ -205,12 +388,34 @@ public partial class AiSettingsViewModel : ViewModelBase
 
     partial void OnCustomBaseUrlChanged(string value)
     {
-        if (!_isSuppressingSave) SaveSettings();
+        OnPropertyChanged(nameof(ActiveModelInfo));
+        if (!_isSuppressingSave)
+        {
+            SaveSettings();
+            RefreshModelCatalog();
+        }
     }
 
     partial void OnCustomModelNameChanged(string value)
     {
-        if (!_isSuppressingSave) SaveSettings();
+        if (_isSuppressingSave || _isSyncingModelProperties) return;
+
+        try
+        {
+            _isSyncingModelProperties = true;
+            if (IsCustomProvider && !string.IsNullOrWhiteSpace(value) && !string.Equals(SelectedModelId, value, StringComparison.OrdinalIgnoreCase))
+            {
+                SelectedModelId = value.Trim();
+                SelectedModel = AvailableModels.FirstOrDefault(m => m.Id.Equals(SelectedModelId, StringComparison.OrdinalIgnoreCase));
+                OnPropertyChanged(nameof(ActiveModelInfo));
+            }
+        }
+        finally
+        {
+            _isSyncingModelProperties = false;
+        }
+
+        SaveSettings();
     }
 
     partial void OnTemperatureChanged(float value)
@@ -228,11 +433,24 @@ public partial class AiSettingsViewModel : ViewModelBase
         if (!string.IsNullOrWhiteSpace(value))
         {
             var match = AvailableModels.FirstOrDefault(m => m.Id.Equals(value.Trim(), StringComparison.OrdinalIgnoreCase));
-            if (match != null && !ReferenceEquals(SelectedModel, match))
+            if (!ReferenceEquals(SelectedModel, match))
             {
                 _isSuppressingSave = true;
                 SelectedModel = match;
                 _isSuppressingSave = false;
+            }
+
+            if (!_isSyncingModelProperties && IsCustomProvider && !string.Equals(CustomModelName, value, StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    _isSyncingModelProperties = true;
+                    CustomModelName = value.Trim();
+                }
+                finally
+                {
+                    _isSyncingModelProperties = false;
+                }
             }
         }
 
@@ -242,14 +460,14 @@ public partial class AiSettingsViewModel : ViewModelBase
 
     partial void OnSelectedModelChanged(AiModelInfo? value)
     {
-        if (value != null)
+        if (value != null && !_isSuppressingSave)
         {
             if (!string.Equals(SelectedModelId, value.Id, StringComparison.OrdinalIgnoreCase))
             {
                 SelectedModelId = value.Id;
             }
             OnPropertyChanged(nameof(ActiveModelInfo));
-            if (!_isSuppressingSave) SaveSettings();
+            SaveSettings();
         }
     }
 
@@ -270,6 +488,23 @@ public partial class AiSettingsViewModel : ViewModelBase
                 SelectedModel = match;
             }
         }
+
+        if (IsCustomProvider && !string.IsNullOrWhiteSpace(SelectedModelId))
+        {
+            RememberCustomModel(SelectedModelId);
+        }
+    }
+
+    [RelayCommand]
+    public void SaveCustomModel(string? modelId)
+    {
+        var target = string.IsNullOrWhiteSpace(modelId) ? SelectedModelId : modelId;
+        if (!string.IsNullOrWhiteSpace(target))
+        {
+            RememberCustomModel(target);
+            RefreshModelCatalog();
+            TriggerToast($"Model '{target.Trim()}' saved to history!", ToastNotificationType.Success, "BookmarkCheckOutline");
+        }
     }
 
     [RelayCommand]
@@ -285,7 +520,9 @@ public partial class AiSettingsViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public async Task DiscoverModelsAsync()
+    public Task DiscoverModelsAsync() => DiscoverModelsCoreAsync(showToast: true);
+
+    private async Task DiscoverModelsCoreAsync(bool showToast)
     {
         IsDetectingModels = true;
         try
@@ -298,24 +535,30 @@ public partial class AiSettingsViewModel : ViewModelBase
                 {
                     s.AiSettings.DiscoveredOllamaModels.Clear();
                     s.AiSettings.DiscoveredOllamaModels.AddRange(discovered);
-                    if (string.IsNullOrWhiteSpace(s.AiSettings.SelectedModelId) ||
-                        !discovered.Any(m => m.Id.Equals(s.AiSettings.SelectedModelId, StringComparison.OrdinalIgnoreCase)))
+                    if (s.AiSettings.SelectedProvider == AiProviderType.OllamaLocal &&
+                        (string.IsNullOrWhiteSpace(s.AiSettings.SelectedModelId) || s.AiSettings.SelectedModelId == "llama3.2"))
                     {
                         s.AiSettings.SelectedModelId = discovered[0].Id;
                     }
                 });
 
                 RefreshModelCatalog(_uiSettingsService.Settings.AiSettings);
-                TriggerToast($"Found {discovered.Count} local Ollama models!", ToastNotificationType.Success, "CheckCircleOutline");
+                if (showToast)
+                {
+                    TriggerToast($"Found {discovered.Count} local Ollama models!", ToastNotificationType.Success, "CheckCircleOutline");
+                }
             }
-            else
+            else if (showToast)
             {
                 TriggerToast("No Ollama models detected. Ensure Ollama is running (`ollama serve`).", ToastNotificationType.Warning, "AlertOutline");
             }
         }
         catch (Exception ex)
         {
-            TriggerToast($"Ollama discovery error: {ex.Message}", ToastNotificationType.Danger, "AlertOctagonOutline");
+            if (showToast)
+            {
+                TriggerToast($"Ollama discovery error: {ex.Message}", ToastNotificationType.Danger, "AlertOctagonOutline");
+            }
         }
         finally
         {
@@ -374,6 +617,11 @@ public partial class AiSettingsViewModel : ViewModelBase
                 ? $"Connected ({latency.TotalMilliseconds:0}ms): {msg}"
                 : $"Failed ({latency.TotalMilliseconds:0}ms): {msg}";
 
+            if (success && IsCustomProvider && !string.IsNullOrWhiteSpace(SelectedModelId))
+            {
+                RememberCustomModel(SelectedModelId);
+            }
+
             TriggerToast(
                 success ? "AI model connection verified!" : "Connection test failed.",
                 success ? ToastNotificationType.Success : ToastNotificationType.Danger,
@@ -401,8 +649,9 @@ public partial class AiSettingsViewModel : ViewModelBase
             OllamaApiKey = OllamaApiKey,
             SelectedModelId = SelectedModelId,
             OpenAiApiKey = OpenAiApiKey,
-            CustomBaseUrl = CustomBaseUrl,
+            CustomBaseUrl = AiService.NormalizeCustomOpenAiBaseUrl(CustomBaseUrl),
             CustomModelName = CustomModelName,
+            CustomModelHistory = CustomModelHistory.ToList(),
             Temperature = Temperature,
             SystemInstructions = SystemInstructions,
             DiscoveredOllamaModels = _uiSettingsService.Settings.AiSettings.DiscoveredOllamaModels
@@ -418,8 +667,9 @@ public partial class AiSettingsViewModel : ViewModelBase
             s.AiSettings.OllamaApiKey = OllamaApiKey;
             s.AiSettings.SelectedModelId = SelectedModelId;
             s.AiSettings.OpenAiApiKey = OpenAiApiKey;
-            s.AiSettings.CustomBaseUrl = CustomBaseUrl;
+            s.AiSettings.CustomBaseUrl = AiService.NormalizeCustomOpenAiBaseUrl(CustomBaseUrl);
             s.AiSettings.CustomModelName = CustomModelName;
+            s.AiSettings.CustomModelHistory = CustomModelHistory.ToList();
             s.AiSettings.Temperature = Temperature;
             s.AiSettings.SystemInstructions = SystemInstructions;
         });

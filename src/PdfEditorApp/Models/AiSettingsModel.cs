@@ -31,6 +31,16 @@ public class AiSettingsModel
     [JsonPropertyName("customModelName")]
     public string CustomModelName { get; set; } = string.Empty;
 
+    [JsonPropertyName("customModelHistory")]
+    public List<string> CustomModelHistory { get; set; } = new()
+    {
+        "openai/gpt-oss-120b",
+        "llama-3.3-70b-versatile",
+        "qwen/qwen-2.5-coder-32b",
+        "deepseek-r1-distill-llama-70b",
+        "llama-3.1-8b-instant"
+    };
+
     [JsonPropertyName("temperature")]
     public float Temperature { get; set; } = 0.7f;
 
@@ -102,6 +112,9 @@ public class AiSettingsModel
                 IsInstalledLocally = m.IsInstalledLocally
             });
         }
+
+        copy.CustomModelHistory.Clear();
+        copy.CustomModelHistory.AddRange(this.CustomModelHistory);
 
         return copy;
     }

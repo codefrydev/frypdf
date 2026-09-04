@@ -135,6 +135,16 @@ public class AiService : IAiService
             },
             new()
             {
+                Id = "openai/gpt-oss-120b",
+                DisplayName = "GPT-OSS 120B Reasoning (Groq Cloud)",
+                Provider = AiProviderType.CustomOpenAiCompatible,
+                Tier = AiModelTier.FreeCloud,
+                Description = "Open-weights 120B reasoning model powered by Groq LPUs",
+                ParameterSize = "120B Cloud",
+                IsInstalledLocally = false
+            },
+            new()
+            {
                 Id = "meta-llama/llama-3.2-3b-instruct:free",
                 DisplayName = "Llama 3.2 3B (OpenRouter Free Cloud)",
                 Provider = AiProviderType.CustomOpenAiCompatible,
@@ -201,8 +211,85 @@ public class AiService : IAiService
     {
         lock (_libraryLock)
         {
-            return _ollamaLibraryCache.ToList();
+            if (_ollamaLibraryCache.Count > 0)
+            {
+                return _ollamaLibraryCache.ToList();
+            }
+
+            return GetDefaultOllamaLibrarySeedModels();
         }
+    }
+
+    private static List<AiModelInfo> GetDefaultOllamaLibrarySeedModels()
+    {
+        return new List<AiModelInfo>
+        {
+            new()
+            {
+                Id = "llama3.2",
+                DisplayName = "Llama 3.2 (3B)",
+                Provider = AiProviderType.OllamaLocal,
+                Tier = AiModelTier.FreeLocal,
+                Category = "Ollama Library",
+                Capabilities = "Tools • Vision • Text",
+                ParameterSize = "3B",
+                FormattedSize = "2.0 GB",
+                Description = "Meta's lightweight model optimized for local multilingual text and tool usage.",
+                IsInstalledLocally = false
+            },
+            new()
+            {
+                Id = "mistral",
+                DisplayName = "Mistral (7B)",
+                Provider = AiProviderType.OllamaLocal,
+                Tier = AiModelTier.FreeLocal,
+                Category = "Ollama Library",
+                Capabilities = "Reasoning • Code • Text",
+                ParameterSize = "7B",
+                FormattedSize = "4.1 GB",
+                Description = "Fast, high-performance 7B model by Mistral AI.",
+                IsInstalledLocally = false
+            },
+            new()
+            {
+                Id = "deepseek-r1:8b",
+                DisplayName = "DeepSeek R1 (8B)",
+                Provider = AiProviderType.OllamaLocal,
+                Tier = AiModelTier.FreeLocal,
+                Category = "Ollama Library",
+                Capabilities = "Thinking • Math • Reasoning",
+                ParameterSize = "8B",
+                FormattedSize = "4.9 GB",
+                Description = "DeepSeek reasoning model with step-by-step thinking scratchpad.",
+                IsInstalledLocally = false
+            },
+            new()
+            {
+                Id = "qwen2.5:7b",
+                DisplayName = "Qwen 2.5 (7B)",
+                Provider = AiProviderType.OllamaLocal,
+                Tier = AiModelTier.FreeLocal,
+                Category = "Ollama Library",
+                Capabilities = "Reasoning • Coding",
+                ParameterSize = "7B",
+                FormattedSize = "4.4 GB",
+                Description = "Alibaba's advanced open-weight model with strong code and instruction following.",
+                IsInstalledLocally = false
+            },
+            new()
+            {
+                Id = "phi3:mini",
+                DisplayName = "Phi-3 Mini (3.8B)",
+                Provider = AiProviderType.OllamaLocal,
+                Tier = AiModelTier.FreeLocal,
+                Category = "Ollama Library",
+                Capabilities = "Lightweight • Text",
+                ParameterSize = "3.8B",
+                FormattedSize = "2.3 GB",
+                Description = "Microsoft's efficient small language model for consumer hardware.",
+                IsInstalledLocally = false
+            }
+        };
     }
 
     /// <inheritdoc />
@@ -484,9 +571,7 @@ public class AiService : IAiService
                     ? (string.IsNullOrWhiteSpace(settings.SelectedModelId) ? "llama-3.3-70b-versatile" : settings.SelectedModelId)
                     : settings.CustomModelName.Trim();
 
-                string baseUrl = string.IsNullOrWhiteSpace(settings.CustomBaseUrl)
-                    ? "https://api.openai.com/v1"
-                    : settings.CustomBaseUrl.Trim();
+                string baseUrl = NormalizeCustomOpenAiBaseUrl(settings.CustomBaseUrl);
 
                 var client = new ChatClient(
                     model,
@@ -535,6 +620,26 @@ public class AiService : IAiService
     {
         if (string.IsNullOrEmpty(str)) return str;
         return char.ToUpperInvariant(str[0]) + str[1..];
+    }
+
+    /// <summary>
+    /// Normalizes custom OpenAI-compatible base URLs by trimming trailing slashes and
+    /// stripping '/chat/completions' if the user accidentally included the full endpoint path.
+    /// </summary>
+    public static string NormalizeCustomOpenAiBaseUrl(string? rawUrl)
+    {
+        if (string.IsNullOrWhiteSpace(rawUrl))
+        {
+            return "https://api.openai.com/v1";
+        }
+
+        string trimmed = rawUrl.Trim().TrimEnd('/');
+        if (trimmed.EndsWith("/chat/completions", StringComparison.OrdinalIgnoreCase))
+        {
+            trimmed = trimmed[..^"/chat/completions".Length].TrimEnd('/');
+        }
+
+        return trimmed;
     }
 
     // JSON DTO for Ollama /api/tags

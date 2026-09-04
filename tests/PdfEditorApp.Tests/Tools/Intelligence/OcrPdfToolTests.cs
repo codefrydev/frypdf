@@ -8,9 +8,10 @@ using PdfEditorApp.ViewModels.Tools.Organize;
 using PdfEditorApp.ViewModels.Tools.Security;
 using PdfEditorApp.ViewModels.Tools.Conversion;
 using PdfEditorApp.ViewModels.Tools.Intelligence;
-using PdfEditorApp.Tests.Tools.Core;
 using System.IO;
 using System.Threading.Tasks;
+using PdfEditorApp.Services;
+using PdfEditorApp.Tests.Tools.Core;
 using PdfEditorApp.Models;
 using PdfEditorApp.ViewModels.Tools;
 using PdfSharpCore.Drawing;
@@ -92,8 +93,27 @@ public class OcrPdfToolTests : IClassFixture<ToolTestFixture>
         string sample = CreateImageOnlyPdf("OcrScanned");
         try
         {
-            var vm = (OcrPdfToolViewModel)_fixture.Factory.Create(PdfToolId.OcrPdf);
-            vm.SelectedEngine = PdfEditorApp.Core.Models.OcrEngineType.Tesseract;
+            var customOcr = new PdfEditorApp.Services.Ocr.CompositeOcrProvider
+            {
+                PreferredEngine = PdfEditorApp.Core.Models.OcrEngineType.Tesseract
+            };
+            var ops = (PdfDocumentOperationsService)_fixture.OperationsService;
+            var customOps = new PdfDocumentOperationsService(
+                ops.ToolRegistry,
+                ops.PageService,
+                ops.OptimizationService,
+                ops.SecurityService,
+                ops.ConversionService,
+                new PdfOcrService(customOcr),
+                ops.FormService,
+                ops.AiService,
+                ops.TranslationService,
+                ops.WorkflowEngine);
+            var toolDef = _fixture.ToolRegistry.GetTool(PdfToolId.OcrPdf)!;
+            var vm = new OcrPdfToolViewModel(customOps, toolDef, customOcr)
+            {
+                SelectedEngine = PdfEditorApp.Core.Models.OcrEngineType.Tesseract
+            };
             vm.SelectedFiles.Add(sample);
             vm.SyncPreviewItems();
 
@@ -105,7 +125,6 @@ public class OcrPdfToolTests : IClassFixture<ToolTestFixture>
         }
         finally
         {
-            PdfEditorApp.Services.Ocr.CompositeOcrProvider.Default.PreferredEngine = PdfEditorApp.Core.Models.OcrEngineType.Auto;
             if (File.Exists(sample)) File.Delete(sample);
         }
     }

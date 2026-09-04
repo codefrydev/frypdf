@@ -137,11 +137,11 @@ public class AiModelInfo
 
     public override string ToString() => string.IsNullOrWhiteSpace(DisplayName) ? Id : FullTitleWithBadge;
 
-    public static AiModelInfo CreateForCustomId(string id, AiProviderType provider, bool isEndpointRemote = false)
+    public static AiModelInfo CreateForCustomId(string id, AiProviderType provider, bool isEndpointRemote = false, string? endpoint = null)
     {
         if (string.IsNullOrWhiteSpace(id))
         {
-            id = "llama3.2";
+            id = provider == AiProviderType.CustomOpenAiCompatible ? "openai/gpt-oss-120b" : "llama3.2";
         }
 
         id = id.Trim();
@@ -154,14 +154,27 @@ public class AiModelInfo
         {
             tier = isCloud ? AiModelTier.FreeCloud : AiModelTier.FreeLocal;
         }
-        else if (provider == AiProviderType.CustomOpenAiCompatible && (id.Contains("free", StringComparison.OrdinalIgnoreCase) || id.Contains("groq", StringComparison.OrdinalIgnoreCase)))
+        else if (provider == AiProviderType.CustomOpenAiCompatible)
         {
-            tier = AiModelTier.FreeCloud;
+            bool isGroq = (endpoint?.Contains("groq", StringComparison.OrdinalIgnoreCase) == true) || id.Contains("groq", StringComparison.OrdinalIgnoreCase);
+            bool isFree = id.Contains("free", StringComparison.OrdinalIgnoreCase) || isGroq;
+            if (!isEndpointRemote)
+            {
+                tier = AiModelTier.FreeLocal;
+            }
+            else
+            {
+                tier = isFree ? AiModelTier.FreeCloud : AiModelTier.PaidCloud;
+            }
         }
         else
         {
             tier = AiModelTier.PaidCloud;
         }
+
+        string formattedSize = isCloud
+            ? (provider == AiProviderType.CustomOpenAiCompatible && (endpoint?.Contains("groq", StringComparison.OrdinalIgnoreCase) == true) ? "Groq LPU Cloud" : "Cloud API")
+            : "Local / Custom";
 
         return new AiModelInfo
         {
@@ -169,9 +182,9 @@ public class AiModelInfo
             DisplayName = id,
             Provider = provider,
             Tier = tier,
-            Category = provider == AiProviderType.OllamaLocal ? "Ollama Custom" : "Cloud Custom",
-            Description = $"User-specified model identifier: {id}",
-            FormattedSize = isCloud ? "Cloud API" : "Local / Custom",
+            Category = provider == AiProviderType.OllamaLocal ? "Ollama Custom" : (provider == AiProviderType.CustomOpenAiCompatible ? "Custom Compatible" : "OpenAI Cloud"),
+            Description = $"Model identifier: {id}",
+            FormattedSize = formattedSize,
             IsInstalledLocally = !isCloud && provider == AiProviderType.OllamaLocal
         };
     }

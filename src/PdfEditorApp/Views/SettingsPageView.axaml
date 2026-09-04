@@ -56,6 +56,21 @@
             <Setter Property="BoxShadow" Value="0 2 8 #08000000" />
             <Setter Property="Margin" Value="0,0,0,18" />
         </Style>
+
+        <!-- Preset Chip Style -->
+        <Style Selector="Button.setting-preset-chip">
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="9,5" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.setting-preset-chip:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+        </Style>
     </UserControl.Styles>
 
     <StackPanel Margin="32,24,32,48" MaxWidth="920" HorizontalAlignment="Left">
@@ -223,13 +238,52 @@
 
                 <!-- 2. Cloud / Custom Credentials -->
                 <StackPanel Spacing="10" IsVisible="{Binding !IsOllamaProvider}">
+                    <!-- Provider Presets for Custom Compatible -->
+                    <StackPanel Spacing="6" IsVisible="{Binding IsCustomProvider}">
+                        <TextBlock Text="Quick Provider Presets" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Command="{Binding ApplyPresetCommand}" CommandParameter="groq"
+                                    Classes="setting-preset-chip" Margin="0,0,6,6"
+                                    ToolTip.Tip="High-speed Groq LPU endpoint (https://api.groq.com/openai/v1) with openai/gpt-oss-120b">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="Flash" Width="13" Height="13" Foreground="#F59E0B" VerticalAlignment="Center" />
+                                    <TextBlock Text="Groq (Ultra-Fast LPU)" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding ApplyPresetCommand}" CommandParameter="openrouter"
+                                    Classes="setting-preset-chip" Margin="0,0,6,6"
+                                    ToolTip.Tip="OpenRouter aggregator endpoint (https://openrouter.ai/api/v1)">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="CloudOutline" Width="13" Height="13" Foreground="#6366F1" VerticalAlignment="Center" />
+                                    <TextBlock Text="OpenRouter" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding ApplyPresetCommand}" CommandParameter="together"
+                                    Classes="setting-preset-chip" Margin="0,0,6,6"
+                                    ToolTip.Tip="Together AI endpoint (https://api.together.xyz/v1)">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="Api" Width="13" Height="13" Foreground="#0EA5E9" VerticalAlignment="Center" />
+                                    <TextBlock Text="Together AI" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding ApplyPresetCommand}" CommandParameter="lmstudio"
+                                    Classes="setting-preset-chip" Margin="0,0,6,6"
+                                    ToolTip.Tip="Local LM Studio server (http://localhost:1234/v1)">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="Laptop" Width="13" Height="13" Foreground="#10B981" VerticalAlignment="Center" />
+                                    <TextBlock Text="LM Studio / Local" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                         <StackPanel Grid.Column="0" Spacing="4">
                             <TextBlock Text="API Key" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                             <TextBox Text="{Binding OpenAiApiKey, Mode=TwoWay}"
                                      PasswordChar="•"
                                      CornerRadius="8" Padding="10,8" FontSize="12"
-                                     PlaceholderText="sk-... (stored securely in local settings)" />
+                                     PlaceholderText="sk-... or gsk_... (stored securely in local settings)" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Spacing="4" IsVisible="{Binding IsCustomProvider}">
@@ -237,15 +291,9 @@
                             <TextBox Text="{Binding CustomBaseUrl, Mode=TwoWay}"
                                      CornerRadius="8" Padding="10,8" FontSize="12"
                                      PlaceholderText="https://api.groq.com/openai/v1" />
+                            <TextBlock Text="Base endpoint only (e.g. https://api.groq.com/openai/v1 — /chat/completions is auto-normalized)" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
                         </StackPanel>
                     </Grid>
-
-                    <StackPanel Spacing="4" IsVisible="{Binding IsCustomProvider}">
-                        <TextBlock Text="Custom Model Identifier" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
-                        <TextBox Text="{Binding CustomModelName, Mode=TwoWay}"
-                                 CornerRadius="8" Padding="10,8" FontSize="12"
-                                 PlaceholderText="e.g. llama-3.3-70b-versatile, mixtral-8x7b-32768" />
-                    </StackPanel>
                 </StackPanel>
 
                 <!-- C. Model Selection (Direct text input + dynamic browse + live Ollama library fetch) -->
@@ -253,11 +301,11 @@
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2">
                             <TextBlock Text="Active AI Model Identifier" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <TextBlock Text="Type any model identifier or pick from the live Ollama &amp; Cloud catalog." FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                            <TextBlock Text="{Binding ModelSectionSubtitle}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
                         </StackPanel>
 
-                        <!-- Action buttons: Detect installed & Fetch from Ollama library -->
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <!-- Action buttons for Ollama only: Detect installed & Fetch from Ollama library -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" IsVisible="{Binding IsOllamaProvider}">
                             <!-- Detect Installed -->
                             <Button Command="{Binding DiscoverModelsCommand}"
                                     IsEnabled="{Binding !IsDetectingModels}"
@@ -269,7 +317,7 @@
                                     FontSize="11"
                                     FontWeight="Medium"
                                     Cursor="Hand"
-                                    ToolTip.Tip="Queries your running Ollama instance (/api/tags) for all installed &amp; cloud models">
+                                    ToolTip.Tip="Queries your running Ollama instance (/api/tags) for all installed models">
                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                     <materialIcons:MaterialIcon Kind="Refresh" Width="13" Height="13" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" />
                                     <TextBlock Text="Detect Installed" VerticalAlignment="Center" />
@@ -294,6 +342,26 @@
                                 </StackPanel>
                             </Button>
                         </StackPanel>
+
+                        <!-- Action badge and bookmark for Custom Provider -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="{Binding IsCustomProvider}">
+                            <Button Command="{Binding SaveCustomModelCommand}"
+                                    CommandParameter="{Binding SelectedModelId}"
+                                    Background="{DynamicResource WinHoverBrush}"
+                                    BorderBrush="{DynamicResource WinBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="9,5"
+                                    FontSize="11"
+                                    FontWeight="Medium"
+                                    Cursor="Hand"
+                                    ToolTip.Tip="Saves the current model identifier into your custom model history">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="BookmarkPlusOutline" Width="13" Height="13" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="Save to History" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
                     </Grid>
 
                     <!-- Direct Model Identifier Input & Dropdown Picker -->
@@ -304,7 +372,7 @@
                                  Padding="12,9"
                                  FontSize="12.5"
                                  FontWeight="SemiBold"
-                                 PlaceholderText="Type model name (e.g. deepseek-v3.1:671b-cloud, qwen3.8-flash-next, glm-5.3-flash, llama3.2)..." />
+                                 PlaceholderText="{Binding ModelInputPlaceholder}" />
 
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding AvailableModels}"
@@ -312,7 +380,7 @@
                                   CornerRadius="8"
                                   Padding="10,7"
                                   Width="260"
-                                  ToolTip.Tip="Browse all discovered and library models">
+                                  ToolTip.Tip="Browse available models for active provider">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="coreModels:AiModelInfo">
                                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,2">

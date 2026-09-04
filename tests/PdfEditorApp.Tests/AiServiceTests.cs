@@ -388,4 +388,118 @@ public class AiServiceTests : IDisposable
         Assert.Equal(AiModelTier.FreeLocal, activeInfo.Tier);
         Assert.False(string.IsNullOrWhiteSpace(activeInfo.TierBadgeText));
     }
+
+    [Theory]
+    [InlineData("https://api.groq.com/openai/v1/chat/completions", "https://api.groq.com/openai/v1")]
+    [InlineData("https://api.groq.com/openai/v1/chat/completions/", "https://api.groq.com/openai/v1")]
+    [InlineData("https://api.groq.com/openai/v1", "https://api.groq.com/openai/v1")]
+    [InlineData("https://api.groq.com/openai/v1/", "https://api.groq.com/openai/v1")]
+    [InlineData("https://openrouter.ai/api/v1/chat/completions", "https://openrouter.ai/api/v1")]
+    [InlineData(null, "https://api.openai.com/v1")]
+    [InlineData("", "https://api.openai.com/v1")]
+    [InlineData("   ", "https://api.openai.com/v1")]
+    public void AiService_NormalizeCustomOpenAiBaseUrl_SanitizesEndpoints(string? input, string expected)
+    {
+        string actual = AiService.NormalizeCustomOpenAiBaseUrl(input);
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void AiSettingsViewModel_CustomModelName_SynchronizesWithSelectedModelId()
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        var aiService = new AiService();
+        var vm = new AiSettingsViewModel(uiSettings, aiService)
+        {
+            SelectedProvider = AiProviderType.CustomOpenAiCompatible
+        };
+
+        // User types custom model into CustomModelName field
+        vm.CustomModelName = "qwen/qwen3.6-27b";
+
+        Assert.Equal("qwen/qwen3.6-27b", vm.SelectedModelId);
+        Assert.Equal("qwen/qwen3.6-27b", vm.ActiveModelInfo.Id);
+
+        // Selecting a model from the list updates CustomModelName as well
+        vm.SelectedModelId = "openai/gpt-oss-120b";
+        Assert.Equal("openai/gpt-oss-120b", vm.CustomModelName);
+    }
+
+    [Theory]
+    [InlineData("groq", "https://api.groq.com/openai/v1", "openai/gpt-oss-120b")]
+    [InlineData("openrouter", "https://openrouter.ai/api/v1", "meta-llama/llama-3.2-3b-instruct:free")]
+    [InlineData("together", "https://api.together.xyz/v1", "meta-llama/Llama-3.3-70B-Instruct-Turbo")]
+    [InlineData("lmstudio", "http://localhost:1234/v1", "local-model")]
+    public void AiSettingsViewModel_ApplyPreset_ConfiguresProviderAndModelsCorrectly(string preset, string expectedUrl, string expectedModel)
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        var aiService = new AiService();
+        var vm = new AiSettingsViewModel(uiSettings, aiService)
+        {
+            SelectedProvider = AiProviderType.CustomOpenAiCompatible
+        };
+
+        vm.ApplyPreset(preset);
+
+        Assert.Equal(expectedUrl, vm.CustomBaseUrl);
+        Assert.Equal(expectedModel, vm.SelectedModelId);
+        Assert.Equal(expectedModel, vm.CustomModelName);
+    }
+
+    [Fact]
+    public void AiSettingsViewModel_CustomCompatibleMode_ExcludesOllamaModelsAndProvidesDynamicHistory()
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        uiSettings.UpdateSettings(s =>
+        {
+            s.AiSettings.DiscoveredOllamaModels.Clear();
+            s.AiSettings.DiscoveredOllamaModels.Add(new AiModelInfo { Id = "ollama-local-exclusive", DisplayName = "Ollama Local Only", Provider = AiProviderType.OllamaLocal });
+        });
+
+        var aiService = new AiService();
+        var vm = new AiSettingsViewModel(uiSettings, aiService)
+        {
+            SelectedProvider = AiProviderType.CustomOpenAiCompatible,
+            CustomBaseUrl = "https://api.groq.com/openai/v1"
+        };
+
+        // Assert Ollama model is NOT present in AvailableModels
+        Assert.DoesNotContain(vm.AvailableModels, m => m.Id == "ollama-local-exclusive");
+
+        // Assert Groq/cloud models are present
+        Assert.Contains(vm.AvailableModels, m => m.Id == "openai/gpt-oss-120b");
+
+        // Assert dynamic subtitle and placeholder
+        Assert.Contains("custom model identifier", vm.ModelSectionSubtitle, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("ANY", vm.ModelInputPlaceholder);
+    }
+
+    [Fact]
+    public void AiSettingsViewModel_SaveCustomModel_FutureProofWithoutCodeChanges()
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        var aiService = new AiService();
+        var vm = new AiSettingsViewModel(uiSettings, aiService)
+        {
+            SelectedProvider = AiProviderType.CustomOpenAiCompatible,
+            CustomBaseUrl = "https://api.groq.com/openai/v1"
+        };
+
+        // User enters a brand new future model not known in the codebase
+        string futureModelId = "meta-llama/llama-4-scintilla-400b";
+        vm.SelectedModelId = futureModelId;
+        vm.SaveCustomModel(futureModelId);
+
+        // Model is immediately remembered in history
+        Assert.Contains(futureModelId, vm.CustomModelHistory);
+
+        // Model is in AvailableModels catalog
+        Assert.Contains(vm.AvailableModels, m => m.Id == futureModelId);
+
+        // ActiveModelInfo reflects the future model
+        Assert.Equal(futureModelId, vm.ActiveModelInfo.Id);
+
+        // Future model is persisted in settings storage
+        Assert.Contains(futureModelId, uiSettings.Settings.AiSettings.CustomModelHistory);
+    }
 }

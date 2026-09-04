@@ -432,7 +432,7 @@
                                         <TextBlock Grid.Column="0" Text="Text Opacity" Classes="inspector-label" Margin="0" />
                                         <TextBlock Grid.Column="1" Text="{Binding TextElement.TextOpacity, StringFormat='{}{0:P0}'}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
                                     </Grid>
-                                    <Slider Value="{Binding TextElement.TextOpacity, Mode=TwoWay}" Minimum="0.0" Maximum="1.0" Height="20" Margin="0" />
+                                    <Slider Value="{Binding TextElement.TextOpacity, Mode=TwoWay}" Minimum="0.0" Maximum="1.0" Height="24" Margin="0" />
                                 </StackPanel>
                             </Grid>
 
@@ -505,7 +505,7 @@
                                     </Grid>
 
                                     <Grid ColumnDefinitions="*,80" ColumnSpacing="6" IsVisible="{Binding TextElement.HasStroke}">
-                                        <Slider Grid.Column="0" Value="{Binding TextElement.StrokeWidth, Mode=TwoWay}" Minimum="0.5" Maximum="12" Height="20" Margin="0" />
+                                        <Slider Grid.Column="0" Value="{Binding TextElement.StrokeWidth, Mode=TwoWay}" Minimum="0.5" Maximum="12" Height="24" Margin="0" />
                                         <NumericUpDown Grid.Column="1" Value="{Binding TextElement.StrokeWidth, Mode=TwoWay}" Minimum="0.5" Maximum="20" Increment="0.5" FormatString="0.0 pt" Height="26" FontSize="11" />
                                     </Grid>
                                 </StackPanel>
@@ -2448,7 +2448,7 @@
                                         <TextBlock Grid.Column="0" Text="Opacity" Classes="inspector-label" Margin="0" />
                                         <TextBlock Grid.Column="1" Text="{Binding SelectedElement.Opacity, StringFormat='{}{0:P0}'}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
                                     </Grid>
-                                    <Slider Value="{Binding SelectedElement.Opacity, Mode=TwoWay}" Minimum="0.0" Maximum="1.0" Height="20" Margin="0" />
+                                    <Slider Value="{Binding SelectedElement.Opacity, Mode=TwoWay}" Minimum="0.0" Maximum="1.0" Height="24" Margin="0" />
                                 </StackPanel>
                             </Grid>
 

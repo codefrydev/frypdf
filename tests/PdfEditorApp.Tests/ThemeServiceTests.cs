@@ -293,4 +293,44 @@ public class ThemeServiceTests : IDisposable
         Assert.Contains(mainVm.FilteredPaletteCommands, c => c.Title.Contains("Switch to Dark Theme"));
         Assert.Contains(mainVm.FilteredPaletteCommands, c => c.Title.Contains("Switch to Light Theme"));
     }
+
+    [Fact]
+    public void AppAxaml_And_Styles_DefineChubbySliderResourcesAndRules()
+    {
+        // Find project root
+        var currentDir = AppContext.BaseDirectory;
+        string? projectRoot = null;
+        var dir = new DirectoryInfo(currentDir);
+        while (dir != null)
+        {
+            if (File.Exists(Path.Combine(dir.FullName, "FryPDF.sln")) || Directory.Exists(Path.Combine(dir.FullName, "src", "PdfEditorApp")))
+            {
+                projectRoot = dir.FullName;
+                break;
+            }
+            dir = dir.Parent;
+        }
+
+        Assert.NotNull(projectRoot);
+
+        var appAxamlPath = Path.Combine(projectRoot, "src", "PdfEditorApp", "App.axaml");
+        Assert.True(File.Exists(appAxamlPath), "App.axaml must exist");
+        var appAxaml = File.ReadAllText(appAxamlPath);
+
+        // Verify modern chubby slider resources are configured
+        Assert.Contains("SliderTrackThemeHeight", appAxaml);
+        Assert.Contains("<x:Double x:Key=\"SliderTrackThemeHeight\">8</x:Double>", appAxaml);
+        Assert.Contains("<GridLength x:Key=\"SliderPreContentMargin\">0</GridLength>", appAxaml);
+        Assert.Contains("<GridLength x:Key=\"SliderPostContentMargin\">0</GridLength>", appAxaml);
+        Assert.Contains("<x:Double x:Key=\"SliderHorizontalThumbWidth\">20</x:Double>", appAxaml);
+
+        // Verify styles file has chubby slider selectors
+        var stylesPath = Path.Combine(projectRoot, "src", "PdfEditorApp", "Styles", "FluentOfficeStyles.axaml");
+        Assert.True(File.Exists(stylesPath), "FluentOfficeStyles.axaml must exist");
+        var stylesText = File.ReadAllText(stylesPath);
+
+        Assert.Contains("Modern Chubby Tactile Slider Styling", stylesText);
+        Assert.Contains("RepeatButton#PART_DecreaseButton", stylesText);
+        Assert.Contains("RepeatButton#PART_IncreaseButton", stylesText);
+    }
 }

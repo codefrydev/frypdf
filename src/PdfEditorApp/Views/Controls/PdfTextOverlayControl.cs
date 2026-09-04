@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -52,10 +53,18 @@ public class PdfTextOverlayControl : Control
     private Point _dragStartPoint;
     private bool _hasMovedSinceDown;
     private PdfViewerPageItem? _subscribedPage;
+    private bool _isAreaSelecting;
+    private Rect _currentMarqueeRect;
+    private Point? _lastAnchorPoint;
+    private bool _isTargetedOcrRunning;
 
     // Visual brushes (cached for maximum performance)
     private static readonly IBrush SelectionFillBrush = new SolidColorBrush(Color.FromArgb(95, 59, 130, 246));
     private static readonly IPen SelectionBorderPen = new Pen(new SolidColorBrush(Color.FromArgb(160, 37, 99, 235)), 1.0);
+    private static readonly IBrush MarqueeFillBrush = new SolidColorBrush(Color.FromArgb(45, 15, 108, 189));
+    private static readonly IPen MarqueeBorderPen = new Pen(new SolidColorBrush(Color.FromArgb(200, 15, 108, 189)), 1.5, DashStyle.Dash);
+    private static readonly IBrush HandleFillBrush = new SolidColorBrush(Colors.White);
+    private static readonly IPen HandleBorderPen = new Pen(new SolidColorBrush(Color.FromArgb(220, 15, 108, 189)), 1.0);
 
     static PdfTextOverlayControl()
     {
@@ -136,23 +145,65 @@ public class PdfTextOverlayControl : Control
         if (_isPointerDown)
         {
             _hasMovedSinceDown = true;
-            page.SetSelectionRange(_dragStartPoint, unscaledPos);
 
-            if (vm != null)
+            if (_isAreaSelecting)
             {
-                vm.ActiveSelectedText = page.SelectedText;
-                vm.ActiveSelectedPageNumber = page.PageNumber;
-                vm.HasTextSelection = !string.IsNullOrEmpty(page.SelectedText);
-            }
+                double minX = Math.Min(_dragStartPoint.X, unscaledPos.X);
+                double minY = Math.Min(_dragStartPoint.Y, unscaledPos.Y);
+                double maxX = Math.Max(_dragStartPoint.X, unscaledPos.X);
+                double maxY = Math.Max(_dragStartPoint.Y, unscaledPos.Y);
+                _currentMarqueeRect = new Rect(minX, minY, Math.Max(1, maxX - minX), Math.Max(1, maxY - minY));
 
-            InvalidateVisual();
-            e.Handled = true;
+                page.SelectionRects.Clear();
+                page.SelectionRects.Add(_currentMarqueeRect);
+
+                if (vm != null)
+                {
+                    vm.LastSelectedAreaRect = _currentMarqueeRect;
+                }
+
+                InvalidateVisual();
+                e.Handled = true;
+            }
+            else
+            {
+                page.SetSelectionRange(_dragStartPoint, unscaledPos);
+
+                if (vm != null)
+                {
+                    vm.ActiveSelectedText = page.SelectedText;
+                    vm.ActiveSelectedPageNumber = page.PageNumber;
+                    vm.HasTextSelection = !string.IsNullOrEmpty(page.SelectedText);
+                }
+
+                InvalidateVisual();
+                e.Handled = true;
+            }
         }
         else
         {
-            // Dynamic I-beam hover cursor when over text words
-            bool isOverText = page.Words != null && page.Words.Any(w => w.Bounds.Contains(unscaledPos));
-            Cursor = isOverText ? new Cursor(StandardCursorType.Ibeam) : Cursor.Default;
+            // Dynamic Cursor
+            bool isAreaMode = (vm != null && vm.SelectionMode == PdfViewerSelectionMode.Area) || e.KeyModifiers.HasFlag(KeyModifiers.Alt);
+            if (isAreaMode)
+            {
+                Cursor = new Cursor(StandardCursorType.Cross);
+            }
+            else
+            {
+                bool isOverText = page.Words != null && page.Words.Any(w => w.Bounds.Contains(unscaledPos));
+                if (isOverText)
+                {
+                    Cursor = new Cursor(StandardCursorType.Ibeam);
+                }
+                else if (page.Words == null || page.Words.Count == 0)
+                {
+                    Cursor = new Cursor(StandardCursorType.Cross);
+                }
+                else
+                {
+                    Cursor = Cursor.Default;
+                }
+            }
         }
     }
 
@@ -177,6 +228,9 @@ public class PdfTextOverlayControl : Control
         if (currentPoint.Properties.IsLeftButtonPressed)
         {
             int clickCount = e.ClickCount;
+            bool isShift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+            bool isAlt = e.KeyModifiers.HasFlag(KeyModifiers.Alt);
+            bool isAreaMode = (vm != null && vm.SelectionMode == PdfViewerSelectionMode.Area) || isAlt || (page.Words.Count == 0);
 
             if (clickCount == 1)
             {
@@ -190,13 +244,27 @@ public class PdfTextOverlayControl : Control
                     }
                 }
 
+                if (isShift && _lastAnchorPoint.HasValue && !isAreaMode && page.Words.Count > 0)
+                {
+                    // Shift + Click: Extend selection from previous anchor to clicked point
+                    page.SetSelectionRange(_lastAnchorPoint.Value, unscaledPos);
+                    SyncSelectionToViewModel(page, vm);
+                    InvalidateVisual();
+                    e.Handled = true;
+                    return;
+                }
+
                 _isPointerDown = true;
                 _dragStartPoint = unscaledPos;
+                _lastAnchorPoint = unscaledPos;
                 _hasMovedSinceDown = false;
+                _isAreaSelecting = isAreaMode;
+                _currentMarqueeRect = default;
+
                 e.Pointer.Capture(this);
                 e.Handled = true;
             }
-            else if (clickCount == 2)
+            else if (clickCount == 2 && !isAreaMode)
             {
                 // Double-click: Select word under cursor
                 var word = page.Words?.FirstOrDefault(w => w.Bounds.Contains(unscaledPos))
@@ -204,12 +272,13 @@ public class PdfTextOverlayControl : Control
                 if (word != null)
                 {
                     page.SelectWord(word);
+                    _lastAnchorPoint = word.Bounds.TopLeft;
                     SyncSelectionToViewModel(page, vm);
                     InvalidateVisual();
                     e.Handled = true;
                 }
             }
-            else if (clickCount >= 3)
+            else if (clickCount >= 3 && !isAreaMode)
             {
                 // Triple-click: Select entire line under cursor
                 var line = page.TextLines?.FirstOrDefault(l => l.Bounds.Contains(unscaledPos))
@@ -217,6 +286,7 @@ public class PdfTextOverlayControl : Control
                 if (line != null)
                 {
                     page.SelectLine(line);
+                    _lastAnchorPoint = line.Bounds.TopLeft;
                     SyncSelectionToViewModel(page, vm);
                     InvalidateVisual();
                     e.Handled = true;
@@ -265,12 +335,72 @@ public class PdfTextOverlayControl : Control
                     {
                         page.ClearSelection();
                         vm?.ClearSelection();
+                        _currentMarqueeRect = default;
                     }
                     else
                     {
                         var word = page.Words!.First(w => w.Bounds.Contains(unscaledPos));
                         page.SelectWord(word);
+                        _lastAnchorPoint = word.Bounds.TopLeft;
                         SyncSelectionToViewModel(page, vm);
+                    }
+                }
+                else if (_isAreaSelecting && _hasMovedSinceDown)
+                {
+                    if (vm != null)
+                    {
+                        vm.LastSelectedAreaRect = _currentMarqueeRect;
+                    }
+
+                    List<PdfViewerWordItem> selectedWords = new();
+                    if (page.Words != null && page.Words.Count > 0)
+                    {
+                        selectedWords = page.Words
+                            .Where(w => w.Bounds.Intersects(_currentMarqueeRect))
+                            .OrderBy(w => w.Bounds.Top)
+                            .ThenBy(w => w.Bounds.Left)
+                            .ToList();
+                    }
+
+                    bool wordsAreGarbled = selectedWords.Count > 0 && selectedWords.All(w => PdfViewerViewModel.IsGarbledText(w.Text));
+
+                    if (selectedWords.Count > 0 && !wordsAreGarbled)
+                    {
+                        page.SelectedText = string.Join(" ", selectedWords.Select(w => w.Text));
+                        SyncSelectionToViewModel(page, vm);
+                    }
+                    else if (vm != null && _currentMarqueeRect.Width > 5 && _currentMarqueeRect.Height > 5)
+                    {
+                        // Scanned page (zero words) or garbled words in area: perform targeted OCR on cropped rect
+                        _isTargetedOcrRunning = true;
+                        InvalidateVisual();
+                        var rectToOcr = _currentMarqueeRect;
+
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                string text = await vm.ExtractOcrTextFromRegionAsync(page, rectToOcr, forceOcr: true);
+                                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                                {
+                                    _isTargetedOcrRunning = false;
+                                    if (!string.IsNullOrWhiteSpace(text))
+                                    {
+                                        page.SelectedText = text;
+                                        SyncSelectionToViewModel(page, vm);
+                                    }
+                                    InvalidateVisual();
+                                });
+                            }
+                            catch
+                            {
+                                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                                {
+                                    _isTargetedOcrRunning = false;
+                                    InvalidateVisual();
+                                });
+                            }
+                        });
                     }
                 }
                 else
@@ -331,6 +461,9 @@ public class PdfTextOverlayControl : Control
         // 3. Draw Active User Text Selection
         if (page.SelectionRects != null && page.SelectionRects.Count > 0)
         {
+            var vm = ResolveViewModel();
+            bool isMarquee = _isAreaSelecting || (vm != null && vm.SelectionMode == PdfViewerSelectionMode.Area) || (page.Words.Count == 0);
+
             foreach (var rect in page.SelectionRects)
             {
                 var scaledRect = new Rect(
@@ -339,8 +472,45 @@ public class PdfTextOverlayControl : Control
                     Math.Max(2, rect.Width * scaleX),
                     Math.Max(2, rect.Height * scaleY));
 
-                context.FillRectangle(SelectionFillBrush, scaledRect, 2.0f);
-                context.DrawRectangle(SelectionBorderPen, scaledRect, 2.0f);
+                if (isMarquee)
+                {
+                    // Draw Area / Marquee Box
+                    context.FillRectangle(MarqueeFillBrush, scaledRect, 2.0f);
+                    context.DrawRectangle(MarqueeBorderPen, scaledRect, 2.0f);
+
+                    // Draw 4 corner handles
+                    const double handleSize = 6.0;
+                    const double halfHandle = handleSize / 2.0;
+                    var corners = new[]
+                    {
+                        new Point(scaledRect.Left, scaledRect.Top),
+                        new Point(scaledRect.Right, scaledRect.Top),
+                        new Point(scaledRect.Left, scaledRect.Bottom),
+                        new Point(scaledRect.Right, scaledRect.Bottom)
+                    };
+
+                    foreach (var corner in corners)
+                    {
+                        var handleRect = new Rect(corner.X - halfHandle, corner.Y - halfHandle, handleSize, handleSize);
+                        context.FillRectangle(HandleFillBrush, handleRect);
+                        context.DrawRectangle(HandleBorderPen, handleRect);
+                    }
+
+                    if (_isTargetedOcrRunning)
+                    {
+                        // Draw "⚡ OCR..." badge
+                        var badgeRect = new Rect(scaledRect.Left + 4, Math.Max(0, scaledRect.Top - 22), 65, 18);
+                        context.FillRectangle(new SolidColorBrush(Color.FromArgb(230, 15, 108, 189)), badgeRect, 4.0f);
+                        var typeface = new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold);
+                        var formattedText = new FormattedText("⚡ OCR...", System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 10.5, Brushes.White);
+                        context.DrawText(formattedText, new Point(badgeRect.Left + 6, badgeRect.Top + 2));
+                    }
+                }
+                else
+                {
+                    context.FillRectangle(SelectionFillBrush, scaledRect, 2.0f);
+                    context.DrawRectangle(SelectionBorderPen, scaledRect, 2.0f);
+                }
             }
         }
     }
@@ -382,6 +552,35 @@ public class PdfTextOverlayControl : Control
         citationItem.Icon = new MaterialIcon { Kind = MaterialIconKind.FormatQuoteClose, Width = 15, Height = 15 };
         citationItem.Click += (s, e) => ResolveViewModel()?.CopySelectedCitationCommand.Execute(null);
         menu.Items.Add(citationItem);
+
+        // 3. Copy Area Snapshot Image
+        var copySnapshotItem = new MenuItem
+        {
+            Header = "Copy Area Snapshot",
+            InputGesture = new KeyGesture(Key.S, KeyModifiers.Control | KeyModifiers.Shift)
+        };
+        copySnapshotItem.Icon = new MaterialIcon { Kind = MaterialIconKind.CameraOutline, Width = 15, Height = 15, Foreground = new SolidColorBrush(Color.Parse("#0284C7")) };
+        copySnapshotItem.Click += (s, e) => ResolveViewModel()?.CopySelectedAreaImageCommand.Execute(null);
+        menu.Items.Add(copySnapshotItem);
+
+        // 4. Recognize Selection with OCR
+        var ocrSelectionItem = new MenuItem
+        {
+            Header = "Recognize Selection with OCR",
+            InputGesture = new KeyGesture(Key.R, KeyModifiers.Control | KeyModifiers.Shift)
+        };
+        ocrSelectionItem.Icon = new MaterialIcon { Kind = MaterialIconKind.ScanHelper, Width = 15, Height = 15, Foreground = new SolidColorBrush(Color.Parse("#0F6CBD")) };
+        ocrSelectionItem.Click += (s, e) => ResolveViewModel()?.RecognizeSelectedTextOcrCommand.Execute(null);
+        menu.Items.Add(ocrSelectionItem);
+
+        // 5. Recognize Entire Page (OCR)
+        var ocrItem = new MenuItem
+        {
+            Header = "Recognize Page (OCR)"
+        };
+        ocrItem.Icon = new MaterialIcon { Kind = MaterialIconKind.TextRecognition, Width = 15, Height = 15, Foreground = new SolidColorBrush(Color.Parse("#0F6CBD")) };
+        ocrItem.Click += (s, e) => ResolveViewModel()?.RecognizeActivePageOcrCommand.Execute(null);
+        menu.Items.Add(ocrItem);
 
         menu.Items.Add(new Separator());
 

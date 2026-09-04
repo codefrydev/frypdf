@@ -189,6 +189,28 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Capsule: Text & Area Selection Modes -->
+                    <Border Classes="toolbar-capsule">
+                        <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                            <!-- Text Selection Tool (I-Beam) -->
+                            <Button Classes="toolbar-btn" Width="28" Height="26"
+                                    Classes.mode-active="{Binding IsTextSelectionMode}"
+                                    Command="{Binding SetTextSelectionModeCommand}"
+                                    ToolTip.Tip="Text Selection Tool (I-Beam): Click &amp; drag words/lines">
+                                <materialIcons:MaterialIcon Kind="FormatColorText" Width="15" Height="15"
+                                                            Foreground="{Binding IsTextSelectionMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
+                            </Button>
+                            <!-- Area / Marquee Selection Tool -->
+                            <Button Classes="toolbar-btn" Width="28" Height="26"
+                                    Classes.mode-active="{Binding IsAreaSelectionMode}"
+                                    Command="{Binding SetAreaSelectionModeCommand}"
+                                    ToolTip.Tip="Area / Marquee Tool: Select rectangular regions on scanned documents, tables &amp; columns">
+                                <materialIcons:MaterialIcon Kind="CropFree" Width="15" Height="15"
+                                                            Foreground="{Binding IsAreaSelectionMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
                 </StackPanel>
 
                 <!-- Right Section: Themes, Tools, Fullscreen & Edit in Studio -->
@@ -231,6 +253,22 @@
                             </Button>
                         </StackPanel>
                     </Border>
+
+                    <!-- OCR / Text Recognition Button -->
+                    <Button Classes="toolbar-btn"
+                            Height="28"
+                            Padding="8,0"
+                            Command="{Binding RecognizeActivePageOcrCommand}"
+                            Classes.mode-active="{Binding IsCurrentPageScanned}"
+                            ToolTip.Tip="Recognize Text with OCR on this page (Apple Vision / Tesseract)">
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="ScanHelper" Width="15" Height="15"
+                                                        Foreground="{Binding IsCurrentPageScanned, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
+                            <TextBlock Text="OCR" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{Binding IsCurrentPageScanned, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
 
                     <!-- Search Trigger -->
                     <Button Classes="toolbar-btn"
@@ -621,6 +659,73 @@
             <!-- CENTER DOCUMENT VIEWPORT CANVAS (Acrobat/Preview Paper Rendering) -->
             <Grid Grid.Column="1" Background="{Binding ThemeBackgroundHex}">
 
+                <!-- SCANNED DOCUMENT OCR NOTIFICATION BANNER -->
+                <Border Background="{DynamicResource WinCardHoverBrush}"
+                        BorderBrush="#BFDBFE"
+                        BorderThickness="0,0,0,1"
+                        Padding="16,8"
+                        VerticalAlignment="Top"
+                        ZIndex="300"
+                        IsVisible="{Binding ShowScannedDocumentBanner}">
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="ScanHelper" Width="18" Height="18" Foreground="#0F6CBD" VerticalAlignment="Center" />
+                            <TextBlock Text="Scanned Document Detected" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="— This page has no selectable text layer. Run OCR to enable text selection, search, and copying."
+                                       FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0">
+                            <!-- Recognize Current Page -->
+                            <Button Background="#0F6CBD" Foreground="White" CornerRadius="6" Padding="10,4" FontSize="11" FontWeight="SemiBold"
+                                    Command="{Binding RecognizeActivePageOcrCommand}" Cursor="Hand"
+                                    ToolTip.Tip="Run OCR on current page">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <materialIcons:MaterialIcon Kind="LightningBolt" Width="13" Height="13" Foreground="White" />
+                                    <TextBlock Text="Recognize Page (OCR)" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Recognize All Pages -->
+                            <Button Classes="toolbar-btn" BorderThickness="1" BorderBrush="{DynamicResource WinBorderBrush}"
+                                    CornerRadius="6" Padding="10,4" FontSize="11" FontWeight="Medium"
+                                    Command="{Binding RecognizeDocumentOcrCommand}"
+                                    ToolTip.Tip="Run OCR on all pages in document">
+                                <TextBlock Text="Recognize All Pages" VerticalAlignment="Center" />
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Dismiss Button -->
+                        <Button Grid.Column="3" Classes="toolbar-btn" Width="24" Height="24"
+                                Command="{Binding DismissScannedBannerCommand}"
+                                ToolTip.Tip="Dismiss Notification">
+                            <materialIcons:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- OCR RUNNING PROGRESS OVERLAY -->
+                <Border Background="{DynamicResource WinPanelBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="16,6"
+                        VerticalAlignment="Top"
+                        ZIndex="301"
+                        IsVisible="{Binding IsOcrRunning}">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <ProgressBar Value="{Binding OcrProgress}" Minimum="0" Maximum="100" Width="120" Height="6" CornerRadius="3" Foreground="#0F6CBD" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding OcrStatusText}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <Button Grid.Column="2" Classes="toolbar-btn" Height="24" Padding="8,0"
+                                Command="{Binding CancelOcrCommand}"
+                                ToolTip.Tip="Cancel OCR">
+                            <TextBlock Text="Cancel" FontSize="11" Foreground="#DC2626" VerticalAlignment="Center" />
+                        </Button>
+                    </Grid>
+                </Border>
+
                 <!-- Top Indeterminate Progress Bar for instant feedback while opening -->
                 <ProgressBar IsIndeterminate="True"
                              IsVisible="{Binding IsLoading}"
@@ -929,8 +1034,26 @@
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource WinTextBrush}"
                                    VerticalAlignment="Center"
-                                   MaxWidth="200"
+                                   MaxWidth="180"
                                    TextTrimming="CharacterEllipsis" />
+
+                        <!-- Auto-Detected Garbled Font Encoding: One-Click Fix Pill -->
+                        <Button Classes="toolbar-btn"
+                                Height="22"
+                                Padding="6,0"
+                                Margin="3,0"
+                                Background="#FEF3C7"
+                                BorderBrush="#F59E0B"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Command="{Binding RecognizeSelectedTextOcrCommand}"
+                                IsVisible="{Binding IsSelectionTextGarbled}"
+                                ToolTip.Tip="This text looks garbled/unmapped from a custom PDF font. Click to fix with OCR.">
+                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="AutoFix" Width="12" Height="12" Foreground="#D97706" />
+                                <TextBlock Text="Fix with OCR" FontSize="10" FontWeight="SemiBold" Foreground="#B45309" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
 
                         <Rectangle Width="1" Height="16" Fill="{DynamicResource WinBorderBrush}" Margin="4,0" />
 
@@ -946,6 +1069,20 @@
                                 Command="{Binding CopySelectedCitationCommand}"
                                 ToolTip.Tip="Copy Text with Page Reference Citation">
                             <materialIcons:MaterialIcon Kind="FormatQuoteClose" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
+                        </Button>
+
+                        <!-- Copy Area Snapshot / Image Button -->
+                        <Button Classes="toolbar-btn" Width="28" Height="28"
+                                Command="{Binding CopySelectedAreaImageCommand}"
+                                ToolTip.Tip="Copy Area Snapshot (PNG image to clipboard)">
+                            <materialIcons:MaterialIcon Kind="CameraOutline" Width="15" Height="15" Foreground="#0284C7" />
+                        </Button>
+
+                        <!-- Recognize Selection with OCR Button -->
+                        <Button Classes="toolbar-btn" Width="28" Height="28"
+                                Command="{Binding RecognizeSelectedTextOcrCommand}"
+                                ToolTip.Tip="Recognize Selection with OCR (Extract text from scanned regions, images &amp; fix unmapped fonts)">
+                            <materialIcons:MaterialIcon Kind="ScanHelper" Width="15" Height="15" Foreground="#0F6CBD" />
                         </Button>
 
                         <!-- Highlight Selection Button (Yellow) -->

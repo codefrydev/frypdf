@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -32,6 +33,27 @@ public partial class MainViewModel
         );
 
         ShowToast(desc, "PlusCircleOutline");
+    }
+
+    public IReadOnlyList<PdfEditorApp.Core.Plugins.Descriptors.CanvasElementDescriptor> InsertableElements => _elementService.GetInsertableElements();
+
+    [RelayCommand]
+    public void InsertCanvasElement(string elementTypeId)
+    {
+        if (CurrentPage == null) return;
+        var descriptor = _elementService.GetDescriptor(elementTypeId);
+        if (descriptor == null) return;
+
+        var vm = _elementService.CreateViewModel(elementTypeId);
+        var (posX, posY) = _placementService.GetPlacementPosition(CurrentPage, descriptor.DefaultWidth, descriptor.DefaultHeight);
+        vm.X = posX;
+        vm.Y = posY;
+        vm.Width = descriptor.DefaultWidth;
+        vm.Height = descriptor.DefaultHeight;
+
+        AddElementWithUndo(vm, $"Added {descriptor.DisplayName}");
+        CurrentPage.SelectedElement = vm;
+        Inspector.SelectedElement = vm;
     }
 
     // --- ELEMENT CREATION COMMANDS ---
@@ -929,6 +951,7 @@ public partial class MainViewModel
 
         UpdateMathStudioPreview();
         IsMathStudioOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.math");
     }
 
     [RelayCommand]
@@ -936,6 +959,7 @@ public partial class MainViewModel
     {
         IsMathStudioOpen = false;
         EditingMathElement = null;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
@@ -1016,12 +1040,14 @@ public partial class MainViewModel
     public void OpenSignatureStudio()
     {
         IsSignatureStudioOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.signature");
     }
 
     [RelayCommand]
     public void CloseSignatureStudio()
     {
         IsSignatureStudioOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
@@ -1089,12 +1115,14 @@ public partial class MainViewModel
     public void OpenWatermarkManager()
     {
         IsWatermarkManagerOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.watermark");
     }
 
     [RelayCommand]
     public void CloseWatermarkManager()
     {
         IsWatermarkManagerOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
@@ -1148,12 +1176,14 @@ public partial class MainViewModel
     public void OpenSearchRedactDialog()
     {
         IsSearchRedactDialogOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.searchredact");
     }
 
     [RelayCommand]
     public void CloseSearchRedactDialog()
     {
         IsSearchRedactDialogOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
@@ -1212,12 +1242,14 @@ public partial class MainViewModel
     public void OpenCustomStampDialog()
     {
         IsCustomStampDialogOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.customstamp");
     }
 
     [RelayCommand]
     public void CloseCustomStampDialog()
     {
         IsCustomStampDialogOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
@@ -1254,6 +1286,7 @@ public partial class MainViewModel
     public async Task OpenPreflightDialogAsync()
     {
         IsPreflightDialogOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.preflight");
         IsAuditRunning = true;
         try
         {
@@ -1343,6 +1376,7 @@ public partial class MainViewModel
     public void ClosePreflightDialog()
     {
         IsPreflightDialogOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
@@ -1485,12 +1519,14 @@ public partial class MainViewModel
     {
         OnPropertyChanged(nameof(BatesSamplePreview));
         IsBatesNumberingDialogOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.bates");
     }
 
     [RelayCommand]
     public void CloseBatesNumberingDialog()
     {
         IsBatesNumberingDialogOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
@@ -1630,6 +1666,7 @@ public partial class MainViewModel
     public async Task OpenCompareDialogAsync()
     {
         IsCompareDialogOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.compare");
         IsComparing = true;
         try
         {
@@ -1648,6 +1685,7 @@ public partial class MainViewModel
     public void CloseCompareDialog()
     {
         IsCompareDialogOpen = false;
+        CloseDynamicDialog();
     }
 
     // --- IN-CANVAS FIND & REPLACE COMMANDS ---

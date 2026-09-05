@@ -222,6 +222,45 @@
             </Grid>
         </Border>
 
+        <!-- ============================================================== -->
+        <!-- INTERACTIVE PRESENTATION SHOWCASE HERO BANNER (.frypdf)         -->
+        <!-- ============================================================== -->
+        <Border Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="14"
+                Padding="18,14"
+                Margin="0,0,0,20"
+                BoxShadow="0 4 16 #08000000">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Border Grid.Column="0" Width="44" Height="44" Background="#EEF2FF" CornerRadius="12" Margin="0,0,16,0" VerticalAlignment="Center">
+                    <materialIcons:MaterialIcon Kind="PresentationPlay" Width="24" Height="24" Foreground="#4F46E5" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Featured: Executive Strategy &amp; Telemetry Deck (.frypdf)" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                        <Border Background="#EEF2FF" CornerRadius="9999" Padding="8,2" VerticalAlignment="Center">
+                            <TextBlock Text="16:10 LANDSCAPE • LIVE DATA" FontSize="9.5" FontWeight="Bold" Foreground="#4F46E5" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Experience living tables with in-table search &amp; CSV export, animated 600ms charts with hover tooltips, and interactive compliance checklists."
+                               FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                </StackPanel>
+                <Button Grid.Column="2"
+                        Command="{Binding LaunchInteractiveDeckCommand}"
+                        Classes="primary-btn"
+                        Height="36"
+                        Padding="16,0"
+                        CornerRadius="{StaticResource M3ShapeCornerFull}"
+                        VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="PlayCircleOutline" Width="16" Height="16" Foreground="White" />
+                        <TextBlock Text="Explore Interactive Deck" FontWeight="SemiBold" FontSize="12" Foreground="White" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
         <!-- ========================================== -->
         <!-- 2. POPULAR QUICK TOOLS ROW (6 TOP TOOLS)   -->
         <!-- ========================================== -->
@@ -353,6 +392,13 @@
                                           CommandParameter="{Binding FilePath}">
                                     <MenuItem.Icon>
                                         <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="16" Height="16" Foreground="#DC2626" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Interactive Presentation (.frypdf)"
+                                          Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenInInteractiveViewerCommand}"
+                                          CommandParameter="{Binding FilePath}">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="PresentationPlay" Width="16" Height="16" Foreground="#8B5CF6" />
                                     </MenuItem.Icon>
                                 </MenuItem>
                                 <Separator />

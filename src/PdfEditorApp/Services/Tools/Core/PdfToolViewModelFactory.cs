@@ -51,6 +51,21 @@ public class PdfToolViewModelFactory : IPdfToolViewModelFactory
 
     public PdfToolViewModelBase CreateToolViewModel(PdfToolDefinition toolDef)
     {
+        if (toolDef.ViewModelFactory != null && _serviceProvider != null)
+        {
+            try
+            {
+                if (toolDef.ViewModelFactory(_serviceProvider) is PdfToolViewModelBase vmFromFactory)
+                {
+                    return vmFromFactory;
+                }
+            }
+            catch
+            {
+                // Fall back to built-in factory logic
+            }
+        }
+
         if (_serviceProvider != null)
         {
             try

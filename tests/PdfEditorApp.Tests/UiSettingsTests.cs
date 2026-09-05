@@ -344,4 +344,81 @@ public class UiSettingsTests : IDisposable
         Assert.False(home.IsHomeSection);
         Assert.NotNull(home.Settings);
     }
+
+    [Fact]
+    public void HomeViewModel_SelectNavSection_PassesSelfAsServiceProviderToViewFactory()
+    {
+        var navReg = new PdfEditorApp.Services.Navigation.NavigationRegistry();
+        IServiceProvider? capturedSp = null;
+        object expectedView = new object();
+
+        navReg.RegisterNavigationItem(new PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor
+        {
+            Id = "Settings",
+            Title = "Settings",
+            Group = "Preferences",
+            ViewFactory = sp =>
+            {
+                capturedSp = sp;
+                return expectedView;
+            }
+        });
+
+        var home = new HomeViewModel(
+            new RecentDocumentsService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            new PdfEditorApp.Services.Tools.Core.PdfToolRegistry(),
+            null,
+            null,
+            new ThemeService(),
+            new UiSettingsService(),
+            navReg);
+
+        // Act: Navigate to Settings
+        home.SelectNavSectionCommand.Execute("Settings");
+
+        // Assert
+        Assert.Equal(HomeNavSection.Settings, home.SelectedNavSection);
+        Assert.True(home.IsSettingsSection);
+        Assert.Same(expectedView, home.DynamicPageView);
+        Assert.NotNull(capturedSp);
+        Assert.Same(home, capturedSp.GetService(typeof(HomeViewModel)));
+        Assert.Same(home.Settings, capturedSp.GetService(typeof(SettingsViewModel)));
+        Assert.Same(home.FontManager, capturedSp.GetService(typeof(FontManagerViewModel)));
+        Assert.Same(home.TesseractManager, capturedSp.GetService(typeof(TesseractManagerViewModel)));
+        Assert.Same(home.HelpGuide, capturedSp.GetService(typeof(HelpGuideViewModel)));
+    }
+
+    [Fact]
+    public void HomeViewModel_SelectNavSection_WhenViewFactoryThrows_GracefullyFallsBackWithoutCrashing()
+    {
+        var navReg = new PdfEditorApp.Services.Navigation.NavigationRegistry();
+
+        navReg.RegisterNavigationItem(new PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor
+        {
+            Id = "Settings",
+            Title = "Settings",
+            Group = "Preferences",
+            ViewFactory = sp => throw new InvalidOperationException("Simulated plugin view failure")
+        });
+
+        var home = new HomeViewModel(
+            new RecentDocumentsService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            new PdfEditorApp.Services.Tools.Core.PdfToolRegistry(),
+            null,
+            null,
+            new ThemeService(),
+            new UiSettingsService(),
+            navReg);
+
+        // Must not throw an unhandled exception!
+        var ex = Record.Exception(() => home.SelectNavSectionCommand.Execute("Settings"));
+        Assert.Null(ex);
+        Assert.Null(home.DynamicPageView);
+        Assert.Equal(HomeNavSection.Settings, home.SelectedNavSection);
+        Assert.True(home.IsSettingsSection);
+    }
 }

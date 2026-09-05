@@ -1,0 +1,1080 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:marketplace="using:PdfEditorApp.Core.Plugins.Marketplace"
+             x:Class="PdfEditorApp.Views.PluginsManagerPageView"
+             x:DataType="vm:PluginsManagerViewModel">
+
+    <UserControl.Resources>
+        <CornerRadius x:Key="M3ShapeCornerFull">9999</CornerRadius>
+        <CornerRadius x:Key="M3ShapeCornerExtraLarge">28</CornerRadius>
+        <CornerRadius x:Key="M3ShapeCornerLarge">16</CornerRadius>
+        <CornerRadius x:Key="M3ShapeCornerMedium">12</CornerRadius>
+        <CornerRadius x:Key="M3ShapeCornerSmall">8</CornerRadius>
+        <CornerRadius x:Key="M3ShapeCornerExtraSmall">4</CornerRadius>
+
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:BooleanToStringConverter x:Key="BooleanToStringConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Master Extension Card Style -->
+        <Style Selector="Border.plugin-card">
+            <Setter Property="Background" Value="{DynamicResource WinInputBgBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerMedium}" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.plugin-card:pointerover">
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
+            <Setter Property="RenderTransform" Value="translateX(2px)" />
+        </Style>
+        <Style Selector="Border.plugin-card.selected">
+            <Setter Property="Background" Value="{DynamicResource M3SecondaryContainerBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="BorderThickness" Value="1.5" />
+        </Style>
+
+        <!-- Category Chip Filter Style -->
+        <Style Selector="Button.category-chip-btn">
+            <Setter Property="Background" Value="{DynamicResource WinInputBgBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+            <Setter Property="Padding" Value="14,6" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.category-chip-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+        </Style>
+        <Style Selector="Button.category-chip-btn.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
+        </Style>
+        <Style Selector="Button.category-chip-btn.active">
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <!-- Sub-Tab Pill Navigation Button -->
+        <Style Selector="Button.sub-tab-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+            <Setter Property="Padding" Value="16,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.sub-tab-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+        </Style>
+        <Style Selector="Button.sub-tab-btn.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+        </Style>
+        <Style Selector="Button.sub-tab-btn.active">
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- 1. STUDIO HEADER BANNER (Google M3 Expressive Hero Card - Dynamic Theme) -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="24,14">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <!-- Brand / Studio Icon -->
+                <Border Grid.Column="0"
+                        Width="44"
+                        Height="44"
+                        Background="{DynamicResource WinAccentLightBrush}"
+                        BorderBrush="{DynamicResource WinAccentBorderBrush}"
+                        BorderThickness="1.5"
+                        CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                        Margin="0,0,14,0"
+                        VerticalAlignment="Center">
+                    <materialIcons:MaterialIcon Kind="PuzzleOutline"
+                                               Width="24"
+                                               Height="24"
+                                               Foreground="{DynamicResource WinAccentBrush}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                </Border>
+
+                <!-- Title, Description & Architecture Badges -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <TextBlock Text="Plugins &amp; Extensions"
+                                   FontSize="17"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource WinTextBrush}" />
+                        <Border Background="{DynamicResource M3SecondaryContainerBrush}"
+                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                Padding="8,2">
+                            <TextBlock Text="Everything is a Plugin"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
+                        </Border>
+                        <Border Background="{DynamicResource WinSuccessLightBrush}"
+                                BorderBrush="{DynamicResource WinSuccessBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                Padding="8,2">
+                            <TextBlock Text="Isolated .NET 10 ALC"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource WinSuccessBrush}" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Browse, configure, and install plugins, tools, and extensions with isolated ALC runtime."
+                               FontSize="11.5"
+                               Foreground="{DynamicResource WinMutedBrush}" />
+                </StackPanel>
+
+                <!-- Top Actions: Refresh & Install from File -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <!-- Refresh Button -->
+                    <Button Classes="action-pill-btn"
+                            Height="34"
+                            Padding="12,0"
+                            Command="{Binding RefreshAllCommand}"
+                            ToolTip.Tip="Refresh plugins and marketplace catalog">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="Refresh" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
+                            <TextBlock Text="Refresh" FontSize="11.5" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Install from Package/Assembly File -->
+                    <Button Classes="accent-btn"
+                            Height="34"
+                            Padding="16,0"
+                            Command="{Binding InstallFromFileCommand}"
+                            ToolTip.Tip="Install a .fryplugin package or isolated .dll assembly">
+                        <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="PlusCircleOutline" Width="16" Height="16" />
+                            <TextBlock Text="Install from File..." FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 2. SPLIT-PANE WORKSPACE (Left: Master List, Right: Detail) -->
+        <Grid Grid.Row="1" ColumnDefinitions="390,1,*">
+
+            <!-- LEFT COLUMN: Master Navigation, Search and Extension List -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource WinPanelBrush}"
+                    BorderBrush="{DynamicResource WinBorderBrush}"
+                    BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+                    <!-- 1. Mode Segmented Capsule (Installed / Store / Profiles) -->
+                    <Border Grid.Row="0"
+                            Padding="16,12,16,10"
+                            BorderBrush="{DynamicResource WinBorderSubtleBrush}"
+                            BorderThickness="0,0,0,1">
+                        <Border Classes="m3-segmented-container"
+                                Background="{DynamicResource WinInputBgBrush}"
+                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                Padding="3">
+                            <Grid ColumnDefinitions="*,*,*">
+                                <!-- Installed Tab -->
+                                <Button Grid.Column="0"
+                                        Classes="action-pill-btn"
+                                        Classes.active="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Installed}"
+                                        Command="{Binding SelectTabCommand}"
+                                        CommandParameter="Installed"
+                                        Height="30"
+                                        Padding="6,0"
+                                        HorizontalAlignment="Stretch">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <TextBlock Text="Installed" FontSize="11" FontWeight="SemiBold" />
+                                        <Border Background="{DynamicResource WinHoverBrush}"
+                                                CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                Padding="4,1"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding ActiveInstalledCount}" FontSize="9.5" FontWeight="Bold" />
+                                        </Border>
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Store / Marketplace Tab -->
+                                <Button Grid.Column="1"
+                                        Classes="action-pill-btn"
+                                        Classes.active="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Marketplace}"
+                                        Command="{Binding SelectTabCommand}"
+                                        CommandParameter="Marketplace"
+                                        Height="30"
+                                        Padding="6,0"
+                                        HorizontalAlignment="Stretch">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <TextBlock Text="Store" FontSize="11" FontWeight="SemiBold" />
+                                        <Border Background="{DynamicResource WinAccentLightBrush}"
+                                                CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                Padding="4,1"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding FilteredMarketplacePlugins.Count}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
+                                        </Border>
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Profiles Tab -->
+                                <Button Grid.Column="2"
+                                        Classes="action-pill-btn"
+                                        Classes.active="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Updates}"
+                                        Command="{Binding SelectTabCommand}"
+                                        CommandParameter="Updates"
+                                        Height="30"
+                                        Padding="6,0"
+                                        HorizontalAlignment="Stretch">
+                                    <TextBlock Text="Profiles" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </Border>
+
+                    <!-- 2. Search Box -->
+                    <Border Grid.Row="1" Padding="16,10,16,6">
+                        <TextBox Classes="m3-search"
+                                 Text="{Binding SearchQuery, Mode=TwoWay}"
+                                 PlaceholderText="Search extensions, tools, or authors..."
+                                 Height="36" />
+                    </Border>
+
+                    <!-- 3. Category Filter Chips (Horizontal Scroll) -->
+                    <ScrollViewer Grid.Row="2"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Disabled"
+                                  Padding="16,4,16,10">
+                        <ItemsControl ItemsSource="{Binding AvailableCategories}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Classes="category-chip-btn"
+                                            Classes.active="{Binding $parent[UserControl].((vm:PluginsManagerViewModel)DataContext).SelectedCategory, Converter={StaticResource EqualityConverter}, ConverterParameter={Binding}}"
+                                            Command="{Binding $parent[UserControl].((vm:PluginsManagerViewModel)DataContext).SelectCategoryCommand}"
+                                            CommandParameter="{Binding}">
+                                        <TextBlock Text="{Binding}" />
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- 4. Scrollable List of Extensions (Master List Internal Scroll) -->
+                    <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" Padding="16,4,16,16">
+                        <Panel>
+
+                            <!-- 4A. Installed Plugins List -->
+                            <StackPanel IsVisible="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Installed}" Spacing="2">
+                                <TextBlock Text="{Binding FilteredInstalledPlugins.Count, StringFormat='INSTALLED EXTENSIONS ({0})'}"
+                                           FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}"
+                                           Margin="4,4,0,8" />
+
+                                <ItemsControl ItemsSource="{Binding FilteredInstalledPlugins}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:PluginItemViewModel">
+                                            <Border Classes="plugin-card"
+                                                    Classes.selected="{Binding $parent[UserControl].((vm:PluginsManagerViewModel)DataContext).SelectedInstalledPlugin, Converter={StaticResource EqualityConverter}, ConverterParameter={Binding}}"
+                                                    PointerPressed="OnInstalledCardPointerPressed">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <!-- Category-Colored Icon Container -->
+                                                    <Border Grid.Column="0"
+                                                            Width="40" Height="40"
+                                                            Background="{DynamicResource WinHoverBrush}"
+                                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                                            Margin="0,0,12,0"
+                                                            VerticalAlignment="Center">
+                                                        <materialIcons:MaterialIcon Kind="{Binding IconKind}"
+                                                                                   Width="20" Height="20"
+                                                                                   Foreground="{Binding IconColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                                   HorizontalAlignment="Center"
+                                                                                   VerticalAlignment="Center" />
+                                                    </Border>
+
+                                                    <!-- Extension Info Stack -->
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       FontSize="13"
+                                                                       FontWeight="Bold"
+                                                                       Foreground="{DynamicResource WinTextBrush}"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       MaxWidth="180" />
+                                                            <Border Background="{DynamicResource WinHoverBrush}"
+                                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                                    Padding="4,1">
+                                                                <TextBlock Text="{Binding Version, StringFormat='v{0}'}"
+                                                                           FontSize="9.5"
+                                                                           Foreground="{DynamicResource WinMutedBrush}" />
+                                                            </Border>
+                                                            <materialIcons:MaterialIcon Kind="CheckDecagram"
+                                                                                        Width="13" Height="13"
+                                                                                        Foreground="#38BDF8"
+                                                                                        IsVisible="{Binding !IsExternal}"
+                                                                                        ToolTip.Tip="Official Core Extension"
+                                                                                        VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding Description}"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource WinMutedBrush}"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   MaxWidth="210" />
+                                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                                            <TextBlock Text="{Binding SourceAssembly}"
+                                                                       FontSize="9.5"
+                                                                       Foreground="{DynamicResource WinSubtleBrush}" />
+                                                            <TextBlock Text="•" FontSize="9.5" Foreground="{DynamicResource WinBorderSubtleBrush}" />
+                                                            <TextBlock Text="{Binding Category}"
+                                                                       FontSize="9.5"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource WinAccentBrush}" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <!-- Inline Toggle Switch -->
+                                                    <ToggleSwitch Grid.Column="2"
+                                                                  IsChecked="{Binding IsActive, Mode=TwoWay}"
+                                                                  MinWidth="0"
+                                                                  OnContent=""
+                                                                  OffContent=""
+                                                                  Margin="6,0,0,0"
+                                                                  ToolTip.Tip="Toggle active status"
+                                                                  VerticalAlignment="Center" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <!-- 4B. Marketplace / Store List -->
+                            <StackPanel IsVisible="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Marketplace}" Spacing="2">
+                                <TextBlock Text="{Binding FilteredMarketplacePlugins.Count, StringFormat='AVAILABLE EXTENSIONS ({0})'}"
+                                           FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}"
+                                           Margin="4,4,0,8" />
+
+                                <ItemsControl ItemsSource="{Binding FilteredMarketplacePlugins}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="marketplace:MarketplacePluginItem">
+                                            <Border Classes="plugin-card"
+                                                    Classes.selected="{Binding $parent[UserControl].((vm:PluginsManagerViewModel)DataContext).SelectedMarketplacePlugin, Converter={StaticResource EqualityConverter}, ConverterParameter={Binding}}"
+                                                    PointerPressed="OnMarketplaceCardPointerPressed">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <!-- Icon Container -->
+                                                    <Border Grid.Column="0"
+                                                            Width="40" Height="40"
+                                                            Background="{DynamicResource WinHoverBrush}"
+                                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                                            Margin="0,0,12,0"
+                                                            VerticalAlignment="Center">
+                                                        <materialIcons:MaterialIcon Kind="{Binding IconKind}"
+                                                                                   Width="20" Height="20"
+                                                                                   Foreground="{Binding IconColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                                   HorizontalAlignment="Center"
+                                                                                   VerticalAlignment="Center" />
+                                                    </Border>
+
+                                                    <!-- Info -->
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       FontSize="13"
+                                                                       FontWeight="Bold"
+                                                                       Foreground="{DynamicResource WinTextBrush}"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       MaxWidth="170" />
+                                                            <materialIcons:MaterialIcon Kind="CheckDecagram"
+                                                                                        Width="13" Height="13"
+                                                                                        Foreground="#38BDF8"
+                                                                                        IsVisible="{Binding IsVerified}"
+                                                                                        VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding Description}"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource WinMutedBrush}"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   MaxWidth="200" />
+                                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                                            <TextBlock Text="{Binding Publisher}"
+                                                                       FontSize="9.5"
+                                                                       Foreground="{DynamicResource WinMutedBrush}" />
+                                                            <TextBlock Text="•" FontSize="9" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                            <materialIcons:MaterialIcon Kind="Star" Width="11" Height="11" Foreground="#F59E0B" VerticalAlignment="Center" />
+                                                            <TextBlock Text="{Binding Rating, StringFormat='{}{0:F1}'}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                                            <TextBlock Text="•" FontSize="9" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                            <TextBlock Text="{Binding Category}" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <!-- Install Action Button -->
+                                                    <Button Grid.Column="2"
+                                                            Classes="action-pill-btn"
+                                                            Height="28"
+                                                            Padding="12,0"
+                                                            Command="{Binding $parent[UserControl].((vm:PluginsManagerViewModel)DataContext).InstallMarketplacePluginCommand}"
+                                                            CommandParameter="{Binding Id}"
+                                                            IsVisible="{Binding Status, Converter={StaticResource EqualityConverter}, ConverterParameter=Available}"
+                                                            ToolTip.Tip="1-click install into FryPDF"
+                                                            VerticalAlignment="Center">
+                                                        <TextBlock Text="Install" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <!-- 4C. Profiles View -->
+                            <StackPanel IsVisible="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Updates}" Spacing="14">
+                                <TextBlock Text="CONFIGURATION PROFILES"
+                                           FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}"
+                                           Margin="4,4,0,4" />
+
+                                <Border Background="{DynamicResource WinInputBgBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                        Padding="16"
+                                        BoxShadow="0 2 8 #08000000">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="Active System Profile" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                        <TextBlock Text="Switch between pre-configured bundle profiles to tailor memory footprint, tools, and UI density."
+                                                   FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+
+                                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                                            <Button Classes="action-pill-btn"
+                                                    Height="30"
+                                                    Padding="12,0"
+                                                    Classes.active="{Binding ActiveProfileName, Converter={StaticResource EqualityConverter}, ConverterParameter=desktop}"
+                                                    Command="{Binding SwitchProfileCommand}"
+                                                    CommandParameter="desktop">
+                                                <TextBlock Text="Desktop Studio" FontSize="11" FontWeight="Bold" />
+                                            </Button>
+                                            <Button Classes="action-pill-btn"
+                                                    Height="30"
+                                                    Padding="12,0"
+                                                    Classes.active="{Binding ActiveProfileName, Converter={StaticResource EqualityConverter}, ConverterParameter=headless}"
+                                                    Command="{Binding SwitchProfileCommand}"
+                                                    CommandParameter="headless">
+                                                <TextBlock Text="Headless CLI" FontSize="11" FontWeight="Bold" />
+                                            </Button>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                        </Panel>
+                    </ScrollViewer>
+
+                </Grid>
+            </Border>
+
+            <!-- Vertical Separator Line -->
+            <Border Grid.Column="1" Background="{DynamicResource WinBorderBrush}" />
+
+            <!-- RIGHT COLUMN: Detail Inspection Pane (Internal Scroll) -->
+            <Border Grid.Column="2" Background="{DynamicResource WinBgBrush}">
+                <Panel>
+                    <!-- Empty State: No Plugin Selected -->
+                    <ScrollViewer IsVisible="{Binding !HasSelectedDetail}"
+                                  VerticalScrollBarVisibility="Auto">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Margin="32,48">
+                            <Border Width="72" Height="72"
+                                    Background="{DynamicResource WinAccentLightBrush}"
+                                    BorderBrush="{DynamicResource WinAccentBorderBrush}"
+                                    BorderThickness="1.5"
+                                    CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                    HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="PuzzleOutline" Width="36" Height="36" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Plugins &amp; Extensions Studio" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="FryPDF is built on a modular microkernel architecture. Select any extension from the left to inspect its capabilities, configure options, or explore the store."
+                                       FontSize="12.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxWidth="440" TextAlignment="Center" LineHeight="20" />
+
+                            <!-- Quick Category Exploration Cards -->
+                            <UniformGrid Columns="2" HorizontalAlignment="Center" Margin="0,12,0,0">
+                                <!-- Card 1: AI -->
+                                <Border Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                        Padding="14,12"
+                                        Margin="6"
+                                        Width="210">
+                                    <StackPanel Spacing="4">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <materialIcons:MaterialIcon Kind="Creation" Width="16" Height="16" Foreground="#8B5CF6" />
+                                            <TextBlock Text="AI &amp; Intelligence" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                        </StackPanel>
+                                        <TextBlock Text="Groq LPUs, Ollama local inference &amp; OpenAI" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Card 2: Conversion -->
+                                <Border Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                        Padding="14,12"
+                                        Margin="6"
+                                        Width="210">
+                                    <StackPanel Spacing="4">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <materialIcons:MaterialIcon Kind="FileExportOutline" Width="16" Height="16" Foreground="#107C41" />
+                                            <TextBlock Text="Conversion &amp; Office" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                        </StackPanel>
+                                        <TextBlock Text="Word, Excel, Markdown, LaTeX &amp; HTML" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Card 3: Security -->
+                                <Border Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                        Padding="14,12"
+                                        Margin="6"
+                                        Width="210">
+                                    <StackPanel Spacing="4">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <materialIcons:MaterialIcon Kind="ShieldCheckOutline" Width="16" Height="16" Foreground="#DC2626" />
+                                            <TextBlock Text="Security &amp; Privacy" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                        </StackPanel>
+                                        <TextBlock Text="FIPS AES-256, X.509 certificates &amp; Redaction" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Card 4: Store -->
+                                <Border Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                        Padding="14,12"
+                                        Margin="6"
+                                        Width="210">
+                                    <StackPanel Spacing="4">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <materialIcons:MaterialIcon Kind="StoreOutline" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
+                                            <TextBlock Text="Marketplace Store" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                        </StackPanel>
+                                        <TextBlock Text="8+ curated 1-click install extensions" FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+
+                            <!-- Quick Action Buttons -->
+                            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,8,0,0">
+                                <Button Classes="action-pill-btn" Height="34" Padding="16,0" Command="{Binding SelectTabCommand}" CommandParameter="Marketplace">
+                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="StoreOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
+                                        <TextBlock Text="Browse Plugin Store" FontSize="12" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="accent-btn" Height="34" Padding="16,0" Command="{Binding InstallFromFileCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="PlusCircleOutline" Width="15" Height="15" />
+                                        <TextBlock Text="Install .fryplugin..." FontSize="12" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Active Detail Studio -->
+                    <ScrollViewer IsVisible="{Binding HasSelectedDetail}"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="32,24,32,40" Spacing="20"
+                                    DataContext="{Binding SelectedDetail}"
+                                    x:DataType="vm:PluginsManagerDetailViewModel">
+
+                            <!-- 1. Extension Hero Header -->
+                            <Border Background="{DynamicResource WinPanelBrush}"
+                                    BorderBrush="{DynamicResource WinBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                    Padding="24,20"
+                                    BoxShadow="0 4 16 #0A000000">
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+
+                                        <!-- Extension Logo 60x60 -->
+                                        <Border Grid.Column="0"
+                                                Width="60" Height="60"
+                                                Background="{DynamicResource WinHoverBrush}"
+                                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                                BorderThickness="1.5"
+                                                CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                                Margin="0,0,20,0"
+                                                BoxShadow="0 4 12 #10000000"
+                                                VerticalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="{Binding IconKind}"
+                                                                       Width="32" Height="32"
+                                                                       Foreground="{Binding IconColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center" />
+                                        </Border>
+
+                                        <!-- Title, Monospace ID & Publisher Info -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontSize="20"
+                                                           FontWeight="Bold"
+                                                           Foreground="{DynamicResource WinTextBrush}" />
+                                                <Border Background="{DynamicResource WinHoverBrush}"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Padding="6,2"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Version, StringFormat='v{0}'}"
+                                                               FontSize="11"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource WinMutedBrush}" />
+                                                </Border>
+                                                <Border Background="{DynamicResource WinAccentLightBrush}"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Padding="6,2"
+                                                        IsVisible="{Binding IsOfficial}"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="Verified Official"
+                                                               FontSize="10"
+                                                               FontWeight="Bold"
+                                                               Foreground="{DynamicResource WinAccentBrush}" />
+                                                </Border>
+                                            </StackPanel>
+
+                                            <!-- Monospace ID + Copy Chip -->
+                                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Id}"
+                                                           FontSize="11"
+                                                           FontFamily="Consolas,Menlo,monospace"
+                                                           Foreground="{DynamicResource WinMutedBrush}"
+                                                           VerticalAlignment="Center" />
+                                                <Button Classes="action-pill-btn"
+                                                        Height="20"
+                                                        Padding="6,0"
+                                                        Command="{Binding CopyIdCommand}"
+                                                        ToolTip.Tip="Copy extension ID">
+                                                    <materialIcons:MaterialIcon Kind="ContentCopy" Width="11" Height="11" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                </Button>
+                                                <TextBlock Text="•" FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding Publisher}"
+                                                           FontSize="11"
+                                                           FontWeight="Medium"
+                                                           Foreground="{DynamicResource WinTextBrush}"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+
+                                            <!-- Category Pill -->
+                                            <Border Background="{DynamicResource WinAccentLightBrush}"
+                                                    BorderBrush="{DynamicResource WinAccentBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                                    Padding="8,2"
+                                                    HorizontalAlignment="Left"
+                                                    Margin="0,2,0,0">
+                                                <TextBlock Text="{Binding Category}"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource WinAccentBrush}" />
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- Action Buttons (Enable/Disable, Install, Settings) -->
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                            <!-- Install Button (for Marketplace items) -->
+                                            <Button Classes="accent-btn"
+                                                    Height="36"
+                                                    Padding="18,0"
+                                                    IsVisible="{Binding !IsInstalled}"
+                                                    Command="{Binding InstallCommand}"
+                                                    ToolTip.Tip="Install extension into FryPDF">
+                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="Download" Width="16" Height="16" />
+                                                    <TextBlock Text="Install" FontSize="12" FontWeight="SemiBold" />
+                                                </StackPanel>
+                                            </Button>
+
+                                            <!-- Toggle Active Button (for Installed items) -->
+                                            <Button Classes="action-pill-btn"
+                                                    Height="36"
+                                                    Padding="14,0"
+                                                    IsVisible="{Binding IsInstalled}"
+                                                    Command="{Binding ToggleActiveCommand}"
+                                                    ToolTip.Tip="Enable or disable this extension">
+                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="Power" Width="15" Height="15"
+                                                                               Foreground="{Binding IsActive, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='#10B981|#EF4444'}" />
+                                                    <TextBlock Text="{Binding IsActive, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Disable|Enable'}"
+                                                               FontSize="11.5" FontWeight="SemiBold" />
+                                                </StackPanel>
+                                            </Button>
+
+                                            <!-- Settings Quick Jump Button -->
+                                            <Button Classes="action-pill-btn"
+                                                    Height="36"
+                                                    Padding="12,0"
+                                                    Command="{Binding SelectTabCommand}"
+                                                    CommandParameter="Settings"
+                                                    IsVisible="{Binding HasSettings}"
+                                                    ToolTip.Tip="Open Extension Preferences">
+                                                <materialIcons:MaterialIcon Kind="CogOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                                            </Button>
+
+                                            <!-- Uninstall Button (for External / Marketplace items) -->
+                                            <Button Classes="action-pill-btn"
+                                                    Height="36"
+                                                    Padding="12,0"
+                                                    IsVisible="{Binding IsExternal}"
+                                                    Command="{Binding UninstallCommand}"
+                                                    ToolTip.Tip="Uninstall extension package">
+                                                <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="15" Height="15" Foreground="#EF4444" />
+                                            </Button>
+                                        </StackPanel>
+
+                                    </Grid>
+
+                                    <!-- Stats Row Divider -->
+                                    <Grid Margin="0,16,0,0">
+                                        <Border Height="1" Background="{DynamicResource WinBorderSubtleBrush}" VerticalAlignment="Top" />
+                                        <StackPanel Orientation="Horizontal" Spacing="20" Margin="0,12,0,0">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="Star" Width="14" Height="14" Foreground="#F59E0B" />
+                                                <TextBlock Text="{Binding Rating, StringFormat='{}{0:F1}'}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                                <TextBlock Text="{Binding RatingCount, StringFormat='({0})'}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                                            </StackPanel>
+                                            <TextBlock Text="•" FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="DownloadOutline" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                                <TextBlock Text="{Binding InstallCount, StringFormat='{}{0:N0} Installs'}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
+                                            </StackPanel>
+                                            <TextBlock Text="•" FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="PackageVariantClosed" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                <TextBlock Text="{Binding FormattedSize}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
+                                            </StackPanel>
+                                            <TextBlock Text="•" FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="License" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                <TextBlock Text="{Binding License, StringFormat='License: {0}'}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 2. Sub-Tab Segmented Navigation (Overview / Contributions / Settings / Runtime) -->
+                            <Border Classes="m3-segmented-container"
+                                    Background="{DynamicResource WinInputBgBrush}"
+                                    BorderBrush="{DynamicResource WinBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Padding="3"
+                                    HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal" Spacing="2">
+                                    <Button Classes="sub-tab-btn"
+                                            Classes.active="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Overview}"
+                                            Command="{Binding SelectTabCommand}"
+                                            CommandParameter="Overview">
+                                        <TextBlock Text="Overview" />
+                                    </Button>
+                                    <Button Classes="sub-tab-btn"
+                                            Classes.active="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Contributions}"
+                                            Command="{Binding SelectTabCommand}"
+                                            CommandParameter="Contributions">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock Text="Contributions" />
+                                            <Border Background="{DynamicResource WinHoverBrush}"
+                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                    Padding="4,1"
+                                                    IsVisible="{Binding HasContributions}">
+                                                <TextBlock Text="{Binding ContributedFeatures.Count}" FontSize="9.5" FontWeight="Bold" />
+                                            </Border>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="sub-tab-btn"
+                                            Classes.active="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Settings}"
+                                            Command="{Binding SelectTabCommand}"
+                                            CommandParameter="Settings">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock Text="Settings" />
+                                            <Border Background="{DynamicResource WinAccentLightBrush}"
+                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                    Padding="4,1"
+                                                    IsVisible="{Binding HasSettings}">
+                                                <TextBlock Text="{Binding SettingsList.Count}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
+                                            </Border>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="sub-tab-btn"
+                                            Classes.active="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Runtime}"
+                                            Command="{Binding SelectTabCommand}"
+                                            CommandParameter="Runtime">
+                                        <TextBlock Text="Runtime &amp; Dependencies" />
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 3. Sub-Tab Content Panels -->
+
+                            <!-- 3A: Overview Tab -->
+                            <StackPanel IsVisible="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Overview}" Spacing="16">
+                                <!-- Highlights Card -->
+                                <Border Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                        Padding="20"
+                                        IsVisible="{Binding Highlights.Count}">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="Key Highlights &amp; Capabilities" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                        <ItemsControl ItemsSource="{Binding Highlights}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,3">
+                                                        <materialIcons:MaterialIcon Kind="CheckCircleOutline" Width="16" Height="16" Foreground="{DynamicResource WinSuccessBrush}" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding}" FontSize="12" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Long Description / Readme -->
+                                <Border Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                        Padding="20">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="Documentation &amp; Overview" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                        <TextBlock Text="{Binding LongDescription}"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource WinMutedBrush}"
+                                                   TextWrapping="Wrap"
+                                                   LineHeight="22" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- 3B: Contributions Tab (Inspired by VS Code) -->
+                            <StackPanel IsVisible="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Contributions}" Spacing="14">
+                                <Border Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                        Padding="20">
+                                    <StackPanel Spacing="12">
+                                        <TextBlock Text="Feature Contributions in FryPDF" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                        <TextBlock Text="Components and services registered into the FryPDF microkernel by this extension."
+                                                   FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+
+                                        <ItemsControl ItemsSource="{Binding ContributedFeatures}" Margin="0,6,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="{DynamicResource WinInputBgBrush}"
+                                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                                            Padding="12,10"
+                                                            Margin="0,0,0,6">
+                                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                                            <materialIcons:MaterialIcon Kind="LightningBoltOutline" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" />
+                                                            <TextBlock Text="{Binding}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- 3C: Settings Tab -->
+                            <StackPanel IsVisible="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Settings}" Spacing="14">
+                                <Border Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                        Padding="20">
+                                    <StackPanel Spacing="14">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <TextBlock Text="Configuration &amp; Options" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                                <TextBlock Text="Declarative configuration settings for this extension." FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" />
+                                            </StackPanel>
+                                            <Button Grid.Column="1"
+                                                    Classes="accent-btn"
+                                                    Height="32"
+                                                    Padding="14,0"
+                                                    Command="{Binding SaveSettingsCommand}"
+                                                    IsVisible="{Binding HasSettings}">
+                                                <TextBlock Text="Save Preferences" FontSize="11.5" FontWeight="SemiBold" />
+                                            </Button>
+                                        </Grid>
+
+                                        <!-- No Settings Fallback -->
+                                        <TextBlock Text="This extension does not declare customizable configuration parameters."
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource WinMutedBrush}"
+                                                   IsVisible="{Binding !HasSettings}"
+                                                   Margin="0,10,0,0" />
+
+                                        <!-- Settings List -->
+                                        <ItemsControl ItemsSource="{Binding SettingsList}" IsVisible="{Binding HasSettings}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:PluginSettingItemViewModel">
+                                                    <Border Background="{DynamicResource WinInputBgBrush}"
+                                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                                            Padding="16,12"
+                                                            Margin="0,0,0,8">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
+                                                                <TextBlock Text="{Binding Label}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                                                                <TextBlock Text="{Binding Key, StringFormat='Key: {0}'}" FontSize="10" FontFamily="Consolas,Menlo,monospace" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                            </StackPanel>
+
+                                                            <!-- Dynamic Editors based on Type -->
+                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                                <TextBox Classes="m3-outlined"
+                                                                         Text="{Binding StringValue, Mode=TwoWay}"
+                                                                         Width="240" Height="34"
+                                                                         IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter=string}" />
+                                                                <TextBox Classes="m3-outlined"
+                                                                         Text="{Binding StringValue, Mode=TwoWay}"
+                                                                         PasswordChar="•"
+                                                                         Width="240" Height="34"
+                                                                         IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter=secret}" />
+                                                                <ToggleSwitch IsChecked="{Binding BoolValue, Mode=TwoWay}"
+                                                                              OnContent="Enabled" OffContent="Disabled"
+                                                                              MinWidth="0"
+                                                                              IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter=boolean}" />
+                                                                <NumericUpDown Value="{Binding NumberValue, Mode=TwoWay}"
+                                                                               Width="140" Height="34"
+                                                                               IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter=number}" />
+                                                                <ComboBox ItemsSource="{Binding Options}"
+                                                                          SelectedItem="{Binding StringValue, Mode=TwoWay}"
+                                                                          Width="240" Height="34"
+                                                                          IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter=select}" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- 3D: Runtime & Dependencies Tab -->
+                            <StackPanel IsVisible="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Runtime}" Spacing="14">
+                                <Border Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                        Padding="20">
+                                    <StackPanel Spacing="12">
+                                        <TextBlock Text="Runtime Environment &amp; Assembly Loading" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+
+                                        <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Status:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding RuntimeStatus}" FontSize="12" Foreground="{DynamicResource WinTextBrush}" FontWeight="Medium" />
+
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Load Context:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AssemblyLoadContextName}" FontSize="12" FontFamily="Consolas,Menlo,monospace" Foreground="{DynamicResource WinTextBrush}" />
+
+                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Assembly Path:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding AssemblyPath}" FontSize="12" FontFamily="Consolas,Menlo,monospace" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                        Padding="20">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="Dependencies &amp; Prerequisites" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                        <ItemsControl ItemsSource="{Binding Dependencies}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,3">
+                                                        <materialIcons:MaterialIcon Kind="PackageVariant" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding}" FontSize="12" FontFamily="Consolas,Menlo,monospace" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Panel>
+            </Border>
+
+        </Grid>
+
+    </Grid>
+
+</UserControl>

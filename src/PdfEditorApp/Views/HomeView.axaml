@@ -11,7 +11,9 @@
     <UserControl.Resources>
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
         <converters:BooleanToStringConverter x:Key="BooleanToStringConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
     </UserControl.Resources>
+
 
     <UserControl.Styles>
         <!-- Nav Tab Button Style (M3 Expressive Navigation Rail Pill) -->
@@ -99,244 +101,317 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Navigation Tabs (Scrollable for compact screens) -->
                 <ScrollViewer DockPanel.Dock="Top" Margin="10,12,10,0" VerticalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="3">
+                    <StackPanel Spacing="2">
 
-                        <!-- Main Sections Header -->
-                        <TextBlock Text="OVERVIEW" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,4,0,4" />
+                        <!-- ===== PLUGIN-DRIVEN NAVIGATION SIDEBAR =====
+                             All groups and items are registered by WorkspacePagesBundle (and 3rd-party bundles)
+                             via INavigationRegistry. No hardcoded buttons below. -->
+                        <ItemsControl ItemsSource="{Binding NavGroups}" IsVisible="{Binding IsPluginDrivenNavigation}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:NavGroupViewModel">
+                                    <StackPanel Spacing="1">
+                                        <!-- Group Header -->
+                                        <TextBlock Text="{Binding Header}"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   Foreground="{DynamicResource WinSubtleBrush}"
+                                                   Margin="8,10,0,4" />
 
-                        <!-- 1. Home -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Home}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="Home">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="HomeOutline" Width="18" Height="18" Foreground="#0F6CBD" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Home" VerticalAlignment="Center" />
-                            </Grid>
-                        </Button>
+                                        <!-- Nav Items -->
+                                        <ItemsControl ItemsSource="{Binding Items}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:NavigationItemViewModel">
+                                                    <Button Classes="nav-tab-btn"
+                                                            Classes.active="{Binding IsActive}"
+                                                            Command="{Binding $parent[views:HomeView].((vm:HomeViewModel)DataContext).SelectNavSectionCommand}"
+                                                            CommandParameter="{Binding Id}">
+                                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                                            <materialIcons:MaterialIcon Grid.Column="0"
+                                                                                       Kind="{Binding IconKind}"
+                                                                                       Width="18" Height="18"
+                                                                                       Foreground="{DynamicResource WinAccentBrush}"
+                                                                                       Margin="0,0,10,0"
+                                                                                       VerticalAlignment="Center" />
+                                                            <TextBlock Grid.Column="1"
+                                                                       Text="{Binding Title}"
+                                                                       VerticalAlignment="Center" />
+                                                            <Border Grid.Column="2"
+                                                                    Background="{DynamicResource WinHoverBrush}"
+                                                                    CornerRadius="{StaticResource M3ShapeCornerExtraSmall}"
+                                                                    Padding="5,1"
+                                                                    IsVisible="{Binding BadgeText, Converter={StaticResource NullToBooleanConverter}}">
+                                                                <TextBlock Text="{Binding BadgeText}"
+                                                                           FontSize="9.5"
+                                                                           FontWeight="Bold"
+                                                                           Foreground="{DynamicResource WinAccentBrush}" />
+                                                            </Border>
+                                                        </Grid>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
-                        <!-- 2. PDF Reader Mode (Acrobat-Style) -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=PdfReader}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="PdfReader">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="BookOpenPageVariantOutline" Width="18" Height="18" Foreground="#DC2626" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="PDF Reader" VerticalAlignment="Center" />
-                                <Border Grid.Column="2" Background="#FEE2E2" CornerRadius="4" Padding="5,1">
-                                    <TextBlock Text="Read" FontSize="10" FontWeight="Bold" Foreground="#DC2626" />
-                                </Border>
-                            </Grid>
-                        </Button>
+                        <!-- ===== LEGACY STATIC NAV (fallback when plugin registry is unavailable) =====
+                             Rendered only when IsPluginDrivenNavigation=false (e.g., headless/test mode). -->
+                        <StackPanel Spacing="3" IsVisible="{Binding !IsPluginDrivenNavigation}">
 
-                        <!-- 3. Start a New Document / Templates -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=NewDocument}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="NewDocument">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="FileDocumentPlusOutline" Width="18" Height="18" Foreground="#10B981" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="New Document" VerticalAlignment="Center" />
-                                <Border Grid.Column="2" Background="#ECFDF5" CornerRadius="4" Padding="5,1">
-                                    <TextBlock Text="19" FontSize="10" FontWeight="Bold" Foreground="#059669" />
-                                </Border>
-                            </Grid>
-                        </Button>
+                            <!-- Main Sections Header -->
+                            <TextBlock Text="OVERVIEW" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,4,0,4" />
 
-                        <!-- 4. All Tools -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=AllTools}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="AllTools">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="ViewGridOutline" Width="18" Height="18" Foreground="#6366F1" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="All Tools" VerticalAlignment="Center" />
-                                <Border Grid.Column="2" Background="#EEF2FF" CornerRadius="4" Padding="5,1">
-                                    <TextBlock Text="32" FontSize="10" FontWeight="Bold" Foreground="#4F46E5" />
-                                </Border>
-                            </Grid>
-                        </Button>
+                            <!-- 1. Home -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Home}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="Home">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="HomeOutline" Width="18" Height="18" Foreground="#0F6CBD" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Home" VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
 
-                        <!-- Tool Categories Header -->
-                        <TextBlock Text="CATEGORIES" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,12,0,4" />
+                            <!-- 2. PDF Reader Mode -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=PdfReader}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="PdfReader">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="BookOpenPageVariantOutline" Width="18" Height="18" Foreground="#DC2626" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="PDF Reader" VerticalAlignment="Center" />
+                                    <Border Grid.Column="2" Background="#FEE2E2" CornerRadius="4" Padding="5,1">
+                                        <TextBlock Text="Read" FontSize="10" FontWeight="Bold" Foreground="#DC2626" />
+                                    </Border>
+                                </Grid>
+                            </Button>
 
-                        <!-- 4. Organize & Page -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=OrganizeAndPage}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="OrganizeAndPage">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="BookOpenPageVariantOutline" Width="18" Height="18" Foreground="#0284C7" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Organize &amp; Page" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="6" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
-                            </Grid>
-                        </Button>
+                            <!-- 3. New Document -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=NewDocument}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="NewDocument">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="FileDocumentPlusOutline" Width="18" Height="18" Foreground="#10B981" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="New Document" VerticalAlignment="Center" />
+                                    <Border Grid.Column="2" Background="#ECFDF5" CornerRadius="4" Padding="5,1">
+                                        <TextBlock Text="19" FontSize="10" FontWeight="Bold" Foreground="#059669" />
+                                    </Border>
+                                </Grid>
+                            </Button>
 
-                        <!-- 5. Optimize & Security -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=OptimizeAndSecurity}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="OptimizeAndSecurity">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="ShieldLockOutline" Width="18" Height="18" Foreground="#10B981" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Security &amp; Optimize" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="7" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
-                            </Grid>
-                        </Button>
+                            <!-- 4. All Tools -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=AllTools}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="AllTools">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="ViewGridOutline" Width="18" Height="18" Foreground="#6366F1" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="All Tools" VerticalAlignment="Center" />
+                                    <Border Grid.Column="2" Background="#EEF2FF" CornerRadius="4" Padding="5,1">
+                                        <TextBlock Text="32" FontSize="10" FontWeight="Bold" Foreground="#4F46E5" />
+                                    </Border>
+                                </Grid>
+                            </Button>
 
-                        <!-- 6. Convert from PDF -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=ConvertFromPdf}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="ConvertFromPdf">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="ExportVariant" Width="18" Height="18" Foreground="#6366F1" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Convert from PDF" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="5" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
-                            </Grid>
-                        </Button>
+                            <!-- Tool Categories Header -->
+                            <TextBlock Text="CATEGORIES" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,12,0,4" />
 
-                        <!-- 7. Convert to PDF -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=ConvertToPdf}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="ConvertToPdf">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="Import" Width="18" Height="18" Foreground="#8B5CF6" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Convert to PDF" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="6" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
-                            </Grid>
-                        </Button>
+                            <!-- 5. Organize & Page -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=OrganizeAndPage}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="OrganizeAndPage">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="BookOpenPageVariantOutline" Width="18" Height="18" Foreground="#0284C7" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Organize &amp; Page" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="6" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
 
-                        <!-- 8. Edit & Forms -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=EditAndForms}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="EditAndForms">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="Draw" Width="18" Height="18" Foreground="#F59E0B" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Edit &amp; Forms" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="4" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
-                            </Grid>
-                        </Button>
+                            <!-- 6. Security & Optimize -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=OptimizeAndSecurity}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="OptimizeAndSecurity">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="ShieldLockOutline" Width="18" Height="18" Foreground="#10B981" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Security &amp; Optimize" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="7" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
 
-                        <!-- 9. AI & Automation -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=AiAndAutomation}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="AiAndAutomation">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="AutoFix" Width="18" Height="18" Foreground="#EC4899" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="AI &amp; Automation" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="4" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
-                            </Grid>
-                        </Button>
+                            <!-- 7. Convert from PDF -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=ConvertFromPdf}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="ConvertFromPdf">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="ExportVariant" Width="18" Height="18" Foreground="#6366F1" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Convert from PDF" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="5" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
 
-                        <!-- Collections Header -->
-                        <TextBlock Text="LIBRARY" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,12,0,4" />
+                            <!-- 8. Convert to PDF -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=ConvertToPdf}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="ConvertToPdf">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="Import" Width="18" Height="18" Foreground="#8B5CF6" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Convert to PDF" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="6" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
 
-                        <!-- 10. Starred Tools -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Starred}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="Starred">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="StarOutline" Width="18" Height="18" Foreground="#EAB308" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Starred Tools" VerticalAlignment="Center" />
-                                <Border Grid.Column="2" Background="#FEF08A" CornerRadius="4" Padding="5,1" IsVisible="{Binding StarredTools.Count}">
-                                    <TextBlock Text="{Binding StarredTools.Count}" FontSize="9.5" FontWeight="Bold" Foreground="#854D0E" />
-                                </Border>
-                            </Grid>
-                        </Button>
+                            <!-- 9. Edit & Forms -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=EditAndForms}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="EditAndForms">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="Draw" Width="18" Height="18" Foreground="#F59E0B" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Edit &amp; Forms" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="4" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
 
-                        <!-- 11. Font & Language Packs (On-Demand) -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=FontPackages}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="FontPackages">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="Translate" Width="18" Height="18" Foreground="#0284C7" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Language &amp; Fonts" VerticalAlignment="Center" />
-                                <Border Grid.Column="2" Background="#E0F2FE" CornerRadius="4" Padding="5,1">
-                                    <TextBlock Text="10" FontSize="9.5" FontWeight="Bold" Foreground="#0284C7" />
-                                </Border>
-                            </Grid>
-                        </Button>
+                            <!-- 10. AI & Automation -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=AiAndAutomation}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="AiAndAutomation">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="AutoFix" Width="18" Height="18" Foreground="#EC4899" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="AI &amp; Automation" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="4" FontSize="10.5" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
 
-                        <!-- 12. Tesseract OCR Models (On-Demand) -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=TesseractData}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="TesseractData">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="TextRecognition" Width="18" Height="18" Foreground="#10B981" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="OCR Models" VerticalAlignment="Center" />
-                                <Border Grid.Column="2" Background="#DCFCE7" CornerRadius="4" Padding="5,1">
-                                    <TextBlock Text="{Binding TesseractManager.InstalledCount}" FontSize="9.5" FontWeight="Bold" Foreground="#15803D" />
-                                </Border>
-                            </Grid>
-                        </Button>
+                            <!-- Collections Header -->
+                            <TextBlock Text="LIBRARY" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,12,0,4" />
 
-                        <!-- 12. Trash / Temp Cleaner -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Trash}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="Trash">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="TrashCanOutline" Width="18" Height="18" Foreground="{DynamicResource WinMutedBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Trash &amp; Cache" VerticalAlignment="Center" />
-                            </Grid>
-                        </Button>
+                            <!-- 11. Starred Tools -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Starred}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="Starred">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="StarOutline" Width="18" Height="18" Foreground="#EAB308" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Starred Tools" VerticalAlignment="Center" />
+                                    <Border Grid.Column="2" Background="#FEF08A" CornerRadius="4" Padding="5,1" IsVisible="{Binding StarredTools.Count}">
+                                        <TextBlock Text="{Binding StarredTools.Count}" FontSize="9.5" FontWeight="Bold" Foreground="#854D0E" />
+                                    </Border>
+                                </Grid>
+                            </Button>
 
-                        <!-- 13. Help & User Guides -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Help}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="Help">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="HelpCircleOutline" Width="18" Height="18" Foreground="#0284C7" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Help &amp; Guides" VerticalAlignment="Center" />
-                                <Border Grid.Column="2" Background="#E0F2FE" CornerRadius="4" Padding="5,1">
-                                    <TextBlock Text="Guides" FontSize="9.5" FontWeight="Bold" Foreground="#0284C7" />
-                                </Border>
-                            </Grid>
-                        </Button>
+                            <!-- 12. Language & Fonts -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=FontPackages}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="FontPackages">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="Translate" Width="18" Height="18" Foreground="#0284C7" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Language &amp; Fonts" VerticalAlignment="Center" />
+                                    <Border Grid.Column="2" Background="#E0F2FE" CornerRadius="4" Padding="5,1">
+                                        <TextBlock Text="10" FontSize="9.5" FontWeight="Bold" Foreground="#0284C7" />
+                                    </Border>
+                                </Grid>
+                            </Button>
 
-                        <!-- 14. Licenses & Third-Party Tools -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Licensing}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="Licensing">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="CertificateOutline" Width="18" Height="18" Foreground="#4F46E5" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Licenses &amp; Tools" VerticalAlignment="Center" />
-                                <Border Grid.Column="2" Background="#EEF2FF" CornerRadius="4" Padding="5,1">
-                                    <TextBlock Text="12" FontSize="9.5" FontWeight="Bold" Foreground="#4F46E5" />
-                                </Border>
-                            </Grid>
-                        </Button>
+                            <!-- 13. Tesseract OCR Models -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=TesseractData}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="TesseractData">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="TextRecognition" Width="18" Height="18" Foreground="#10B981" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="OCR Models" VerticalAlignment="Center" />
+                                    <Border Grid.Column="2" Background="#DCFCE7" CornerRadius="4" Padding="5,1">
+                                        <TextBlock Text="{Binding TesseractManager.InstalledCount}" FontSize="9.5" FontWeight="Bold" Foreground="#15803D" />
+                                    </Border>
+                                </Grid>
+                            </Button>
 
-                        <!-- Preferences Header -->
-                        <TextBlock Text="PREFERENCES" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,12,0,4" />
+                            <!-- 14. Trash / Temp Cleaner -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Trash}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="Trash">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="TrashCanOutline" Width="18" Height="18" Foreground="{DynamicResource WinMutedBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Trash &amp; Cache" VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
 
-                        <!-- 15. Settings & UI Preferences -->
-                        <Button Classes="nav-tab-btn"
-                                Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Settings}"
-                                Command="{Binding SelectNavSectionCommand}"
-                                CommandParameter="Settings">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="TuneVariant" Width="18" Height="18" Foreground="#8B5CF6" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Settings &amp; UI" VerticalAlignment="Center" />
-                                <Border Grid.Column="2" Background="#EDE9FE" CornerRadius="4" Padding="5,1">
-                                    <TextBlock Text="UI" FontSize="9.5" FontWeight="Bold" Foreground="#7C3AED" />
-                                </Border>
-                            </Grid>
-                        </Button>
+                            <!-- 15. Help & User Guides -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Help}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="Help">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="HelpCircleOutline" Width="18" Height="18" Foreground="#0284C7" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Help &amp; Guides" VerticalAlignment="Center" />
+                                    <Border Grid.Column="2" Background="#E0F2FE" CornerRadius="4" Padding="5,1">
+                                        <TextBlock Text="Guides" FontSize="9.5" FontWeight="Bold" Foreground="#0284C7" />
+                                    </Border>
+                                </Grid>
+                            </Button>
+
+                            <!-- 16. Licenses & Third-Party Tools -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Licensing}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="Licensing">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="CertificateOutline" Width="18" Height="18" Foreground="#4F46E5" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Licenses &amp; Tools" VerticalAlignment="Center" />
+                                    <Border Grid.Column="2" Background="#EEF2FF" CornerRadius="4" Padding="5,1">
+                                        <TextBlock Text="12" FontSize="9.5" FontWeight="Bold" Foreground="#4F46E5" />
+                                    </Border>
+                                </Grid>
+                            </Button>
+
+                            <!-- Preferences Header -->
+                            <TextBlock Text="PREFERENCES" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" Margin="8,12,0,4" />
+
+                            <!-- 17. Settings & UI Preferences -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Settings}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="Settings">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="TuneVariant" Width="18" Height="18" Foreground="#8B5CF6" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Settings &amp; UI" VerticalAlignment="Center" />
+                                    <Border Grid.Column="2" Background="#EDE9FE" CornerRadius="4" Padding="5,1">
+                                        <TextBlock Text="UI" FontSize="9.5" FontWeight="Bold" Foreground="#7C3AED" />
+                                    </Border>
+                                </Grid>
+                            </Button>
+
+                            <!-- 18. Plugins & Extensions Studio -->
+                            <Button Classes="nav-tab-btn"
+                                    Classes.active="{Binding SelectedNavSection, Converter={StaticResource EqualityConverter}, ConverterParameter=Plugins}"
+                                    Command="{Binding SelectNavSectionCommand}"
+                                    CommandParameter="Plugins">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="PuzzleOutline" Width="18" Height="18" Foreground="#7C3AED" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Plugins &amp; Extensions" VerticalAlignment="Center" />
+                                    <Border Grid.Column="2" Background="#EDE9FE" CornerRadius="4" Padding="5,1">
+                                        <TextBlock Text="Store" FontSize="9.5" FontWeight="Bold" Foreground="#7C3AED" />
+                                    </Border>
+                                </Grid>
+                            </Button>
+                        </StackPanel>
 
                     </StackPanel>
                 </ScrollViewer>
+
+
+
 
                 <!-- Sidebar Footer with Theme Toggle & Version -->
                 <Border DockPanel.Dock="Bottom"
@@ -483,52 +558,65 @@
                     <views:PdfToolPageView DataContext="{Binding ActiveToolViewModel}" />
                 </Panel>
 
-                <!-- 2. Independent Page Files (Shown when IsToolPageActive is false) -->
-                <ScrollViewer IsVisible="{Binding !IsToolPageActive}"
+                <!-- 2. Dedicated Full-Viewport Plugins & Extensions Studio (Independent Master-Detail Scroll) -->
+                <Panel IsVisible="{Binding IsPluginsWorkspaceActive}">
+                    <views:PluginsManagerPageView DataContext="{Binding PluginsManager}" />
+                </Panel>
+
+                <!-- 3. Independent Page Files (Shown when standard scrollable page is active) -->
+                <ScrollViewer x:Name="MainContentScrollViewer"
+                              IsVisible="{Binding IsStandardScrollableContentActive}"
                               HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Auto">
                     <Panel>
-                        <!-- Page 1: Overview Dashboard -->
-                        <views:HomeDashboardView IsVisible="{Binding IsHomeSection}" />
+                        <!-- Dynamic Plugin Page View -->
+                        <ContentControl Content="{Binding DynamicPageView}" IsVisible="{Binding DynamicPageView, Converter={StaticResource NullToBooleanConverter}}" />
 
-                        <!-- Page 2: Dedicated PDF Reader Landing Page -->
-                        <views:PdfReaderLandingPageView IsVisible="{Binding IsPdfReaderSection}" />
+                        <!-- Built-in Pages (shown when DynamicPageView is not active) -->
+                        <Panel IsVisible="{Binding DynamicPageView, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
+                            <!-- Page 1: Overview Dashboard -->
+                            <views:HomeDashboardView IsVisible="{Binding IsHomeSection}" />
 
-                        <!-- Page 3: Start a New Document (Template Gallery) -->
-                        <views:NewDocumentPageView IsVisible="{Binding IsNewDocumentSection}" />
+                            <!-- Page 2: Dedicated PDF Reader Landing Page -->
+                            <views:PdfReaderLandingPageView IsVisible="{Binding IsPdfReaderSection}" />
 
-                        <!-- Page 4: PDF Tools Studio (All 32 Tools) -->
-                        <views:PdfToolsStudioView IsVisible="{Binding IsToolsSection}" />
+                            <!-- Page 3: Start a New Document (Template Gallery) -->
+                            <views:NewDocumentPageView IsVisible="{Binding IsNewDocumentSection}" />
 
-                        <!-- Page 5: Starred Tools -->
-                        <views:StarredToolsPageView IsVisible="{Binding IsStarredSection}" />
+                            <!-- Page 4: PDF Tools Studio (All 32 Tools) -->
+                            <views:PdfToolsStudioView IsVisible="{Binding IsToolsSection}" />
 
-                        <!-- Page 6: Trash & Storage Cache Cleaner -->
-                        <views:TrashCachePageView IsVisible="{Binding IsTrashSection}" />
+                            <!-- Page 5: Starred Tools -->
+                            <views:StarredToolsPageView IsVisible="{Binding IsStarredSection}" />
 
-                        <!-- Page 7: Open Source Licenses & Third-Party Tools -->
-                        <views:LicensingPageView IsVisible="{Binding IsLicensingSection}" />
+                            <!-- Page 6: Trash & Storage Cache Cleaner -->
+                            <views:TrashCachePageView IsVisible="{Binding IsTrashSection}" />
 
-                        <!-- Page 8: On-Demand Font & Language Packages Studio -->
-                        <Panel IsVisible="{Binding IsFontPackagesSection}">
-                            <views:FontManagerPageView DataContext="{Binding FontManager}" />
-                        </Panel>
+                            <!-- Page 7: Open Source Licenses & Third-Party Tools -->
+                            <views:LicensingPageView IsVisible="{Binding IsLicensingSection}" />
 
-                        <!-- Page 9: On-Demand Tesseract OCR Language Packs Studio -->
-                        <Panel IsVisible="{Binding IsTesseractDataSection}">
-                            <views:TesseractManagerPageView DataContext="{Binding TesseractManager}" />
-                        </Panel>
+                            <!-- Page 8: On-Demand Font & Language Packages Studio -->
+                            <Panel IsVisible="{Binding IsFontPackagesSection}">
+                                <views:FontManagerPageView DataContext="{Binding FontManager}" />
+                            </Panel>
 
-                        <!-- Page 10: Comprehensive Help & User Guides Studio -->
-                        <Panel IsVisible="{Binding IsHelpSection}">
-                            <views:HelpGuidePageView DataContext="{Binding HelpGuide}" />
-                        </Panel>
+                            <!-- Page 9: On-Demand Tesseract OCR Language Packs Studio -->
+                            <Panel IsVisible="{Binding IsTesseractDataSection}">
+                                <views:TesseractManagerPageView DataContext="{Binding TesseractManager}" />
+                            </Panel>
 
-                        <!-- Page 11: UI Settings & Preferences Studio -->
-                        <Panel IsVisible="{Binding IsSettingsSection}">
-                            <views:SettingsPageView DataContext="{Binding Settings}" />
+                            <!-- Page 10: Comprehensive Help & User Guides Studio -->
+                            <Panel IsVisible="{Binding IsHelpSection}">
+                                <views:HelpGuidePageView DataContext="{Binding HelpGuide}" />
+                            </Panel>
+
+                            <!-- Page 11: UI Settings & Preferences Studio -->
+                            <Panel IsVisible="{Binding IsSettingsSection}">
+                                <views:SettingsPageView DataContext="{Binding Settings}" />
+                            </Panel>
                         </Panel>
                     </Panel>
+
                 </ScrollViewer>
 
             </Grid>

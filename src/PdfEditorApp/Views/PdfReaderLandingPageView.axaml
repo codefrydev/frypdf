@@ -111,6 +111,39 @@
                                 <TextBlock Text="Browse 32 PDF Tools" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
+
+                        <!-- Open .frypdf Interactive Reader Button -->
+                        <Button Command="{Binding OpenInInteractiveViewerCommand}"
+                                Background="{DynamicResource WinInputBgBrush}"
+                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                BorderThickness="1"
+                                Foreground="{DynamicResource WinTextBrush}"
+                                CornerRadius="8"
+                                Padding="16,12"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Cursor="Hand"
+                                ToolTip.Tip="Open a .frypdf document in interactive presentation mode">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="PresentationPlay" Width="16" Height="16" Foreground="#8B5CF6" />
+                                <TextBlock Text="Interactive .frypdf Reader" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Showcase Interactive Landscape Deck CTA -->
+                        <Button Command="{Binding LaunchInteractiveDeckCommand}"
+                                Classes="primary-btn"
+                                CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                Padding="16,12"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Cursor="Hand"
+                                ToolTip.Tip="Launch the high-impact landscape interactive presentation deck showcasing living tables, animated charts, and security ledger">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="Sparkles" Width="16" Height="16" Foreground="White" />
+                                <TextBlock Text="Interactive Landscape Deck" Foreground="White" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </StackPanel>
 

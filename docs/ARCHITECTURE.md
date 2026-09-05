@@ -111,5 +111,56 @@ Located in `src/PdfEditorApp/Services/AI/` and `src/PdfEditorApp/ViewModels/`:
 - **`AiAssistantViewModel` & `AiAssistantDialog`**: Interactive M3 Expressive dialog supporting prompt execution, in-place element modification, suggested prompts, live model switching, activity logging, and atomic canvas undo/redo.
 - **`AiDocumentService`**: Extractive NLP summarization, keyword extraction, and document translation engine.
 
-For detailed algorithms, testing procedures, and the continuous improvement workflow, see the [PDF Deconstruction & Editing Guide](PDF_DECONSTRUCTION_AND_EDITING.md).
+---
 
+## 7. Plugin-Based Architecture ("Everything is a Plugin")
+
+FryPDF incorporates an extensible, plugin-first microkernel architecture inspired by **DeepSeek Harness (`deepseek-harness`)** and the **Cordis** framework.
+- **Dynamic Capability Context (`IFryPluginContext`)**: Swappable services and extension points without hardcoded compile-time dependencies.
+- **12 Dynamic Registry Pillars**: Extensibility across Tools (`IPdfToolRegistry`), Ribbon Tabs (`IRibbonRegistry`), Sidebars (`ISidebarRegistry`), Contextual Inspector (`IInspectorRegistry`), Navigation Pages (`INavigationRegistry`), Canvas Elements (`ICanvasElementRegistry`), Importers/Exporters (`IDocumentImporterRegistry`, `IDocumentExporterRegistry`), AI/OCR (`IAiProviderRegistry`, `IOcrEngineRegistry`), Data Connectors (`IDataConnectorRegistry`), and Status/Dialogs (`IStatusBarRegistry`, `IDialogRegistry`).
+- **Declarative Dependency Resolution**: Directed Acyclic Graph (DAG) topological loader.
+- **Reversible Effects (`PluginScope`)**: LIFO registration disposal eliminating memory leaks on unload.
+- **Multi-Mode Dispatch Pipelines**: `Waterfall` (around-middleware), `Bail` (first handled result), `Parallel`, `Serial`, and `Emit`.
+- **Profiles & Bundles**: Target-specific application assemblies (`desktop`, `headless-cli`, `sdk`) composed of 16 standard bundles.
+- **Dynamic Hot-Mounting**: Collectible `AssemblyLoadContext` (`FryPluginLoadContext`) supporting friction-free drag-and-drop `.fryplugin` package installation without restarting the application.
+
+For the full architectural specification, interface designs, and pipeline mechanics, see the [Plugin-Based Architecture Manual](PLUGIN_BASED_ARCHITECTURE.md).
+
+---
+
+## 8. Interactive Document Viewer & Presentation Subsystem (.frypdf)
+
+Located in `src/PdfEditorApp/ViewModels/FryPdfViewer/` and `src/PdfEditorApp/Views/`:
+- **Read-Only Interactive Experience**: Unlike the creation studio canvas which allows arbitrary dragging, resizing, and styling, the `.frypdf` Viewer offers a streamlined, non-destructive presentation and consumption mode for rich document artifacts beyond what static binary PDFs support.
+- **Interactive Live Tables (`InteractiveTableViewModel`)**:
+  - Real-time substring row filtering across all columns via search input.
+  - Interactive header column sorting (ascending / descending toggle).
+  - Sticky frosted header bar with column headers and row count metrics.
+  - One-click CSV export to system clipboard.
+- **Animated Tactile Charts (`InteractiveChartViewModel`)**:
+  - Smooth 600ms cubic ease-out entry animations using Avalonia's `DispatcherTimer`.
+  - Interactive tactile bar hover cards displaying exact values and category labels.
+  - In-place tabular data inspector toggle (`IsShowingDataTable`).
+  - Tactile animation replay capability for live presentations.
+- **Living Form Fields & Digital Signatures**:
+  - Interactive read-only checkboxes and toggle states for document inspection.
+  - Validated digital signature and seal verification badges.
+- **Presentation Mode**:
+  - Fullscreen/edge-to-edge slide show layout hiding editor chrome.
+  - Floating M3 Expressive pill HUD with quick navigation, page counters, zoom controls, and exit commands.
+- **Bi-Directional Studio Bridge**:
+  - Documents can be launched into the interactive viewer directly from Home, the title bar, or file open pickers.
+  - Users can transition back into the full Editing Studio instantly via `TransitionToEditorCommand` or export directly to standard static PDF via QuestPDF.
+
+---
+
+## 9. High-Performance, Zero-Lag Engineering Architecture
+
+FryPDF enforces strict performance standards to deliver 60+ FPS desktop fluid responsiveness:
+- **Zero UI Thread Blocking**: All CPU-intensive parsing, Skia rendering, QuestPDF generation, OCR, and AI inference execute on background thread pools via `Task.Run` with cancellation token support. UI thread blocking methods (`.Result`, `.Wait()`) are strictly forbidden.
+- **0ms Instant Navigation & View Caching**: Dynamic plugin views are lazily instantiated and cached in-memory (`_dynamicViewCache`), while core workspace views are pre-mounted in XAML to guarantee instantaneous section switching without layout spikes.
+- **Virtualized Layouts**: All variable-length collections (thumbnails, tool cards, audit logs, tabular rows) use `ItemsRepeater` or `VirtualizingStackPanel` with pixel scrolling and element recycling.
+- **Continuous Input Throttling & Debouncing**: Proportional clamped pinch-to-zoom math prevents exponential explosion; search inputs and drag operations are debounced/throttled.
+- **Strict Memory & LOH Hygiene**: Allocations $\ge 85\text{ KB}$ are eliminated from tight loops via `ArrayPool<byte>.Shared`. Unmanaged graphics handles (`SKBitmap`, `SKImage`, `SKSurface`) are disposed immediately upon replacement. Weak reference messaging (`WeakReferenceMessenger`) prevents retain cycles.
+
+For detailed algorithms, testing procedures, and the continuous improvement workflow, see the [PDF Deconstruction & Editing Guide](PDF_DECONSTRUCTION_AND_EDITING.md).

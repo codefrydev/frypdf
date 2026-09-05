@@ -1,17 +1,10 @@
-using System.Collections.Generic;
-using PdfEditorApp.Core.Models;
-using PdfEditorApp.Models;
+using PdfEditorApp.Core.Plugins.Descriptors;
 
 namespace PdfEditorApp.Templates;
 
-public interface ITemplateDefinition
+/// <summary>
+/// Legacy interface for templates, inheriting from the plugin-extensible <see cref="ITemplateDescriptor"/>.
+/// </summary>
+public interface ITemplateDefinition : ITemplateDescriptor
 {
-    string Id { get; }
-    string Name { get; }
-    string Description { get; }
-    string Category { get; }
-    string IconKind { get; }
-    string AccentColorHex { get; }
-
-    PdfDocumentModel Create();
 }

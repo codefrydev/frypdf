@@ -171,4 +171,104 @@ public class GestureAndNavigationTests
         Assert.True(mainVm.IsPdfViewerVisible);
         Assert.Equal("Quarterly_Financials.pdf - FryPDF", mainVm.WindowTitle);
     }
+
+    [Fact]
+    public async System.Threading.Tasks.Task HomeViewModel_NavigationBetweenStandardSections_MaintainsNullDynamicPageViewForInstantVisibility()
+    {
+        var navReg = new PdfEditorApp.Services.Navigation.NavigationRegistry();
+        var context = new PdfEditorApp.Core.Plugins.FryPluginContext();
+        context.RegisterService<PdfEditorApp.Core.Plugins.Descriptors.INavigationRegistry>(navReg);
+
+        var host = new PdfEditorApp.Core.Plugins.PluginHost(context);
+        var bundle = new PdfEditorApp.Plugins.Bundles.WorkspacePagesBundle();
+        host.RegisterPlugins(bundle.Plugins);
+        await host.StartAsync();
+
+        var home = new HomeViewModel(
+            new RecentDocumentsService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            new PdfEditorApp.Services.Tools.Core.PdfToolRegistry(),
+            navigationRegistry: navReg);
+
+        // Rapid navigation through all built-in sections must keep DynamicPageView null
+        // so that pre-mounted, pre-compiled visual trees in HomeView.axaml are used instantaneously
+        string[] sectionsToTest = new[]
+        {
+            "Home", "PdfReader", "NewDocument", "AllTools", "OrganizeAndPage",
+            "OptimizeAndSecurity", "ConvertFromPdf", "ConvertToPdf", "EditAndForms",
+            "AiAndAutomation", "Starred", "FontPackages", "TesseractData",
+            "Trash", "Help", "Licensing", "Settings", "Plugins"
+        };
+
+        foreach (var section in sectionsToTest)
+        {
+            home.SelectNavSectionCommand.Execute(section);
+            Assert.Null(home.DynamicPageView);
+            Assert.False(home.IsToolPageActive);
+        }
+
+        await host.StopAsync();
+    }
+
+    [Fact]
+    public void HomeViewModel_NavigationCachesContributedPluginView_AndReusesInstance()
+    {
+        var navReg = new PdfEditorApp.Services.Navigation.NavigationRegistry();
+        int factoryInvocationCount = 0;
+        navReg.RegisterNavigationItem(new PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor
+        {
+            Id = "CustomAnalyticsExtension",
+            Title = "Analytics Extension",
+            Group = "Extensions",
+            ViewFactory = sp =>
+            {
+                factoryInvocationCount++;
+                return new object();
+            }
+        });
+
+        var home = new HomeViewModel(
+            new RecentDocumentsService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            new PdfEditorApp.Services.Tools.Core.PdfToolRegistry(),
+            navigationRegistry: navReg);
+
+        // First navigation invokes factory and caches view
+        home.SelectNavSectionCommand.Execute("CustomAnalyticsExtension");
+        Assert.Equal(1, factoryInvocationCount);
+        var firstView = home.DynamicPageView;
+        Assert.NotNull(firstView);
+
+        // Navigate away to Home (standard section)
+        home.SelectNavSectionCommand.Execute("Home");
+        Assert.Null(home.DynamicPageView);
+
+        // Navigate back to extension: MUST reuse cached instance without re-invoking factory
+        home.SelectNavSectionCommand.Execute("CustomAnalyticsExtension");
+        Assert.Equal(1, factoryInvocationCount);
+        Assert.Same(firstView, home.DynamicPageView);
+    }
+
+    [Fact]
+    public void HomeViewModel_NavigationWhileToolActive_AutomaticallyClosesTool()
+    {
+        var home = new HomeViewModel(
+            new RecentDocumentsService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            new PdfEditorApp.Services.Tools.Core.PdfToolRegistry());
+
+        home.OpenToolPage(PdfToolId.MergePdf);
+        Assert.True(home.IsToolPageActive);
+        Assert.NotNull(home.ActiveToolCard);
+
+        // Navigating to Settings must clean up the tool
+        home.SelectNavSectionCommand.Execute("Settings");
+        Assert.False(home.IsToolPageActive);
+        Assert.Null(home.ActiveToolCard);
+        Assert.Null(home.ActiveToolViewModel);
+        Assert.True(home.IsSettingsSection);
+    }
 }

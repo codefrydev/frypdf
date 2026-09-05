@@ -25,16 +25,17 @@ public class ProjectPersistenceService : IProjectPersistenceService
     private readonly JsonSerializerOptions _options;
     private readonly string _autoSaveDirectory;
     private readonly IPdfImportService _importService;
+    private readonly PdfEditorApp.Core.Plugins.Descriptors.ICanvasElementRegistry? _canvasElementRegistry;
 
-    public ProjectPersistenceService(IPdfImportService? importService = null)
+    public ProjectPersistenceService(
+        IPdfImportService? importService = null,
+        PdfEditorApp.Core.Plugins.Descriptors.ICanvasElementRegistry? canvasElementRegistry = null)
     {
         _importService = importService ?? new PdfImportService();
-        _options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = { new JsonStringEnumConverter() }
-        };
+        _canvasElementRegistry = canvasElementRegistry;
+        _options = PdfEditorApp.Core.Models.Elements.DynamicElementJsonResolver.CreateOptions(
+            _canvasElementRegistry != null ? () => _canvasElementRegistry.GetAllDescriptors() : null,
+            writeIndented: true);
 
         string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         _autoSaveDirectory = Path.Combine(localAppData, "FryPDF", "AutoSave");

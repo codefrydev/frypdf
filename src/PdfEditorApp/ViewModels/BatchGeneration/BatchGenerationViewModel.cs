@@ -238,6 +238,7 @@ public partial class BatchGenerationViewModel : ViewModelBase
         BuiltInTemplates.Add(new BuiltInTemplateOption { Id = "certificate", Name = "Achievement Certificate", Category = "Certificates", IconKind = "CertificateOutline" });
         BuiltInTemplates.Add(new BuiltInTemplateOption { Id = "invoice", Name = "Commercial Invoice", Category = "Finance", IconKind = "ReceiptTextOutline" });
         BuiltInTemplates.Add(new BuiltInTemplateOption { Id = "annualreport", Name = "Executive Report", Category = "Corporate", IconKind = "FileChartOutline" });
+        BuiltInTemplates.Add(new BuiltInTemplateOption { Id = "interactive_executive_deck", Name = "Executive Strategy Deck (Landscape)", Category = "Corporate", IconKind = "PresentationPlay" });
 
         SelectedBuiltInTemplate = BuiltInTemplates.FirstOrDefault();
     }

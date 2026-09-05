@@ -1,0 +1,424 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PdfEditorApp.Views.Dialogs.PluginsDialog"
+             x:DataType="vm:MainViewModel"
+             Focusable="True">
+
+    <UserControl.Resources>
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+    </UserControl.Resources>
+
+    <!-- Fullscreen Dimming Backdrop -->
+    <Grid Background="#70000000" PointerPressed="OnBackdropPointerPressed">
+        <!-- Centered M3 Expressive Dialog Card -->
+        <Border Width="820"
+                MaxHeight="720"
+                Background="{DynamicResource WinPanelBrush}"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource M3ShapeCornerExtraLarge}"
+                BoxShadow="0 28 80 #50000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Margin="24"
+                ClipToBounds="True">
+
+            <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+                <!-- 1. Header Banner -->
+                <Border Grid.Row="0"
+                        Background="#0F172A"
+                        Padding="24,20"
+                        BorderBrush="#1E293B"
+                        BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+
+                        <!-- Left: Indigo / Purple Plugin Logo Badge -->
+                        <Border Grid.Column="0"
+                                Width="52"
+                                Height="52"
+                                Background="#1E1B4B"
+                                BorderBrush="#818CF8"
+                                BorderThickness="1.5"
+                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                Margin="0,0,16,0"
+                                BoxShadow="0 4 18 #35818CF8"
+                                VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="PuzzleOutline"
+                                                       Width="28"
+                                                       Height="28"
+                                                       Foreground="#A5B4FC"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                        </Border>
+
+                        <!-- Center: Title, Profile Tag, & Architecture Description -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <TextBlock Text="Plugins &amp; Extensions Studio"
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Foreground="#F8FAFC" />
+                                <Border Background="#312E81"
+                                        BorderBrush="#6366F1"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                        Padding="8,2">
+                                    <TextBlock Text="Everything is a Plugin"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               Foreground="#C7D2FE" />
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="Powered by DeepSeek Harness &amp; Cordis architecture with isolated .NET 10 assembly loading"
+                                       FontSize="11.5"
+                                       Foreground="#94A3B8" />
+                        </StackPanel>
+
+                        <!-- Right: Close Button -->
+                        <Button Grid.Column="2"
+                                Classes="action-pill-btn"
+                                Width="32"
+                                Height="32"
+                                Padding="0"
+                                Background="#1E293B"
+                                BorderBrush="#334155"
+                                Command="{Binding ClosePluginsDialogCommand}"
+                                ToolTip.Tip="Close (Esc)"
+                                VerticalAlignment="Top">
+                            <materialIcons:MaterialIcon Kind="Close"
+                                                       Width="16"
+                                                       Height="16"
+                                                       Foreground="#94A3B8"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- 2. Search & Profile Filter Bar -->
+                <Border Grid.Row="1"
+                        Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="24,12"
+                        IsVisible="{Binding !IsConfiguringPluginOpen}">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <!-- Search Box -->
+                        <TextBox Grid.Column="0"
+                                 Classes="m3-search"
+                                 Text="{Binding PluginSearchQuery, Mode=TwoWay}"
+                                 PlaceholderText="Search plugins by name, ID, or category..."
+                                 Height="36"
+                                 Margin="0,0,16,0" />
+
+                        <!-- Active Profile Selector Pill -->
+                        <Border Grid.Column="1"
+                                Background="{DynamicResource WinAccentLightBrush}"
+                                BorderBrush="{DynamicResource WinAccentBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                Padding="8,3"
+                                VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="Tune" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                <TextBlock Text="Profile:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" />
+                                <Button Classes="action-pill-btn" Height="24" Padding="8,2" FontSize="10" FontWeight="Bold"
+                                        Classes.active="{Binding ActiveProfileName, Converter={StaticResource EqualityConverter}, ConverterParameter=desktop}"
+                                        Command="{Binding SwitchProfileCommand}" CommandParameter="desktop">
+                                    <TextBlock Text="Desktop" />
+                                </Button>
+                                <Button Classes="action-pill-btn" Height="24" Padding="8,2" FontSize="10" FontWeight="Bold"
+                                        Classes.active="{Binding ActiveProfileName, Converter={StaticResource EqualityConverter}, ConverterParameter=headless}"
+                                        Command="{Binding SwitchProfileCommand}" CommandParameter="headless">
+                                    <TextBlock Text="Headless" />
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- 3. Scrollable Plugins List -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="24,16"
+                              IsVisible="{Binding !IsConfiguringPluginOpen}">
+                    <ItemsControl ItemsSource="{Binding FilteredPluginsList}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PluginItemViewModel">
+                                <Border Background="{DynamicResource WinInputBgBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                        Padding="16,12"
+                                        Margin="0,0,0,10">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+
+                                        <!-- Plugin Icon -->
+                                        <Border Grid.Column="0"
+                                                Width="42"
+                                                Height="42"
+                                                Background="{DynamicResource WinHoverBrush}"
+                                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                                Margin="0,0,14,0"
+                                                VerticalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="{Binding IconKind}"
+                                                                       Width="22"
+                                                                       Height="22"
+                                                                       Foreground="{DynamicResource WinAccentBrush}"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center" />
+                                        </Border>
+
+                                        <!-- Plugin Info & Details -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontSize="13.5"
+                                                           FontWeight="Bold"
+                                                           Foreground="{DynamicResource WinTextBrush}" />
+                                                <!-- Version Badge -->
+                                                <Border Background="{DynamicResource WinHoverBrush}"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Padding="6,2">
+                                                    <TextBlock Text="{Binding Version, StringFormat='v{0}'}"
+                                                               FontSize="10"
+                                                               FontWeight="Medium"
+                                                               Foreground="{DynamicResource WinMutedBrush}" />
+                                                </Border>
+                                                <!-- Source Badge -->
+                                                <Border Background="#1E293B"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Padding="6,2"
+                                                        IsVisible="{Binding IsExternal}">
+                                                    <TextBlock Text="External ALC"
+                                                               FontSize="10"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#38BDF8" />
+                                                </Border>
+                                            </StackPanel>
+
+                                            <!-- Description -->
+                                            <TextBlock Text="{Binding Description}"
+                                                       FontSize="11.5"
+                                                       Foreground="{DynamicResource WinMutedBrush}"
+                                                       TextTrimming="CharacterEllipsis" />
+
+                                            <!-- Plugin ID & Category -->
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{Binding Id}"
+                                                           FontSize="10.5"
+                                                           FontFamily="Consolas,Menlo,monospace"
+                                                           Foreground="{DynamicResource WinMutedBrush}"
+                                                           Opacity="0.8" />
+                                                <TextBlock Text="•" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                                <TextBlock Text="{Binding Category}"
+                                                           FontSize="10.5"
+                                                           FontWeight="Medium"
+                                                           Foreground="{DynamicResource WinAccentBrush}" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!-- Actions: Configure Button & Active ToggleSwitch -->
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                            <!-- Configure Button (Visible if plugin has declarative schema) -->
+                                            <Button Classes="action-pill-btn" Height="28" Padding="10,0"
+                                                    IsVisible="{Binding HasSettings}"
+                                                    Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).OpenPluginSettingsCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTip.Tip="Configure plugin settings">
+                                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="CogOutline" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                                    <TextBlock Text="Settings" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+
+                                            <!-- Active Toggle Switch -->
+                                            <ToggleSwitch IsChecked="{Binding IsActive, Mode=TwoWay}"
+                                                          OnContent="Active"
+                                                          OffContent="Disabled"
+                                                          MinWidth="0"
+                                                          ToolTip.Tip="Enable or disable this plugin" />
+                                        </StackPanel>
+
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- 4. Footer Actions Bar -->
+                <Border Grid.Row="3"
+                        Background="{DynamicResource WinInputBgBrush}"
+                        BorderBrush="{DynamicResource WinBorderBrush}"
+                        BorderThickness="0,1,0,0"
+                        Padding="24,12"
+                        IsVisible="{Binding !IsConfiguringPluginOpen}">
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+
+                        <!-- Plugin Count -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="CheckAll" Width="16" Height="16" Foreground="{DynamicResource WinSuccessBrush}" />
+                            <TextBlock Text="{Binding FilteredPluginsList.Count, StringFormat='{}{0} Plugins Active'}"
+                                       FontSize="12"
+                                       FontWeight="Medium"
+                                       Foreground="{DynamicResource WinTextBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- Load / Install External Plugin Button -->
+                        <Button Grid.Column="2"
+                                Classes="secondary-btn"
+                                Height="34"
+                                Padding="14,0"
+                                Margin="0,0,10,0"
+                                Command="{Binding LoadExternalPluginDialogCommand}"
+                                ToolTip.Tip="Install self-contained .fryplugin package or isolated .NET 10 assembly (drag &amp; drop supported)">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="PlusCircleOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
+                                <TextBlock Text="Install Plugin (.fryplugin / .dll)..." FontSize="11.5" FontWeight="Medium" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Close Button -->
+                        <Button Grid.Column="3"
+                                Classes="accent-btn"
+                                Height="34"
+                                Width="96"
+                                Command="{Binding ClosePluginsDialogCommand}"
+                                ToolTip.Tip="Close Dialog (Esc)">
+                            <TextBlock Text="Close" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                        </Button>
+
+                    </Grid>
+                </Border>
+
+                <!-- 5. Settings Editor Subview (Visible when configuring a plugin) -->
+                <Grid Grid.Row="1" Grid.RowSpan="3" RowDefinitions="Auto,*,Auto"
+                      IsVisible="{Binding IsConfiguringPluginOpen}">
+
+                    <!-- Settings Header -->
+                    <Border Grid.Row="0"
+                            Background="{DynamicResource WinInputBgBrush}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
+                            BorderThickness="0,0,0,1"
+                            Padding="24,12">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Button Grid.Column="0"
+                                    Classes="action-pill-btn"
+                                    Height="30"
+                                    Padding="10,0"
+                                    Command="{Binding ClosePluginSettingsCommand}"
+                                    Margin="0,0,14,0"
+                                    ToolTip.Tip="Back to plugins list">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="ArrowLeft" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                    <TextBlock Text="Back" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                <TextBlock Text="{Binding SelectedConfiguringPlugin.Name, StringFormat='Configure {0}'}"
+                                           FontSize="13.5"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource WinTextBrush}" />
+                                <TextBlock Text="{Binding SelectedConfiguringPlugin.Id, StringFormat='Declarative options for {0}'}"
+                                           FontSize="10.5"
+                                           Foreground="{DynamicResource WinMutedBrush}"
+                                           FontFamily="Consolas,Menlo,monospace" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Settings Body List -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,16">
+                        <ItemsControl ItemsSource="{Binding ActivePluginConfigSettings}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:PluginSettingItemViewModel">
+                                    <Border Background="{DynamicResource WinInputBgBrush}"
+                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                            Padding="16,12"
+                                            Margin="0,0,0,10">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
+                                                <TextBlock Text="{Binding Label}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding Key, StringFormat='Key: {0}'}" FontSize="10" FontFamily="Consolas,Menlo,monospace" Foreground="{DynamicResource WinMutedBrush}" Opacity="0.7" />
+                                            </StackPanel>
+
+                                            <!-- Dynamic Editor Controls based on Type -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <!-- String Input -->
+                                                <TextBox Classes="m3-outlined"
+                                                         Text="{Binding StringValue, Mode=TwoWay}"
+                                                         Width="240" Height="34"
+                                                         IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter=string}" />
+
+                                                <!-- Secret / Password Input -->
+                                                <TextBox Classes="m3-outlined"
+                                                         Text="{Binding StringValue, Mode=TwoWay}"
+                                                         PasswordChar="•"
+                                                         Width="240" Height="34"
+                                                         IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter=secret}" />
+
+                                                <!-- Boolean Toggle -->
+                                                <ToggleSwitch IsChecked="{Binding BoolValue, Mode=TwoWay}"
+                                                              OnContent="Enabled" OffContent="Disabled"
+                                                              MinWidth="0"
+                                                              IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter=boolean}" />
+
+                                                <!-- Number Input -->
+                                                <NumericUpDown Value="{Binding NumberValue, Mode=TwoWay}"
+                                                               Width="140" Height="34"
+                                                               IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter=number}" />
+
+                                                <!-- Select / Dropdown -->
+                                                <ComboBox ItemsSource="{Binding Options}"
+                                                          SelectedItem="{Binding StringValue, Mode=TwoWay}"
+                                                          Width="240" Height="34"
+                                                          IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter=select}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Settings Footer -->
+                    <Border Grid.Row="2"
+                            Background="{DynamicResource WinInputBgBrush}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
+                            BorderThickness="0,1,0,0"
+                            Padding="24,12">
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1"
+                                    Classes="secondary-btn"
+                                    Height="34"
+                                    Padding="16,0"
+                                    Margin="0,0,10,0"
+                                    Command="{Binding ClosePluginSettingsCommand}">
+                                <TextBlock Text="Cancel" FontSize="12" FontWeight="Medium" />
+                            </Button>
+                            <Button Grid.Column="2"
+                                    Classes="accent-btn"
+                                    Height="34"
+                                    Padding="16,0"
+                                    Command="{Binding SavePluginSettingsCommand}">
+                                <TextBlock Text="Save Preferences" FontSize="12" FontWeight="SemiBold" />
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                </Grid>
+
+            </Grid>
+        </Border>
+    </Grid>
+
+</UserControl>

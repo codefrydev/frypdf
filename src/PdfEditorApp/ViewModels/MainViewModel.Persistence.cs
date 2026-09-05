@@ -5,6 +5,7 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Models;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
@@ -82,12 +83,78 @@ public partial class MainViewModel
 
             LastExportedFilePath = exportPath;
             IsExportSuccessDialogOpen = true;
+            OpenRegisteredDialog("frypdf.dialog.exportsuccess");
             ShowToast($"Exported PDF: {Path.GetFileName(exportPath)}", "ExportVariant");
         }
         catch (Exception ex)
         {
             IsBusy = false;
             ShowToast($"Export error: {ex.Message}", "AlertCircleOutline");
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExportDocumentAsAsync(string exporterId)
+    {
+        try
+        {
+            var exporterRegistry = _pluginHost?.Context.GetService<IDocumentExporterRegistry>();
+            var exporter = exporterRegistry?.GetExporter(exporterId);
+            if (exporter == null)
+            {
+                await ExportPdfAsync();
+                return;
+            }
+
+            UpdateStatus($"Exporting document using {exporter.DisplayName}...");
+            string defaultFileName = Path.ChangeExtension(DocumentTitle, exporter.DefaultExtension);
+            string exportPath = "";
+
+            if (StorageProvider != null)
+            {
+                var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                {
+                    Title = $"Export {exporter.DisplayName}",
+                    DefaultExtension = exporter.DefaultExtension.TrimStart('.'),
+                    SuggestedFileName = defaultFileName,
+                    FileTypeChoices = new[]
+                    {
+                        new FilePickerFileType(exporter.FileFilterDescription)
+                        {
+                            Patterns = new[] { $"*{exporter.DefaultExtension}" }
+                        }
+                    }
+                });
+
+                if (file != null)
+                {
+                    exportPath = file.Path.LocalPath;
+                }
+                else
+                {
+                    UpdateStatus("Export cancelled.");
+                    return;
+                }
+            }
+            else
+            {
+                exportPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), defaultFileName);
+            }
+
+            var docModel = ToDocumentModel();
+            var bytes = await exporter.ExportAsync(docModel, new DocumentExportOptions { OutputPath = exportPath });
+            await File.WriteAllBytesAsync(exportPath, bytes);
+
+            LastExportedFilePath = exportPath;
+            IsExportSuccessDialogOpen = true;
+            OpenRegisteredDialog("frypdf.dialog.exportsuccess");
+            UpdateStatus($"Exported to {Path.GetFileName(exportPath)} successfully!");
+            ShowToast($"Exported {Path.GetFileName(exportPath)} successfully!", "CheckCircleOutline");
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus($"Export failed: {ex.Message}");
+            ShowToast($"Export failed: {ex.Message}", ToastNotificationType.Danger, "AlertCircleOutline");
         }
     }
 
@@ -238,35 +305,41 @@ public partial class MainViewModel
         TemplateSearchQuery = "";
         SelectedTemplateCategory = "All";
         IsNewDocumentDialogOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.newdocument");
     }
 
     [RelayCommand]
     public void CloseNewDocumentDialog()
     {
         IsNewDocumentDialogOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
     public void CloseExportSuccessDialog()
     {
         IsExportSuccessDialogOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
     public void CloseExportDialog()
     {
         IsExportSuccessDialogOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
     public void SelectTemplate(string? templateName)
     {
+        CloseDynamicDialog();
         OpenEditorWithTemplate(templateName);
     }
 
     [RelayCommand]
     public void CreateNewFromTemplate(string? templateName)
     {
+        CloseDynamicDialog();
         OpenEditorWithTemplate(templateName);
     }
 

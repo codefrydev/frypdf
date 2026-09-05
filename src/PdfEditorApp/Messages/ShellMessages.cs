@@ -24,6 +24,16 @@ public record OpenInEditorMessage(string FilePath);
 public record OpenInViewerMessage(string FilePath);
 
 /// <summary>
+/// Request to open a .frypdf document in the dedicated Interactive Document Viewer.
+/// </summary>
+public record OpenInFryPdfViewerMessage(string FilePath);
+
+/// <summary>
+/// Request to launch the showcase interactive landscape presentation deck.
+/// </summary>
+public record LaunchInteractiveDeckMessage();
+
+/// <summary>
 /// Request to launch a specific PDF tool on a given input file.
 /// </summary>
 public record RunToolMessage(PdfToolId ToolId, string FilePath);

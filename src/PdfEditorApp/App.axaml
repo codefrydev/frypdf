@@ -73,6 +73,7 @@
             <converters:StringConcatMultiConverter x:Key="StringConcatMultiConverter" />
             <converters:MathMaxMultiConverter x:Key="MathMaxMultiConverter" />
             <converters:MathMinMultiConverter x:Key="MathMinMultiConverter" />
+            <converters:ValuesEqualMultiConverter x:Key="ValuesEqualMultiConverter" />
 
             <!-- Modern Chubby Slider Dimensions & Metrics -->
             <x:Double x:Key="SliderTrackThemeHeight">8</x:Double>

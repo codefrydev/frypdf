@@ -10,6 +10,7 @@ using PdfEditorApp.Core.Models;
 using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
+using PdfEditorApp.Services.Canvas;
 using PdfEditorApp.Services.Typography;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
@@ -23,6 +24,54 @@ public class ColorSwatchItem
 
 public partial class InspectorViewModel : ViewModelBase
 {
+    private readonly ICanvasElementService _elementService;
+    private readonly PdfEditorApp.Core.Plugins.Descriptors.IInspectorRegistry? _inspectorRegistry;
+
+    public ObservableCollection<object> DynamicSections { get; } = new();
+
+    public InspectorViewModel(
+        ICanvasElementService? elementService = null,
+        PdfEditorApp.Core.Plugins.Descriptors.IInspectorRegistry? inspectorRegistry = null)
+    {
+        _elementService = elementService ?? PageViewModel.DefaultElementService;
+        _inspectorRegistry = inspectorRegistry;
+        if (_inspectorRegistry != null)
+        {
+            _inspectorRegistry.RegistryChanged += () =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => RefreshDynamicSections(SelectedElement));
+            };
+        }
+    }
+
+    public void RefreshDynamicSections(object? element)
+    {
+        DynamicSections.Clear();
+        if (_inspectorRegistry != null)
+        {
+            var sections = _inspectorRegistry.GetSectionsForTarget(element);
+            foreach (var sec in sections)
+            {
+                var content = sec.Factory(null!, element);
+                if (content is DynamicInspectorSectionViewModel dvm)
+                {
+                    DynamicSections.Add(dvm);
+                }
+                else
+                {
+                    DynamicSections.Add(new DynamicInspectorSectionViewModel
+                    {
+                        SectionId = sec.SectionId,
+                        Title = sec.Title,
+                        IconKind = sec.IconKind,
+                        Order = sec.Order,
+                        Content = content
+                    });
+                }
+            }
+        }
+    }
+
     public UndoRedoService? UndoRedo { get; set; }
 
     public static Action<TextElementViewModel>? OnActiveTextFormattingApplied { get; set; }
@@ -420,6 +469,8 @@ public partial class InspectorViewModel : ViewModelBase
         IsSvgElement = element is SvgElementViewModel;
         IsMathElement = element is MathElementViewModel;
 
+        RefreshDynamicSections(element);
+
         if (element is TextElementViewModel textVm)
         {
             SelectedFontFamily = textVm.FontFamily;
@@ -714,28 +765,7 @@ public partial class InspectorViewModel : ViewModelBase
                 clone.X += 20;
                 clone.Y += 20;
 
-                ElementViewModelBase newVm = clone.Kind switch
-                {
-                    ElementKind.Text => new TextElementViewModel(),
-                    ElementKind.Heading => new TextElementViewModel(),
-                    ElementKind.Shape => new ShapeElementViewModel(),
-                    ElementKind.Image => new ImageElementViewModel(),
-                    ElementKind.Divider => new DividerElementViewModel(),
-                    ElementKind.Table => new TableElementViewModel(),
-                    ElementKind.Chart => new ChartElementViewModel(),
-                    ElementKind.Watermark => new WatermarkElementViewModel(),
-                    ElementKind.FormField => new FormFieldElementViewModel(),
-                    ElementKind.QrCode => new QrCodeElementViewModel(),
-                    ElementKind.Barcode => new BarcodeElementViewModel(),
-                    ElementKind.Redaction => new RedactionElementViewModel(),
-                    ElementKind.Ink => new InkElementViewModel(),
-                    ElementKind.StickyNote => new StickyNoteElementViewModel(),
-                    ElementKind.Measurement => new MeasurementElementViewModel(),
-                    ElementKind.Svg => new SvgElementViewModel(),
-                    _ => new TextElementViewModel()
-                };
-
-                newVm.LoadFromModel(clone);
+                ElementViewModelBase newVm = _elementService.CreateViewModel(clone);
                 page.AddElement(newVm);
                 newElements.Add(newVm);
             }
@@ -765,28 +795,7 @@ public partial class InspectorViewModel : ViewModelBase
             clone.X += 20;
             clone.Y += 20;
 
-            ElementViewModelBase newVm = clone.Kind switch
-            {
-                ElementKind.Text => new TextElementViewModel(),
-                ElementKind.Heading => new TextElementViewModel(),
-                ElementKind.Shape => new ShapeElementViewModel(),
-                ElementKind.Image => new ImageElementViewModel(),
-                ElementKind.Divider => new DividerElementViewModel(),
-                ElementKind.Table => new TableElementViewModel(),
-                ElementKind.Chart => new ChartElementViewModel(),
-                ElementKind.Watermark => new WatermarkElementViewModel(),
-                ElementKind.FormField => new FormFieldElementViewModel(),
-                ElementKind.QrCode => new QrCodeElementViewModel(),
-                ElementKind.Barcode => new BarcodeElementViewModel(),
-                ElementKind.Redaction => new RedactionElementViewModel(),
-                ElementKind.Ink => new InkElementViewModel(),
-                ElementKind.StickyNote => new StickyNoteElementViewModel(),
-                ElementKind.Measurement => new MeasurementElementViewModel(),
-                ElementKind.Svg => new SvgElementViewModel(),
-                _ => new TextElementViewModel()
-            };
-
-            newVm.LoadFromModel(clone);
+            ElementViewModelBase newVm = _elementService.CreateViewModel(clone);
             page.AddElement(newVm);
             UpdateSelection(newVm, page);
 

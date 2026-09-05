@@ -9,12 +9,13 @@ Welcome to the **FryPDF** repository. This guide provides AI agents and human co
 **FryPDF** is a high-performance, cross-platform PDF creation, editing, and document analysis studio.
 
 - **Framework**: .NET 10 / C# 13+
-- **UI Toolkit**: Avalonia UI (v12.x) with Fluent styling and Desktop platform targets (macOS, Windows, Linux)
+- **Architecture**: Microkernel Plugin System ("Everything is a Plugin") inspired by DeepSeek Harness and Cordis
+- **UI Toolkit**: Avalonia UI (v12.x) with Google Material Design 3 (M3) Expressive styling (macOS, Windows, Linux)
 - **MVVM**: `CommunityToolkit.Mvvm` (Observable Objects, Relay Commands, Source Generators)
 - **PDF Generation & Export**: `QuestPDF`
 - **PDF Parsing & Deconstruction**: `UglyToad.PdfPig` & `PdfPig.DocumentLayoutAnalysis`
 - **Raster & Graphics Engine**: `SkiaSharp`
-- **Testing**: `xUnit` + Skia visual verification testing suite
+- **Testing**: `xUnit` + Skia visual verification testing suite (770+ unit and integration tests)
 
 ---
 
@@ -25,14 +26,17 @@ Welcome to the **FryPDF** repository. This guide provides AI agents and human co
 dotnet build
 ```
 
-### Run Full Test Suite (370+ Unit & Integration Tests)
+### Run Full Test Suite (770+ Unit & Integration Tests)
 ```bash
 dotnet test
 ```
 
 ### Run Specific / Filtered Tests
 ```bash
-dotnet test --filter "FullyQualifiedName~PdfImportAndViewerTests"
+dotnet test --filter "FullyQualifiedName~GestureAndNavigationTests"
+dotnet test --filter "FullyQualifiedName~PluginKernelTests"
+dotnet test --filter "FullyQualifiedName~PluginsStudioUiTests"
+dotnet test --filter "FullyQualifiedName~Material3ExpressiveThemeTests"
 dotnet test --filter "FullyQualifiedName~GenerateVisualComparison_SideBySide"
 ```
 
@@ -51,16 +55,25 @@ PDFCreator/
 │   ├── PdfEditorApp.Core/          # Pure headless core engine (cross-platform, zero UI dependencies)
 │   │   ├── Analysis/               # Layout analysis, typography, Unicode script detection
 │   │   ├── Deconstruction/         # PDF deconstruction engine (PDF stream to live editable model)
-│   │   └── Models/                 # Domain element POCOs (Text, Image, Shape, Table, Chart, Math, Form)
+│   │   ├── Models/                 # Domain element POCOs (Text, Image, Shape, Table, Chart, Math, Form)
+│   │   └── Plugins/                # Microkernel plugin infrastructure (IFryPluginContext, DAG, Pipelines)
+│   │       ├── Descriptors/        # Extension descriptors (Tools, Ribbon, Sidebars, Inspector, Navigation)
+│   │       ├── Pipelines/          # Typed dispatch pipelines (Waterfall, Bail, Parallel, Serial, Emit)
+│   │       ├── Profiles/           # App composition profiles (desktop, headless-cli, sdk) and bundle contracts
+│   │       └── Settings/           # Typed plugin settings schema and persistent file store
 │   └── PdfEditorApp/               # Main Avalonia desktop application
 │       ├── Assets/                 # Embedded fonts (Noto Sans, Roboto, Inter, etc.) and SVG icons
-│       ├── Services/               # Export, import, undo/redo, smart placement, audit, persistence
-│       ├── ViewModels/             # MVVM ViewModels (MainViewModel, PageViewModel, ElementViewModels)
-│       └── Views/                  # Avalonia XAML Views, canvas controls, and ribbon panels
+│       ├── Plugins/                # Desktop plugin implementations and modular bundles
+│       │   ├── Bundles/            # 16 standard bundles (Tools, Pages, Sidebars, AI, CanvasElements, etc.)
+│       │   └── Loader/             # Collectible AssemblyLoadContext and .fryplugin package extractor
+│       ├── Services/               # Dynamic registries (Tools, Ribbon, Sidebars, Inspector, Navigation, AI)
+│       ├── ViewModels/             # MVVM ViewModels (MainViewModel, HomeViewModel, ElementViewModels)
+│       └── Views/                  # Avalonia XAML Views, canvas controls, and M3 dialogs
 ├── tests/
-│   └── PdfEditorApp.Tests/         # Comprehensive xUnit test suite & visual verification tests
-├── docs/                           # Architecture, contributing, and PDF deconstruction manuals
-├── AGENTS.md                       # This operating guide
+│   └── PdfEditorApp.Tests/         # Comprehensive xUnit test suite (770+ tests) & visual verification suite
+├── docs/                           # Architecture, contributing, M3 guidelines, and plugin manuals
+├── AGENTS.md                       # Root link to this operating guide
+├── GEMINI.md                       # Immediate critical agent mandate instructions
 └── README.md                       # Repository overview
 ```
 
@@ -235,6 +248,142 @@ To maintain high responsiveness and prevent memory leaks during long editing ses
 
 ---
 
+### G. Modular Microkernel Plugin Architecture ("Everything is a Plugin") (STRICT)
+
+**CRITICAL ARCHITECTURAL MANDATE**:
+FryPDF implements an **"Everything is a Plugin"** microkernel architecture inspired by **DeepSeek Harness (`deepseek-harness`)** and the **Cordis** framework.
+**Monolithic additions, hardcoded switch-case statements, god viewmodels, and hardwired view instantiations are strictly forbidden.**
+Whenever you create new tools, add document operations, contribute ribbon actions, add sidebar panels, introduce inspector sections, or add new canvas element types, you **MUST implement them as modular plugins registered through dynamic capability registries**.
+
+#### 1. The 5 Core Architectural Pillars
+- **A. Inverted Capability Context (`IFryPluginContext`)**: Plugins register and consume capabilities via a thread-safe context (`ctx.RegisterService<T>`, `ctx.GetService<T>`, `ctx.TryGetService<T>`).
+- **B. Directed Acyclic Graph (DAG) Dependency Solver**: Plugins declare dependencies via `RequiredServices` or `[DependsOn]`. The kernel sorts and mounts dependencies in topological order.
+- **C. Reversible Effects (`PluginScope` & LIFO Rollback)**: Every registration (listeners, commands, event handlers) is tracked as an effect. Unloading a plugin unwinds its effect stack in reverse order, ensuring 100% clean teardown with zero dangling subscriptions.
+- **D. Typed Dispatch Pipelines**:
+  - `Waterfall`: Around-middleware with `next()` delegation (e.g. Export pipelines, document watermarking, audit trails).
+  - `Bail`: Short-circuits on first handled result (e.g. multi-format document converters, OCR engines).
+  - `Parallel`: Concurrent asynchronous dispatch via `Task.WhenAll` (e.g. analytics, autosave).
+  - `Serial`: Sequential asynchronous dispatch (e.g. validation chains, signature checks).
+  - `Emit`: Decoupled broadcast notifications.
+- **E. Composable Profiles & Bundles**: Capabilities are grouped into self-contained `IFryPluginBundle` instances and composed into profiles (`desktop`, `headless-cli`, `sdk`).
+
+#### 2. The 12 Dynamic Registry Pillars
+Never write hardcoded UI wiring. Mount capabilities through the designated registry:
+
+| Pillar / Registry | Descriptor | Typical Usage |
+| :--- | :--- | :--- |
+| **1. PDF Tools** | `IPdfToolRegistry` / `PdfToolDescriptor` | New tools (Merge, Split, Watermark, Compress, etc.). Inherit from `ToolPluginBase`. |
+| **2. Dynamic Ribbon** | `IRibbonRegistry` / `RibbonContribution` | Custom ribbon tabs (`RibbonTabDescriptor`), groups, and action pill buttons. |
+| **3. Extensible Sidebars** | `ISidebarRegistry` / `SidebarTabDescriptor` | Custom sidebars (signatures, bookmarks, AI search, metadata trees). |
+| **4. Contextual Inspector** | `IInspectorRegistry` / `InspectorSectionDescriptor` | Custom property sections targeting specific canvas element types. |
+| **5. Workspace Pages** | `INavigationRegistry` / `NavigationItemDescriptor` | New workspace pages and navigation sections. |
+| **6. Canvas Elements** | `ICanvasElementRegistry` / `CanvasElementDescriptor` | Custom element types (Barcode, LaTeX Math, Form, Stamp, Ink). |
+| **7. Document Importers** | `IDocumentImporterRegistry` / `DocumentImporterDescriptor` | Born-digital PDF, DOCX, XLSX, Markdown, HTML ingestion. |
+| **8. Document Exporters** | `IDocumentExporterRegistry` / `DocumentExporterDescriptor` | QuestPDF static PDF, PDF/A, image sequences, CSV data export. |
+| **9. AI Providers** | `IAiProviderRegistry` / `AiProviderDescriptor` | Local Ollama, OpenAI, Groq, Anthropic, custom LLM endpoints. |
+| **10. OCR Engines** | `IOcrEngineRegistry` / `OcrEngineDescriptor` | Tesseract, Apple Vision OCR, Windows OCR, cloud vision engines. |
+| **11. Data Connectors** | `IDataConnectorRegistry` / `DataConnectorDescriptor` | Excel, CSV, JSON REST APIs, SQL database ingestion. |
+| **12. Status & Dialogs** | `IStatusBarRegistry`, `IDialogRegistry` | Contextual status indicators, modals, and command palette actions. |
+
+#### 3. Standard Tool Plugin Pattern Example
+When implementing a new tool, inherit from `ToolPluginBase` and register it inside a bundle:
+
+```csharp
+public class CustomWatermarkToolPlugin : ToolPluginBase
+{
+    public override string Id => "frypdf.tool.watermark";
+    public override string Name => "Watermark PDF";
+
+    protected override PdfToolDescriptor CreateDescriptor() => new()
+    {
+        Id = Id,
+        Name = Name,
+        Description = "Apply custom text and image stamps with opacity control.",
+        Category = "OptimizeAndSecurity",
+        IconKind = "Watermark",
+        IconColorHex = "#0284C7",
+        BackgroundAccentHex = "#F0F9FF",
+        SupportsMultiFile = true,
+        AcceptedFileExtensions = ".pdf",
+        CreateViewModel = sp => ActivatorUtilities.CreateInstance<WatermarkToolViewModel>(sp)
+    };
+}
+```
+
+#### 4. Reversible Effects Rule
+Any plugin subscribing to events or registering UI elements must use `ctx.RegisterEffect`:
+```csharp
+public Task ApplyAsync(IFryPluginContext ctx, CancellationToken ct = default)
+{
+    var subscription = WeakReferenceMessenger.Default.Register<DocumentChangedMessage>(this, HandleDocumentChanged);
+    ctx.RegisterEffect(() => WeakReferenceMessenger.Default.Unregister<DocumentChangedMessage>(this));
+    return Task.CompletedTask;
+}
+```
+
+#### 5. Declarative Settings Schema
+Plugins with configurable settings declare typed schemas via `IFryPlugin.SettingsSchema`. The UI automatically generates an M3 Expressive configurator in `PluginsDialog.axaml`:
+```csharp
+public IReadOnlyDictionary<string, PluginSettingDefinition>? SettingsSchema => new Dictionary<string, PluginSettingDefinition>
+{
+    ["ApiKey"] = new() { Key = "ApiKey", Label = "API Key", Type = PluginSettingType.Secret, IsRequired = true },
+    ["Model"] = new() { Key = "Model", Label = "Model", Type = PluginSettingType.Select, Options = ["gpt-4o", "claude-3-5-sonnet"] }
+};
+```
+
+---
+
+### H. High-Performance, Zero-Lag Responsiveness & Resource Lifecycle (STRICT)
+
+**CRITICAL PERFORMANCE MANDATE**:
+FryPDF is designed to feel instantaneous, smooth, and lightweight. **UI lag, dropped frames, stuttering animations, and memory leaks are completely unacceptable.**
+Always think in terms of performance optimization when designing and writing code:
+
+#### 1. Zero UI Thread Blocking
+- **Never Run Heavy Work on the UI Thread**: PDF parsing, deconstruction, Skia rasterization, QuestPDF compilation, OCR recognition, AI completions, JSON serialization, and disk/network I/O MUST run on background threads via `Task.Run` or asynchronous pipelines.
+- **Never Block Asynchronously**: Never call `.Result`, `.Wait()`, or `.GetAwaiter().GetResult()` on the Avalonia UI thread.
+- **Cancellation Token Propagation**: Always accept and respect `CancellationToken` in long-running jobs to allow instant aborts when the user switches pages or cancels operations.
+
+#### 2. Instant Navigation & View Caching (0ms Latency)
+- **Plugin View Caching**: In view models managing navigation (e.g. [`HomeViewModel.cs`](src/PdfEditorApp/ViewModels/HomeViewModel.cs)), always cache dynamically instantiated plugin views in an instance dictionary (`_dynamicViewCache`). Never destroy and re-instantiate heavy visual trees on every tab switch:
+  ```csharp
+  if (!_dynamicViewCache.TryGetValue(sectionName, out var cachedView))
+  {
+      cachedView = desc.ViewFactory(serviceProvider);
+      _dynamicViewCache[sectionName] = cachedView;
+  }
+  DynamicPageView = cachedView;
+  ```
+- **Pre-Mounted Built-In Trees**: For primary screens (Dashboard, Reader Landing, PDF Tools Studios), pre-mount compiled XAML templates in the parent view (`HomeView.axaml`) so navigation occurs in 0ms with zero layout recalculation overhead.
+
+#### 3. UI Virtualization & Recycling
+- **Virtualizing Panels Only**: Always use virtualized layout containers (`ItemsRepeater`, `VirtualizingStackPanel` with `ScrollUnit="Pixel"`) for document page thumbnails, tool cards, audit logs, and tabular data rows.
+- **Never use unvirtualized `StackPanel`** inside a `ScrollViewer` for collections with more than 10 items.
+- **Element Recycling**: Ensure templates in `ItemsRepeater` reuse container elements rather than continually allocating visual tree nodes during scrolling.
+
+#### 4. Gesture & Continuous Input Smoothing
+- **Proportional Clamped Zooming**: For trackpad pinch-to-zoom and gestures, calculate zoom multiplicatively with bounds clamping to prevent exponential explosion:
+  ```csharp
+  double newZoom = Math.Clamp(Math.Round(currentZoom * (1.0 + delta), 3), 0.1, 5.0);
+  ```
+- **Reactive Debounce & Throttling**:
+  - Debounce search queries and text filters (150–250ms) before filtering in-memory collections.
+  - Throttle slider scrubbing events during interactive drag; do not trigger expensive Skia canvas repaints on every micro-pixel increment.
+  - Throttle canvas drag and snap-line calculation loops.
+
+#### 5. SkiaSharp Rendering & Frame Budgets
+- **Frame Budgets**: Maintain $\le 16\text{ms}$ (60 FPS) and $\le 8\text{ms}$ (120 FPS) frame render times.
+- **RenderTransform Over Layout Mutation**: Animate transformations using `RenderTransform` (GPU-accelerated compositing). Never animate `Margin`, `Width`, or `Height`, as mutating layout properties triggers full synchronous measure/arrange passes across the visual tree.
+- **Minimize Visual Tree Depth**: Avoid unnecessary nested `Border`, `Grid`, and `Panel` elements. Keep visual hierarchy shallow.
+
+#### 6. Large Object Heap (LOH) & GC Hygiene
+- **Never allocate $\ge 85\text{ KB}$ byte arrays in loops**: Reuse memory buffers via `ArrayPool<byte>.Shared` and `MemoryStream`.
+- **Zero Base64 in Models**: Store raw `byte[]` for image and vector payloads. Compute Base64 only lazily during JSON persistence export.
+- **Immediate Unmanaged Disposal**: Wrap short-lived `SKBitmap`, `SKImage`, `SKSurface`, `SKData`, and `SKCodec` instances in `using` blocks. Dispose previous bitmaps before assigning replacement preview bitmaps.
+- **Weak Subscriptions**: Use `WeakReferenceMessenger` for pub/sub messaging to ensure garbage collection is never blocked by forgotten event subscriptions.
+
+---
+
 ## 5. Continuous PDF Scenario Development Workflow
 
 When adding support for a new or complex PDF type:
@@ -246,16 +395,18 @@ When adding support for a new or complex PDF type:
    ```
 3. **Inspect Output Bitmaps**: Open the generated side-by-side PNG in `VisualArtifacts/` (automatically ignored by Git) to compare original PDF ground truth against the deconstructed canvas.
 4. **Tune Algorithms**: Adjust clustering, Z-indexing, or shape heuristics in `PdfDeconstructionEngine` or `PdfLayoutAnalyzer`.
-5. **Enforce Regression Invariance**: Run `dotnet test` and confirm all 450+ unit tests pass.
+5. **Enforce Regression Invariance**: Run `dotnet test` and confirm all 770+ unit tests pass.
 
 ---
 
 ## 6. Coding & Quality Standards
 
 - **Nullable Reference Types**: Enabled across all projects (`<Nullable>enable</Nullable>`).
-- **Treat Warnings As Errors**: All builds must be 100% warning-free.
-- **Unit Testing**: Every new service, converter, or deconstruction heuristic must include unit tests with deterministic assertions.
-- **Documentation**: Keep [`docs/PDF_DECONSTRUCTION_AND_EDITING.md`](docs/PDF_DECONSTRUCTION_AND_EDITING.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) updated when making structural changes.
+- **Treat Warnings As Errors**: All builds must be 100% warning-free (`TreatWarningsAsErrors=true`).
+- **Plugin-First Architecture**: All new tools, elements, sidebars, and panels must implement `IFryPlugin` and register into the appropriate registry.
+- **Zero-Lag Compliance**: Zero UI-thread blocking, view caching on navigation, and virtualized collections are mandatory.
+- **Unit Testing**: Every new service, converter, plugin, or deconstruction heuristic must include unit tests with deterministic assertions.
+- **Documentation**: Keep [`docs/PLUGIN_BASED_ARCHITECTURE.md`](docs/PLUGIN_BASED_ARCHITECTURE.md), [`docs/PDF_DECONSTRUCTION_AND_EDITING.md`](docs/PDF_DECONSTRUCTION_AND_EDITING.md), and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) updated when making structural changes.
 
 ---
 

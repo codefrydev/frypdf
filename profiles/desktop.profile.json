@@ -1,0 +1,27 @@
+{
+  "profileName": "desktop",
+  "bundles": [
+    "FryPdf.Bundle.Tools.Organize",
+    "FryPdf.Bundle.Tools.Security",
+    "FryPdf.Bundle.Tools.Conversion",
+    "FryPdf.Bundle.Tools.Intelligence",
+    "FryPdf.Bundle.DataStudio",
+    "FryPdf.Bundle.CanvasElements",
+    "FryPdf.Bundle.DocumentIo",
+    "FryPdf.Bundle.AiProviders",
+    "FryPdf.Bundle.OcrEngines",
+    "FryPdf.Bundle.Templates",
+    "FryPdf.Bundle.StatusBar",
+    "FryPdf.Bundle.Inspector",
+    "FryPdf.Bundle.CommandPalette",
+    "FryPdf.Bundle.WorkspacePages",
+    "FryPdf.Bundle.Dialogs",
+    "FryPdf.Bundle.EditorSidebars"
+  ],
+
+  "disabledPlugins": [],
+  "settings": {
+    "theme": "Auto",
+    "enableHardwareAcceleration": "true"
+  }
+}

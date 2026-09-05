@@ -7,6 +7,7 @@
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:models1="clr-namespace:PdfEditorApp.Core.Models;assembly=PdfEditorApp.Core"
+             xmlns:descriptors="clr-namespace:PdfEditorApp.Core.Plugins.Descriptors;assembly=PdfEditorApp.Core"
              x:Class="PdfEditorApp.Views.ThumbnailSidebarView"
              x:DataType="vm:MainViewModel">
 
@@ -83,7 +84,28 @@
                                     ToolTip.Tip="Comments &amp; Review Annotations">
                                 <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
                             </Button>
+
+                            <!-- Dynamic Plugin Contributed Sidebar Tabs -->
+                            <ItemsControl ItemsSource="{Binding DynamicSidebarTabs}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="2" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:DynamicSidebarTabViewModel">
+                                        <Button Classes="mini-tool-btn" Width="30" Height="30"
+                                                Classes.active="{Binding IsActive}"
+                                                Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).SelectDynamicSidebarTabCommand}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip.Tip="{Binding Tooltip}">
+                                            <materialIcons:MaterialIcon Kind="{Binding IconKind}" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
+
 
                         <!-- Quick Page Actions & Collapse Button -->
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
@@ -107,6 +129,10 @@
 
             <!-- 2. Content Area (Dynamically changes based on ActiveSidebarTab) -->
             <Panel Grid.Row="1">
+
+                <!-- 2G. DYNAMIC PLUGIN SIDEBAR TAB CONTENT -->
+                <ContentControl Content="{Binding ActiveDynamicSidebarView}"
+                                IsVisible="{Binding ActiveDynamicSidebarTabId, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
                 <!-- 2A. TAB: REAL LIVE PAGE THUMBNAILS (Real Live Scaled Viewboxes) -->
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="12"

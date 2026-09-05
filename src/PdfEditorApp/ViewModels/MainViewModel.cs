@@ -17,6 +17,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
@@ -85,6 +86,7 @@ public partial class MainViewModel : ViewModelBase
 
     public WorkflowBuilderViewModel WorkflowBuilder { get; }
     public PdfViewerViewModel PdfViewer { get; }
+    public FryPdfViewer.FryPdfViewerViewModel FryPdfViewer { get; }
     public DataStudioViewModel DataStudio { get; }
     public BatchGenerationViewModel BatchGeneration { get; }
     public AiAssistantViewModel AiAssistant { get; }
@@ -99,6 +101,12 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isPdfViewerVisible = false;
+
+    [ObservableProperty]
+    private bool _isFryPdfViewerVisible = false;
+
+    [ObservableProperty]
+    private WindowState _mainWindowState = WindowState.Normal;
 
     /// <summary>
     /// Dynamic window title that accurately reflects the active application context:
@@ -125,6 +133,14 @@ public partial class MainViewModel : ViewModelBase
                 }
                 return "FryPDF - Privacy-First PDF Studio";
             }
+            else if (IsFryPdfViewerVisible)
+            {
+                if (FryPdfViewer != null && !string.IsNullOrWhiteSpace(FryPdfViewer.DocumentTitle))
+                {
+                    return $"{FryPdfViewer.DocumentTitle} - Interactive Reader - FryPDF";
+                }
+                return "Interactive Reader - FryPDF";
+            }
             else if (IsPdfViewerVisible)
             {
                 if (PdfViewer != null && !string.IsNullOrWhiteSpace(PdfViewer.DocumentTitle) && PdfViewer.DocumentTitle != "Document.pdf")
@@ -148,6 +164,7 @@ public partial class MainViewModel : ViewModelBase
     partial void OnIsHomePageVisibleChanged(bool value) => OnPropertyChanged(nameof(WindowTitle));
     partial void OnIsEditorVisibleChanged(bool value) => OnPropertyChanged(nameof(WindowTitle));
     partial void OnIsPdfViewerVisibleChanged(bool value) => OnPropertyChanged(nameof(WindowTitle));
+    partial void OnIsFryPdfViewerVisibleChanged(bool value) => OnPropertyChanged(nameof(WindowTitle));
     partial void OnDocumentTitleChanged(string value) => OnPropertyChanged(nameof(WindowTitle));
 
     /// <summary>ViewModel for the Home / Start Screen.</summary>
@@ -861,14 +878,20 @@ public partial class MainViewModel : ViewModelBase
         Inspector.DataStudio = DataStudio;
 
         PdfViewer = pdfViewer ?? new PdfViewerViewModel();
+        FryPdfViewer = new FryPdfViewer.FryPdfViewerViewModel(_persistenceService, _exportService);
         if (_themeService != null)
         {
             PdfViewer.ReadingTheme = _themeService.ReadingTheme;
+            FryPdfViewer.ReadingTheme = _themeService.ReadingTheme;
             _themeService.ReadingThemeChanged += (rt) =>
             {
                 if (PdfViewer.ReadingTheme != rt)
                 {
                     PdfViewer.ReadingTheme = rt;
+                }
+                if (FryPdfViewer.ReadingTheme != rt)
+                {
+                    FryPdfViewer.ReadingTheme = rt;
                 }
             };
         }
@@ -924,6 +947,18 @@ public partial class MainViewModel : ViewModelBase
             }
         };
 
+        FryPdfViewer.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(FryPdfViewer.DocumentTitle))
+            {
+                OnPropertyChanged(nameof(WindowTitle));
+            }
+            else if (e.PropertyName == nameof(FryPdfViewer.IsPresentationMode))
+            {
+                MainWindowState = FryPdfViewer.IsPresentationMode ? WindowState.FullScreen : WindowState.Normal;
+            }
+        };
+
         // Initialize quick command palette indexing
         InitCommandPalette();
 
@@ -938,6 +973,8 @@ public partial class MainViewModel : ViewModelBase
         WeakReferenceMessenger.Default.Register<MainViewModel, NavigateToHomeMessage>(this, (r, m) => r.NavigateToHome());
         WeakReferenceMessenger.Default.Register<MainViewModel, OpenInEditorMessage>(this, (r, m) => r.OpenEditorWithFile(m.FilePath));
         WeakReferenceMessenger.Default.Register<MainViewModel, OpenInViewerMessage>(this, (r, m) => r.OpenInViewer(m.FilePath));
+        WeakReferenceMessenger.Default.Register<MainViewModel, OpenInFryPdfViewerMessage>(this, (r, m) => r.OpenInFryPdfViewer(m.FilePath));
+        WeakReferenceMessenger.Default.Register<MainViewModel, LaunchInteractiveDeckMessage>(this, (r, m) => r.OpenInteractiveDeckTemplate());
         WeakReferenceMessenger.Default.Register<MainViewModel, RunToolMessage>(this, (r, m) => r.OpenToolWithInitialFile(m.ToolId, m.FilePath));
         WeakReferenceMessenger.Default.Register<MainViewModel, ReadingThemeChangedMessage>(this, (r, m) =>
         {
@@ -1110,6 +1147,7 @@ public partial class MainViewModel : ViewModelBase
         // respond right away, then populate it — mirrors OpenInViewerAsync's approach.
         IsHomePageVisible = false;
         IsPdfViewerVisible = false;
+        IsFryPdfViewerVisible = false;
         IsEditorVisible = true;
         IsBusy = true;
         UpdateStatus($"Opening {Path.GetFileName(path)}...");
@@ -1209,6 +1247,7 @@ public partial class MainViewModel : ViewModelBase
             DocumentTitle = Path.GetFileName(path);
             IsHomePageVisible = false;
             IsEditorVisible = false;
+            IsFryPdfViewerVisible = false;
             IsPdfViewerVisible = true;
             ShowToast($"Opening: {Path.GetFileName(path)}", "FilePdfBox");
 
@@ -1227,6 +1266,109 @@ public partial class MainViewModel : ViewModelBase
         {
             ShowToast($"Could not open in Viewer: {ex.Message}", "AlertCircleOutline");
         }
+    }
+
+    /// <summary>Asynchronously opens a .frypdf document in the interactive presentation reader.</summary>
+    public async Task OpenInFryPdfViewerAsync(string path)
+    {
+        try
+        {
+            DocumentTitle = Path.GetFileName(path);
+            IsHomePageVisible = false;
+            IsEditorVisible = false;
+            IsPdfViewerVisible = false;
+            IsFryPdfViewerVisible = true;
+            ShowToast($"Reading interactive: {Path.GetFileName(path)}", "BookOpenPageVariantOutline");
+
+            FryPdfViewer.StorageProvider = StorageProvider;
+            await FryPdfViewer.LoadDocumentAsync(path);
+
+            _recentService.Add(new RecentDocumentItem
+            {
+                FilePath = path,
+                Title = Path.GetFileName(path),
+                LastOpened = DateTime.UtcNow
+            });
+            Home.RefreshRecent();
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Could not open in Interactive Viewer: {ex.Message}", "AlertCircleOutline");
+        }
+    }
+
+    /// <summary>Opens a .frypdf document in the interactive presentation reader.</summary>
+    public void OpenInFryPdfViewer(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            _ = OpenFryPdfToReadWithPickerAsync();
+        }
+        else
+        {
+            _ = OpenInFryPdfViewerAsync(path);
+        }
+    }
+
+    /// <summary>Prompts user to select a .frypdf file and opens it in Interactive Reader mode.</summary>
+    public async Task OpenFryPdfToReadWithPickerAsync()
+    {
+        try
+        {
+            if (StorageProvider != null)
+            {
+                var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = "Open FryPDF Project to Read (Interactive Reader Mode)",
+                    AllowMultiple = false,
+                    FileTypeFilter = new[]
+                    {
+                        new FilePickerFileType("FryPDF Projects (*.frypdf, *.json)")
+                        {
+                            Patterns = new[] { "*.frypdf", "*.json" }
+                        }
+                    }
+                });
+
+                if (files.Count > 0)
+                {
+                    string chosenPath = files[0].Path.LocalPath;
+                    await OpenInFryPdfViewerAsync(chosenPath);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Could not open project: {ex.Message}", "AlertCircleOutline");
+        }
+    }
+
+    /// <summary>Switches the currently active editor document into the Interactive Reader.</summary>
+    [RelayCommand]
+    public void OpenCurrentInInteractiveReader()
+    {
+        var model = ToDocumentModel();
+        IsHomePageVisible = false;
+        IsEditorVisible = false;
+        IsPdfViewerVisible = false;
+        IsFryPdfViewerVisible = true;
+        FryPdfViewer.StorageProvider = StorageProvider;
+        FryPdfViewer.LoadFromModel(model, CurrentFilePath);
+    }
+
+    /// <summary>Launches the showcase landscape interactive presentation deck directly in the Interactive Reader.</summary>
+    [RelayCommand]
+    public void OpenInteractiveDeckTemplate()
+    {
+        var model = _templateService.CreateInteractiveExecutiveBriefTemplate();
+        DocumentTitle = "QuantumScale_Global_Executive_Strategic_Brief_2026.frypdf";
+        IsHomePageVisible = false;
+        IsEditorVisible = false;
+        IsPdfViewerVisible = false;
+        IsFryPdfViewerVisible = true;
+        FryPdfViewer.StorageProvider = StorageProvider;
+        FryPdfViewer.LoadFromModel(model, "QuantumScale_Global_Executive_Strategic_Brief_2026.frypdf");
+        ShowToast("Loaded QuantumScale Interactive Landscape Presentation Deck", "PresentationPlay");
     }
 
     private async Task OpenProjectAndEnterEditorAsync()
@@ -1278,6 +1420,7 @@ public partial class MainViewModel : ViewModelBase
         Home.SelectedNavSection = HomeNavSection.Home;
         IsEditorVisible = false;
         IsPdfViewerVisible = false;
+        IsFryPdfViewerVisible = false;
         IsHomePageVisible = true;
     }
 

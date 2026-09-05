@@ -48,6 +48,7 @@ public class CorporateTemplatesPlugin : IFryPlugin
     public Task ApplyAsync(IFryPluginContext ctx, CancellationToken ct = default)
     {
         ctx.RegisterTemplate(new AnnualReportTemplate());
+        ctx.RegisterTemplate(new InteractiveExecutiveBriefTemplate());
         ctx.RegisterTemplate(new EmployeePayslipTemplate());
         ctx.RegisterTemplate(new OcrAnalysisReportTemplate());
         return Task.CompletedTask;

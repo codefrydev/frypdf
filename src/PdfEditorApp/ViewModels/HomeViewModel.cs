@@ -346,10 +346,11 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
                 var pageVm = new PageViewModel();
                 pageVm.LoadFromModel(page);
 
-                bool isFeatured = def.Id is "annualreport" or "invoice" or "resume" or "resumemodern" or "academic" or "mathresearch" or "physicsresearch" or "certificate" or "typographyshowcase"
+                bool isFeatured = def.Id is "interactive_executive_deck" or "annualreport" or "invoice" or "resume" or "resumemodern" or "academic" or "mathresearch" or "physicsresearch" or "certificate" or "typographyshowcase"
                     or "bodmas_worksheet" or "bilingual_exam_paper" or "states_of_matter_notes" or "arduino_cheatsheet" or "factorization_worksheet";
                 string subtitle = def.Id switch
                 {
+                    "interactive_executive_deck" => "Interactive Landscape Deck",
                     "annualreport" => "Executive Summary & Charts",
                     "invoice" => "Itemized Billing & Terms",
                     "resume" => "Executive CV with Live QR",
@@ -379,6 +380,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
 
                 string badge = def.Id switch
                 {
+                    "interactive_executive_deck" => "Live Deck",
                     "annualreport" => "Popular",
                     "invoice" => "Finance",
                     "resume" => "Executive",
@@ -913,6 +915,19 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     {
         var path = filePath ?? string.Empty;
         WeakReferenceMessenger.Default.Send(new OpenInViewerMessage(path));
+    }
+
+    [RelayCommand]
+    public void OpenInInteractiveViewer(string? filePath)
+    {
+        var path = filePath ?? string.Empty;
+        WeakReferenceMessenger.Default.Send(new OpenInFryPdfViewerMessage(path));
+    }
+
+    [RelayCommand]
+    public void LaunchInteractiveDeck()
+    {
+        WeakReferenceMessenger.Default.Send(new LaunchInteractiveDeckMessage());
     }
 
     [RelayCommand]

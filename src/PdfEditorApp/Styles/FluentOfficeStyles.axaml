@@ -142,6 +142,11 @@
         <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBorderBrush}" />
     </Style>
 
+    <Style Selector="Button.mini-tool-btn:disabled">
+        <Setter Property="Opacity" Value="0.35" />
+        <Setter Property="Cursor" Value="No" />
+    </Style>
+
     <!-- Secondary Action Button (M3 Expressive Pill) -->
     <Style Selector="Button.secondary-btn">
         <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />

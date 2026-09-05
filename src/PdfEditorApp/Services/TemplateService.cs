@@ -27,6 +27,7 @@ public class TemplateService : ITemplateService, PdfEditorApp.Core.Plugins.Descr
     {
         // Corporate
         RegisterTemplate(new AnnualReportTemplate());
+        RegisterTemplate(new InteractiveExecutiveBriefTemplate());
         RegisterTemplate(new EmployeePayslipTemplate());
         RegisterTemplate(new OcrAnalysisReportTemplate());
 
@@ -146,6 +147,7 @@ public class TemplateService : ITemplateService, PdfEditorApp.Core.Plugins.Descr
     }
 
     public PdfDocumentModel CreateAnnualReportTemplate() => CreateTemplate("annualreport");
+    public PdfDocumentModel CreateInteractiveExecutiveBriefTemplate() => CreateTemplate("interactive_executive_deck");
     public PdfDocumentModel CreateEmployeePayslipTemplate() => CreateTemplate("payslip");
 
     public PdfDocumentModel CreateInvoiceTemplate() => CreateTemplate("invoice");

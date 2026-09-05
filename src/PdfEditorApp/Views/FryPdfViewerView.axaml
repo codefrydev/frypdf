@@ -1,0 +1,1035 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PdfEditorApp.ViewModels.FryPdfViewer"
+             xmlns:elvm="using:PdfEditorApp.ViewModels.ElementViewModels"
+             xmlns:views="using:PdfEditorApp.Views"
+             xmlns:controls="using:PdfEditorApp.Views.Controls"
+             xmlns:converters="using:PdfEditorApp.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+             x:Class="PdfEditorApp.Views.FryPdfViewerView"
+             x:DataType="vm:FryPdfViewerViewModel"
+             Background="{DynamicResource WinBgBrush}"
+             Focusable="True">
+
+    <UserControl.Resources>
+        <converters:ZoomPercentageConverter x:Key="ZoomPercentageConverter" />
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+        <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+        <converters:DoubleToThicknessConverter x:Key="DoubleToThickness" />
+        <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
+    </UserControl.Resources>
+
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="F11" Command="{Binding TogglePresentationModeCommand}" />
+        <KeyBinding Gesture="Escape" Command="{Binding TogglePresentationModeCommand}" />
+        <KeyBinding Gesture="Cmd+Shift+F" Command="{Binding TogglePresentationModeCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+F" Command="{Binding TogglePresentationModeCommand}" />
+        <KeyBinding Gesture="Cmd+E" Command="{Binding OpenInEditorCommand}" />
+        <KeyBinding Gesture="Ctrl+E" Command="{Binding OpenInEditorCommand}" />
+        <KeyBinding Gesture="PageDown" Command="{Binding NextPageCommand}" />
+        <KeyBinding Gesture="Right" Command="{Binding NextPageCommand}" />
+        <KeyBinding Gesture="Space" Command="{Binding NextPageCommand}" />
+        <KeyBinding Gesture="PageUp" Command="{Binding PreviousPageCommand}" />
+        <KeyBinding Gesture="Left" Command="{Binding PreviousPageCommand}" />
+        <KeyBinding Gesture="Cmd+W" Command="{Binding BackToHomeCommand}" />
+        <KeyBinding Gesture="Ctrl+W" Command="{Binding BackToHomeCommand}" />
+        <KeyBinding Gesture="Cmd+OemPlus" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Gesture="Ctrl+OemPlus" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Gesture="Cmd+OemMinus" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Gesture="Ctrl+OemMinus" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Gesture="Cmd+D0" Command="{Binding ResetZoomCommand}" />
+        <KeyBinding Gesture="Ctrl+D0" Command="{Binding ResetZoomCommand}" />
+    </UserControl.KeyBindings>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ============================================================== -->
+        <!-- 1. TOP SLEEK MATERIAL 3 EXPRESSIVE READING TOOLBAR             -->
+        <!-- ============================================================== -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource M3SurfaceContainerLowBrush}"
+                Height="52"
+                BorderBrush="{DynamicResource WinBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="14,0"
+                IsVisible="{Binding !IsPresentationMode}">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <!-- Left Section: Back, Document Badge & Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <!-- Back to Home -->
+                    <Button Classes="mini-tool-btn"
+                            Width="32" Height="32"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                            Command="{Binding BackToHomeCommand}"
+                            ToolTip.Tip="Back to Home Dashboard (⌘W)">
+                        <materialIcons:MaterialIcon Kind="ArrowLeft" Width="18" Height="18" Foreground="{DynamicResource WinTextBrush}" />
+                    </Button>
+
+                    <Rectangle Width="1" Height="20" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
+
+                    <!-- Format Icon & Interactive Badge -->
+                    <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="22" Height="22" Foreground="{DynamicResource M3PrimaryBrush}" VerticalAlignment="Center" />
+
+                    <StackPanel Orientation="Vertical" Spacing="1" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding DocumentTitle}"
+                                       FontSize="13.5"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource WinTextBrush}"
+                                       MaxWidth="240"
+                                       TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center" />
+                            <!-- Format Badge Pill -->
+                            <Border Background="{DynamicResource M3PrimaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="6,1.5" VerticalAlignment="Center">
+                                <TextBlock Text="INTERACTIVE" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource M3OnPrimaryContainerBrush}" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="Read-Only Presentation Mode · Live Tables &amp; Charts" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Center Section: Navigation, Zoom & Search Capsules -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                    <!-- Page Navigation Capsule -->
+                    <Border Background="{DynamicResource M3SurfaceContainerHighBrush}"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                            Padding="3"
+                            Height="36">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <Button Classes="mini-tool-btn"
+                                    Width="30" Height="30"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Command="{Binding PreviousPageCommand}"
+                                    IsEnabled="{Binding CanGoPreviousPage}"
+                                    ToolTip.Tip="Previous Page (PageUp / ←)">
+                                <materialIcons:MaterialIcon Kind="ChevronLeft" Width="18" Height="18" Foreground="{DynamicResource WinTextBrush}" />
+                            </Button>
+
+                            <TextBlock Text="{Binding CurrentPageNumber, StringFormat='{}Page {0}'}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource WinTextBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="6,0,2,0" />
+
+                            <TextBlock Text="{Binding TotalPagesCount, StringFormat='{}of {0}'}"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource WinMutedBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,6,0" />
+
+                            <Button Classes="mini-tool-btn"
+                                    Width="30" Height="30"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Command="{Binding NextPageCommand}"
+                                    IsEnabled="{Binding CanGoNextPage}"
+                                    ToolTip.Tip="Next Page (PageDown / Space / →)">
+                                <materialIcons:MaterialIcon Kind="ChevronRight" Width="18" Height="18" Foreground="{DynamicResource WinTextBrush}" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Zoom Capsule -->
+                    <Border Background="{DynamicResource M3SurfaceContainerHighBrush}"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                            Padding="3"
+                            Height="36">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <Button Classes="mini-tool-btn"
+                                    Width="28" Height="28"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Command="{Binding ZoomOutCommand}"
+                                    ToolTip.Tip="Zoom Out (⌘-)">
+                                <materialIcons:MaterialIcon Kind="Minus" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
+                            </Button>
+
+                            <!-- Chubby Tactile Slider -->
+                            <Slider Width="90"
+                                    Minimum="0.25"
+                                    Maximum="3.0"
+                                    Value="{Binding ZoomLevel, Mode=TwoWay}"
+                                    VerticalAlignment="Center"
+                                    Margin="4,0" />
+
+                            <Button Classes="mini-tool-btn"
+                                    Padding="6,2"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Command="{Binding ResetZoomCommand}"
+                                    ToolTip.Tip="Reset Zoom to 100% (⌘0)">
+                                <TextBlock Text="{Binding ZoomLevel, Converter={StaticResource ZoomPercentageConverter}}"
+                                           FontSize="11.5"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource WinTextBrush}"
+                                           Width="42"
+                                           TextAlignment="Center" />
+                            </Button>
+
+                            <Button Classes="mini-tool-btn"
+                                    Width="28" Height="28"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Command="{Binding ZoomInCommand}"
+                                    ToolTip.Tip="Zoom In (⌘+)">
+                                <materialIcons:MaterialIcon Kind="Plus" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- In-Document Text Search Bar -->
+                    <Border Background="{DynamicResource M3SurfaceContainerHighBrush}"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                            Height="36"
+                            Width="220"
+                            Padding="10,0">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding SearchQuery}"
+                                     PlaceholderText="Find in document..."
+                                     FontSize="11.5"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     VerticalAlignment="Center"
+                                     Padding="0" />
+                            <Border Grid.Column="2"
+                                    Background="{DynamicResource M3PrimaryContainerBrush}"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Padding="5,1"
+                                    VerticalAlignment="Center"
+                                    IsVisible="{Binding SearchResults.Count}">
+                                <TextBlock Text="{Binding SearchResults.Count, StringFormat='{}{0}'}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnPrimaryContainerBrush}" />
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                </StackPanel>
+
+                <!-- Right Section: Presentation Mode, Studio Switch & Export -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+
+                    <!-- Replay Animations Button -->
+                    <Button Classes="mini-tool-btn"
+                            Width="34" Height="34"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                            Command="{Binding ReplayAnimationsCommand}"
+                            ToolTip.Tip="Replay Chart &amp; Visual Animations">
+                        <materialIcons:MaterialIcon Kind="PlayCircleOutline" Width="18" Height="18" Foreground="{DynamicResource M3PrimaryBrush}" />
+                    </Button>
+
+                    <!-- Sidebar Toggle -->
+                    <Button Classes="mini-tool-btn"
+                            Width="34" Height="34"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                            Command="{Binding ToggleThumbnailSidebarCommand}"
+                            ToolTip.Tip="Toggle Pages Drawer">
+                        <materialIcons:MaterialIcon Kind="DockLeft" Width="17" Height="17" Foreground="{DynamicResource WinTextBrush}" />
+                    </Button>
+
+                    <!-- Fullscreen Presentation Mode Button -->
+                    <Button Classes="mini-tool-btn"
+                            Width="34" Height="34"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                            Command="{Binding TogglePresentationModeCommand}"
+                            ToolTip.Tip="Presentation / Slide Show Mode (F11)">
+                        <materialIcons:MaterialIcon Kind="PresentationPlay" Width="18" Height="18" Foreground="#8B5CF6" />
+                    </Button>
+
+                    <Rectangle Width="1" Height="20" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
+
+                    <!-- Switch to Studio Editor Button -->
+                    <Button Classes="m3-tonal-btn"
+                            Height="34"
+                            Padding="12,0"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                            Command="{Binding OpenInEditorCommand}"
+                            ToolTip.Tip="Open this document in Studio Editor (⌘E)">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="PencilOutline" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
+                            <TextBlock Text="Edit in Studio" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Export to PDF Button -->
+                    <Button Classes="primary-btn"
+                            Height="34"
+                            Padding="12,0"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                            Command="{Binding ExportPdfCommand}"
+                            ToolTip.Tip="Export to standard binary PDF">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="ExportVariant" Width="15" Height="15" Foreground="White" />
+                            <TextBlock Text="Export PDF" FontSize="11.5" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                </StackPanel>
+
+            </Grid>
+        </Border>
+
+        <!-- ============================================================== -->
+        <!-- 2. MAIN DOCUMENT WORKSPACE & THUMBNAIL DRAWER                  -->
+        <!-- ============================================================== -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+
+            <!-- Left Drawer: Page Thumbnails -->
+            <Border Grid.Column="0"
+                    Width="160"
+                    Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                    BorderBrush="{DynamicResource WinBorderBrush}"
+                    BorderThickness="0,0,1,0"
+                    IsVisible="{Binding IsSidebarVisibleInView}">
+                <Grid RowDefinitions="Auto,*">
+                    <!-- Drawer Header -->
+                    <Border Grid.Row="0" Padding="12,10" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1">
+                        <TextBlock Text="PAGES" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" />
+                    </Border>
+
+                    <!-- Thumbnails List -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Pages}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:FryPdfPageViewerViewModel">
+                                    <Button Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="8,6"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Stretch"
+                                            Cursor="Hand"
+                                            Command="{Binding $parent[UserControl].((vm:FryPdfViewerViewModel)DataContext).GoToPageCommand}"
+                                            CommandParameter="{Binding PageNumber}">
+                                        <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Center">
+                                            <!-- Mini Thumbnail Card -->
+                                            <Border Grid.Row="0"
+                                                    Width="110"
+                                                    Height="145"
+                                                    Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                    BorderBrush="{DynamicResource WinBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                    BoxShadow="0 2 6 #14000000">
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
+                                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="28" Height="28" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                                    <TextBlock Text="{Binding PageNumber, StringFormat='{}Page {0}'}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Page Number Pill -->
+                                            <Border Grid.Row="1" Margin="0,4,0,0" HorizontalAlignment="Center" Background="{DynamicResource M3SurfaceContainerHighBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="8,1.5">
+                                                <TextBlock Text="{Binding PageNumber}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Main Interactive Canvas Viewport -->
+            <ScrollViewer x:Name="ViewportScrollViewer"
+                          Grid.Column="1"
+                          HorizontalScrollBarVisibility="{Binding ViewportScrollVisibility}"
+                          VerticalScrollBarVisibility="{Binding ViewportScrollVisibility}"
+                          Background="{Binding ViewportBackgroundBrush, Converter={StaticResource HexToBrushConverter}}"
+                          Padding="{Binding ViewportPadding}">
+                <LayoutTransformControl HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <LayoutTransformControl.LayoutTransform>
+                        <ScaleTransform ScaleX="{Binding ZoomLevel}" ScaleY="{Binding ZoomLevel}" />
+                    </LayoutTransformControl.LayoutTransform>
+
+                    <!-- Active Page Surface -->
+                    <Border Width="{Binding CurrentPage.Width, FallbackValue=800}"
+                            Height="{Binding CurrentPage.Height, FallbackValue=1131}"
+                            Background="{Binding CurrentPage.BackgroundColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue=White}"
+                            BorderBrush="{DynamicResource WinBorderBrush}"
+                            BorderThickness="{Binding PageBorderThickness, Converter={StaticResource DoubleToThickness}}"
+                            CornerRadius="{Binding PageCornerRadius}"
+                            BoxShadow="{Binding PageBoxShadow}"
+                            ClipToBounds="True">
+
+                        <!-- Page Root Grid: Exact Match of Document Sheet Geometry -->
+                        <Grid Width="{Binding CurrentPage.Width, FallbackValue=800}"
+                              Height="{Binding CurrentPage.Height, FallbackValue=1131}">
+
+                            <!-- Header Overlay (if enabled) -->
+                            <Border VerticalAlignment="Top"
+                                    Height="32"
+                                    Padding="28,8"
+                                    ZIndex="1900"
+                                    IsHitTestVisible="False"
+                                    IsVisible="{Binding ShowHeaderFooterInView}">
+                                <Grid ColumnDefinitions="*,*,*">
+                                    <TextBlock Grid.Column="0" Text="{Binding CurrentPage.HeaderLeft}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding CurrentPage.HeaderCenter}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding CurrentPage.HeaderRight}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <!-- Elements Canvas ItemsControl: Single flat canvas for all page elements -->
+                            <ItemsControl x:Name="PageElementsCanvas"
+                                          ItemsSource="{Binding CurrentPage.Elements}"
+                                          Width="{Binding CurrentPage.Width, FallbackValue=800}"
+                                          Height="{Binding CurrentPage.Height, FallbackValue=1131}">
+
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas Width="{Binding CurrentPage.Width, FallbackValue=800}"
+                                                Height="{Binding CurrentPage.Height, FallbackValue=1131}"
+                                                Background="Transparent" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+                                <ItemsControl.ItemContainerTheme>
+                                    <ControlTheme TargetType="ContentPresenter" x:DataType="elvm:ElementViewModelBase">
+                                        <Setter Property="Canvas.Left" Value="{Binding X}" />
+                                        <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                                        <Setter Property="Canvas.ZIndex" Value="{Binding ZIndex}" />
+                                        <Setter Property="Opacity" Value="{Binding Opacity}" />
+                                        <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+                                        <Setter Property="RenderTransform" Value="{Binding Rotation, Converter={StaticResource RotationToTransformConverter}}" />
+                                    </ControlTheme>
+                                </ItemsControl.ItemContainerTheme>
+
+                                <ItemsControl.DataTemplates>
+
+                                    <!-- 1. TEXT ELEMENT: Rich Typography via AdvancedTextControl -->
+                                    <DataTemplate DataType="elvm:TextElementViewModel">
+                                        <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                            <controls:AdvancedTextControl
+                                                Text="{Binding Text}"
+                                                Spans="{Binding Spans}"
+                                                FontFamilyName="{Binding FontFamily}"
+                                                FontSize="{Binding FontSize}"
+                                                IsBold="{Binding IsBold}"
+                                                IsItalic="{Binding IsItalic}"
+                                                IsUnderline="{Binding IsUnderline}"
+                                                IsDoubleUnderline="{Binding IsDoubleUnderline}"
+                                                IsStrikethrough="{Binding IsStrikethrough}"
+                                                TextBrush="{Binding TextBrush}"
+                                                TextOpacity="{Binding TextOpacity}"
+                                                Alignment="{Binding Alignment}"
+                                                TextVerticalAlignment="{Binding VerticalAlignment}"
+                                                LineHeight="{Binding LineHeight}"
+                                                CharacterSpacing="{Binding CharacterSpacing}"
+                                                WordSpacing="{Binding WordSpacing}"
+                                                ParagraphSpacing="{Binding ParagraphSpacing}"
+                                                TextWrap="{Binding TextWrap}"
+                                                HasStroke="{Binding HasStroke}"
+                                                StrokeBrush="{Binding StrokeBrush}"
+                                                StrokeWidth="{Binding StrokeWidth}"
+                                                HasShadow="{Binding HasShadow}"
+                                                ShadowBrush="{Binding ShadowBrush}"
+                                                ShadowOffsetX="{Binding ShadowOffsetX}"
+                                                ShadowOffsetY="{Binding ShadowOffsetY}"
+                                                ShadowBlurRadius="{Binding ShadowBlurRadius}"
+                                                ShadowOpacity="{Binding ShadowOpacity}"
+                                                BackgroundBrush="{Binding BackgroundBrush}"
+                                                BorderBrush="{Binding BorderBrush}"
+                                                BorderThickness="{Binding BorderThickness}"
+                                                CornerRadius="{Binding CornerRadius}"
+                                                Padding="{Binding Padding}"
+                                                ShapeMode="{Binding ShapeMode}"
+                                                CurveRadius="{Binding CurveRadius}"
+                                                CurveArcAngle="{Binding CurveArcAngle}"
+                                                CurveStartAngle="{Binding CurveStartAngle}"
+                                                CurveClockwise="{Binding CurveClockwise}"
+                                                CurveInvert="{Binding CurveInvert}"
+                                                CircularPlacement="{Binding CircularPlacement}"
+                                                BaselineShift="{Binding BaselineShift}"
+                                                CharacterRotation="{Binding CharacterRotation}"
+                                                ScaleX="{Binding ScaleX}"
+                                                ScaleY="{Binding ScaleY}"
+                                                FlipX="{Binding FlipX}"
+                                                FlipY="{Binding FlipY}"
+                                                BezierPreset="{Binding BezierPreset}"
+                                                BezierP0X="{Binding BezierP0X}"
+                                                BezierP0Y="{Binding BezierP0Y}"
+                                                BezierP1X="{Binding BezierP1X}"
+                                                BezierP1Y="{Binding BezierP1Y}"
+                                                BezierP2X="{Binding BezierP2X}"
+                                                BezierP2Y="{Binding BezierP2Y}"
+                                                BezierP3X="{Binding BezierP3X}"
+                                                BezierP3Y="{Binding BezierP3Y}" />
+                                        </Grid>
+                                    </DataTemplate>
+
+                                    <!-- 2. SHAPE ELEMENT: Vector Geometry with Labels -->
+                                    <DataTemplate DataType="elvm:ShapeElementViewModel">
+                                        <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                            <Path Data="{Binding PathData}"
+                                                  Fill="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                  Stroke="{Binding StrokeColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                  StrokeThickness="{Binding StrokeThickness}"
+                                                  StrokeDashArray="{Binding DashArrayString}"
+                                                  StrokeLineCap="Round"
+                                                  StrokeJoin="Round"
+                                                  Stretch="Fill" />
+                                            <TextBlock Text="{Binding Label}"
+                                                       FontSize="{Binding LabelFontSize}"
+                                                       FontWeight="Bold"
+                                                       Foreground="{Binding LabelColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       TextWrapping="Wrap"
+                                                       TextAlignment="Center"
+                                                       Margin="8,4" />
+                                        </Grid>
+                                    </DataTemplate>
+
+                                    <!-- 3. DIVIDER ELEMENT: Crisp Vector Lines -->
+                                    <DataTemplate DataType="elvm:DividerElementViewModel">
+                                        <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                            <Path Data="{Binding PathData}"
+                                                  Stroke="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                  StrokeThickness="{Binding Thickness}"
+                                                  StrokeDashArray="{Binding DashArrayString}"
+                                                  StrokeLineCap="Round"
+                                                  StrokeJoin="Round"
+                                                  Stretch="Fill" />
+                                        </Grid>
+                                    </DataTemplate>
+
+                                    <!-- 4. IMAGE ELEMENT: High-DPI Bitmaps -->
+                                    <DataTemplate DataType="elvm:ImageElementViewModel">
+                                        <Border Width="{Binding Width}"
+                                                Height="{Binding Height}"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="{Binding BorderThickness, Converter={StaticResource DoubleToThickness}}"
+                                                CornerRadius="{Binding CornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                                ClipToBounds="True">
+                                            <Image Source="{Binding PreviewBitmap}"
+                                                   Stretch="{Binding KeepAspectRatio, Converter={StaticResource BooleanToStretchConverter}}"
+                                                   RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                        </Border>
+                                    </DataTemplate>
+
+                                    <!-- 5. INTERACTIVE LIVING DATA TABLES (Search, Sort, Sticky Header, CSV Export) -->
+                                    <DataTemplate DataType="vm:InteractiveTableViewModel">
+                                        <Border Width="{Binding Width}"
+                                                Height="{Binding Height}"
+                                                Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                                BoxShadow="0 4 16 #18000000"
+                                                ClipToBounds="True">
+                                            <Grid RowDefinitions="Auto,Auto,*">
+
+                                                <!-- Table Control Bar: Search & CSV Export -->
+                                                <Border Grid.Row="0" Background="{DynamicResource M3SurfaceContainerHighBrush}" Padding="10,6" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1">
+                                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                            <materialIcons:MaterialIcon Kind="TableLarge" Width="16" Height="16" Foreground="{DynamicResource M3PrimaryBrush}" VerticalAlignment="Center" />
+                                                            <TextBlock Text="Interactive Data Table" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                                            <Border Background="{DynamicResource M3PrimaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="6,1">
+                                                                <TextBlock Text="{Binding RowCountSummary}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnPrimaryContainerBrush}" />
+                                                            </Border>
+                                                        </StackPanel>
+
+                                                        <!-- Row Search Box -->
+                                                        <Border Grid.Column="1" HorizontalAlignment="Right" Background="{DynamicResource WinInputBgBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Height="28" Width="170" Padding="8,0" Margin="8,0">
+                                                            <Grid ColumnDefinitions="Auto,*">
+                                                                <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" Margin="0,0,4,0" />
+                                                                <TextBox Grid.Column="1" Text="{Binding FilterQuery}" PlaceholderText="Filter rows..." FontSize="10.5" Background="Transparent" BorderThickness="0" Padding="0" VerticalAlignment="Center" />
+                                                            </Grid>
+                                                        </Border>
+
+                                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                                                            <!-- Clear Filter Pill -->
+                                                            <Button Classes="mini-tool-btn" Height="28" Padding="8,0" CornerRadius="{StaticResource M3ShapeCornerFull}" Command="{Binding ClearFilterCommand}" ToolTip.Tip="Reset Table Filter" IsVisible="{Binding FilterQuery.Length}">
+                                                                <materialIcons:MaterialIcon Kind="FilterOffOutline" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
+                                                            </Button>
+
+                                                            <!-- Copy CSV Button -->
+                                                            <Button Classes="mini-tool-btn" Height="28" Padding="8,0" CornerRadius="{StaticResource M3ShapeCornerFull}" Command="{Binding CopyToClipboardCommand}" ToolTip.Tip="Copy Table as CSV to Clipboard">
+                                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                                    <materialIcons:MaterialIcon Kind="ContentCopy" Width="13" Height="13" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                                                    <TextBlock Text="CSV" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+
+                                                <!-- Sticky Header Row with Column Sorting -->
+                                                <Border Grid.Row="1" Background="{Binding HeaderBackgroundHex, Converter={StaticResource HexToBrushConverter}}" Padding="8,6">
+                                                    <ItemsControl ItemsSource="{Binding Headers}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding}"
+                                                                           FontWeight="Bold"
+                                                                           FontSize="11"
+                                                                           Foreground="White"
+                                                                           TextTrimming="CharacterEllipsis"
+                                                                           VerticalAlignment="Center"
+                                                                           Padding="4,2" />
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </Border>
+
+                                                <!-- Scrollable Rows Viewport -->
+                                                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                                    <ItemsControl ItemsSource="{Binding DisplayedRows}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="vm:InteractiveTableRowItem">
+                                                                <Border BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="8,5">
+                                                                    <ItemsControl ItemsSource="{Binding Cells}">
+                                                                        <ItemsControl.ItemsPanel>
+                                                                            <ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate>
+                                                                        </ItemsControl.ItemsPanel>
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <TextBlock Text="{Binding}"
+                                                                                           FontSize="10.5"
+                                                                                           Foreground="{DynamicResource WinTextBrush}"
+                                                                                           TextTrimming="CharacterEllipsis"
+                                                                                           Padding="4,2"
+                                                                                           VerticalAlignment="Center" />
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+
+                                    <!-- 6. INTERACTIVE ANIMATED CHARTS -->
+                                    <DataTemplate DataType="vm:InteractiveChartViewModel">
+                                        <Border Width="{Binding Width}"
+                                                Height="{Binding Height}"
+                                                Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                                BoxShadow="0 4 16 #18000000"
+                                                Padding="12"
+                                                ClipToBounds="True">
+                                            <Grid RowDefinitions="Auto,*">
+
+                                                <!-- Chart Header -->
+                                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <materialIcons:MaterialIcon Kind="ChartBoxOutline" Width="18" Height="18" Foreground="{DynamicResource M3PrimaryBrush}" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding Title}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                                        <Border Background="{DynamicResource M3SecondaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="6,1.5">
+                                                            <TextBlock Text="{Binding ChartTypeDescription}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
+                                                        </Border>
+                                                    </StackPanel>
+
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                                        <Button Classes="mini-tool-btn" Width="28" Height="28" CornerRadius="{StaticResource M3ShapeCornerFull}" Command="{Binding ReplayAnimationCommand}" ToolTip.Tip="Replay Chart Animation">
+                                                            <materialIcons:MaterialIcon Kind="PlayCircleOutline" Width="16" Height="16" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                                        </Button>
+                                                        <Button Classes="mini-tool-btn" Width="28" Height="28" CornerRadius="{StaticResource M3ShapeCornerFull}" Command="{Binding ToggleDataTableCommand}" ToolTip.Tip="Toggle Data Table / Visual Chart">
+                                                            <materialIcons:MaterialIcon Kind="Table" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+
+                                                <!-- Animated Visual Chart View -->
+                                                <Grid Grid.Row="1" IsVisible="{Binding !IsShowingDataTable}">
+                                                    <!-- 1. Live Animated Column / Bar Chart -->
+                                                    <ItemsControl ItemsSource="{Binding Items}" VerticalAlignment="Bottom" IsVisible="{Binding IsBarColumn}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="vm:InteractiveChartItem">
+                                                                <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Spacing="4" Margin="6,0" ToolTip.Tip="{Binding TooltipText}">
+                                                                    <!-- Value Badge -->
+                                                                    <Border Background="{DynamicResource M3SurfaceContainerHighBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="5,1" HorizontalAlignment="Center">
+                                                                        <TextBlock Text="{Binding ValueLabel}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                                                    </Border>
+
+                                                                    <!-- Animated Tactile Pillar -->
+                                                                    <Border Width="38"
+                                                                            Height="{Binding AnimatedHeightPx}"
+                                                                            Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                            CornerRadius="6,6,0,0"
+                                                                            BoxShadow="0 2 6 #1A000000" />
+
+                                                                    <!-- Category Label -->
+                                                                    <TextBlock Text="{Binding Category}"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold"
+                                                                               Foreground="{DynamicResource WinMutedBrush}"
+                                                                               HorizontalAlignment="Center"
+                                                                               TextTrimming="CharacterEllipsis" />
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+
+                                                    <!-- 2. Live Animated Horizontal Progress Meters -->
+                                                    <ScrollViewer VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsHorizontalBar}">
+                                                        <ItemsControl ItemsSource="{Binding Items}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate DataType="vm:InteractiveChartItem">
+                                                                    <StackPanel Margin="0,4" Spacing="3" ToolTip.Tip="{Binding TooltipText}">
+                                                                        <Grid ColumnDefinitions="*,Auto">
+                                                                            <TextBlock Grid.Column="0" Text="{Binding Category}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                                                                                <TextBlock Text="{Binding ValueLabel}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                                                                <Border Background="{DynamicResource M3SecondaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="6,1">
+                                                                                    <TextBlock Text="{Binding ProgressPercentageString}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
+                                                                                </Border>
+                                                                            </StackPanel>
+                                                                        </Grid>
+                                                                        <Border Height="10" CornerRadius="5" Background="{DynamicResource M3SurfaceContainerHighBrush}">
+                                                                            <Border HorizontalAlignment="Left" Width="{Binding AnimatedWidthPx}" Height="10" CornerRadius="5" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" />
+                                                                        </Border>
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </ScrollViewer>
+
+                                                    <!-- 3. Live Animated Donut / Segmented Pie -->
+                                                    <Grid ColumnDefinitions="Auto,*" Margin="6,2" IsVisible="{Binding IsDonutPie}">
+                                                        <!-- Center KPI Ring Visual -->
+                                                        <Grid Grid.Column="0" Width="136" Height="136" VerticalAlignment="Center" Margin="0,0,16,0">
+                                                            <Ellipse Width="132" Height="132" Stroke="{DynamicResource M3SurfaceContainerHighBrush}" StrokeThickness="14" />
+                                                            <Ellipse Width="132" Height="132" Stroke="{DynamicResource M3PrimaryBrush}" StrokeThickness="14" StrokeDashArray="3.5, 0.4" />
+                                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
+                                                                <TextBlock Text="{Binding CenterSummaryValue}" FontSize="17" FontWeight="ExtraBold" HorizontalAlignment="Center" Foreground="{DynamicResource WinTextBrush}" />
+                                                                <TextBlock Text="{Binding CenterSummaryLabel}" FontSize="9" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{DynamicResource WinMutedBrush}" />
+                                                            </StackPanel>
+                                                        </Grid>
+
+                                                        <!-- Interactive Segment Legend -->
+                                                        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                                                            <ItemsControl ItemsSource="{Binding Items}">
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate DataType="vm:InteractiveChartItem">
+                                                                        <Border Padding="4,4" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" ToolTip.Tip="{Binding TooltipText}">
+                                                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                                                                <Border Grid.Column="0" Width="10" Height="10" CornerRadius="5" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                                                <TextBlock Grid.Column="1" Text="{Binding Category}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                                                <TextBlock Grid.Column="2" Text="{Binding ValueLabel}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" Margin="8,0" />
+                                                                                <Border Grid.Column="3" Background="{DynamicResource M3SecondaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="6,1" VerticalAlignment="Center">
+                                                                                    <TextBlock Text="{Binding ProgressPercentageString}" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
+                                                                                </Border>
+                                                                            </Grid>
+                                                                        </Border>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </ScrollViewer>
+                                                    </Grid>
+
+                                                    <!-- 4. High-Res Line / Area / Spline Chart -->
+                                                    <Grid IsVisible="{Binding IsLineOrArea}">
+                                                        <Image Source="{Binding ChartBitmap}" IsVisible="{Binding ChartBitmap, Converter={x:Static ObjectConverters.IsNotNull}}" Stretch="Uniform" />
+                                                        <!-- Fallback to column bars if bitmap not rendered yet -->
+                                                        <ItemsControl ItemsSource="{Binding Items}" VerticalAlignment="Bottom" IsVisible="{Binding ChartBitmap, Converter={x:Static ObjectConverters.IsNull}}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate DataType="vm:InteractiveChartItem">
+                                                                    <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Spacing="4" Margin="6,0" ToolTip.Tip="{Binding TooltipText}">
+                                                                        <Border Background="{DynamicResource M3SurfaceContainerHighBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="5,1" HorizontalAlignment="Center">
+                                                                            <TextBlock Text="{Binding ValueLabel}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                                                        </Border>
+                                                                        <Border Width="28" Height="{Binding AnimatedHeightPx}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="4,4,0,0" />
+                                                                        <TextBlock Text="{Binding Category}" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </Grid>
+                                                </Grid>
+
+                                                <!-- Underlying Tabular Data Inspection View -->
+                                                <ScrollViewer Grid.Row="1" IsVisible="{Binding IsShowingDataTable}" VerticalScrollBarVisibility="Auto">
+                                                    <ItemsControl ItemsSource="{Binding Items}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="vm:InteractiveChartItem">
+                                                                <Border BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="6,4">
+                                                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                                                        <Border Grid.Column="0" Width="10" Height="10" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="2" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                                        <TextBlock Grid.Column="1" Text="{Binding Category}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                                                        <TextBlock Grid.Column="2" Text="{Binding ValueLabel}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                                                        <Border Grid.Column="3" Background="{DynamicResource M3SecondaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="6,1">
+                                                                            <TextBlock Text="{Binding Percentage, StringFormat='{}{0:F1}%'}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
+                                                                        </Border>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+
+                                    <!-- 7. FORM FIELD: Living Interactive Controls & Signatures -->
+                                    <DataTemplate DataType="elvm:FormFieldElementViewModel">
+                                        <Border Width="{Binding Width}"
+                                                Height="{Binding Height}"
+                                                Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="1.5"
+                                                CornerRadius="6"
+                                                Padding="8,4">
+                                            <Panel>
+                                                <!-- Checkbox Field -->
+                                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                                            IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Checkbox}">
+                                                    <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding Label}" FontSize="{Binding FontSize}" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                                </StackPanel>
+
+                                                <!-- Radio Button Field -->
+                                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                                            IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Radio}">
+                                                    <RadioButton IsChecked="{Binding IsChecked, Mode=TwoWay}" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding Label}" FontSize="{Binding FontSize}" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                                </StackPanel>
+
+                                                <!-- Fillable Input -->
+                                                <StackPanel Spacing="2"
+                                                            IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Text}">
+                                                    <TextBlock Text="{Binding Label}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                                                    <TextBox Text="{Binding Value, Mode=TwoWay}"
+                                                             PlaceholderText="{Binding Placeholder}"
+                                                             FontSize="{Binding FontSize}"
+                                                             Height="28" Padding="6,2"
+                                                             CornerRadius="4" />
+                                                </StackPanel>
+
+                                                <!-- Verified Digital Signature Badge -->
+                                                <Grid RowDefinitions="Auto,Auto"
+                                                      IsVisible="{Binding FieldType, Converter={StaticResource EqualityConverter}, ConverterParameter=Signature}"
+                                                      VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <materialIcons:MaterialIcon Kind="DrawPen" Width="18" Height="18" Foreground="{DynamicResource M3PrimaryBrush}" VerticalAlignment="Center" />
+                                                        <TextBlock Text="Digitally Verified Document Signature" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource M3PrimaryBrush}" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                    <Border Grid.Row="1" Margin="0,4,0,0" Background="#DCFCE7" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="8,2" HorizontalAlignment="Left">
+                                                        <TextBlock Text="✓ Certified Authentic · Tamper-evident" FontSize="9" FontWeight="Bold" Foreground="#15803D" />
+                                                    </Border>
+                                                </Grid>
+                                            </Panel>
+                                        </Border>
+                                    </DataTemplate>
+
+                                    <!-- 8. MATH ELEMENT: Formulas -->
+                                    <DataTemplate DataType="elvm:MathElementViewModel">
+                                        <Border Width="{Binding Width}" Height="{Binding Height}" Padding="8,4" Background="#0A000000" CornerRadius="6">
+                                            <views:MathFormulaControl Formula="{Binding Formula}"
+                                                                      FontSize="{Binding FontSize}"
+                                                                      TextColor="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                      ShowEquationNumber="{Binding ShowEquationNumber}"
+                                                                      EquationNumber="{Binding EquationNumber}"
+                                                                      Alignment="{Binding Alignment}" />
+                                        </Border>
+                                    </DataTemplate>
+
+                                    <!-- 9. WATERMARK ELEMENT -->
+                                    <DataTemplate DataType="elvm:WatermarkElementViewModel">
+                                        <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                            <LayoutTransformControl HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <LayoutTransformControl.LayoutTransform>
+                                                    <RotateTransform Angle="{Binding Angle}" />
+                                                </LayoutTransformControl.LayoutTransform>
+                                                <TextBlock Text="{Binding Text}"
+                                                           FontSize="{Binding FontSize}"
+                                                           FontWeight="Bold"
+                                                           Opacity="{Binding Opacity}"
+                                                           Foreground="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" />
+                                            </LayoutTransformControl>
+                                        </Grid>
+                                    </DataTemplate>
+
+                                    <!-- 10. STICKY NOTE ELEMENT -->
+                                    <DataTemplate DataType="elvm:StickyNoteElementViewModel">
+                                        <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                BoxShadow="0 4 12 #20000000"
+                                                Padding="10">
+                                            <Grid RowDefinitions="Auto,*,Auto">
+                                                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,6">
+                                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="NoteTextOutline" Width="14" Height="14" Foreground="#B45309" Margin="0,0,4,0" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding Author}" FontSize="10.5" FontWeight="Bold" Foreground="#78350F" VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding Timestamp}" FontSize="8.5" Foreground="#92400E" VerticalAlignment="Center" />
+                                                </Grid>
+                                                <TextBlock Grid.Row="1" Text="{Binding NoteText}" FontSize="10.5" Foreground="#78350F" TextWrapping="Wrap" />
+                                                <Border Grid.Row="2" Background="#FEF3C7" CornerRadius="3" Padding="4,2" HorizontalAlignment="Left" Margin="0,4,0,0">
+                                                    <TextBlock Text="{Binding Status}" FontSize="9" FontWeight="SemiBold" Foreground="#B45309" />
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+
+                                    <!-- 11. QR CODE ELEMENT -->
+                                    <DataTemplate DataType="elvm:QrCodeElementViewModel">
+                                        <Border Width="{Binding Width}" Height="{Binding Height}" Background="White" CornerRadius="4" Padding="6">
+                                            <Image Source="{Binding QrBitmap}" RenderOptions.BitmapInterpolationMode="None" Stretch="Uniform" />
+                                        </Border>
+                                    </DataTemplate>
+
+                                    <!-- 12. BARCODE ELEMENT -->
+                                    <DataTemplate DataType="elvm:BarcodeElementViewModel">
+                                        <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                Background="{DynamicResource WinPanelBrush}"
+                                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
+                                                Padding="8,4">
+                                            <Grid RowDefinitions="*,Auto">
+                                                <materialIcons:MaterialIcon Grid.Row="0" Kind="Barcode" Width="180" Height="36" Foreground="{Binding BarColorHex, Converter={StaticResource HexToBrushConverter}}" HorizontalAlignment="Center" />
+                                                <TextBlock Grid.Row="1" Text="{Binding CodeValue}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" LetterSpacing="1.2" IsVisible="{Binding ShowText}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+
+                                    <!-- 13. SVG VECTOR ART -->
+                                    <DataTemplate DataType="elvm:SvgElementViewModel">
+                                        <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                            <Border Background="Transparent"
+                                                    BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                    BorderThickness="{Binding BorderThickness, Converter={StaticResource DoubleToThickness}}"
+                                                    CornerRadius="{Binding CornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                                    ClipToBounds="True">
+                                                <Panel>
+                                                    <Image Source="{Binding PreviewBitmap}"
+                                                           RenderOptions.BitmapInterpolationMode="HighQuality"
+                                                           Stretch="{Binding KeepAspectRatio, Converter={x:Static converters:BooleanToStretchConverter.Instance}}"
+                                                           IsVisible="{Binding PreviewBitmap, Converter={StaticResource NullToBooleanConverter}}" />
+                                                    <Viewbox Stretch="Uniform"
+                                                             IsVisible="{Binding PreviewBitmap, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter={x:Null}, FallbackValue=True}">
+                                                        <Path Data="{Binding PathGeometryData}"
+                                                              Fill="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#D97706'}"
+                                                              Stroke="{Binding TintColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#8B0000'}"
+                                                              StrokeThickness="1.5" />
+                                                    </Viewbox>
+                                                </Panel>
+                                            </Border>
+                                        </Grid>
+                                    </DataTemplate>
+
+                                    <!-- 14. REDACTION BLACKOUT ELEMENT -->
+                                    <DataTemplate DataType="elvm:RedactionElementViewModel">
+                                        <Border Width="{Binding Width}" Height="{Binding Height}"
+                                                Background="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                BorderThickness="{Binding BorderThickness, Converter={StaticResource DoubleToThickness}}"
+                                                CornerRadius="2"
+                                                Padding="4">
+                                            <TextBlock Text="{Binding ExemptionCode}" FontSize="10" FontWeight="Bold" Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </DataTemplate>
+
+                                </ItemsControl.DataTemplates>
+                            </ItemsControl>
+
+                            <!-- Footer Overlay (if enabled) -->
+                            <Border VerticalAlignment="Bottom"
+                                    Height="32"
+                                    Padding="28,8"
+                                    ZIndex="1900"
+                                    IsHitTestVisible="False"
+                                    IsVisible="{Binding ShowHeaderFooterInView}">
+                                <Grid ColumnDefinitions="*,*,*">
+                                    <TextBlock Grid.Column="0" Text="{Binding CurrentPage.FooterLeft}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding CurrentPage.FooterCenter}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding CurrentPage.FooterRight}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                        </Grid>
+                    </Border>
+
+                </LayoutTransformControl>
+            </ScrollViewer>
+
+        </Grid>
+
+        <!-- ============================================================== -->
+        <!-- 3. FLOATING PRESENTATION CONTROLS (Visible in Fullscreen)       -->
+        <!-- ============================================================== -->
+        <Border Grid.Row="1"
+                ZIndex="5000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,24"
+                Background="#D00F172A"
+                CornerRadius="{StaticResource M3ShapeCornerFull}"
+                Padding="12,6"
+                BoxShadow="0 8 32 #40000000"
+                IsVisible="{Binding IsPresentationMode}">
+            <Border.Styles>
+                <Style Selector="Button.presentation-nav-btn">
+                    <Setter Property="Background" Value="#1E293B" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <BrushTransition Property="Background" Duration="0:0:0.12" />
+                            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12" />
+                        </Transitions>
+                    </Setter>
+                </Style>
+                <Style Selector="Button.presentation-nav-btn:pointerover">
+                    <Setter Property="Background" Value="#334155" />
+                    <Setter Property="RenderTransform" Value="scale(1.08)" />
+                </Style>
+                <Style Selector="Button.presentation-nav-btn:pressed">
+                    <Setter Property="Background" Value="#475569" />
+                    <Setter Property="RenderTransform" Value="scale(0.92)" />
+                </Style>
+                <Style Selector="Button.presentation-nav-btn:disabled">
+                    <Setter Property="Opacity" Value="0.3" />
+                    <Setter Property="Cursor" Value="No" />
+                </Style>
+            </Border.Styles>
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Classes="presentation-nav-btn" Width="32" Height="32" CornerRadius="{StaticResource M3ShapeCornerFull}" Command="{Binding PreviousPageCommand}" IsEnabled="{Binding CanGoPreviousPage}" ToolTip.Tip="Previous Slide (← / PageUp)">
+                    <materialIcons:MaterialIcon Kind="ChevronLeft" Width="20" Height="20" Foreground="White" />
+                </Button>
+
+                <TextBlock Text="{Binding CurrentPageNumber, StringFormat='{}Slide {0}'}" FontSize="12.5" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Margin="6,0,2,0" />
+                <TextBlock Text="{Binding TotalPagesCount, StringFormat='{}of {0}'}" FontSize="12.5" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,6,0" />
+
+                <Button Classes="presentation-nav-btn" Width="32" Height="32" CornerRadius="{StaticResource M3ShapeCornerFull}" Command="{Binding NextPageCommand}" IsEnabled="{Binding CanGoNextPage}" ToolTip.Tip="Next Slide (Space / → / PageDown)">
+                    <materialIcons:MaterialIcon Kind="ChevronRight" Width="20" Height="20" Foreground="White" />
+                </Button>
+
+                <Rectangle Width="1" Height="18" Fill="#475569" Margin="4,0" />
+
+                <Button Classes="presentation-nav-btn" Width="32" Height="32" CornerRadius="{StaticResource M3ShapeCornerFull}" Command="{Binding ReplayAnimationsCommand}" ToolTip.Tip="Replay Animations">
+                    <materialIcons:MaterialIcon Kind="PlayCircleOutline" Width="18" Height="18" Foreground="#38BDF8" />
+                </Button>
+
+                <Button Classes="presentation-nav-btn" Width="32" Height="32" CornerRadius="{StaticResource M3ShapeCornerFull}" Command="{Binding TogglePresentationModeCommand}" ToolTip.Tip="Exit Presentation (Esc / F11)">
+                    <materialIcons:MaterialIcon Kind="FullscreenExit" Width="18" Height="18" Foreground="#EF4444" />
+                </Button>
+            </StackPanel>
+        </Border>
+
+    </Grid>
+</UserControl>

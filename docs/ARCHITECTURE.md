@@ -125,6 +125,34 @@ FryPDF incorporates an extensible, plugin-first architecture inspired by **DeepS
 
 For the full architectural specification, interface designs, and pipeline mechanics, see the [Plugin-Based Architecture Manual](PLUGIN_BASED_ARCHITECTURE.md).
 
+
+---
+
+## 8. Interactive Document Viewer & Presentation Subsystem (.frypdf)
+
+Located in `src/PdfEditorApp/ViewModels/FryPdfViewer/` and `src/PdfEditorApp/Views/`:
+- **Read-Only Interactive Experience**: Unlike the creation studio canvas which allows arbitrary dragging, resizing, and styling, the `.frypdf` Viewer offers a streamlined, non-destructive presentation and consumption mode for rich document artifacts beyond what static binary PDFs support.
+- **Interactive Live Tables (`InteractiveTableViewModel`)**:
+  - Real-time substring row filtering across all columns via search input.
+  - Interactive header column sorting (ascending / descending toggle).
+  - Sticky frosted header bar with column headers and row count metrics.
+  - One-click CSV export to system clipboard.
+- **Animated Tactile Charts (`InteractiveChartViewModel`)**:
+  - Smooth 600ms cubic ease-out entry animations using Avalonia's `DispatcherTimer`.
+  - Interactive tactile bar hover cards displaying exact values and category labels.
+  - In-place tabular data inspector toggle (`IsShowingDataTable`).
+  - Tactile animation replay capability for live presentations.
+- **Living Form Fields & Digital Signatures**:
+  - Interactive read-only checkboxes and toggle states for document inspection.
+  - Validated digital signature and seal verification badges.
+- **Presentation Mode**:
+  - Fullscreen/edge-to-edge slide show layout hiding editor chrome.
+  - Floating M3 Expressive pill HUD with quick navigation, page counters, zoom controls, and exit commands.
+- **Bi-Directional Studio Bridge**:
+  - Documents can be launched into the interactive viewer directly from Home, the title bar, or file open pickers.
+  - Users can transition back into the full Editing Studio instantly via `TransitionToEditorCommand` or export directly to standard static PDF via QuestPDF.
+
 For detailed algorithms, testing procedures, and the continuous improvement workflow, see the [PDF Deconstruction & Editing Guide](PDF_DECONSTRUCTION_AND_EDITING.md).
+
 
 

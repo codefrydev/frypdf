@@ -111,5 +111,20 @@ Located in `src/PdfEditorApp/Services/AI/` and `src/PdfEditorApp/ViewModels/`:
 - **`AiAssistantViewModel` & `AiAssistantDialog`**: Interactive M3 Expressive dialog supporting prompt execution, in-place element modification, suggested prompts, live model switching, activity logging, and atomic canvas undo/redo.
 - **`AiDocumentService`**: Extractive NLP summarization, keyword extraction, and document translation engine.
 
+
+---
+
+## 7. Plugin-Based Architecture ("Everything is a Plugin")
+
+FryPDF incorporates an extensible, plugin-first architecture inspired by **DeepSeek Harness (`deepseek-harness`)** and the **Cordis** framework.
+- **Dynamic Capability Context (`IFryPluginContext`)**: Swappable services and extension points without hardcoded compile-time dependencies.
+- **Declarative Dependency Resolution**: Directed Acyclic Graph (DAG) topological loader.
+- **Reversible Effects (`PluginScope`)**: LIFO registration disposal eliminating memory leaks.
+- **Multi-Mode Dispatch Pipelines**: `Waterfall` (around-middleware), `Bail` (first handled result), `Parallel`, `Serial`, and `Emit`.
+- **Profiles & Bundles**: Target-specific application assemblies (`desktop`, `headless-cli`, `sdk`).
+
+For the full architectural specification, interface designs, and pipeline mechanics, see the [Plugin-Based Architecture Manual](PLUGIN_BASED_ARCHITECTURE.md).
+
 For detailed algorithms, testing procedures, and the continuous improvement workflow, see the [PDF Deconstruction & Editing Guide](PDF_DECONSTRUCTION_AND_EDITING.md).
+
 

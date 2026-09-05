@@ -1073,6 +1073,22 @@ public class AnyTrueMultiConverter : IMultiValueConverter
 }
 
 /// <summary>
+/// Multi-value converter that returns true if the first two bound values are equal (case-insensitive string comparison).
+/// </summary>
+public class ValuesEqualMultiConverter : IMultiValueConverter
+{
+    public static readonly ValuesEqualMultiConverter Instance = new();
+
+    public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (values == null || values.Count < 2) return false;
+        if (values[0] == null && values[1] == null) return true;
+        if (values[0] == null || values[1] == null) return false;
+        return string.Equals(values[0]?.ToString(), values[1]?.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+/// <summary>
 /// Concatenates multiple string values together with an optional delimiter parameter.
 /// </summary>
 public class StringConcatMultiConverter : IMultiValueConverter

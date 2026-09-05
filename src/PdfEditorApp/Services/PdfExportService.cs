@@ -12,6 +12,8 @@ using PdfEditorApp.Core.Models;
 using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Core.Utils;
 using PdfEditorApp.Models;
+using PdfEditorApp.Core.Plugins;
+using PdfEditorApp.Core.Plugins.Pipelines;
 using PdfEditorApp.Services.MathEngine;
 using PdfEditorApp.Services.Typography;
 
@@ -19,6 +21,13 @@ namespace PdfEditorApp.Services;
 
 public class PdfExportService : IPdfExportService
 {
+    private readonly IFryPluginContext? _pluginContext;
+
+    public PdfExportService(IFryPluginContext? pluginContext = null)
+    {
+        _pluginContext = pluginContext;
+    }
+
     static PdfExportService()
     {
         RegisterEmbeddedFonts();
@@ -82,7 +91,25 @@ public class PdfExportService : IPdfExportService
         return GeneratePdfBytes(model, null);
     }
 
-    private static byte[] GeneratePdfBytes(PdfDocumentModel model, IProgress<double>? progress)
+    public byte[] GeneratePdfBytes(PdfDocumentModel model, IProgress<double>? progress)
+    {
+        var context = new PdfExportPipelineContext(model, progress);
+
+        if (_pluginContext != null)
+        {
+            _pluginContext.ExecuteWaterfallAsync("document:export", context, () =>
+            {
+                context.ResultPdfBytes = CompileModelToBytes(context.Document, context.Progress);
+                return Task.CompletedTask;
+            }).GetAwaiter().GetResult();
+
+            return context.ResultPdfBytes ?? CompileModelToBytes(model, progress);
+        }
+
+        return CompileModelToBytes(model, progress);
+    }
+
+    private static byte[] CompileModelToBytes(PdfDocumentModel model, IProgress<double>? progress)
     {
         var document = new QuestPdfDocumentWrapper(model, progress);
         byte[] rawPdf = document.GeneratePdf();
@@ -97,10 +124,23 @@ public class PdfExportService : IPdfExportService
         return FryPdfEmbeddingHelper.EmbedModelInPdfBytes(rawPdf, model);
     }
 
-    public Task<byte[]> ExportToBytesAsync(PdfDocumentModel model, IProgress<double>? progress = null, CancellationToken ct = default)
+    public async Task<byte[]> ExportToBytesAsync(PdfDocumentModel model, IProgress<double>? progress = null, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        return Task.Run(() => GeneratePdfBytes(model, progress), ct);
+        var context = new PdfExportPipelineContext(model, progress, ct);
+
+        if (_pluginContext != null)
+        {
+            await _pluginContext.ExecuteWaterfallAsync("document:export", context, () =>
+            {
+                context.ResultPdfBytes = CompileModelToBytes(context.Document, context.Progress);
+                return Task.CompletedTask;
+            });
+
+            return context.ResultPdfBytes ?? CompileModelToBytes(model, progress);
+        }
+
+        return await Task.Run(() => CompileModelToBytes(model, progress), ct);
     }
 
     public async Task ExportToFileAsync(PdfDocumentModel model, string filePath, IProgress<double>? progress = null, CancellationToken ct = default)

@@ -130,6 +130,15 @@ public class PdfToolDefinition
     public bool IsWorkflowBanner { get; set; }
     public string AcceptedFileExtensions { get; set; } = ".pdf";
     public bool SupportsMultiFile { get; set; }
+
+    private string? _stringId;
+    public string StringId
+    {
+        get => string.IsNullOrWhiteSpace(_stringId) ? Id.ToString() : _stringId;
+        set => _stringId = value;
+    }
+
+    public Func<IServiceProvider, object>? ViewModelFactory { get; set; }
 }
 
 public record ToolExecutionResult

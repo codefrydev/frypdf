@@ -8,12 +8,27 @@ using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Core.Models;
 using PdfEditorApp.Core.Models.Elements;
 using PdfEditorApp.Models;
+using PdfEditorApp.Services.Canvas;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
 namespace PdfEditorApp.ViewModels;
 
 public partial class PageViewModel : ViewModelBase
 {
+    private readonly ICanvasElementService _elementService;
+
+    public PageViewModel(ICanvasElementService? elementService = null)
+    {
+        _elementService = elementService ?? DefaultElementService;
+    }
+
+    private static ICanvasElementService? _defaultElementService;
+    public static ICanvasElementService DefaultElementService
+    {
+        get => _defaultElementService ??= new CanvasElementRegistry();
+        set => _defaultElementService = value;
+    }
+
     [ObservableProperty]
     private string _id = Guid.NewGuid().ToString("N");
 
@@ -449,26 +464,7 @@ public partial class PageViewModel : ViewModelBase
 
         foreach (var elModel in model.Elements)
         {
-            ElementViewModelBase vm = elModel switch
-            {
-                PdfTextElement txt => new TextElementViewModel(),
-                PdfImageElement img => new ImageElementViewModel(),
-                PdfShapeElement shp => new ShapeElementViewModel(),
-                PdfDividerElement div => new DividerElementViewModel(),
-                PdfChartElement ch => new ChartElementViewModel(),
-                PdfTableElement tbl => new TableElementViewModel(),
-                PdfWatermarkElement wm => new WatermarkElementViewModel(),
-                PdfFormFieldElement form => new FormFieldElementViewModel(),
-                PdfQrCodeElement qr => new QrCodeElementViewModel(),
-                PdfBarcodeElement bar => new BarcodeElementViewModel(),
-                PdfRedactionElement red => new RedactionElementViewModel(),
-                PdfInkElement ink => new InkElementViewModel(),
-                PdfStickyNoteElement note => new StickyNoteElementViewModel(),
-                PdfMeasurementElement m => new MeasurementElementViewModel(),
-                PdfSvgElement svg => new SvgElementViewModel(),
-                _ => new TextElementViewModel()
-            };
-            vm.LoadFromModel(elModel);
+            ElementViewModelBase vm = _elementService.CreateViewModel(elModel);
             Elements.Add(vm);
         }
     }

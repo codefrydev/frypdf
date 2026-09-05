@@ -13,6 +13,7 @@ public interface ICompositeOcrProvider : IOcrEngine
     ITesseractModelService ModelService { get; }
     IReadOnlyList<IOcrEngine> AvailableEngines { get; }
     IOcrEngine ActiveEngine { get; }
+    void RegisterEngine(IOcrEngine engine);
 }
 
 public class CompositeOcrProvider : ICompositeOcrProvider
@@ -63,7 +64,16 @@ public class CompositeOcrProvider : ICompositeOcrProvider
 
         if (_appleEngine.IsAvailable) _engines.Add(_appleEngine);
         if (_windowsEngine.IsAvailable) _engines.Add(_windowsEngine);
-        _engines.Add(_tesseractEngine);
+        if (_tesseractEngine.IsAvailable) _engines.Add(_tesseractEngine);
+    }
+
+    public void RegisterEngine(IOcrEngine engine)
+    {
+        ArgumentNullException.ThrowIfNull(engine);
+        if (!_engines.Any(e => e.EngineName == engine.EngineName))
+        {
+            _engines.Add(engine);
+        }
     }
 
     public async Task<OcrResult> RecognizeTextAsync(byte[] imageBytes, string language = "eng", CancellationToken ct = default)

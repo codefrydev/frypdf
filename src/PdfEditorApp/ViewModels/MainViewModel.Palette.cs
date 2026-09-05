@@ -4,10 +4,15 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Input.Platform;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Plugins;
+using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Models;
+using PdfEditorApp.Services.Tools.Core;
 
 namespace PdfEditorApp.ViewModels;
 
@@ -29,11 +34,14 @@ public partial class MainViewModel
                 var ver = assembly.GetName().Version;
                 if (ver != null)
                 {
-                    int build = ver.Build >= 0 ? ver.Build : 0;
-                    return $"{ver.Major}.{ver.Minor}.{build}";
+                    return $"{ver.Major}.{ver.Minor}.{ver.Build}";
                 }
             }
-            catch { }
+            catch
+            {
+                // fallback
+            }
+
             return "1.0.0";
         }
     }
@@ -57,6 +65,412 @@ public partial class MainViewModel
     [ObservableProperty]
     private bool _isAboutDialogOpen;
 
+    [ObservableProperty]
+    private bool _isPluginsDialogOpen;
+
+    [ObservableProperty]
+    private string _pluginSearchQuery = "";
+
+    public ObservableCollection<PluginItemViewModel> FilteredPluginsList { get; } = new();
+    private readonly List<PluginItemViewModel> _allLoadedPlugins = new();
+
+    partial void OnPluginSearchQueryChanged(string value)
+    {
+        FilterLoadedPlugins(value);
+    }
+
+    private void FilterLoadedPlugins(string query)
+    {
+        FilteredPluginsList.Clear();
+        var q = query.Trim().ToLowerInvariant();
+        foreach (var p in _allLoadedPlugins)
+        {
+            if (string.IsNullOrWhiteSpace(q) ||
+                p.Name.ToLowerInvariant().Contains(q) ||
+                p.Id.ToLowerInvariant().Contains(q) ||
+                p.Category.ToLowerInvariant().Contains(q) ||
+                p.Description.ToLowerInvariant().Contains(q))
+            {
+                FilteredPluginsList.Add(p);
+            }
+        }
+    }
+
+    [RelayCommand]
+    public void OpenPluginsDialog()
+    {
+        PopulateLoadedPlugins();
+        PluginSearchQuery = "";
+        FilterLoadedPlugins("");
+        IsPluginsDialogOpen = true;
+        // Route through plugin dialog registry
+        OpenRegisteredDialog("frypdf.dialog.plugins");
+    }
+
+    [ObservableProperty]
+    private string _activeProfileName = "desktop";
+
+    [RelayCommand]
+    public void SwitchProfile(string profileName)
+    {
+        try
+        {
+            var host = PluginHost ?? _pluginHost ?? App.Services?.GetService<PluginHost>();
+            if (host == null) return;
+
+            string profilePath = System.IO.Path.Combine(AppContext.BaseDirectory, "profiles", $"{profileName}.profile.json");
+            if (!System.IO.File.Exists(profilePath))
+            {
+                profilePath = $"profiles/{profileName}.profile.json";
+            }
+
+            if (System.IO.File.Exists(profilePath))
+            {
+                var profile = PdfEditorApp.Core.Plugins.Profiles.ProfileLoader.LoadFromFile(profilePath);
+                ActiveProfileName = profile.ProfileName;
+
+                var availableBundles = new PdfEditorApp.Core.Plugins.Profiles.IFryPluginBundle[]
+                {
+                    new PdfEditorApp.Plugins.Bundles.ToolsOrganizeBundle(),
+                    new PdfEditorApp.Plugins.Bundles.ToolsSecurityBundle(),
+                    new PdfEditorApp.Plugins.Bundles.ToolsConversionBundle(),
+                    new PdfEditorApp.Plugins.Bundles.ToolsIntelligenceBundle(),
+                    new PdfEditorApp.Plugins.Bundles.DataStudioBundle(),
+                    new PdfEditorApp.Plugins.Bundles.CanvasElementsBundle(),
+                    new PdfEditorApp.Plugins.Bundles.DocumentIoBundle(),
+                    new PdfEditorApp.Plugins.Bundles.AiProvidersBundle(),
+                    new PdfEditorApp.Plugins.Bundles.OcrEnginesBundle(),
+                    new PdfEditorApp.Plugins.Bundles.StandardTemplatesBundle(),
+                    new PdfEditorApp.Plugins.Bundles.StatusBarBundle(),
+                    new PdfEditorApp.Plugins.Bundles.InspectorBundle(),
+                    new PdfEditorApp.Plugins.Bundles.CommandPaletteBundle(),
+                    new PdfEditorApp.Plugins.Bundles.WorkspacePagesBundle(),
+                    new PdfEditorApp.Plugins.Bundles.DialogsBundle(),
+                    new PdfEditorApp.Plugins.Bundles.EditorSidebarsBundle()
+                };
+
+                PdfEditorApp.Core.Plugins.Profiles.ProfileLoader.ApplyProfile(profile, host, availableBundles);
+                PopulateLoadedPlugins();
+                ShowToast($"Switched to '{profileName}' profile!", ToastNotificationType.Success, "Tune");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Failed to switch profile: {ex.Message}", ToastNotificationType.Danger, "AlertCircleOutline");
+        }
+    }
+
+    [RelayCommand]
+    public void ClosePluginsDialog()
+    {
+        IsPluginsDialogOpen = false;
+        CloseDynamicDialog();
+    }
+
+    public void PopulateLoadedPlugins()
+    {
+        _allLoadedPlugins.Clear();
+        try
+        {
+            var host = PluginHost ?? _pluginHost ?? App.Services?.GetService<PluginHost>();
+            var toolRegistry = _toolRegistry ?? App.Services?.GetService<IPdfToolRegistry>();
+            var toolDefs = toolRegistry?.GetAllTools() ?? Array.Empty<PdfToolDefinition>();
+            var toolMap = new Dictionary<string, PdfToolDefinition>(StringComparer.OrdinalIgnoreCase);
+            foreach (var t in toolDefs)
+            {
+                if (!string.IsNullOrWhiteSpace(t.StringId))
+                {
+                    toolMap[t.StringId] = t;
+                }
+            }
+
+            if (host != null)
+            {
+                var pluginsToShow = host.RegisteredPlugins.Count > 0 ? host.RegisteredPlugins : host.LoadedPlugins;
+                foreach (var plugin in pluginsToShow)
+                {
+                    toolMap.TryGetValue(plugin.Id, out var tool);
+
+                    string category = tool?.CategoryDisplayName ?? "Plugin Extension";
+                    string description = tool?.Description ?? $"Plugin component '{plugin.Name}'";
+                    string iconKind = tool?.IconKind ?? "PuzzleOutline";
+                    string iconColor = tool?.IconColorHex ?? "#7C3AED";
+
+                    if (tool == null)
+                    {
+                        if (plugin.Id.StartsWith("frypdf.page.", StringComparison.OrdinalIgnoreCase))
+                        {
+                            category = "Workspace Navigation";
+                            iconKind = "ViewDashboardOutline";
+                            iconColor = "#0D9488";
+                            description = $"Modular workspace view and navigation page '{plugin.Name}'";
+                        }
+                        else if (plugin.Id.StartsWith("frypdf.dialog", StringComparison.OrdinalIgnoreCase))
+                        {
+                            category = "Modal Studios & Dialogs";
+                            iconKind = "WindowMaximize";
+                            iconColor = "#F97316";
+                            description = $"Modal studio overlay and interactive dialog '{plugin.Name}'";
+                        }
+                        else if (plugin.Id.StartsWith("frypdf.sidebar", StringComparison.OrdinalIgnoreCase))
+                        {
+                            category = "Editor Sidebars";
+                            iconKind = "DockLeft";
+                            iconColor = "#84CC16";
+                            description = $"Document editor sidebar panel '{plugin.Name}'";
+                        }
+                        else if (plugin.Id.StartsWith("frypdf.element.", StringComparison.OrdinalIgnoreCase))
+                        {
+                            category = "Canvas Elements";
+                            iconKind = "ShapeOutline";
+                            iconColor = "#0284C7";
+                            description = $"Canvas element provider '{plugin.Name}'";
+                        }
+                        else if (plugin.Id.StartsWith("frypdf.io.", StringComparison.OrdinalIgnoreCase))
+                        {
+                            category = "Document I/O";
+                            iconKind = "SwapHorizontal";
+                            iconColor = "#10B981";
+                            description = $"Document format import/export filter '{plugin.Name}'";
+                        }
+                        else if (plugin.Id.StartsWith("frypdf.ai.", StringComparison.OrdinalIgnoreCase))
+                        {
+                            category = "AI Providers";
+                            iconKind = "Brain";
+                            iconColor = "#8B5CF6";
+                            description = $"LLM intelligence and analysis provider '{plugin.Name}'";
+                        }
+                        else if (plugin.Id.StartsWith("frypdf.ocr.", StringComparison.OrdinalIgnoreCase))
+                        {
+                            category = "OCR Engines";
+                            iconKind = "TextRecognition";
+                            iconColor = "#F59E0B";
+                            description = $"Optical character recognition engine '{plugin.Name}'";
+                        }
+                        else if (plugin.Id.StartsWith("frypdf.template", StringComparison.OrdinalIgnoreCase))
+                        {
+                            category = "Document Templates";
+                            iconKind = "FileDocumentOutline";
+                            iconColor = "#EC4899";
+                            description = $"Structured document template pack '{plugin.Name}'";
+                        }
+                        else if (plugin.Id.StartsWith("frypdf.status", StringComparison.OrdinalIgnoreCase))
+                        {
+                            category = "Status Bar Widgets";
+                            iconKind = "DockBottom";
+                            iconColor = "#06B6D4";
+                            description = $"Status bar metric and diagnostic widget '{plugin.Name}'";
+                        }
+                        else if (plugin.Id.StartsWith("frypdf.inspector.", StringComparison.OrdinalIgnoreCase))
+                        {
+                            category = "Property Inspector";
+                            iconKind = "CardBulletedOutline";
+                            iconColor = "#3B82F6";
+                            description = $"Live element property inspector section '{plugin.Name}'";
+                        }
+                        else if (plugin.Id.StartsWith("frypdf.command", StringComparison.OrdinalIgnoreCase) || plugin.Id.StartsWith("frypdf.palette", StringComparison.OrdinalIgnoreCase))
+                        {
+                            category = "Command Palette";
+                            iconKind = "ConsoleLine";
+                            iconColor = "#6366F1";
+                            description = $"Quick command and shortcut provider '{plugin.Name}'";
+                        }
+                    }
+
+                    _allLoadedPlugins.Add(new PluginItemViewModel
+                    {
+                        Id = plugin.Id,
+                        Name = plugin.Name,
+                        Version = plugin.Version.ToString(),
+                        Category = category,
+                        Description = description,
+                        IconKind = iconKind,
+                        IconColorHex = iconColor,
+                        IsActive = host.IsPluginActive(plugin.Id),
+                        IsExternal = plugin.GetType().Assembly != typeof(MainViewModel).Assembly,
+                        SourceAssembly = plugin.GetType().Assembly.GetName().Name ?? "FryPDF",
+                        SettingsSchema = plugin.SettingsSchema
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Plugins] Failed to populate plugins: {ex.Message}");
+        }
+    }
+
+    [ObservableProperty]
+    private PluginItemViewModel? _selectedConfiguringPlugin;
+
+    [ObservableProperty]
+    private bool _isConfiguringPluginOpen;
+
+    public ObservableCollection<PluginSettingItemViewModel> ActivePluginConfigSettings { get; } = new();
+
+    [RelayCommand]
+    public void OpenPluginSettings(PluginItemViewModel plugin)
+    {
+        if (plugin?.SettingsSchema == null || plugin.SettingsSchema.Count == 0) return;
+        SelectedConfiguringPlugin = plugin;
+        ActivePluginConfigSettings.Clear();
+
+        var store = App.Services?.GetService<Core.Plugins.Settings.IPluginSettingsStore>();
+
+        foreach (var (key, def) in plugin.SettingsSchema)
+        {
+            var item = new PluginSettingItemViewModel
+            {
+                Key = key,
+                Label = string.IsNullOrWhiteSpace(def.Label) ? key : def.Label,
+                Description = def.Description,
+                Type = def.Type?.ToLowerInvariant() ?? "string",
+                Options = def.Options ?? new()
+            };
+
+            if (store != null)
+            {
+                if (item.Type == "boolean")
+                {
+                    bool defBool = def.DefaultValue is bool b ? b : (bool.TryParse(def.DefaultValue?.ToString(), out var parsedB) && parsedB);
+                    item.BoolValue = store.GetSetting(plugin.Id, key, defBool);
+                }
+                else if (item.Type == "number")
+                {
+                    double defNum = def.DefaultValue is double d ? d : (double.TryParse(def.DefaultValue?.ToString(), out var parsedD) ? parsedD : 0);
+                    item.NumberValue = store.GetSetting(plugin.Id, key, defNum);
+                }
+                else
+                {
+                    string defStr = def.DefaultValue?.ToString() ?? "";
+                    item.StringValue = store.GetSetting(plugin.Id, key, defStr);
+                }
+            }
+            else
+            {
+                item.StringValue = def.DefaultValue?.ToString() ?? "";
+                if (def.DefaultValue is bool b) item.BoolValue = b;
+                if (def.DefaultValue is double d) item.NumberValue = d;
+            }
+
+            ActivePluginConfigSettings.Add(item);
+        }
+
+        IsConfiguringPluginOpen = true;
+    }
+
+    [RelayCommand]
+    public void SavePluginSettings()
+    {
+        if (SelectedConfiguringPlugin == null) return;
+        var store = App.Services?.GetService<Core.Plugins.Settings.IPluginSettingsStore>();
+        if (store != null)
+        {
+            foreach (var item in ActivePluginConfigSettings)
+            {
+                if (item.Type == "boolean")
+                {
+                    store.SetSetting(SelectedConfiguringPlugin.Id, item.Key, item.BoolValue);
+                }
+                else if (item.Type == "number")
+                {
+                    store.SetSetting(SelectedConfiguringPlugin.Id, item.Key, item.NumberValue);
+                }
+                else
+                {
+                    store.SetSetting(SelectedConfiguringPlugin.Id, item.Key, item.StringValue);
+                }
+            }
+            store.Save();
+            ShowToast($"Saved preferences for {SelectedConfiguringPlugin.Name}!", ToastNotificationType.Success, "CheckCircle");
+        }
+        IsConfiguringPluginOpen = false;
+    }
+
+    [RelayCommand]
+    public void ClosePluginSettings()
+    {
+        IsConfiguringPluginOpen = false;
+    }
+
+    [RelayCommand]
+    public async System.Threading.Tasks.Task LoadExternalPluginDialogAsync()
+    {
+        if (StorageProvider == null) return;
+
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Select Plugin Package (.fryplugin) or Assembly (.dll)",
+            AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("FryPDF Plugins (*.fryplugin; *.dll)")
+                {
+                    Patterns = new[] { "*.fryplugin", "*.dll" }
+                },
+                new FilePickerFileType("FryPDF Plugin Package (*.fryplugin)")
+                {
+                    Patterns = new[] { "*.fryplugin" }
+                },
+                new FilePickerFileType(".NET Assembly (*.dll)")
+                {
+                    Patterns = new[] { "*.dll" }
+                }
+            }
+        });
+
+        if (files.Count > 0)
+        {
+            var filePath = files[0].Path.LocalPath;
+            await InstallAndMountPluginPathAsync(filePath);
+        }
+    }
+
+    public async System.Threading.Tasks.Task InstallAndMountPluginPathAsync(string filePath)
+    {
+        try
+        {
+            var host = App.Services?.GetService<PluginHost>();
+            if (host == null) return;
+
+            IReadOnlyList<IFryPlugin> plugins;
+            string displayName;
+
+            if (string.Equals(System.IO.Path.GetExtension(filePath), ".fryplugin", StringComparison.OrdinalIgnoreCase))
+            {
+                var pkgResult = PdfEditorApp.Plugins.Loader.FryPluginPackageLoader.UnpackAndLoad(filePath);
+                plugins = pkgResult.AssemblyPackage.Plugins;
+                displayName = pkgResult.Manifest.Name;
+            }
+            else
+            {
+                var pkg = PdfEditorApp.Plugins.Loader.PluginAssemblyLoader.LoadPluginAssembly(filePath);
+                plugins = pkg.Plugins;
+                displayName = System.IO.Path.GetFileName(filePath);
+            }
+
+            if (plugins.Count == 0)
+            {
+                ShowToast("No IFryPlugin implementations found in package.", ToastNotificationType.Warning, "AlertCircleOutline");
+                return;
+            }
+
+            foreach (var p in plugins)
+            {
+                host.RegisterPlugin(p);
+            }
+            await host.StartAsync();
+
+            PopulateLoadedPlugins();
+            FilterLoadedPlugins(PluginSearchQuery);
+            ShowToast($"Successfully mounted {plugins.Count} plugin(s) from {displayName}!", ToastNotificationType.Success, "CheckCircle");
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Failed to load plugin: {ex.Message}", ToastNotificationType.Danger, "AlertCircleOutline");
+        }
+    }
+
     public ObservableCollection<CommandPaletteItem> FilteredPaletteCommands { get; } = new();
     public List<CommandPaletteItem> AllPaletteCommands { get; } = new();
 
@@ -68,6 +482,7 @@ public partial class MainViewModel
     [RelayCommand]
     public void OpenCommandPalette()
     {
+        InitCommandPalette();
         CommandSearchQuery = "";
         FilterPaletteCommands("");
         IsCommandPaletteOpen = true;
@@ -84,30 +499,35 @@ public partial class MainViewModel
     public void OpenShortcutsHelp()
     {
         IsShortcutsHelpDialogOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.shortcuts");
     }
 
     [RelayCommand]
     public void CloseShortcutsHelp()
     {
         IsShortcutsHelpDialogOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
     public void OpenAboutDialog()
     {
         IsAboutDialogOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.about");
     }
 
     [RelayCommand]
     public void CloseAboutDialog()
     {
         IsAboutDialogOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
     public void NavigateToLicensing()
     {
         IsAboutDialogOpen = false;
+        CloseDynamicDialog();
         IsHomePageVisible = true;
         IsEditorVisible = false;
         IsPdfViewerVisible = false;
@@ -115,10 +535,22 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
+    public void NavigateToPluginsPage()
+    {
+        IsPluginsDialogOpen = false;
+        CloseDynamicDialog();
+        IsHomePageVisible = true;
+        IsEditorVisible = false;
+        IsPdfViewerVisible = false;
+        Home.SelectNavSectionCommand.Execute("Plugins");
+    }
+
+    [RelayCommand]
     public void NavigateToHelp(string? topicId = null)
     {
         IsAboutDialogOpen = false;
         IsShortcutsHelpDialogOpen = false;
+        CloseDynamicDialog();
         IsHomePageVisible = true;
         IsEditorVisible = false;
         IsPdfViewerVisible = false;
@@ -130,6 +562,7 @@ public partial class MainViewModel
     {
         IsAboutDialogOpen = false;
         IsShortcutsHelpDialogOpen = false;
+        CloseDynamicDialog();
         IsHomePageVisible = true;
         IsEditorVisible = false;
         IsPdfViewerVisible = false;
@@ -418,6 +851,8 @@ public partial class MainViewModel
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Help: 32 PDF Tools Guide", Subtitle = "Step-by-step guides, formats & pro tips for every PDF tool", Category = "Help", IconKind = "Tools", Action = () => NavigateToHelpCommand.Execute("tool-merge") });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Help: Live Document Editor Guide", Subtitle = "Guide to canvas tools, typography, math LaTeX & vector layers", Category = "Help", IconKind = "Draw", Action = () => NavigateToHelpCommand.Execute("editor-canvas-basics") });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Help: Batch PDF Generation Guide", Subtitle = "Guide to CSV/JSON Data Studio and mass PDF generation", Category = "Help", IconKind = "DatabaseArrowRightOutline", Action = () => NavigateToHelpCommand.Execute("automation-data-studio") });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Plugins & Extensions Studio", Subtitle = "Full-screen plugin store, installed extensions, and configuration studio", Category = "Preferences", IconKind = "PuzzleOutline", Action = () => NavigateToPluginsPageCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Plugins & Extensions (Quick Dialog)", Subtitle = "Quick popup to toggle plugins, profiles, and load assemblies", Category = "Help", IconKind = "PuzzleOutline", Action = () => OpenPluginsDialogCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "About FryPDF", Subtitle = "View app version, system info, open-source credits, and support", Category = "Help", IconKind = "InformationOutline", Action = () => OpenAboutDialogCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Keyboard Shortcuts Reference", Subtitle = "Open keyboard cheatsheet dialog", Category = "Help", IconKind = "KeyboardOutline", Shortcut = "F1", Action = () => OpenShortcutsHelpCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Open Source Licenses & Third-Party Tools", Subtitle = "View all 12 libraries, licenses, maintainers & attribution text", Category = "Help", IconKind = "CertificateOutline", Action = () => NavigateToLicensingCommand.Execute(null) });
@@ -428,6 +863,52 @@ public partial class MainViewModel
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Microsoft Store Page", Subtitle = "View FryPDF on Microsoft Store (9P5GW2Q81B33)", Category = "Help", IconKind = "Microsoft", Action = () => OpenMicrosoftStoreCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Copy System Diagnostics", Subtitle = "Copy OS, framework, store identity, and app version report", Category = "Help", IconKind = "BugOutline", Action = () => CopyDiagnosticsCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Settings & UI Preferences", Subtitle = "Configure notification placement, snackbar style, themes, and workspace defaults", Category = "Preferences", IconKind = "CogOutline", Shortcut = "⌘,", Action = () => NavigateToSettingsCommand.Execute(null) });
+
+        // 12. Dynamic Plugin Tools
+        var tools = _toolRegistry?.GetAllTools() ?? (IReadOnlyList<PdfToolDefinition>)Array.Empty<PdfToolDefinition>();
+        foreach (var tool in tools)
+        {
+            var targetTool = tool;
+            AllPaletteCommands.Add(new CommandPaletteItem
+            {
+                Title = $"Tool: {targetTool.Name}",
+                Subtitle = targetTool.Description,
+                Category = "PDF Tools",
+                IconKind = targetTool.IconKind,
+                Action = () => OpenTool(targetTool.Id)
+            });
+        }
+
+        // 13. Dynamic Plugin Ribbon Actions
+        var actions = _ribbonRegistry?.GetAllActions() ?? (IReadOnlyList<RibbonActionDescriptor>)Array.Empty<RibbonActionDescriptor>();
+        foreach (var action in actions)
+        {
+            var targetAction = action;
+            AllPaletteCommands.Add(new CommandPaletteItem
+            {
+                Title = targetAction.Label,
+                Subtitle = targetAction.Tooltip ?? $"Contributed by plugin ({targetAction.TabId} tab)",
+                Category = "Plugins",
+                IconKind = targetAction.IconKind,
+                Action = () => ExecuteRibbonAction(targetAction)
+            });
+        }
+
+        // 14. Dynamic Plugin Contributed Commands
+        var dynamicCommands = _commandPaletteRegistry?.GetAllCommands() ?? (IReadOnlyList<CommandPaletteDescriptor>)Array.Empty<CommandPaletteDescriptor>();
+        foreach (var cmd in dynamicCommands)
+        {
+            var targetCmd = cmd;
+            AllPaletteCommands.Add(new CommandPaletteItem
+            {
+                Title = targetCmd.Title,
+                Subtitle = targetCmd.Subtitle,
+                Category = targetCmd.Category,
+                IconKind = targetCmd.IconKind,
+                Shortcut = targetCmd.Shortcut ?? "",
+                Action = () => targetCmd.Action?.Invoke(_pluginHost?.Context ?? (IServiceProvider)this)
+            });
+        }
 
         FilterPaletteCommands("");
     }

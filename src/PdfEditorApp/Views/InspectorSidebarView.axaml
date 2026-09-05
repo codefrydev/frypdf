@@ -2534,6 +2534,42 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Dynamic Plugin-Contributed Inspector Sections -->
+                    <ItemsControl ItemsSource="{Binding DynamicSections}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:DynamicInspectorSectionViewModel">
+                                <Border Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                        Margin="0,4"
+                                        Padding="10">
+                                    <StackPanel Spacing="8">
+                                        <!-- Header -->
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="{Binding IconKind}" Width="15" Height="15"
+                                                                            Foreground="{DynamicResource WinAccentBrush}" />
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12"
+                                                           Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Content -->
+                                        <ContentControl Content="{Binding Content}">
+                                            <ContentControl.DataTemplates>
+                                                <DataTemplate DataType="x:String">
+                                                    <TextBlock Text="{Binding}" FontSize="12" TextWrapping="Wrap"
+                                                               Foreground="{DynamicResource WinMutedBrush}" />
+                                                </DataTemplate>
+                                            </ContentControl.DataTemplates>
+                                        </ContentControl>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
                 </StackPanel>
             </ScrollViewer>
 

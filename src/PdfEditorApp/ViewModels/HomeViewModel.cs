@@ -1,5 +1,6 @@
 using PdfEditorApp.Services.Tools.Core;
 using PdfEditorApp.ViewModels.Tools.Core;
+using PdfEditorApp.Core.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -25,16 +26,34 @@ namespace PdfEditorApp.ViewModels;
 /// ViewModel for the Google Docs, Canva, and Adobe Acrobat inspired Home / Tools Dashboard.
 /// Provides a comprehensive PDF Tools Studio (all 32 tools), expandable template gallery, and recent document management.
 /// </summary>
-public partial class HomeViewModel : ViewModelBase
+public partial class HomeViewModel : ViewModelBase, IServiceProvider
 {
     private readonly IRecentDocumentsService _recentService;
     private readonly ITemplateService _templateService;
     private readonly IProjectPersistenceService _persistenceService;
-    private readonly IPdfToolRegistry _toolRegistry;
+    private readonly IPdfToolRegistry _toolRegistry = null!;
     private readonly IPdfToolViewModelFactory? _toolViewModelFactory;
     private readonly IThemeService? _themeService;
+    private readonly IUiSettingsService? _uiSettingsService;
+    private readonly PdfEditorApp.Core.Plugins.Descriptors.INavigationRegistry? _navigationRegistry;
+    private readonly IServiceProvider? _serviceProvider;
+
+    public ObservableCollection<NavigationItemViewModel> DynamicNavigationItems { get; } = new();
+
+    /// <summary>
+    /// Fully plugin-driven, grouped navigation items rendered in the sidebar.
+    /// Populated from <see cref="INavigationRegistry"/> by <see cref="RefreshDynamicNavigationItems"/>.
+    /// </summary>
+    public ObservableCollection<NavGroupViewModel> NavGroups { get; } = new();
+
+    [ObservableProperty]
+    private object? _dynamicPageView;
+
+    /// <summary>True when navigation is fully driven by the plugin registry (NavGroups is populated).</summary>
+    public bool IsPluginDrivenNavigation => NavGroups.Count > 0;
 
     // --- Events to tell the shell what to do ---
+
     public event Action<string?>? OpenTemplateRequested;   // templateName (null = blank)
     public event Action? OpenFileRequested;
     public event Action? OpenWorkflowBuilderRequested;
@@ -92,6 +111,8 @@ public partial class HomeViewModel : ViewModelBase
     private HomeNavSection _selectedNavSection = HomeNavSection.Home;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsPluginsWorkspaceActive))]
+    [NotifyPropertyChangedFor(nameof(IsStandardScrollableContentActive))]
     private bool _isToolPageActive;
 
     [ObservableProperty]
@@ -129,11 +150,15 @@ public partial class HomeViewModel : ViewModelBase
     public bool IsTesseractDataSection => SelectedNavSection == HomeNavSection.TesseractData;
     public bool IsHelpSection => SelectedNavSection == HomeNavSection.Help;
     public bool IsSettingsSection => SelectedNavSection == HomeNavSection.Settings;
+    public bool IsPluginsSection => SelectedNavSection == HomeNavSection.Plugins;
+    public bool IsPluginsWorkspaceActive => SelectedNavSection == HomeNavSection.Plugins && !IsToolPageActive;
+    public bool IsStandardScrollableContentActive => !IsToolPageActive && !IsPluginsWorkspaceActive;
 
     public FontManagerViewModel FontManager { get; } = new();
     public TesseractManagerViewModel TesseractManager { get; } = new();
     public HelpGuideViewModel HelpGuide { get; } = new();
     public SettingsViewModel Settings { get; }
+    public PluginsManagerViewModel PluginsManager { get; }
 
     public void TriggerToast(string msg, ToastNotificationType type = ToastNotificationType.Primary, string? icon = null)
     {
@@ -151,7 +176,7 @@ public partial class HomeViewModel : ViewModelBase
 
     // --- Constructor ---
 
-    public HomeViewModel() : this(new RecentDocumentsService(), new TemplateService(), new ProjectPersistenceService(), new PdfToolRegistry(), null, null, new ThemeService(), new UiSettingsService()) { }
+    public HomeViewModel() : this(new RecentDocumentsService(), new TemplateService(), new ProjectPersistenceService(), new PdfToolRegistry(), null, null, new ThemeService(), new UiSettingsService(), null, null) { }
 
     public HomeViewModel(
         IRecentDocumentsService recentService,
@@ -161,7 +186,9 @@ public partial class HomeViewModel : ViewModelBase
         PdfToolRunnerViewModel? toolRunner = null,
         IPdfToolViewModelFactory? toolViewModelFactory = null,
         IThemeService? themeService = null,
-        IUiSettingsService? uiSettingsService = null)
+        IUiSettingsService? uiSettingsService = null,
+        PdfEditorApp.Core.Plugins.Descriptors.INavigationRegistry? navigationRegistry = null,
+        IServiceProvider? serviceProvider = null)
     {
         _recentService = recentService;
         _templateService = templateService;
@@ -169,9 +196,18 @@ public partial class HomeViewModel : ViewModelBase
         _toolRegistry = toolRegistry;
         _toolViewModelFactory = toolViewModelFactory;
         _themeService = themeService;
+        _uiSettingsService = uiSettingsService;
+        _navigationRegistry = navigationRegistry;
+        _serviceProvider = serviceProvider;
         ToolRunner = toolRunner;
 
-        Settings = new SettingsViewModel(uiSettingsService ?? new UiSettingsService(), _themeService);
+        Settings = new SettingsViewModel(_uiSettingsService ?? new UiSettingsService(), _themeService);
+        PluginsManager = (serviceProvider?.GetService(typeof(PluginsManagerViewModel)) as PluginsManagerViewModel)
+            ?? new PluginsManagerViewModel(
+                serviceProvider?.GetService(typeof(PluginHost)) as PluginHost,
+                serviceProvider?.GetService(typeof(PdfEditorApp.Core.Plugins.Marketplace.IPluginMarketplaceService)) as PdfEditorApp.Core.Plugins.Marketplace.IPluginMarketplaceService,
+                _toolRegistry);
+        PluginsManager.ShowToastCallback = msg => TriggerToast(msg);
 
         if (_themeService != null)
         {
@@ -189,11 +225,23 @@ public partial class HomeViewModel : ViewModelBase
 
         HelpGuide.ToolLaunchRequested += (id) => OpenToolPage(id);
 
+        if (_navigationRegistry != null)
+        {
+            _navigationRegistry.RegistryChanged += RefreshDynamicNavigationItems;
+            RefreshDynamicNavigationItems();
+        }
+
+        if (_toolRegistry != null)
+        {
+            _toolRegistry.RegistryChanged += InitializeTools;
+        }
+
         InitializeTools();
         InitializeTemplates();
         InitializeLicenses();
         RefreshRecent();
     }
+
 
     [RelayCommand]
     public void ToggleTheme()
@@ -407,6 +455,9 @@ public partial class HomeViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsTesseractDataSection));
         OnPropertyChanged(nameof(IsHelpSection));
         OnPropertyChanged(nameof(IsSettingsSection));
+        OnPropertyChanged(nameof(IsPluginsSection));
+        OnPropertyChanged(nameof(IsPluginsWorkspaceActive));
+        OnPropertyChanged(nameof(IsStandardScrollableContentActive));
 
         if (value == HomeNavSection.TesseractData)
         {
@@ -562,9 +613,106 @@ public partial class HomeViewModel : ViewModelBase
         UpdateFilteredTemplates();
     }
 
+    // Kept for backward-compatibility with unit tests that assert on ContributedNavigationItems
+    public ObservableCollection<NavigationItemViewModel> ContributedNavigationItems { get; } = new();
+
+    public void RefreshDynamicNavigationItems()
+    {
+        if (_navigationRegistry == null) return;
+
+        DynamicNavigationItems.Clear();
+        ContributedNavigationItems.Clear();
+        NavGroups.Clear();
+
+        var allItems = _navigationRegistry.GetAllItems();
+        var currentSectionId = SelectedNavSection.ToString();
+
+        // Flat list (for active-state tracking)
+        foreach (var desc in allItems)
+        {
+            var item = new NavigationItemViewModel(desc)
+            {
+                IsActive = string.Equals(desc.Id, currentSectionId, StringComparison.OrdinalIgnoreCase)
+            };
+            DynamicNavigationItems.Add(item);
+
+            // Contributed = items NOT in the built-in standard set (for legacy EXTENSIONS section)
+            if (!StandardNavSectionIds.Contains(desc.Id))
+            {
+                ContributedNavigationItems.Add(item);
+            }
+        }
+
+        // Grouped list (for fully plugin-driven sidebar rendering)
+        var groups = allItems
+            .GroupBy(d => d.Group)
+            .OrderBy(g => allItems.First(d => d.Group == g.Key).Order)
+            .Select(g =>
+            {
+                var items = g
+                    .OrderBy(d => d.Order)
+                    .Select(d => DynamicNavigationItems.First(v => v.Id == d.Id))
+                    .ToList();
+                return new NavGroupViewModel(g.Key, items);
+            })
+            .ToList();
+
+        foreach (var group in groups)
+        {
+            NavGroups.Add(group);
+        }
+
+        OnPropertyChanged(nameof(IsPluginDrivenNavigation));
+    }
+
+
+    private static readonly HashSet<string> StandardNavSectionIds = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Home", "PdfReader", "NewDocument", "AllTools", "OrganizeAndPage", "OptimizeAndSecurity",
+        "ConvertFromPdf", "ConvertToPdf", "EditAndForms", "AiAndAutomation", "Starred",
+        "FontPackages", "TesseractData", "Trash", "Help", "Licensing", "Settings", "Plugins"
+    };
+
     [RelayCommand]
     public void SelectNavSection(string sectionName)
     {
+        // ALWAYS try to route through the plugin registry first
+        if (_navigationRegistry != null)
+        {
+            var desc = _navigationRegistry.GetItem(sectionName);
+            if (desc?.ViewFactory != null)
+            {
+                try
+                {
+                    // Plugin-driven page: instantiate the view from the registered factory
+                    var sp = _serviceProvider ?? (IServiceProvider)this;
+                    DynamicPageView = desc.ViewFactory(sp);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[HomeViewModel] Failed to create plugin view for '{sectionName}': {ex}");
+                    DynamicPageView = null;
+                }
+            }
+            else
+            {
+                // No plugin view registered — fall back to legacy IsXxxSection boolean routing
+                DynamicPageView = null;
+            }
+
+            // Update active states across all flat nav items
+            foreach (var item in DynamicNavigationItems)
+            {
+                item.IsActive = string.Equals(item.Id, sectionName, StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (string.Equals(sectionName, "Plugins", StringComparison.OrdinalIgnoreCase))
+            {
+                // Clear DynamicPageView so HomeView routes directly to the dedicated full-viewport PluginsManagerPageView panel
+                DynamicPageView = null;
+            }
+        }
+
         if (Enum.TryParse<HomeNavSection>(sectionName, true, out var section))
         {
             SelectedNavSection = section;
@@ -603,6 +751,7 @@ public partial class HomeViewModel : ViewModelBase
             UpdateFilteredTools();
         }
     }
+
 
     [RelayCommand]
     public void OpenToolPage(PdfToolId toolId)
@@ -1727,6 +1876,28 @@ limitations under the License.
             }
             catch { }
         }
+    }
+
+    /// <summary>
+    /// Resolves services and child ViewModels requested by plugin-driven navigation page factories.
+    /// </summary>
+    public object? GetService(Type serviceType)
+    {
+        if (serviceType == typeof(HomeViewModel)) return this;
+        if (serviceType == typeof(SettingsViewModel)) return Settings;
+        if (serviceType == typeof(PluginsManagerViewModel)) return PluginsManager;
+        if (serviceType == typeof(FontManagerViewModel)) return FontManager;
+        if (serviceType == typeof(TesseractManagerViewModel)) return TesseractManager;
+        if (serviceType == typeof(HelpGuideViewModel)) return HelpGuide;
+        if (serviceType == typeof(PdfToolRunnerViewModel) && ToolRunner != null) return ToolRunner;
+        if (serviceType == typeof(IRecentDocumentsService)) return _recentService;
+        if (serviceType == typeof(ITemplateService)) return _templateService;
+        if (serviceType == typeof(IProjectPersistenceService)) return _persistenceService;
+        if (serviceType == typeof(IPdfToolRegistry)) return _toolRegistry;
+        if (serviceType == typeof(IThemeService) && _themeService != null) return _themeService;
+        if (serviceType == typeof(IUiSettingsService) && _uiSettingsService != null) return _uiSettingsService;
+        if (serviceType == typeof(PdfEditorApp.Core.Plugins.Descriptors.INavigationRegistry) && _navigationRegistry != null) return _navigationRegistry;
+        return _serviceProvider?.GetService(serviceType) ?? App.Services?.GetService(serviceType);
     }
 }
 

@@ -52,7 +52,8 @@ public class PdfDocumentOperationsService : IPdfDocumentOperationsService
         IPdfFormService formService,
         IAiDocumentService aiService,
         IDocumentTranslationService translationService,
-        IPdfWorkflowEngine workflowEngine)
+        IPdfWorkflowEngine workflowEngine,
+        PdfEditorApp.Core.Plugins.IFryPluginContext? pluginContext = null)
     {
         ToolRegistry = toolRegistry;
         PageService = pageService;
@@ -64,9 +65,32 @@ public class PdfDocumentOperationsService : IPdfDocumentOperationsService
         AiService = aiService;
         TranslationService = translationService;
         WorkflowEngine = workflowEngine;
+        _pluginContext = pluginContext;
     }
 
+    private readonly PdfEditorApp.Core.Plugins.IFryPluginContext? _pluginContext;
+
     public async Task<ToolExecutionResult> ExecuteToolAsync(PdfToolId toolId, object options, IProgress<double>? progress = null, CancellationToken ct = default)
+    {
+        if (_pluginContext != null)
+        {
+            var pipelineContext = new PdfEditorApp.Core.Plugins.Pipelines.PdfToolExecutionPipelineContext(toolId.ToString(), options, progress, ct);
+            await _pluginContext.ExecuteWaterfallAsync("tool:execute", pipelineContext, async () =>
+            {
+                pipelineContext.Result = await ExecuteToolCoreAsync(toolId, pipelineContext.Options, progress, ct);
+            });
+
+            return pipelineContext.Result as ToolExecutionResult ?? new ToolExecutionResult
+            {
+                Success = false,
+                ErrorMessage = "Tool execution pipeline did not produce a result."
+            };
+        }
+
+        return await ExecuteToolCoreAsync(toolId, options, progress, ct);
+    }
+
+    private async Task<ToolExecutionResult> ExecuteToolCoreAsync(PdfToolId toolId, object options, IProgress<double>? progress = null, CancellationToken ct = default)
     {
         try
         {

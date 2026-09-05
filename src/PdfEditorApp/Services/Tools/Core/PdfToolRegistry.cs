@@ -5,21 +5,38 @@ using PdfEditorApp.Models;
 
 namespace PdfEditorApp.Services.Tools.Core;
 
+using PdfEditorApp.Core.Plugins;
+
 public interface IPdfToolRegistry
 {
+    event Action? RegistryChanged;
     IReadOnlyList<PdfToolDefinition> GetAllTools();
     IReadOnlyList<PdfToolDefinition> GetToolsByCategory(PdfToolCategory category);
     PdfToolDefinition? GetTool(PdfToolId id);
+    PdfToolDefinition? GetTool(string stringId);
+    void RegisterTool(PdfToolDefinition tool);
 }
 
 public class PdfToolRegistry : IPdfToolRegistry
 {
+    public event Action? RegistryChanged;
     private readonly List<PdfToolDefinition> _tools;
+    private readonly IFryPluginContext? _pluginContext;
+    private readonly bool _seedDefaults;
 
-    public PdfToolRegistry()
+    public PdfToolRegistry(IFryPluginContext? pluginContext = null, bool seedDefaults = true)
     {
-        _tools = new List<PdfToolDefinition>
+        _pluginContext = pluginContext;
+        _seedDefaults = seedDefaults;
+        _tools = seedDefaults ? GetBuiltInToolDefinitions() : new List<PdfToolDefinition>();
+        if (_pluginContext != null)
         {
+            _pluginContext.ToolsChanged += () => RegistryChanged?.Invoke();
+        }
+    }
+
+    private static List<PdfToolDefinition> GetBuiltInToolDefinitions() => new()
+    {
             // 1. MERGE PDF
             new PdfToolDefinition
             {
@@ -457,15 +474,80 @@ public class PdfToolRegistry : IPdfToolRegistry
                 AcceptedFileExtensions = ".xlsx,.csv,.tsv,.json"
             }
         };
-    }
 
-    public IReadOnlyList<PdfToolDefinition> GetAllTools() => _tools;
+    public IReadOnlyList<PdfToolDefinition> GetAllTools()
+    {
+        if (_pluginContext == null) return _tools;
+
+        var pluginTools = _pluginContext.GetRegisteredTools();
+        if (pluginTools.Count == 0 && _seedDefaults) return _tools;
+
+        var merged = _seedDefaults ? new List<PdfToolDefinition>(_tools) : new List<PdfToolDefinition>();
+        foreach (var pt in pluginTools)
+        {
+            var existingIndex = merged.FindIndex(t =>
+                (!string.IsNullOrEmpty(t.StringId) && string.Equals(t.StringId, pt.Id, StringComparison.OrdinalIgnoreCase)) ||
+                (pt.LegacyId.HasValue && t.Id == (PdfToolId)pt.LegacyId.Value));
+
+            var toolDef = new PdfToolDefinition
+            {
+                Id = pt.LegacyId.HasValue && Enum.IsDefined(typeof(PdfToolId), pt.LegacyId.Value)
+                    ? (PdfToolId)pt.LegacyId.Value
+                    : PdfToolId.EditPdf,
+                StringId = pt.Id,
+                Name = pt.Name,
+                Description = pt.Description,
+                Category = ParseCategory(pt.Category),
+                IconKind = pt.IconKind,
+                IconColorHex = pt.IconColorHex,
+                BackgroundAccentHex = pt.BackgroundAccentHex,
+                SupportsMultiFile = pt.SupportsMultiFile,
+                AcceptedFileExtensions = pt.AcceptedFileExtensions,
+                ViewModelFactory = pt.CreateViewModel
+            };
+
+            if (existingIndex >= 0)
+            {
+                merged[existingIndex] = toolDef;
+            }
+            else
+            {
+                merged.Add(toolDef);
+            }
+        }
+        return merged;
+    }
 
     public IReadOnlyList<PdfToolDefinition> GetToolsByCategory(PdfToolCategory category)
     {
-        if (category == PdfToolCategory.All) return _tools;
-        return _tools.Where(t => t.Category == category).ToList();
+        var all = GetAllTools();
+        if (category == PdfToolCategory.All) return all;
+        return all.Where(t => t.Category == category).ToList();
     }
 
-    public PdfToolDefinition? GetTool(PdfToolId id) => _tools.FirstOrDefault(t => t.Id == id);
+    public PdfToolDefinition? GetTool(PdfToolId id) => GetAllTools().FirstOrDefault(t => t.Id == id);
+
+    public PdfToolDefinition? GetTool(string stringId)
+    {
+        if (string.IsNullOrWhiteSpace(stringId)) return null;
+        return GetAllTools().FirstOrDefault(t =>
+            string.Equals(t.StringId, stringId, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(t.Id.ToString(), stringId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public void NotifyRegistryChanged() => RegistryChanged?.Invoke();
+
+    public void RegisterTool(PdfToolDefinition tool)
+    {
+        ArgumentNullException.ThrowIfNull(tool);
+        _tools.Add(tool);
+        NotifyRegistryChanged();
+    }
+
+    private static PdfToolCategory ParseCategory(string category)
+    {
+        if (Enum.TryParse<PdfToolCategory>(category, true, out var cat))
+            return cat;
+        return PdfToolCategory.OrganizeAndPage;
+    }
 }

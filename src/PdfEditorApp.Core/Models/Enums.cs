@@ -414,7 +414,8 @@ public enum RibbonTabKind
     Organize,
     Protect,
     Audit,
-    Export
+    Export,
+    Plugins
 }
 
 public enum ToolMode
@@ -457,7 +458,8 @@ public enum HomeNavSection
     FontPackages,
     TesseractData,
     Help,
-    Settings
+    Settings,
+    Plugins
 }
 
 public enum ToastPosition

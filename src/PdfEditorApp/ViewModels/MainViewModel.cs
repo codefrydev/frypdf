@@ -8,6 +8,7 @@ using PdfEditorApp.Core.Data;
 using PdfEditorApp.ViewModels.DataStudio;
 using PdfEditorApp.ViewModels.BatchGeneration;
 using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,6 +27,9 @@ using CommunityToolkit.Mvvm.Messaging;
 using PdfEditorApp.Messages;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
+using PdfEditorApp.Services.Canvas;
+using PdfEditorApp.Services.Ribbon;
+using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
 namespace PdfEditorApp.ViewModels;
@@ -42,6 +46,35 @@ public partial class MainViewModel : ViewModelBase
     private readonly IPageOrganizerService _pageOrganizerService;
     private readonly IPdfDocumentOperationsService _pdfOperationsService;
     private readonly IPdfToolRegistry _toolRegistry;
+    private readonly ICanvasElementService _elementService;
+    private readonly IRibbonRegistry _ribbonRegistry;
+    private readonly PdfEditorApp.Core.Plugins.Descriptors.ISidebarRegistry? _sidebarRegistry;
+    private readonly PdfEditorApp.Core.Plugins.Descriptors.IDialogRegistry? _dialogRegistry;
+
+    public IRibbonRegistry RibbonRegistry => _ribbonRegistry;
+    public PdfEditorApp.Core.Plugins.Descriptors.ISidebarRegistry? SidebarRegistry => _sidebarRegistry;
+    public PdfEditorApp.Core.Plugins.Descriptors.IDialogRegistry? DialogRegistry => _dialogRegistry;
+
+    public ObservableCollection<RibbonActionDescriptor> PluginRibbonActions { get; } = new();
+    public ObservableCollection<DynamicRibbonTabViewModel> DynamicRibbonTabs { get; } = new();
+    public ObservableCollection<RibbonGroupDescriptor> DynamicRibbonGroups { get; } = new();
+    public ObservableCollection<DynamicRibbonGroupViewModel> DynamicGroupsForActiveTab { get; } = new();
+    public ObservableCollection<DynamicSidebarTabViewModel> DynamicSidebarTabs { get; } = new();
+
+    [ObservableProperty]
+    private string? _activeDynamicRibbonTabId;
+
+    [ObservableProperty]
+    private string? _activeDynamicSidebarTabId;
+
+    [ObservableProperty]
+    private object? _activeDynamicSidebarView;
+
+    [ObservableProperty]
+    private object? _activeDynamicDialog;
+
+    [ObservableProperty]
+    private bool _isDynamicDialogOpen;
 
     public ISmartPlacementService SmartPlacement => _placementService;
     public IPageOrganizerService PageOrganizer => _pageOrganizerService;
@@ -49,6 +82,7 @@ public partial class MainViewModel : ViewModelBase
 
     // PDF Tool Studio Subsystems
     public PdfToolRunnerViewModel ToolRunner { get; }
+
     public WorkflowBuilderViewModel WorkflowBuilder { get; }
     public PdfViewerViewModel PdfViewer { get; }
     public DataStudioViewModel DataStudio { get; }
@@ -680,6 +714,14 @@ public partial class MainViewModel : ViewModelBase
 
     private readonly IThemeService? _themeService;
     private readonly IUiSettingsService? _uiSettingsService;
+    private readonly PluginHost? _pluginHost;
+    private readonly PdfEditorApp.Core.Plugins.Descriptors.ICommandPaletteRegistry? _commandPaletteRegistry;
+    private readonly PdfEditorApp.Core.Plugins.Descriptors.IStatusBarRegistry? _statusBarRegistry;
+
+    public ObservableCollection<StatusBarWidgetViewModel> LeftStatusBarWidgets { get; } = new();
+    public ObservableCollection<StatusBarWidgetViewModel> RightStatusBarWidgets { get; } = new();
+
+    public PluginHost? PluginHost { get; set; }
 
     public MainViewModel(
         IPdfExportService exportService,
@@ -706,7 +748,15 @@ public partial class MainViewModel : ViewModelBase
         HomeViewModel? homeViewModel = null,
         PdfViewerViewModel? pdfViewer = null,
         InspectorViewModel? inspector = null,
-        IUiSettingsService? uiSettingsService = null)
+        IUiSettingsService? uiSettingsService = null,
+        PluginHost? pluginHost = null,
+        ICanvasElementService? elementService = null,
+        IRibbonRegistry? ribbonRegistry = null,
+        PdfEditorApp.Core.Plugins.Descriptors.ICommandPaletteRegistry? commandPaletteRegistry = null,
+        PdfEditorApp.Core.Plugins.Descriptors.IStatusBarRegistry? statusBarRegistry = null,
+        PdfEditorApp.Core.Plugins.Descriptors.ISidebarRegistry? sidebarRegistry = null,
+        PdfEditorApp.Core.Plugins.Descriptors.IDialogRegistry? dialogRegistry = null,
+        PdfEditorApp.Core.Plugins.Descriptors.INavigationRegistry? navigationRegistry = null)
     {
         _exportService = exportService;
         _templateService = templateService;
@@ -719,6 +769,30 @@ public partial class MainViewModel : ViewModelBase
         _themeService = themeService;
         _toolRegistry = toolRegistry ?? new PdfToolRegistry();
         _uiSettingsService = uiSettingsService ?? new UiSettingsService();
+        _pluginHost = pluginHost;
+        PluginHost = pluginHost;
+        _elementService = elementService ?? PageViewModel.DefaultElementService;
+        _ribbonRegistry = ribbonRegistry ?? new RibbonRegistry();
+        _ribbonRegistry.RegistryChanged += RefreshPluginRibbonActions;
+        RefreshPluginRibbonActions();
+
+        _commandPaletteRegistry = commandPaletteRegistry;
+        _statusBarRegistry = statusBarRegistry;
+        _sidebarRegistry = sidebarRegistry;
+        _dialogRegistry = dialogRegistry;
+
+        if (_statusBarRegistry != null)
+        {
+            _statusBarRegistry.RegistryChanged += RefreshStatusBarWidgets;
+            RefreshStatusBarWidgets();
+        }
+
+        if (_sidebarRegistry != null)
+        {
+            _sidebarRegistry.RegistryChanged += RefreshSidebarTabs;
+            RefreshSidebarTabs();
+        }
+
 
         if (_uiSettingsService != null)
         {
@@ -810,7 +884,7 @@ public partial class MainViewModel : ViewModelBase
         };
 
         // Set up Home page
-        Home = homeViewModel ?? new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, effectiveToolFactory, _themeService, _uiSettingsService);
+        Home = homeViewModel ?? new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, effectiveToolFactory, _themeService, _uiSettingsService, navigationRegistry, _pluginHost?.Context);
 
         UndoRedo.StateChanged += (s, e) =>
         {
@@ -1307,12 +1381,245 @@ public partial class MainViewModel : ViewModelBase
     // --- TAB & TOOL MODE SELECTION ---
 
     [RelayCommand]
+    public void SelectDynamicRibbonTab(string tabId)
+    {
+        ActiveDynamicRibbonTabId = tabId;
+        if (IsRibbonCollapsed)
+        {
+            IsRibbonCollapsed = false;
+        }
+        RefreshActiveRibbonGroups();
+    }
+
+    [RelayCommand]
     public void SelectRibbonTab(RibbonTabKind tab)
     {
+        ActiveDynamicRibbonTabId = null;
         ActiveRibbonTab = tab;
         if (IsRibbonCollapsed)
         {
             IsRibbonCollapsed = false;
+        }
+        RefreshActiveRibbonGroups();
+    }
+
+    public void RefreshActiveRibbonGroups()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            DynamicGroupsForActiveTab.Clear();
+
+            string currentTabId = ActiveDynamicRibbonTabId ?? ActiveRibbonTab.ToString();
+
+            // 1. Get explicitly registered groups for this tab
+            var groups = _ribbonRegistry.GetGroupsForTab(currentTabId);
+            var seenActionIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var grp in groups)
+            {
+                var groupVm = new DynamicRibbonGroupViewModel
+                {
+                    Id = grp.Id,
+                    TabId = grp.TabId,
+                    Title = grp.Title
+                };
+
+                var actions = _ribbonRegistry.GetActionsForGroup(currentTabId, grp.Id);
+                foreach (var act in actions)
+                {
+                    groupVm.Actions.Add(act);
+                    seenActionIds.Add(act.Id);
+                }
+
+                if (groupVm.Actions.Count > 0)
+                {
+                    DynamicGroupsForActiveTab.Add(groupVm);
+                }
+            }
+
+            // 2. Any orphan actions for this tab that weren't assigned to an explicit group
+            var tabActions = _ribbonRegistry.GetActionsForTab(currentTabId);
+            var orphanActions = tabActions.Where(a => !seenActionIds.Contains(a.Id)).ToList();
+            if (orphanActions.Count > 0)
+            {
+                var defaultGroup = new DynamicRibbonGroupViewModel
+                {
+                    Id = "default.plugins",
+                    TabId = currentTabId,
+                    Title = "Extensions"
+                };
+                foreach (var act in orphanActions)
+                {
+                    defaultGroup.Actions.Add(act);
+                }
+                DynamicGroupsForActiveTab.Add(defaultGroup);
+            }
+        });
+    }
+
+    private void RefreshPluginRibbonActions()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            PluginRibbonActions.Clear();
+            foreach (var action in _ribbonRegistry.GetAllActions())
+            {
+                PluginRibbonActions.Add(action);
+            }
+
+            DynamicRibbonTabs.Clear();
+            var allTabs = _ribbonRegistry.GetAllTabs();
+            foreach (var tab in allTabs)
+            {
+                DynamicRibbonTabs.Add(new DynamicRibbonTabViewModel
+                {
+                    Descriptor = tab,
+                    IsActive = string.Equals(tab.Id, ActiveDynamicRibbonTabId, StringComparison.OrdinalIgnoreCase)
+                });
+            }
+
+            DynamicRibbonGroups.Clear();
+            foreach (var group in _ribbonRegistry.GetGroupsForTab(ActiveDynamicRibbonTabId ?? ActiveRibbonTab.ToString()))
+            {
+                DynamicRibbonGroups.Add(group);
+            }
+
+            if (ActiveDynamicRibbonTabId != null && !allTabs.Any(t => string.Equals(t.Id, ActiveDynamicRibbonTabId, StringComparison.OrdinalIgnoreCase)))
+            {
+                ActiveDynamicRibbonTabId = null;
+                ActiveRibbonTab = RibbonTabKind.Home;
+            }
+
+            RefreshActiveRibbonGroups();
+        });
+    }
+
+    private void RefreshSidebarTabs()
+    {
+        if (_sidebarRegistry == null) return;
+        Dispatcher.UIThread.Post(() =>
+        {
+            DynamicSidebarTabs.Clear();
+            var allTabs = _sidebarRegistry.GetAllTabs();
+            foreach (var tab in allTabs)
+            {
+                DynamicSidebarTabs.Add(new DynamicSidebarTabViewModel
+                {
+                    Descriptor = tab,
+                    IsActive = string.Equals(tab.Id, ActiveDynamicSidebarTabId, StringComparison.OrdinalIgnoreCase)
+                });
+            }
+
+            if (ActiveDynamicSidebarTabId != null && !allTabs.Any(t => string.Equals(t.Id, ActiveDynamicSidebarTabId, StringComparison.OrdinalIgnoreCase)))
+            {
+                ActiveDynamicSidebarTabId = null;
+                ActiveDynamicSidebarView = null;
+                ActiveSidebarTab = SidebarTabKind.Thumbnails;
+            }
+        });
+    }
+
+    [RelayCommand]
+    public void OpenRegisteredDialog(string dialogId)
+    {
+        if (_dialogRegistry == null) return;
+        var desc = _dialogRegistry.GetDialog(dialogId);
+        if (desc == null) return;
+
+        object? dialogView = null;
+        if (desc.ViewFactory != null)
+        {
+            try
+            {
+                dialogView = desc.ViewFactory(_pluginHost?.Context ?? (IServiceProvider)this);
+            }
+            catch { }
+        }
+        else if (desc.ViewType != null)
+        {
+            try
+            {
+                dialogView = Activator.CreateInstance(desc.ViewType);
+            }
+            catch { }
+        }
+
+        if (dialogView != null)
+        {
+            ActiveDynamicDialog = dialogView;
+            IsDynamicDialogOpen = true;
+        }
+    }
+
+    [RelayCommand]
+    public void CloseDynamicDialog()
+    {
+        IsDynamicDialogOpen = false;
+        ActiveDynamicDialog = null;
+    }
+
+
+    private void RefreshStatusBarWidgets()
+    {
+        if (_statusBarRegistry == null) return;
+        Dispatcher.UIThread.Post(() =>
+        {
+            LeftStatusBarWidgets.Clear();
+            RightStatusBarWidgets.Clear();
+
+            var left = _statusBarRegistry.GetWidgets(PdfEditorApp.Core.Plugins.Descriptors.StatusBarAlignment.Left);
+            foreach (var w in left)
+            {
+                var item = w.Factory(_pluginHost?.Context ?? (IServiceProvider)this);
+                if (item is StatusBarWidgetViewModel vm)
+                {
+                    LeftStatusBarWidgets.Add(vm);
+                }
+                else if (item != null)
+                {
+                    LeftStatusBarWidgets.Add(new StatusBarWidgetViewModel
+                    {
+                        WidgetId = w.WidgetId,
+                        ToolTip = w.ToolTip,
+                        Content = item
+                    });
+                }
+            }
+
+            var right = _statusBarRegistry.GetWidgets(PdfEditorApp.Core.Plugins.Descriptors.StatusBarAlignment.Right);
+            foreach (var w in right)
+            {
+                var item = w.Factory(_pluginHost?.Context ?? (IServiceProvider)this);
+                if (item is StatusBarWidgetViewModel vm)
+                {
+                    RightStatusBarWidgets.Add(vm);
+                }
+                else if (item != null)
+                {
+                    RightStatusBarWidgets.Add(new StatusBarWidgetViewModel
+                    {
+                        WidgetId = w.WidgetId,
+                        ToolTip = w.ToolTip,
+                        Content = item
+                    });
+                }
+            }
+        });
+    }
+
+    [RelayCommand]
+    public void ExecuteRibbonAction(RibbonActionDescriptor action)
+    {
+        if (action?.Action != null)
+        {
+            try
+            {
+                action.Action(_pluginHost?.Context ?? (IServiceProvider)this);
+            }
+            catch (Exception ex)
+            {
+                ShowToast($"Plugin action error: {ex.Message}", ToastNotificationType.Danger, "AlertCircleOutline");
+            }
         }
     }
 
@@ -1445,28 +1752,7 @@ public partial class MainViewModel : ViewModelBase
             clone.X = posX;
             clone.Y = posY;
 
-            ElementViewModelBase newVm = clone.Kind switch
-            {
-                ElementKind.Text => new TextElementViewModel(),
-                ElementKind.Heading => new TextElementViewModel(),
-                ElementKind.Shape => new ShapeElementViewModel(),
-                ElementKind.Image => new ImageElementViewModel(),
-                ElementKind.Divider => new DividerElementViewModel(),
-                ElementKind.Table => new TableElementViewModel(),
-                ElementKind.Chart => new ChartElementViewModel(),
-                ElementKind.Watermark => new WatermarkElementViewModel(),
-                ElementKind.FormField => new FormFieldElementViewModel(),
-                ElementKind.QrCode => new QrCodeElementViewModel(),
-                ElementKind.Barcode => new BarcodeElementViewModel(),
-                ElementKind.Redaction => new RedactionElementViewModel(),
-                ElementKind.Ink => new InkElementViewModel(),
-                ElementKind.StickyNote => new StickyNoteElementViewModel(),
-                ElementKind.Measurement => new MeasurementElementViewModel(),
-                ElementKind.Svg => new SvgElementViewModel(),
-                _ => new TextElementViewModel()
-            };
-
-            newVm.LoadFromModel(clone);
+            ElementViewModelBase newVm = _elementService.CreateViewModel(clone);
             page.AddElement(newVm);
             newVms.Add(newVm);
         }
@@ -1491,28 +1777,7 @@ public partial class MainViewModel : ViewModelBase
                 clone.X += offsetX;
                 clone.Y += offsetY;
 
-                ElementViewModelBase newVm = clone.Kind switch
-                {
-                    ElementKind.Text => new TextElementViewModel(),
-                    ElementKind.Heading => new TextElementViewModel(),
-                    ElementKind.Shape => new ShapeElementViewModel(),
-                    ElementKind.Image => new ImageElementViewModel(),
-                    ElementKind.Divider => new DividerElementViewModel(),
-                    ElementKind.Table => new TableElementViewModel(),
-                    ElementKind.Chart => new ChartElementViewModel(),
-                    ElementKind.Watermark => new WatermarkElementViewModel(),
-                    ElementKind.FormField => new FormFieldElementViewModel(),
-                    ElementKind.QrCode => new QrCodeElementViewModel(),
-                    ElementKind.Barcode => new BarcodeElementViewModel(),
-                    ElementKind.Redaction => new RedactionElementViewModel(),
-                    ElementKind.Ink => new InkElementViewModel(),
-                    ElementKind.StickyNote => new StickyNoteElementViewModel(),
-                    ElementKind.Measurement => new MeasurementElementViewModel(),
-                    ElementKind.Svg => new SvgElementViewModel(),
-                    _ => new TextElementViewModel()
-                };
-
-                newVm.LoadFromModel(clone);
+                ElementViewModelBase newVm = _elementService.CreateViewModel(clone);
                 page.AddElement(newVm);
                 newVms.Add(newVm);
             }

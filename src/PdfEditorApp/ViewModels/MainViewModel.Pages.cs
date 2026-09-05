@@ -33,6 +33,8 @@ public partial class MainViewModel
     [RelayCommand]
     public void SelectSidebarTab(SidebarTabKind tab)
     {
+        ActiveDynamicSidebarTabId = null;
+        ActiveDynamicSidebarView = null;
         ActiveSidebarTab = tab;
         if (IsLeftSidebarCollapsed)
         {
@@ -40,6 +42,40 @@ public partial class MainViewModel
         }
         if (tab == SidebarTabKind.Outline) RefreshOutline();
         if (tab == SidebarTabKind.Comments) RefreshComments();
+    }
+
+    [RelayCommand]
+    public void SelectDynamicSidebarTab(DynamicSidebarTabViewModel tabVm)
+    {
+        if (tabVm == null) return;
+        var descriptor = tabVm.Descriptor;
+        ActiveDynamicSidebarTabId = descriptor.Id;
+        ActiveSidebarTab = (SidebarTabKind)(-1);
+        foreach (var t in DynamicSidebarTabs)
+        {
+            t.IsActive = string.Equals(t.Id, descriptor.Id, StringComparison.OrdinalIgnoreCase);
+        }
+        if (IsLeftSidebarCollapsed)
+        {
+            IsLeftSidebarCollapsed = false;
+        }
+
+        try
+        {
+            var sp = _pluginHost?.Context ?? (IServiceProvider)this;
+            if (descriptor.ViewFactory != null)
+            {
+                ActiveDynamicSidebarView = descriptor.ViewFactory(sp);
+            }
+            else if (descriptor.ViewModelFactory != null)
+            {
+                ActiveDynamicSidebarView = descriptor.ViewModelFactory(sp);
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Failed to open sidebar '{descriptor.Title}': {ex.Message}", ToastNotificationType.Danger, "AlertCircleOutline");
+        }
     }
 
     [RelayCommand]
@@ -418,12 +454,14 @@ public partial class MainViewModel
             FooterRightText = CurrentPage.FooterRight ?? "Page {P} of {N}";
         }
         IsHeaderFooterDialogOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.headerfooter");
     }
 
     [RelayCommand]
     public void CloseHeaderFooterDialog()
     {
         IsHeaderFooterDialogOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]
@@ -462,12 +500,14 @@ public partial class MainViewModel
     public void OpenSecurityDialog()
     {
         IsSecurityDialogOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.security");
     }
 
     [RelayCommand]
     public void CloseSecurityDialog()
     {
         IsSecurityDialogOpen = false;
+        CloseDynamicDialog();
         OnPropertyChanged(nameof(SecurityStatusDisplay));
     }
 
@@ -561,12 +601,14 @@ public partial class MainViewModel
     public void OpenSplitExtractDialog()
     {
         IsSplitExtractDialogOpen = true;
+        OpenRegisteredDialog("frypdf.dialog.splitextract");
     }
 
     [RelayCommand]
     public void CloseSplitExtractDialog()
     {
         IsSplitExtractDialogOpen = false;
+        CloseDynamicDialog();
     }
 
     [RelayCommand]

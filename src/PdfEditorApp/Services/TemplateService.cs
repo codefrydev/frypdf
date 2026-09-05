@@ -16,10 +16,12 @@ using PdfEditorApp.Templates.Technical;
 
 namespace PdfEditorApp.Services;
 
-public class TemplateService : ITemplateService
+public class TemplateService : ITemplateService, PdfEditorApp.Core.Plugins.Descriptors.ITemplateRegistry
 {
     private readonly Dictionary<string, ITemplateDefinition> _templates = new(StringComparer.OrdinalIgnoreCase);
     private readonly BlankDocumentTemplate _blankTemplate = new();
+
+    public event Action? RegistryChanged;
 
     public TemplateService()
     {
@@ -73,6 +75,59 @@ public class TemplateService : ITemplateService
     public void RegisterTemplate(ITemplateDefinition template)
     {
         _templates[template.Id] = template;
+        RegistryChanged?.Invoke();
+    }
+
+    public IDisposable RegisterTemplate(PdfEditorApp.Core.Plugins.Descriptors.ITemplateDescriptor template)
+    {
+        ArgumentNullException.ThrowIfNull(template);
+        if (template is ITemplateDefinition def)
+        {
+            RegisterTemplate(def);
+        }
+        else
+        {
+            _templates[template.Id] = new TemplateDescriptorAdapter(template);
+            RegistryChanged?.Invoke();
+        }
+
+        return new DisposableAction(() =>
+        {
+            _templates.Remove(template.Id);
+            RegistryChanged?.Invoke();
+        });
+    }
+
+    PdfEditorApp.Core.Plugins.Descriptors.ITemplateDescriptor? PdfEditorApp.Core.Plugins.Descriptors.ITemplateRegistry.GetTemplate(string id)
+    {
+        return _templates.GetValueOrDefault(id);
+    }
+
+    IReadOnlyList<PdfEditorApp.Core.Plugins.Descriptors.ITemplateDescriptor> PdfEditorApp.Core.Plugins.Descriptors.ITemplateRegistry.GetAllTemplates()
+    {
+        return _templates.Values.ToList();
+    }
+
+    public IReadOnlyList<string> GetCategories()
+    {
+        return _templates.Values.Select(t => t.Category).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(c => c).ToList();
+    }
+
+    private sealed class TemplateDescriptorAdapter(PdfEditorApp.Core.Plugins.Descriptors.ITemplateDescriptor inner) : ITemplateDefinition
+    {
+        public string Id => inner.Id;
+        public string Name => inner.Name;
+        public string Description => inner.Description;
+        public string Category => inner.Category;
+        public string IconKind => inner.IconKind;
+        public string AccentColorHex => inner.AccentColorHex;
+        public PdfDocumentModel Create() => inner.Create();
+    }
+
+    private sealed class DisposableAction(Action action) : IDisposable
+    {
+        private Action? _action = action;
+        public void Dispose() => System.Threading.Interlocked.Exchange(ref _action, null)?.Invoke();
     }
 
     public IReadOnlyList<ITemplateDefinition> GetAllTemplates()

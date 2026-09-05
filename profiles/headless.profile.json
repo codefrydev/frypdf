@@ -1,0 +1,19 @@
+{
+  "profileName": "headless",
+  "bundles": [
+    "FryPdf.Bundle.Tools.Organize",
+    "FryPdf.Bundle.Tools.Conversion",
+    "FryPdf.Bundle.Tools.Security",
+    "FryPdf.Bundle.Tools.Intelligence",
+    "FryPdf.Bundle.DocumentIo",
+    "FryPdf.Bundle.OcrEngines",
+    "FryPdf.Bundle.Templates"
+  ],
+  "disabledPlugins": [
+    "frypdf.tool.datastudio"
+  ],
+  "settings": {
+    "headless": "true",
+    "concurrency": "4"
+  }
+}

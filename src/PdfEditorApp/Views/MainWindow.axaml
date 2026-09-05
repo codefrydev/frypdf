@@ -250,6 +250,9 @@
                         <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding OpenShortcutsHelpCommand}" ToolTip.Tip="Keyboard Shortcuts Cheat Sheet (F1 / ?)">
                             <materialIcons:MaterialIcon Kind="KeyboardOutline" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
                         </Button>
+                        <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding OpenPluginsDialogCommand}" ToolTip.Tip="Plugins &amp; Extensions Studio (Everything is a Plugin)">
+                            <materialIcons:MaterialIcon Kind="PuzzleOutline" Width="15" Height="15" Foreground="#8B5CF6" />
+                        </Button>
                         <Button Classes="mini-tool-btn" Width="28" Height="28" Command="{Binding OpenAboutDialogCommand}" ToolTip.Tip="About FryPDF &amp; Support (CodeFryDev)">
                             <materialIcons:MaterialIcon Kind="InformationOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
                         </Button>
@@ -308,10 +311,72 @@
                             <Ellipse Width="6" Height="6" Fill="#10B981" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" FontWeight="Medium" VerticalAlignment="Center" />
                         </StackPanel>
+
+                        <!-- Dynamic Plugin Widgets (Left) -->
+                        <ItemsControl ItemsSource="{Binding LeftStatusBarWidgets}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:StatusBarWidgetViewModel">
+                                    <Border Background="{DynamicResource WinPanelBrush}"
+                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                            Padding="6,2"
+                                            VerticalAlignment="Center"
+                                            ToolTip.Tip="{Binding ToolTip}">
+                                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="{Binding IconKind}" Width="12" Height="12"
+                                                                        Foreground="{DynamicResource WinAccentBrush}"
+                                                                        IsVisible="{Binding IconKind, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                            <TextBlock Text="{Binding Label}" FontSize="11" FontWeight="Medium"
+                                                       Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center"
+                                                       IsVisible="{Binding Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                            <ContentControl Content="{Binding Content}"
+                                                            IsVisible="{Binding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
 
                     <!-- Right: Zoom Controls & Workspace Panel Toggles -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <!-- Dynamic Plugin Widgets (Right) -->
+                        <ItemsControl ItemsSource="{Binding RightStatusBarWidgets}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:StatusBarWidgetViewModel">
+                                    <Border Background="{DynamicResource WinPanelBrush}"
+                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                            Padding="6,2"
+                                            VerticalAlignment="Center"
+                                            ToolTip.Tip="{Binding ToolTip}">
+                                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="{Binding IconKind}" Width="12" Height="12"
+                                                                        Foreground="{DynamicResource WinAccentBrush}"
+                                                                        IsVisible="{Binding IconKind, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                            <TextBlock Text="{Binding Label}" FontSize="11" FontWeight="Medium"
+                                                       Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center"
+                                                       IsVisible="{Binding Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                            <ContentControl Content="{Binding Content}"
+                                                            IsVisible="{Binding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
                         <!-- Fit to Width -->
                         <Button Classes="mini-tool-btn" Width="26" Height="26" Command="{Binding FitToWidthCommand}" ToolTip.Tip="Fit to Width (⌘1 / Ctrl+1)">
                             <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
@@ -424,29 +489,35 @@
             </Grid>
         </Border>
 
-        <!-- Dialog Overlays -->
-        <dialogs:NewDocumentDialog IsVisible="{Binding IsNewDocumentDialogOpen}" />
-        <dialogs:ExportSuccessDialog IsVisible="{Binding IsExportSuccessDialogOpen}" />
+        <!-- Dialog Overlays (Complex ViewModels - own IsOpen state) -->
+        <!-- CommandPaletteDialog: has rich filter/search ViewModel state, not in IDialogRegistry -->
         <dialogs:CommandPaletteDialog IsVisible="{Binding IsCommandPaletteOpen}" />
-        <dialogs:ShortcutsHelpDialog IsVisible="{Binding IsShortcutsHelpDialogOpen}" />
-        <dialogs:SignatureStudioDialog IsVisible="{Binding IsSignatureStudioOpen}" />
-        <dialogs:DocumentSecurityDialog IsVisible="{Binding IsSecurityDialogOpen}" />
-        <dialogs:PreflightDiagnosticsDialog IsVisible="{Binding IsPreflightDialogOpen}" />
-        <dialogs:HeaderFooterDialog IsVisible="{Binding IsHeaderFooterDialogOpen}" />
-        <dialogs:WatermarkManagerDialog IsVisible="{Binding IsWatermarkManagerOpen}" />
-        <dialogs:SearchRedactDialog IsVisible="{Binding IsSearchRedactDialogOpen}" />
-        <dialogs:CustomStampDialog IsVisible="{Binding IsCustomStampDialogOpen}" />
-        <dialogs:BatesNumberingDialog IsVisible="{Binding IsBatesNumberingDialogOpen}" />
-        <dialogs:SplitExtractDialog IsVisible="{Binding IsSplitExtractDialogOpen}" />
-        <dialogs:CompareDocumentsDialog IsVisible="{Binding IsCompareDialogOpen}" />
-        <dialogs:MathEquationStudioDialog IsVisible="{Binding IsMathStudioOpen}" />
-        <dialogs:AboutDialog IsVisible="{Binding IsAboutDialogOpen}" />
+        <!-- DataStudio, WorkflowBuilder, BatchGeneration, AiAssistant: have own complex VM with IsOpen -->
         <dialogs:DataStudioDialog DataContext="{Binding DataStudio}" IsVisible="{Binding IsOpen}" />
         <dialogs:WorkflowBuilderDialog DataContext="{Binding WorkflowBuilder}" IsVisible="{Binding IsOpen}" />
         <dialogs:BatchGenerationDialog DataContext="{Binding BatchGeneration}" IsVisible="{Binding IsOpen}" />
         <dialogs:AiAssistantDialog DataContext="{Binding AiAssistant}" IsVisible="{Binding IsOpen}" />
+        <!-- RenameDocument / DeleteConfirmation: bound to Home VM, triggered from recent docs panel -->
         <dialogs:RenameDocumentDialog DataContext="{Binding Home}" IsVisible="{Binding IsRenameDialogOpen}" />
         <dialogs:DeleteConfirmationDialog DataContext="{Binding Home}" IsVisible="{Binding IsDeleteConfirmDialogOpen}" />
+
+
+        <!-- Dynamic Plugin Modal Dialog Overlay Host (Material 3 Expressive) -->
+        <Border ZIndex="9999"
+                IsVisible="{Binding IsDynamicDialogOpen}"
+                Background="#66000000">
+            <Grid>
+                <Button Background="Transparent"
+                        BorderThickness="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding CloseDynamicDialogCommand}" />
+                <ContentControl Content="{Binding ActiveDynamicDialog}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+            </Grid>
+        </Border>
     </Grid>
 
 </Window>
+

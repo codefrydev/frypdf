@@ -24,12 +24,14 @@ namespace PdfEditorApp.Services.AI;
 public class AiService : IAiService
 {
     private readonly HttpClient _httpClient;
+    private readonly IAiProviderRegistry _providerRegistry;
     private readonly List<AiModelInfo> _ollamaLibraryCache = new();
     private readonly object _libraryLock = new();
 
-    public AiService(HttpClient? httpClient = null)
+    public AiService(HttpClient? httpClient = null, IAiProviderRegistry? providerRegistry = null)
     {
         _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+        _providerRegistry = providerRegistry ?? new AiProviderRegistry();
         if (_httpClient.DefaultRequestHeaders.UserAgent.Count == 0)
         {
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");

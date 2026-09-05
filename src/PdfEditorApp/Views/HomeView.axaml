@@ -564,7 +564,8 @@
                 </Panel>
 
                 <!-- 3. Independent Page Files (Shown when standard scrollable page is active) -->
-                <ScrollViewer IsVisible="{Binding IsStandardScrollableContentActive}"
+                <ScrollViewer x:Name="MainContentScrollViewer"
+                              IsVisible="{Binding IsStandardScrollableContentActive}"
                               HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Auto">
                     <Panel>

@@ -53,7 +53,7 @@ public class HomeDashboardPagePlugin : IFryPlugin
             Group = "Overview",
             IconKind = "HomeOutline",
             Order = 10,
-            ViewFactory = sp => new HomeDashboardView()
+            ViewFactory = null // Built-in view mounted in HomeView.axaml for 0ms instantaneous navigation
         });
         return Task.CompletedTask;
     }
@@ -77,7 +77,7 @@ public class PdfReaderLandingPagePlugin : IFryPlugin
             BadgeText = "Read",
             BadgeColorHex = "#DC2626",
             Order = 20,
-            ViewFactory = sp => new PdfReaderLandingPageView()
+            ViewFactory = null // Built-in view mounted in HomeView.axaml for 0ms instantaneous navigation
         });
         return Task.CompletedTask;
     }
@@ -101,7 +101,7 @@ public class NewDocumentPagePlugin : IFryPlugin
             BadgeText = "19",
             BadgeColorHex = "#059669",
             Order = 30,
-            ViewFactory = sp => new NewDocumentPageView()
+            ViewFactory = null // Built-in view mounted in HomeView.axaml for 0ms instantaneous navigation
         });
         return Task.CompletedTask;
     }
@@ -125,7 +125,7 @@ public class PdfToolsStudioPagePlugin : IFryPlugin
             BadgeText = "32",
             BadgeColorHex = "#4F46E5",
             Order = 40,
-            ViewFactory = sp => new PdfToolsStudioView()
+            ViewFactory = null // Built-in view mounted in HomeView.axaml for 0ms instantaneous navigation
         });
         return Task.CompletedTask;
     }
@@ -148,7 +148,7 @@ public class ToolCategoryPagesPlugin : IFryPlugin
             IconKind = "BookOpenPageVariantOutline",
             BadgeText = "6",
             Order = 50,
-            ViewFactory = sp => new PdfToolsStudioView()
+            ViewFactory = null
         });
 
         ctx.RegisterNavigationItem(new NavigationItemDescriptor
@@ -159,7 +159,7 @@ public class ToolCategoryPagesPlugin : IFryPlugin
             IconKind = "ShieldLockOutline",
             BadgeText = "7",
             Order = 60,
-            ViewFactory = sp => new PdfToolsStudioView()
+            ViewFactory = null
         });
 
         ctx.RegisterNavigationItem(new NavigationItemDescriptor
@@ -170,7 +170,7 @@ public class ToolCategoryPagesPlugin : IFryPlugin
             IconKind = "ExportVariant",
             BadgeText = "5",
             Order = 70,
-            ViewFactory = sp => new PdfToolsStudioView()
+            ViewFactory = null
         });
 
         ctx.RegisterNavigationItem(new NavigationItemDescriptor
@@ -181,7 +181,7 @@ public class ToolCategoryPagesPlugin : IFryPlugin
             IconKind = "Import",
             BadgeText = "6",
             Order = 80,
-            ViewFactory = sp => new PdfToolsStudioView()
+            ViewFactory = null
         });
 
         ctx.RegisterNavigationItem(new NavigationItemDescriptor
@@ -192,7 +192,7 @@ public class ToolCategoryPagesPlugin : IFryPlugin
             IconKind = "Draw",
             BadgeText = "4",
             Order = 90,
-            ViewFactory = sp => new PdfToolsStudioView()
+            ViewFactory = null
         });
 
         ctx.RegisterNavigationItem(new NavigationItemDescriptor
@@ -203,7 +203,7 @@ public class ToolCategoryPagesPlugin : IFryPlugin
             IconKind = "AutoFix",
             BadgeText = "4",
             Order = 100,
-            ViewFactory = sp => new PdfToolsStudioView()
+            ViewFactory = null
         });
 
         return Task.CompletedTask;
@@ -226,7 +226,7 @@ public class StarredToolsPagePlugin : IFryPlugin
             Group = "Library",
             IconKind = "StarOutline",
             Order = 110,
-            ViewFactory = sp => new StarredToolsPageView()
+            ViewFactory = null
         });
         return Task.CompletedTask;
     }
@@ -250,12 +250,7 @@ public class FontManagerPagePlugin : IFryPlugin
             BadgeText = "10",
             BadgeColorHex = "#0284C7",
             Order = 120,
-            ViewFactory = sp => new FontManagerPageView
-            {
-                DataContext = (sp?.GetService(typeof(HomeViewModel)) as HomeViewModel)?.FontManager
-                    ?? sp?.GetService(typeof(FontManagerViewModel)) as FontManagerViewModel
-                    ?? new FontManagerViewModel()
-            }
+            ViewFactory = null
         });
         return Task.CompletedTask;
     }
@@ -277,12 +272,7 @@ public class TesseractPagePlugin : IFryPlugin
             Group = "Library",
             IconKind = "TextRecognition",
             Order = 130,
-            ViewFactory = sp => new TesseractManagerPageView
-            {
-                DataContext = (sp?.GetService(typeof(HomeViewModel)) as HomeViewModel)?.TesseractManager
-                    ?? sp?.GetService(typeof(TesseractManagerViewModel)) as TesseractManagerViewModel
-                    ?? new TesseractManagerViewModel()
-            }
+            ViewFactory = null
         });
         return Task.CompletedTask;
     }
@@ -304,7 +294,7 @@ public class TrashCachePagePlugin : IFryPlugin
             Group = "Library",
             IconKind = "TrashCanOutline",
             Order = 140,
-            ViewFactory = sp => new TrashCachePageView()
+            ViewFactory = null
         });
         return Task.CompletedTask;
     }
@@ -328,12 +318,7 @@ public class HelpGuidePagePlugin : IFryPlugin
             BadgeText = "Guides",
             BadgeColorHex = "#0284C7",
             Order = 150,
-            ViewFactory = sp => new HelpGuidePageView
-            {
-                DataContext = (sp?.GetService(typeof(HomeViewModel)) as HomeViewModel)?.HelpGuide
-                    ?? sp?.GetService(typeof(HelpGuideViewModel)) as HelpGuideViewModel
-                    ?? new HelpGuideViewModel()
-            }
+            ViewFactory = null
         });
         return Task.CompletedTask;
     }
@@ -357,7 +342,7 @@ public class LicensingPagePlugin : IFryPlugin
             BadgeText = "12",
             BadgeColorHex = "#4F46E5",
             Order = 160,
-            ViewFactory = sp => new LicensingPageView()
+            ViewFactory = null
         });
         return Task.CompletedTask;
     }
@@ -381,14 +366,7 @@ public class SettingsPagePlugin : IFryPlugin
             BadgeText = "UI",
             BadgeColorHex = "#7C3AED",
             Order = 170,
-            ViewFactory = sp => new SettingsPageView
-            {
-                DataContext = (sp?.GetService(typeof(HomeViewModel)) as HomeViewModel)?.Settings
-                    ?? sp?.GetService(typeof(SettingsViewModel)) as SettingsViewModel
-                    ?? new SettingsViewModel(
-                        sp?.GetService(typeof(Services.IUiSettingsService)) as Services.IUiSettingsService ?? new Services.UiSettingsService(),
-                        sp?.GetService(typeof(Services.IThemeService)) as Services.IThemeService ?? new Services.ThemeService())
-            }
+            ViewFactory = null
         });
         return Task.CompletedTask;
     }

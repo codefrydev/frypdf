@@ -49,6 +49,8 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     [ObservableProperty]
     private object? _dynamicPageView;
 
+    private readonly Dictionary<string, object?> _dynamicViewCache = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>True when navigation is fully driven by the plugin registry (NavGroups is populated).</summary>
     public bool IsPluginDrivenNavigation => NavGroups.Count > 0;
 
@@ -470,6 +472,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     {
         SelectedNavSection = HomeNavSection.Help;
         IsToolPageActive = false;
+        DynamicPageView = null;
         if (!string.IsNullOrWhiteSpace(topicId))
         {
             HelpGuide.OpenTopicById(topicId);
@@ -485,6 +488,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     {
         SelectedNavSection = HomeNavSection.Help;
         IsToolPageActive = false;
+        DynamicPageView = null;
         HelpGuide.OpenGuideForTool(toolId);
     }
 
@@ -676,47 +680,56 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     [RelayCommand]
     public void SelectNavSection(string sectionName)
     {
-        // ALWAYS try to route through the plugin registry first
-        if (_navigationRegistry != null)
+        // Special case for Plugins: HomeView hosts a dedicated full-viewport PluginsManagerPageView
+        if (string.Equals(sectionName, "Plugins", StringComparison.OrdinalIgnoreCase))
+        {
+            DynamicPageView = null;
+        }
+        else if (_navigationRegistry != null)
         {
             var desc = _navigationRegistry.GetItem(sectionName);
             if (desc?.ViewFactory != null)
             {
-                try
+                if (!_dynamicViewCache.TryGetValue(sectionName, out var cachedView))
                 {
-                    // Plugin-driven page: instantiate the view from the registered factory
-                    var sp = _serviceProvider ?? (IServiceProvider)this;
-                    DynamicPageView = desc.ViewFactory(sp);
+                    try
+                    {
+                        var sp = _serviceProvider ?? (IServiceProvider)this;
+                        cachedView = desc.ViewFactory(sp);
+                        _dynamicViewCache[sectionName] = cachedView;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[HomeViewModel] Failed to create plugin view for '{sectionName}': {ex}");
+                        cachedView = null;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[HomeViewModel] Failed to create plugin view for '{sectionName}': {ex}");
-                    DynamicPageView = null;
-                }
+                DynamicPageView = cachedView;
             }
             else
             {
-                // No plugin view registered — fall back to legacy IsXxxSection boolean routing
                 DynamicPageView = null;
             }
+        }
+        else
+        {
+            DynamicPageView = null;
+        }
 
-            // Update active states across all flat nav items
-            foreach (var item in DynamicNavigationItems)
-            {
-                item.IsActive = string.Equals(item.Id, sectionName, StringComparison.OrdinalIgnoreCase);
-            }
+        // Update active states across all flat nav items
+        foreach (var item in DynamicNavigationItems)
+        {
+            item.IsActive = string.Equals(item.Id, sectionName, StringComparison.OrdinalIgnoreCase);
+        }
 
-            if (string.Equals(sectionName, "Plugins", StringComparison.OrdinalIgnoreCase))
-            {
-                // Clear DynamicPageView so HomeView routes directly to the dedicated full-viewport PluginsManagerPageView panel
-                DynamicPageView = null;
-            }
+        if (IsToolPageActive)
+        {
+            BackToTools();
         }
 
         if (Enum.TryParse<HomeNavSection>(sectionName, true, out var section))
         {
             SelectedNavSection = section;
-            IsToolPageActive = false;
 
             if (section == HomeNavSection.NewDocument)
             {
@@ -724,31 +737,25 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
             }
 
             // Automatically set tool category filter according to selected section
-            switch (section)
+            var category = section switch
             {
-                case HomeNavSection.OrganizeAndPage:
-                    SelectedToolCategory = "Organize & Page";
-                    break;
-                case HomeNavSection.OptimizeAndSecurity:
-                    SelectedToolCategory = "Optimize & Security";
-                    break;
-                case HomeNavSection.ConvertFromPdf:
-                    SelectedToolCategory = "Convert from PDF";
-                    break;
-                case HomeNavSection.ConvertToPdf:
-                    SelectedToolCategory = "Convert to PDF";
-                    break;
-                case HomeNavSection.EditAndForms:
-                    SelectedToolCategory = "Edit & Forms";
-                    break;
-                case HomeNavSection.AiAndAutomation:
-                    SelectedToolCategory = "AI & Automation";
-                    break;
-                default:
-                    SelectedToolCategory = "All";
-                    break;
+                HomeNavSection.OrganizeAndPage => "Organize & Page",
+                HomeNavSection.OptimizeAndSecurity => "Optimize & Security",
+                HomeNavSection.ConvertFromPdf => "Convert from PDF",
+                HomeNavSection.ConvertToPdf => "Convert to PDF",
+                HomeNavSection.EditAndForms => "Edit & Forms",
+                HomeNavSection.AiAndAutomation => "AI & Automation",
+                _ => "All"
+            };
+
+            if (SelectedToolCategory != category)
+            {
+                SelectedToolCategory = category;
             }
-            UpdateFilteredTools();
+            else
+            {
+                UpdateFilteredTools();
+            }
         }
     }
 

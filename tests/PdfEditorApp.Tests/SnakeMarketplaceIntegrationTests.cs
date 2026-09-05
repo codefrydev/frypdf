@@ -23,6 +23,8 @@ public class SnakeMarketplaceIntegrationTests
     {
         var services = new ServiceCollection();
         App.ConfigureServices(services);
+        var tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"test_installed_{Guid.NewGuid():N}.json");
+        services.AddSingleton<IInstalledPluginStore>(new FileInstalledPluginStore(tempFile));
         return services.BuildServiceProvider();
     }
 
@@ -59,12 +61,15 @@ public class SnakeMarketplaceIntegrationTests
         Assert.Null(overlayReg.GetOverlay("frypdf.overlay.snake"));
         Assert.False(overlayReg.IsOverlayVisible("frypdf.overlay.snake"));
 
-        // 3. Verify Snake Game is available in the Marketplace catalog
+        // 3. Verify Snake Game and companion overlays are available in the Marketplace catalog
         var catalog = await marketplace.GetCatalogAsync();
-        var snakeItem = Assert.Single(catalog);
-        Assert.Equal("frypdf.overlay.snake", snakeItem.Id);
+        Assert.Equal(3, catalog.Count);
+        var snakeItem = catalog.First(c => c.Id == "frypdf.overlay.snake");
         Assert.Equal(MarketplacePluginStatus.Available, snakeItem.Status);
         Assert.Equal("Retro Arcade Snake Game (Shell Overlay)", snakeItem.Name);
+
+        Assert.Contains(catalog, c => c.Id == "frypdf.overlay.scratchpad");
+        Assert.Contains(catalog, c => c.Id == "frypdf.overlay.telemetry");
 
         // 4. Install plugin via Marketplace
         bool installed = await marketplace.InstallPluginAsync("frypdf.overlay.snake");
@@ -79,18 +84,28 @@ public class SnakeMarketplaceIntegrationTests
 
         // Verify status in catalog updated to Installed
         catalog = await marketplace.GetCatalogAsync();
-        Assert.Equal(MarketplacePluginStatus.Installed, catalog[0].Status);
+        Assert.Equal(MarketplacePluginStatus.Installed, catalog.First(c => c.Id == "frypdf.overlay.snake").Status);
 
         // Verify capabilities registered
         Assert.Contains(commandReg.GetAllCommands(), c => c.Id == "cmd.overlay.snake");
         Assert.Contains(statusReg.GetWidgets(StatusBarAlignment.Right), w => w.WidgetId == "frypdf.status.snake");
         Assert.Contains(ribbonReg.GetActionsForTab("view"), a => a.Id == "frypdf.ribbon.action.snake");
 
-        // 6. Uninstall plugin via Marketplace
+        // 6. Test Persistence & Auto-Restore on simulated App Restart
+        var store = sp.GetRequiredService<IInstalledPluginStore>();
+        Assert.True(store.IsInstalled("frypdf.overlay.snake"));
+
+        var newHost = new PluginHost(new FryPluginContext(sp));
+        var newMarketplace = new PluginMarketplaceService(newHost, overlayReg, store);
+        Assert.True(newMarketplace.IsPluginInstalled("frypdf.overlay.snake"));
+        Assert.True(newHost.IsPluginActive("frypdf.overlay.snake"));
+
+        // 7. Uninstall plugin via Marketplace
         bool uninstalled = await marketplace.UninstallPluginAsync("frypdf.overlay.snake");
         Assert.True(uninstalled);
+        Assert.False(store.IsInstalled("frypdf.overlay.snake"));
 
-        // 7. Verify plugin deactivated and cleanly unmounted
+        // 8. Verify plugin deactivated and cleanly unmounted
         Assert.False(host.IsPluginActive("frypdf.overlay.snake"));
         Assert.False(marketplace.IsPluginInstalled("frypdf.overlay.snake"));
         Assert.False(overlayReg.IsOverlayVisible("frypdf.overlay.snake"));
@@ -98,7 +113,7 @@ public class SnakeMarketplaceIntegrationTests
 
         // Verify status in catalog returned to Available
         catalog = await marketplace.GetCatalogAsync();
-        Assert.Equal(MarketplacePluginStatus.Available, catalog[0].Status);
+        Assert.Equal(MarketplacePluginStatus.Available, catalog.First(c => c.Id == "frypdf.overlay.snake").Status);
 
         // Verify effects rolled back
         Assert.DoesNotContain(commandReg.GetAllCommands(), c => c.Id == "cmd.overlay.snake");

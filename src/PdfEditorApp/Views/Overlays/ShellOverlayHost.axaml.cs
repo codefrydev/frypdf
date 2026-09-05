@@ -2,6 +2,7 @@ using System;
 using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using PdfEditorApp.ViewModels;
 
 namespace PdfEditorApp.Views.Overlays;
@@ -42,6 +43,60 @@ public partial class ShellOverlayHost : UserControl
     {
         base.OnSizeChanged(e);
         ClampAndPositionOverlays();
+    }
+
+    private Point _dragStartPoint;
+    private bool _isDraggingStandardHeader;
+
+    private void OnOverlayPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is Control ctrl && ctrl.DataContext is OverlayInstanceViewModel vm && _observedVm != null)
+        {
+            vm.BringToFront(_observedVm.ActiveOverlays);
+        }
+    }
+
+    private void OnStandardHeaderPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            _isDraggingStandardHeader = true;
+            var root = this.VisualRoot as Visual ?? this;
+            _dragStartPoint = e.GetPosition(root);
+            e.Pointer.Capture(sender as Control);
+
+            if (sender is Control ctrl && ctrl.DataContext is OverlayInstanceViewModel vm && _observedVm != null)
+            {
+                vm.BringToFront(_observedVm.ActiveOverlays);
+            }
+            e.Handled = true;
+        }
+    }
+
+    private void OnStandardHeaderPointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (_isDraggingStandardHeader && sender is Control ctrl && ctrl.DataContext is OverlayInstanceViewModel vm)
+        {
+            var root = this.VisualRoot as Visual ?? this;
+            var currentPoint = e.GetPosition(root);
+            var deltaX = currentPoint.X - _dragStartPoint.X;
+            var deltaY = currentPoint.Y - _dragStartPoint.Y;
+            _dragStartPoint = currentPoint;
+
+            vm.X = Math.Max(0, vm.X + deltaX);
+            vm.Y = Math.Max(0, vm.Y + deltaY);
+            e.Handled = true;
+        }
+    }
+
+    private void OnStandardHeaderPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (_isDraggingStandardHeader)
+        {
+            _isDraggingStandardHeader = false;
+            e.Pointer.Capture(null);
+            e.Handled = true;
+        }
     }
 
     private void ClampAndPositionOverlays()

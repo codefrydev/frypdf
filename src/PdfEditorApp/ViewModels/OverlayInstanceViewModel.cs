@@ -35,6 +35,18 @@ public partial class OverlayInstanceViewModel : ObservableObject
     private double _height = 420;
 
     [ObservableProperty]
+    private int _zIndex = 1;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasStandardChrome))]
+    [NotifyPropertyChangedFor(nameof(HasCustomChrome))]
+    [NotifyPropertyChangedFor(nameof(HasFloatingPill))]
+    private OverlayChromeMode _chromeMode = OverlayChromeMode.StandardCard;
+
+    [ObservableProperty]
+    private bool _isPinned;
+
+    [ObservableProperty]
     private bool _isMinimized;
 
     [ObservableProperty]
@@ -42,6 +54,10 @@ public partial class OverlayInstanceViewModel : ObservableObject
 
     [ObservableProperty]
     private object? _content;
+
+    public bool HasStandardChrome => ChromeMode == OverlayChromeMode.StandardCard;
+    public bool HasCustomChrome => ChromeMode == OverlayChromeMode.CustomChrome;
+    public bool HasFloatingPill => ChromeMode == OverlayChromeMode.FloatingPill;
 
     public OverlayDescriptor Descriptor { get; }
 
@@ -53,6 +69,7 @@ public partial class OverlayInstanceViewModel : ObservableObject
         _iconKind = descriptor.IconKind;
         _width = descriptor.DefaultWidth;
         _height = descriptor.DefaultHeight;
+        _chromeMode = descriptor.ChromeMode;
         _onClose = onClose;
     }
 
@@ -63,9 +80,25 @@ public partial class OverlayInstanceViewModel : ObservableObject
     }
 
     [RelayCommand]
+    public void TogglePin()
+    {
+        IsPinned = !IsPinned;
+    }
+
+    [RelayCommand]
     public void Close()
     {
         IsVisible = false;
         _onClose?.Invoke(this);
+    }
+
+    public void BringToFront(System.Collections.Generic.IEnumerable<OverlayInstanceViewModel> allOverlays)
+    {
+        int max = 0;
+        foreach (var o in allOverlays)
+        {
+            if (o.ZIndex > max) max = o.ZIndex;
+        }
+        ZIndex = max + 1;
     }
 }

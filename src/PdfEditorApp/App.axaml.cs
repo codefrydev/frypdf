@@ -198,6 +198,7 @@ public partial class App : Application
         services.AddSingleton<PdfEditorApp.Services.Overlays.OverlayRegistry>();
         services.AddSingleton<PdfEditorApp.Core.Plugins.Descriptors.IOverlayRegistry>(sp => sp.GetRequiredService<PdfEditorApp.Services.Overlays.OverlayRegistry>());
         services.AddSingleton<PdfEditorApp.Core.Plugins.Settings.IPluginSettingsStore, PdfEditorApp.Core.Plugins.Settings.FilePluginSettingsStore>();
+        services.AddSingleton<PdfEditorApp.Core.Plugins.Marketplace.IInstalledPluginStore, PdfEditorApp.Core.Plugins.Marketplace.FileInstalledPluginStore>();
 
 
         services.AddSingleton<FryPluginContext>(sp => new FryPluginContext(sp));

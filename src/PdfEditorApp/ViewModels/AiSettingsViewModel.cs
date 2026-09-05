@@ -336,7 +336,7 @@ public partial class AiSettingsViewModel : ViewModelBase
         }
 
         // Match selected model from catalog if present
-        var match = AvailableModels.FirstOrDefault(m => string.Equals(m.Id, SelectedModelId, StringComparison.OrdinalIgnoreCase));
+        var match = AvailableModels.FirstOrDefault(m => m != null && string.Equals(m.Id, SelectedModelId, StringComparison.OrdinalIgnoreCase));
         if (match != null)
         {
             SelectedModel = match;

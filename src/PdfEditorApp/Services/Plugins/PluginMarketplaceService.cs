@@ -7,18 +7,21 @@ using System.Threading.Tasks;
 using PdfEditorApp.Core.Plugins;
 using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Core.Plugins.Marketplace;
+using PdfEditorApp.Plugins.Scratchpad;
 using PdfEditorApp.Plugins.Snake;
+using PdfEditorApp.Plugins.Telemetry;
 
 namespace PdfEditorApp.Services.Plugins;
 
 /// <summary>
 /// Service providing access to the curated FryPDF Plugin Store and Marketplace.
-/// Features real, functional extension packages with 1-click mounting into the isolated plugin kernel.
+/// Features real, functional extension packages with persistent history and 1-click mounting into the isolated plugin kernel.
 /// </summary>
 public class PluginMarketplaceService : IPluginMarketplaceService
 {
     private readonly PluginHost? _pluginHost;
     private readonly IOverlayRegistry? _overlayRegistry;
+    private readonly IInstalledPluginStore _installedPluginStore;
     private readonly string _pluginsDirectory;
     private readonly HashSet<string> _installedMarketplaceIds = new(StringComparer.OrdinalIgnoreCase);
 
@@ -32,7 +35,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             Version = "1.0.0",
             Category = "UI & Extensions",
             Description = "Playable, draggable retro-arcade Snake game floating over the application canvas in the 'shell.overlay' slot.",
-            LongDescription = "Bring playful retro-arcade entertainment into your document workflow! Inspired by the DeepSeek Harness interactive plugin showcase, this extension mounts a high-performance floating Snake game into the 'shell.overlay' slot.\n\n### Key Features:\n• **Non-Modal Floating Overlay**: Runs smoothly on top of any document or workspace page without interrupting your PDF work.\n• **60+ FPS Smooth SkiaSharp Rendering**: Fully GPU/Direct-rendered with zero Large Object Heap allocations.\n• **Tactile M3 Expressive Floating Card**: Draggable header, minimizable tray state, and pill controls.\n• **Interactive Controls**: Keyboard arrows/WASD, on-screen tactile D-Pad buttons, difficulty & speed selection.\n• **Deep Shell Integration**: Contributes to Command Palette (`Ctrl+Alt+S`), Status Bar (`🐍 Snake`), and Ribbon View Tab.\n\nEnjoy a quick gaming break while editing or reviewing PDFs!",
+            LongDescription = "Bring playful retro-arcade entertainment into your document workflow! Inspired by the DeepSeek Harness interactive plugin showcase, this extension mounts a high-performance floating Snake game into the 'shell.overlay' slot.\n\n### Key Features:\n• **Non-Modal Floating Overlay**: Runs smoothly on top of any document or workspace page without interrupting your PDF work.\n• **60+ FPS Smooth SkiaSharp Rendering**: Fully GPU/Direct-rendered with zero Large Object Heap allocations.\n• **Tactile Custom Chrome Frame**: Dark retro arcade aesthetics with D-Pad and score counters.\n• **Interactive Controls**: Keyboard arrows/WASD, on-screen tactile D-Pad buttons, difficulty & speed selection.\n• **Deep Shell Integration**: Contributes to Command Palette (`Ctrl+Alt+S`), Status Bar (`🐍 Snake`), and Ribbon View Tab.\n\nEnjoy a quick gaming break while editing or reviewing PDFs!",
             Rating = 5.0,
             RatingCount = 128,
             InstallCount = 4200,
@@ -52,20 +55,82 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                 "Ribbon: View Tab > Plugins > Snake Game Action Button"
             },
             Dependencies = new[] { "PdfEditorApp.Core >= 1.0.0" }
+        },
+        new MarketplacePluginItem
+        {
+            Id = "frypdf.overlay.scratchpad",
+            Name = "Review Scratchpad & Notes (Shell Overlay)",
+            Publisher = "FryPDF Tools Team",
+            Version = "1.0.0",
+            Category = "UI & Extensions",
+            Description = "Floating Markdown scratchpad with live word/char counters and timestamp logs for PDF review.",
+            LongDescription = "Jot down rapid review notes, citations, page corrections, and checklists without leaving your current PDF screen.\n\n### Key Features:\n• **Automatic M3 Expressive Card Chrome**: Automatic draggable header, pin toggle, and minimize pill.\n• **Live Word & Character Counter**: Keep track of notes and summary length in real time.\n• **Quick Action Pills**: One-click timestamp insertions and notes clearing.\n• **Deep Shell Integration**: Contributes to Command Palette (`Ctrl+Alt+N`), Status Bar (`📝 Notes`), and Ribbon View Tab.",
+            Rating = 4.9,
+            RatingCount = 94,
+            InstallCount = 2850,
+            FormattedSize = "180 KB",
+            IconKind = "NotebookEditOutline",
+            IconColorHex = "#6366F1",
+            License = "MIT",
+            IsVerified = true,
+            IsOfficial = true,
+            Tags = new[] { "scratchpad", "notes", "review", "overlay", "markdown" },
+            Highlights = new[] { "Auto M3 window chrome", "Real-time word & char count", "Timestamp note inserts" },
+            ContributedFeatures = new[]
+            {
+                "Shell Overlay: Floating Scratchpad Card",
+                "Command Palette: 'Toggle Review Scratchpad (Shell Overlay)'",
+                "Status Bar: Clickable '📝 Notes' Indicator Pill",
+                "Ribbon: View Tab > Plugins > Scratchpad Button"
+            },
+            Dependencies = new[] { "PdfEditorApp.Core >= 1.0.0" }
+        },
+        new MarketplacePluginItem
+        {
+            Id = "frypdf.overlay.telemetry",
+            Name = "Document Telemetry HUD (Shell Overlay)",
+            Publisher = "FryPDF Core Engineering",
+            Version = "1.0.0",
+            Category = "Tools & Productivity",
+            Description = "Live performance telemetry HUD showing managed heap allocation, GC cycles, and memory trimming.",
+            LongDescription = "Monitor runtime engine health, managed memory, GC generations, and system architecture in a compact floating HUD.\n\n### Key Features:\n• **Real-Time Memory Telemetry**: Track managed heap size and GC frequency.\n• **One-Click Heap Trimming**: Trigger immediate memory compaction and trimming during heavy PDF sessions.\n• **Compact Floating Utility**: Stays parked neatly on top of the document workspace without obstructing tools.\n• **Deep Shell Integration**: Contributes to Command Palette (`Ctrl+Alt+T`), Status Bar (`⚡ HUD`), and Ribbon View Tab.",
+            Rating = 4.8,
+            RatingCount = 76,
+            InstallCount = 1920,
+            FormattedSize = "150 KB",
+            IconKind = "ChartTimelineVariant",
+            IconColorHex = "#0EA5E9",
+            License = "MIT",
+            IsVerified = true,
+            IsOfficial = true,
+            Tags = new[] { "telemetry", "diagnostics", "memory", "hud", "performance" },
+            Highlights = new[] { "Live heap monitoring", "One-click GC heap trimming", "Compact M3 HUD" },
+            ContributedFeatures = new[]
+            {
+                "Shell Overlay: Floating Telemetry HUD Card",
+                "Command Palette: 'Toggle Telemetry HUD (Shell Overlay)'",
+                "Status Bar: Clickable '⚡ HUD' Indicator Pill",
+                "Ribbon: View Tab > Plugins > Telemetry HUD Button"
+            },
+            Dependencies = new[] { "PdfEditorApp.Core >= 1.0.0" }
         }
     };
 
     public PluginMarketplaceService(
         PluginHost? pluginHost = null,
-        IOverlayRegistry? overlayRegistry = null)
+        IOverlayRegistry? overlayRegistry = null,
+        IInstalledPluginStore? installedPluginStore = null)
     {
         _pluginHost = pluginHost;
         _overlayRegistry = overlayRegistry;
+        _installedPluginStore = installedPluginStore ?? new FileInstalledPluginStore();
         _pluginsDirectory = Path.Combine(AppContext.BaseDirectory, "plugins");
+
         try
         {
             Directory.CreateDirectory(_pluginsDirectory);
             ScanInstalledMarketplacePlugins();
+            RestorePersistedPlugins();
         }
         catch (Exception ex)
         {
@@ -73,21 +138,79 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         }
     }
 
+    private static IFryPlugin? InstantiatePlugin(string pluginId)
+    {
+        if (string.Equals(pluginId, "frypdf.overlay.snake", StringComparison.OrdinalIgnoreCase))
+            return new SnakeGamePlugin();
+        if (string.Equals(pluginId, "frypdf.overlay.scratchpad", StringComparison.OrdinalIgnoreCase))
+            return new ScratchpadPlugin();
+        if (string.Equals(pluginId, "frypdf.overlay.telemetry", StringComparison.OrdinalIgnoreCase))
+            return new DocumentTelemetryPlugin();
+        return null;
+    }
+
+    private void RestorePersistedPlugins()
+    {
+        if (_pluginHost == null) return;
+
+        var records = _installedPluginStore.GetAll();
+        foreach (var rec in records)
+        {
+            if (rec.IsEnabled)
+            {
+                var plugin = InstantiatePlugin(rec.PluginId);
+                if (plugin != null)
+                {
+                    if (_pluginHost.GetPluginState(rec.PluginId) == PluginState.Unloaded)
+                    {
+                        _pluginHost.RegisterPlugin(plugin);
+                    }
+
+                    if (!_pluginHost.IsPluginActive(rec.PluginId))
+                    {
+                        try
+                        {
+                            _pluginHost.EnablePluginAsync(rec.PluginId).GetAwaiter().GetResult();
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[PluginMarketplaceService] Restore error for {rec.PluginId}: {ex.Message}");
+                        }
+                    }
+
+                    _installedMarketplaceIds.Add(rec.PluginId);
+
+                    if (rec.WasOverlayOpen)
+                    {
+                        var overlayReg = _overlayRegistry ?? _pluginHost.Context.GetService<IOverlayRegistry>();
+                        overlayReg?.ShowOverlay(rec.PluginId);
+                    }
+                }
+            }
+        }
+    }
+
     private void ScanInstalledMarketplacePlugins()
     {
         _installedMarketplaceIds.Clear();
-        if (Directory.Exists(_pluginsDirectory))
+
+        foreach (var rec in _installedPluginStore.GetAll())
         {
-            foreach (var dir in Directory.GetDirectories(_pluginsDirectory))
+            if (rec.IsEnabled)
             {
-                var folderName = Path.GetFileName(dir);
-                _installedMarketplaceIds.Add(folderName);
+                _installedMarketplaceIds.Add(rec.PluginId);
             }
         }
 
-        if (_pluginHost != null && _pluginHost.IsPluginActive("frypdf.overlay.snake"))
+        if (_pluginHost != null)
         {
-            _installedMarketplaceIds.Add("frypdf.overlay.snake");
+            foreach (var item in CuratedExtensions)
+            {
+                if (_pluginHost.IsPluginActive(item.Id))
+                {
+                    _installedMarketplaceIds.Add(item.Id);
+                }
+            }
         }
     }
 
@@ -173,12 +296,12 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         progress?.Report(0.85);
 
         // Mount and activate real plugin into host if available
-        if (string.Equals(item.Id, "frypdf.overlay.snake", StringComparison.OrdinalIgnoreCase) && _pluginHost != null)
+        var plugin = InstantiatePlugin(item.Id);
+        if (plugin != null && _pluginHost != null)
         {
-            var state = _pluginHost.GetPluginState(item.Id);
-            if (state == PluginState.Unloaded)
+            if (_pluginHost.GetPluginState(item.Id) == PluginState.Unloaded)
             {
-                _pluginHost.RegisterPlugin(new SnakeGamePlugin());
+                _pluginHost.RegisterPlugin(plugin);
             }
 
             if (!_pluginHost.IsPluginActive(item.Id))
@@ -191,6 +314,16 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         }
 
         _installedMarketplaceIds.Add(item.Id);
+        _installedPluginStore.AddOrUpdate(new InstalledPluginRecord
+        {
+            PluginId = item.Id,
+            Name = item.Name,
+            Version = item.Version,
+            InstalledAt = DateTime.UtcNow,
+            IsEnabled = true,
+            WasOverlayOpen = true
+        });
+
         item.Status = MarketplacePluginStatus.Installed;
 
         statusCallback?.Invoke($"'{item.Name}' installed and activated successfully!");
@@ -207,8 +340,9 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         }
 
         _installedMarketplaceIds.Remove(pluginId);
+        _installedPluginStore.Remove(pluginId);
 
-        if (string.Equals(pluginId, "frypdf.overlay.snake", StringComparison.OrdinalIgnoreCase) && _pluginHost != null)
+        if (_pluginHost != null)
         {
             var overlayReg = _overlayRegistry ?? _pluginHost.Context.GetService<IOverlayRegistry>();
             overlayReg?.HideOverlay(pluginId);
@@ -237,10 +371,14 @@ public class PluginMarketplaceService : IPluginMarketplaceService
 
     public bool IsPluginInstalled(string pluginId)
     {
-        if (_pluginHost != null && string.Equals(pluginId, "frypdf.overlay.snake", StringComparison.OrdinalIgnoreCase))
-        {
-            return _pluginHost.IsPluginActive(pluginId);
-        }
+        if (string.IsNullOrWhiteSpace(pluginId)) return false;
+
+        if (_installedPluginStore.IsInstalled(pluginId))
+            return true;
+
+        if (_pluginHost != null && _pluginHost.IsPluginActive(pluginId))
+            return true;
+
         return _installedMarketplaceIds.Contains(pluginId);
     }
 

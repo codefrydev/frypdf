@@ -56,6 +56,7 @@ public class SnakeGamePlugin : IFryPlugin
             IsMinimizable = true,
             IsClosable = true,
             IconKind = "GamepadVariantOutline",
+            ChromeMode = OverlayChromeMode.CustomChrome,
             ViewType = typeof(SnakeGameView),
             ViewModelType = typeof(SnakeGameViewModel),
             ViewFactory = sp => new SnakeGameView

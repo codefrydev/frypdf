@@ -7,7 +7,7 @@
   <meta name="description" content="FryPDF is a 100% free, offline, privacy-first desktop PDF editor, AI PDF creator, and 32-tool studio built with Avalonia UI, QuestPDF, and .NET 10. Create PDF layouts with AI prompts, fill AcroForms, typeset LaTeX, convert formats, and automate workflows locally." />
   <meta name="keywords" content="PDF Editor, AI PDF Creator, Create PDF with AI, AI Document Studio, PDF Studio, PDF Tools, Avalonia UI, QuestPDF, .NET 10, Ollama PDF, Local LLM PDF, AcroForms, Bates Numbering, LaTeX PDF, OCR PDF, Offline PDF Editor, Open Source PDF, Batch PDF Converter, PDF to Word, PDF to Excel, FOIA Redaction, Free PDF Editor" />
   <meta name="author" content="Code Fry Dev" />
-  <meta name="theme-color" content="#090D14" />
+  <meta name="theme-color" content="#070F18" />
   <link rel="canonical" href="https://codefrydev.in/frypdf" />
 
   <!-- Open Graph / Facebook -->
@@ -174,38 +174,49 @@
     }
 
     :root {
-      --bg-base: #090D14;
-      --bg-surface: #0E1420;
-      --bg-elevated: #141B2A;
-      --bg-panel: #1A2234;
-      --bg-card: #111827;
-      --bg-input: #0B0F18;
+      /* Deep Navy Slate Surface Hierarchy (derived from Dragon Emblem #0D2B45) */
+      --bg-base: #070F18;
+      --bg-surface: #0C1724;
+      --bg-elevated: #112133;
+      --bg-panel: #162B42;
+      --bg-card: #0F1E30;
+      --bg-input: #091422;
 
       --text-primary: #F8FAFC;
       --text-secondary: #94A3B8;
       --text-tertiary: #64748B;
       --text-dim: #475569;
 
-      /* Signature Brand Accents */
-      --fry-crimson: #E11D48;
-      --fry-crimson-hover: #BE123C;
-      --fry-crimson-subtle: rgba(225, 29, 72, 0.14);
+      /* Signature Brand Accents (Flame Coral & Dragon Navy Palette) */
+      --fry-crimson: #EE4B32;
+      --fry-crimson-hover: #D63A22;
+      --fry-crimson-subtle: rgba(238, 75, 50, 0.14);
+      --fry-coral: #EE4B32;
+      --fry-coral-hover: #D63A22;
+      --fry-coral-subtle: rgba(238, 75, 50, 0.14);
       
+      --fry-navy: #0D2B45;
+      --fry-navy-subtle: rgba(13, 43, 69, 0.35);
+
+      --fry-steel: #7CA2C2;
+      --fry-steel-dim: #547B9C;
+      --fry-steel-subtle: rgba(124, 162, 194, 0.14);
+
       --fry-cyan: #38BDF8;
       --fry-cyan-dim: #0284C7;
       --fry-cyan-subtle: rgba(56, 189, 248, 0.12);
 
-      --fry-blue: #0F6CBD;
-      --fry-blue-hover: #115EA3;
+      --fry-blue: #1A3D5C;
+      --fry-blue-hover: #234E74;
 
       --fry-amber: #F59E0B;
       --fry-emerald: #10B981;
       --fry-purple: #8B5CF6;
       --fry-indigo: #6366F1;
 
-      --border-subtle: #1E293B;
-      --border-strong: #334155;
-      --border-focus: #38BDF8;
+      --border-subtle: #182E46;
+      --border-strong: #254668;
+      --border-focus: #EE4B32;
 
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
@@ -215,9 +226,10 @@
       --radius-lg: 14px;
       --radius-xl: 20px;
 
-      --shadow-window: 0 24px 70px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
-      --shadow-card: 0 12px 30px -10px rgba(0, 0, 0, 0.6);
-      --shadow-glow: 0 0 30px rgba(56, 189, 248, 0.15);
+      --shadow-window: 0 24px 70px -15px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      --shadow-card: 0 12px 30px -10px rgba(0, 0, 0, 0.65);
+      --shadow-glow: 0 0 30px rgba(238, 75, 50, 0.2);
+      --shadow-steel-glow: 0 0 30px rgba(124, 162, 194, 0.18);
     }
 
     html {
@@ -276,7 +288,7 @@
       position: sticky;
       top: 0;
       z-index: 1000;
-      background: rgba(9, 13, 20, 0.92);
+      background: rgba(7, 15, 24, 0.92);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-subtle);
@@ -303,13 +315,15 @@
     .brand-icon-box {
       width: 34px;
       height: 34px;
-      border-radius: var(--radius-sm);
-      background: #0F172A;
+      border-radius: 50%;
+      background: #FFFFFF;
       border: 1px solid var(--border-strong);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(13, 43, 69, 0.15);
     }
 
     .brand-text {
@@ -334,8 +348,8 @@
 
     /* Early Development Banner */
     .development-banner {
-      background: linear-gradient(90deg, rgba(225, 29, 72, 0.14) 0%, rgba(56, 189, 248, 0.12) 100%);
-      border-bottom: 1px solid rgba(56, 189, 248, 0.22);
+      background: linear-gradient(90deg, rgba(238, 75, 50, 0.14) 0%, rgba(124, 162, 194, 0.14) 100%);
+      border-bottom: 1px solid rgba(124, 162, 194, 0.22);
       padding: 10px 0;
       font-size: 0.84rem;
       position: relative;
@@ -358,10 +372,10 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       padding: 2px 7px;
-      background: rgba(225, 29, 72, 0.25);
-      border: 1px solid rgba(225, 29, 72, 0.45);
+      background: rgba(238, 75, 50, 0.25);
+      border: 1px solid rgba(238, 75, 50, 0.45);
       border-radius: var(--radius-sm);
-      color: #FF6B8B;
+      color: #FF7A5C;
       flex-shrink: 0;
     }
 
@@ -575,13 +589,14 @@
     .btn-crimson {
       background: var(--fry-crimson);
       color: #FFFFFF;
-      border-color: rgba(255, 255, 255, 0.15);
-      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
+      border-color: rgba(255, 255, 255, 0.18);
+      box-shadow: 0 4px 14px rgba(238, 75, 50, 0.35);
     }
 
     .btn-crimson:hover {
       background: var(--fry-crimson-hover);
       transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(238, 75, 50, 0.45);
     }
 
     .btn-blue {
@@ -682,7 +697,7 @@
 
     .hero-headline span.accent {
       color: var(--fry-crimson);
-      background: linear-gradient(135deg, #FF4D6D, #E11D48);
+      background: linear-gradient(135deg, #FF7A5C, #EE4B32);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -789,7 +804,7 @@
     .tools-showcase-section {
       padding: clamp(56px, 8vw, 88px) 0;
       border-bottom: 1px solid var(--border-subtle);
-      background: linear-gradient(180deg, var(--bg-base) 0%, #0B111D 100%);
+      background: linear-gradient(180deg, var(--bg-base) 0%, #0C1A2A 100%);
     }
 
     .tool-filter-tabs {
@@ -837,9 +852,9 @@
     .tool-filter-btn.active {
       background: var(--fry-blue);
       color: #FFFFFF;
-      border-color: var(--fry-cyan);
+      border-color: var(--fry-steel);
       font-weight: 600;
-      box-shadow: 0 2px 10px rgba(15, 108, 189, 0.4);
+      box-shadow: 0 2px 10px rgba(13, 43, 69, 0.5);
     }
 
     .tools-grid {
@@ -1386,11 +1401,12 @@
     <div class="container nav-container">
       <a href="#" class="brand-wrap">
         <div class="brand-icon-box">
-          <svg width="22" height="22" viewBox="0 0 196 196" fill="none">
-            <path d="M50 126H145V133C145 157.853 124.853 178 100 178H95C70.1472 178 50 157.853 50 133V126Z" fill="#38BDF8"/>
-            <path d="M68 60C68 54 73 46 73 46C73 46 71 55 71 60C71 65 72 65 73 68C74 72 73 74 73 77C73 79 72 80 72 83C71 86 69 92 69 92C69 92 70 84 70 81C70 78 70 74 69 70C68 66 67 66 68 60Z" fill="#F59E0B"/>
-            <path d="M99 38C99 30 96 19 96 19C96 19 97 31 97 38C97 45 96 44 96 49C95 54 96 57 96 60C96 64 96 64 97 69C97 74 98 81 98 81C98 81 98 70 98 66C98 62 98 57 98 52C99 46 100 46 99 38Z" fill="#EF4444"/>
-            <path d="M118 64C118 59 121 52 121 52C121 52 120 60 120 64C120 69 121 68 121 71C122 75 121 76 121 78C121 81 121 81 120 84C120 87 119 92 119 92C119 92 119 85 119 82C119 80 119 76 119 73C118 69 117 69 118 64Z" fill="#F59E0B"/>
+          <svg width="24" height="24" viewBox="0 0 5064 5064" fill="none">
+            <path d="M2474 751C2532.5 786.5 2609.5 835.5 2682.5 859.5C2768.74 897.828 2854.61 905.811 2884 925.5C2935.5 960 2964.5 1038.74 3038 1085C3111.5 1131.26 3226 1156 3267 1156.5C3308 1157 3322.5 1124 3356 1128C3389.5 1132 3422.5 1199.5 3431 1251C3439.5 1302.5 3449.5 1442 3417.5 1450.5C3385.5 1459 3252 1403 3164 1391.5C3076 1380 2823 1391.5 2823 1391.5C2823 1391.5 2973 1587.5 3068.5 1626C3164 1664.5 3244.5 1651.5 3257.5 1664.5C3270.5 1677.5 3226.5 1772 3164 1813.5C3101.5 1855 3011 1874.5 2995.5 1864.5C2980 1854.5 2903 1640.5 2742 1630.5C2581 1620.5 2531 1626 2481.5 1607C2432 1588 2370.5 1526 2345.5 1479.5C2320.5 1433 2325 1310 2287.5 1311C2250 1312 1948 1522.5 1927.5 1743C1907 1963.5 1943 2117.5 1968 2220.5C1993 2323.5 2133 2584 2133 2584C2133 2584 1945.5 2439.5 1887 2353C1828.5 2266.5 1747.5 2037 1747.5 2037L1645 2220.5C1645 2220.5 1619 2037 1619 1916C1619 1795 1667 1626 1667 1626C1667 1626 1633 1639 1589.5 1662C1546 1685 1493 1736.5 1493 1736.5C1493 1736.5 1547.5 1549 1615 1457C1682.5 1365 1855.5 1222.5 1855.5 1222.5C1855.5 1222.5 1751.5 1217 1717.5 1215C1683.5 1213 1575 1222.5 1575 1222.5C1575 1222.5 1727.5 1086 1832.5 1045C1937.5 1004 2133 973 2133 973C2133 973 1961 878 1832.5 753C1704 628 1667 353 1667 353C1667 353 1824.5 563.337 1958.5 664C2092.5 764.663 2290.5 822.5 2290.5 822.5C2290.5 822.5 2245.5 757 2203 650C2160.5 543 2158.5 411.5 2158.5 411.5C2158.5 411.5 2415.5 715.5 2474 751Z" fill="#0D2B45"/>
+            <path d="M2291.5 1633C2291.5 1633 2268.5 1913.5 2645.5 2143C3022.5 2372.5 3176.5 2469.5 3337 2716C3497.5 2962.5 3276.5 3592.5 3276.5 3592.5C3276.5 3592.5 3305 3376 3276.5 3111C3248 2846 3028 2641.5 2916 2545C2804 2448.5 2527 2287.5 2437.5 2205.5C2348 2123.5 2273.5 2027.5 2263.5 1917.5C2253.5 1807.5 2291.5 1633 2291.5 1633Z" fill="#1A3D5C"/>
+            <path d="M3923.5 1249.38C4041 1220.88 4226 1235.38 4240.5 1249.38C4255 1263.38 4188.34 1286.7 4122 1325.38C4063.62 1359.41 4013 1386.88 4013 1386.88C4013 1386.88 4199.5 1427.38 4269 1449.38C4338.5 1471.38 4440 1518.88 4550.5 1515.88C4661 1512.88 4833 1449.38 4833 1449.38C4833 1449.38 4741 1566.38 4601.5 1702.88C4462 1839.38 4132.5 1807.38 4132.5 1807.38C4132.5 1807.38 4177.5 1873.38 4218.5 1895.38C4259.5 1917.38 4338.5 1940.38 4338.5 1940.38C4338.5 1940.38 4153 2032.38 3987 2032.38C3821 2032.38 3695.5 1889.38 3603 1815.38C3510.5 1741.38 3227 1608.38 3227 1586.38C3227 1564.38 3453 1589.54 3597 1515.88C3741 1442.22 3806 1277.88 3923.5 1249.38Z" fill="#EE4B32"/>
+            <path d="M4213 2989C4213 3215.14 4168.46 3439.06 4081.92 3647.98C3995.38 3856.9 3868.54 4046.74 3708.64 4206.64C3548.74 4366.54 3358.9 4493.38 3149.98 4579.92C2941.06 4666.46 2717.14 4711 2491 4711C2264.86 4711 2040.94 4666.46 1832.02 4579.92C1623.1 4493.38 1433.26 4366.54 1273.36 4206.64C1113.46 4046.74 986.618 3856.9 900.079 3647.98C813.541 3439.06 769 3215.14 769 2989H1299C1299 3142.65 1329.25 3294.79 1388.02 3436.74C1446.8 3578.69 1532.94 3707.67 1641.54 3816.31C1750.14 3924.96 1879.06 4011.14 2020.95 4069.94C2162.84 4128.74 2314.92 4159 2468.5 4159C2622.08 4159 2774.16 4128.74 2916.05 4069.94C3057.94 4011.14 3186.86 3924.96 3295.46 3816.32C3404.06 3707.67 3490.2 3578.69 3548.98 3436.74C3607.75 3294.79 3638 3142.65 3638 2989H4213Z" fill="#0D2B45"/>
+            <path d="M2654.5 1023.5C2654.5 1023.5 2753.5 1021 2810 1033C2866.5 1045 2920 1126 2920 1126C2920 1126 2872 1139 2847 1140C2822 1141 2757.5 1132.5 2718.5 1111.5C2679.5 1090.5 2654.5 1023.5 2654.5 1023.5Z" fill="#7CA2C2"/>
           </svg>
         </div>
         <div class="brand-text">
@@ -1485,7 +1501,7 @@
     <div class="container">
       <div class="hero-meta-badge">
         <span class="meta-indicator"></span>
-        <span>EARLY ACCESS PREVIEW • AI PDF CREATION • AVALONIA 12.1 • QUESTPDF • .NET 10 • 32 TOOLS • 667+ TESTS PASSED • 100% OFFLINE</span>
+        <span>EARLY ACCESS PREVIEW • AI PDF CREATION • AVALONIA 12.1 • QUESTPDF • .NET 10 • 32 TOOLS • 788+ TESTS PASSED • 100% OFFLINE</span>
       </div>
 
       <h1 class="hero-headline">
@@ -1536,7 +1552,7 @@
         </div>
         <div class="spec-item">
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-          <span>667+ Passing Unit Tests</span>
+          <span>788+ Passing Unit Tests</span>
         </div>
         <div class="spec-item">
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
@@ -1585,7 +1601,7 @@
         </div>
 
         <div class="tool-card" data-cat="organize">
-          <div class="tool-icon-box" style="background: rgba(225, 29, 72, 0.15); color: #FB7185;">
+          <div class="tool-icon-box" style="background: rgba(238, 75, 50, 0.15); color: #FF7A5C;">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
           </div>
           <div class="tool-content">
@@ -1646,7 +1662,7 @@
         </div>
 
         <div class="tool-card" data-cat="optimize">
-          <div class="tool-icon-box" style="background: rgba(225, 29, 72, 0.15); color: #FB7185;">
+          <div class="tool-icon-box" style="background: rgba(238, 75, 50, 0.15); color: #FF7A5C;">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           </div>
           <div class="tool-content">
@@ -1696,7 +1712,7 @@
         </div>
 
         <div class="tool-card" data-cat="optimize">
-          <div class="tool-icon-box" style="background: rgba(225, 29, 72, 0.15); color: #FB7185;">
+          <div class="tool-icon-box" style="background: rgba(238, 75, 50, 0.15); color: #FF7A5C;">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
           </div>
           <div class="tool-content">
@@ -1869,7 +1885,7 @@
         </div>
 
         <div class="tool-card" data-cat="edit-forms">
-          <div class="tool-icon-box" style="background: rgba(225, 29, 72, 0.15); color: #FB7185;">
+          <div class="tool-icon-box" style="background: rgba(238, 75, 50, 0.15); color: #FF7A5C;">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
           </div>
           <div class="tool-content">
@@ -2218,7 +2234,7 @@
           <div class="lbl">Cloud Network Sockets</div>
         </div>
         <div class="spec-card">
-          <div class="val">667+ Passed</div>
+          <div class="val">788+ Passed</div>
           <div class="lbl">Automated Test Suites (xUnit)</div>
         </div>
       </div>

@@ -205,6 +205,13 @@ public partial class MainViewModel
                             iconColor = "#0D9488";
                             description = $"Modular workspace view and navigation page '{plugin.Name}'";
                         }
+                        else if (plugin.Id.StartsWith("frypdf.overlay", StringComparison.OrdinalIgnoreCase))
+                        {
+                            category = "Shell Overlays";
+                            iconKind = "GamepadVariantOutline";
+                            iconColor = "#10B981";
+                            description = $"Floating interactive shell overlay '{plugin.Name}'";
+                        }
                         else if (plugin.Id.StartsWith("frypdf.dialog", StringComparison.OrdinalIgnoreCase))
                         {
                             category = "Modal Studios & Dialogs";

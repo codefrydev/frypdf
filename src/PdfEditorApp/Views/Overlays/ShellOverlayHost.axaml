@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:PdfEditorApp.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+             x:Class="PdfEditorApp.Views.Overlays.ShellOverlayHost"
+             x:Name="RootOverlayHost"
+             x:DataType="vm:MainViewModel"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch">
+
+    <ItemsControl ItemsSource="{Binding ActiveOverlays}"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <Canvas Width="{Binding $parent[UserControl].Bounds.Width}"
+                        Height="{Binding $parent[UserControl].Bounds.Height}" />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+
+        <ItemsControl.ItemContainerTheme>
+            <ControlTheme TargetType="ContentPresenter" x:DataType="vm:OverlayInstanceViewModel">
+                <Setter Property="Canvas.Left" Value="{Binding X}" />
+                <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                <Setter Property="IsVisible" Value="{Binding IsVisible}" />
+            </ControlTheme>
+        </ItemsControl.ItemContainerTheme>
+
+        <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="vm:OverlayInstanceViewModel">
+                <ContentControl Content="{Binding Content}" />
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+</UserControl>

@@ -95,19 +95,18 @@ public class PluginsManagerPageTests
         vm.SelectedTab = PluginsManagerTab.Marketplace;
         Assert.NotEmpty(vm.FilteredMarketplacePlugins);
 
-        vm.SearchQuery = "Gemini";
+        vm.SearchQuery = "Snake";
         Assert.Single(vm.FilteredMarketplacePlugins);
-        Assert.Equal("gemini.pdf.studio", vm.FilteredMarketplacePlugins[0].Id);
+        Assert.Equal("frypdf.overlay.snake", vm.FilteredMarketplacePlugins[0].Id);
 
-        vm.SearchQuery = "LaTeX";
+        vm.SearchQuery = "Arcade";
         Assert.Single(vm.FilteredMarketplacePlugins);
-        Assert.Equal("latex.math.renderer", vm.FilteredMarketplacePlugins[0].Id);
+        Assert.Equal("frypdf.overlay.snake", vm.FilteredMarketplacePlugins[0].Id);
 
         // 4. Filter by Category
         vm.SearchQuery = "";
-        vm.SelectedCategory = "Canvas Elements";
-        Assert.Contains(vm.FilteredMarketplacePlugins, m => m.Id == "latex.math.renderer");
-        Assert.Contains(vm.FilteredMarketplacePlugins, m => m.Id == "barcode.qr.pro");
+        vm.SelectedCategory = "UI & Extensions";
+        Assert.Contains(vm.FilteredMarketplacePlugins, m => m.Id == "frypdf.overlay.snake");
 
         await host.StopAsync();
     }
@@ -151,7 +150,7 @@ public class PluginsManagerPageTests
     }
 
     [Fact]
-    public async Task PluginsManager_Marketplace_SimulatesInstallAndMountsIntoHost()
+    public async Task PluginsManager_Marketplace_InstallsAndMountsRealPluginIntoHost()
     {
         var sp = CreateTestServices();
         var host = sp.GetRequiredService<PluginHost>();
@@ -161,23 +160,28 @@ public class PluginsManagerPageTests
         await vm.LoadAllDataAsync();
 
         vm.SelectedTab = PluginsManagerTab.Marketplace;
-        var geminiItem = vm.FilteredMarketplacePlugins.First(m => m.Id == "gemini.pdf.studio");
-        vm.SelectedMarketplacePlugin = geminiItem;
+        var snakeItem = vm.FilteredMarketplacePlugins.First(m => m.Id == "frypdf.overlay.snake");
+        vm.SelectedMarketplacePlugin = snakeItem;
 
         Assert.NotNull(vm.SelectedDetail);
-        Assert.Equal("gemini.pdf.studio", vm.SelectedDetail.Id);
-        Assert.Equal("Google DeepMind / FryPDF", vm.SelectedDetail.Publisher);
+        Assert.Equal("frypdf.overlay.snake", vm.SelectedDetail.Id);
+        Assert.Equal("DeepSeek Harness / FryPDF", vm.SelectedDetail.Publisher);
         Assert.True(vm.SelectedDetail.IsOfficial);
         Assert.True(vm.SelectedDetail.IsVerified);
 
-        // Perform 1-click install
-        await vm.InstallMarketplacePluginCommand.ExecuteAsync("gemini.pdf.studio");
+        // Verify initially not active in host
+        Assert.False(host.IsPluginActive("frypdf.overlay.snake"));
 
-        Assert.True(marketplace.IsPluginInstalled("gemini.pdf.studio"));
+        // Perform 1-click install: mounts real SnakeGamePlugin into PluginHost and activates it!
+        await vm.InstallMarketplacePluginCommand.ExecuteAsync("frypdf.overlay.snake");
 
-        // Clean up
-        await marketplace.UninstallPluginAsync("gemini.pdf.studio");
-        Assert.False(marketplace.IsPluginInstalled("gemini.pdf.studio"));
+        Assert.True(marketplace.IsPluginInstalled("frypdf.overlay.snake"));
+        Assert.True(host.IsPluginActive("frypdf.overlay.snake"));
+
+        // Clean up: uninstalls and disables from host
+        await marketplace.UninstallPluginAsync("frypdf.overlay.snake");
+        Assert.False(marketplace.IsPluginInstalled("frypdf.overlay.snake"));
+        Assert.False(host.IsPluginActive("frypdf.overlay.snake"));
     }
 
     [Fact]

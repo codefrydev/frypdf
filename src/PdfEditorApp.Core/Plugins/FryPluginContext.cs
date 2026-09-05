@@ -33,6 +33,7 @@ public class FryPluginContext : IFryPluginContext
     private readonly ConcurrentDictionary<string, SidebarTabDescriptor> _sidebarTabs = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, RibbonTabDescriptor> _ribbonTabs = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, RibbonGroupDescriptor> _ribbonGroups = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, OverlayDescriptor> _overlays = new(StringComparer.OrdinalIgnoreCase);
     private readonly IPipelineManager _pipelines;
 
     private readonly IServiceProvider? _fallbackServiceProvider;
@@ -425,14 +426,16 @@ public class FryPluginContext : IFryPluginContext
         ArgumentNullException.ThrowIfNull(widget);
         _statusBarWidgets[widget.WidgetId] = widget;
 
+        IDisposable? sub = null;
         if (TryGetService<IStatusBarRegistry>(out var reg))
         {
-            reg.RegisterWidget(widget);
+            sub = reg.RegisterWidget(widget);
         }
 
         return RegisterEffect(() =>
         {
             _statusBarWidgets.TryRemove(widget.WidgetId, out _);
+            sub?.Dispose();
         });
     }
 
@@ -581,6 +584,33 @@ public class FryPluginContext : IFryPluginContext
         {
             _ribbonGroups.TryRemove(descriptor.Id, out _);
         });
+    }
+
+    // --- Shell Overlay Registry (DeepSeek Harness Inspired) ---
+
+    public virtual IDisposable RegisterOverlay(OverlayDescriptor descriptor)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+        _overlays[descriptor.Id] = descriptor;
+
+        if (TryGetService<IOverlayRegistry>(out var reg))
+        {
+            reg.RegisterOverlay(descriptor);
+        }
+
+        return RegisterEffect(() =>
+        {
+            _overlays.TryRemove(descriptor.Id, out _);
+            if (TryGetService<IOverlayRegistry>(out var r))
+            {
+                r.UnregisterOverlay(descriptor.Id);
+            }
+        });
+    }
+
+    public virtual IReadOnlyList<OverlayDescriptor> GetRegisteredOverlays()
+    {
+        return _overlays.Values.ToList();
     }
 
 
@@ -796,6 +826,14 @@ public class FryPluginContext : IFryPluginContext
             var reg = _parent.RegisterRibbonGroup(descriptor);
             return _pluginScope.RegisterDisposable(reg);
         }
+
+        public override IDisposable RegisterOverlay(OverlayDescriptor descriptor)
+        {
+            var reg = _parent.RegisterOverlay(descriptor);
+            return _pluginScope.RegisterDisposable(reg);
+        }
+
+        public override IReadOnlyList<OverlayDescriptor> GetRegisteredOverlays() => _parent.GetRegisteredOverlays();
     }
 
 

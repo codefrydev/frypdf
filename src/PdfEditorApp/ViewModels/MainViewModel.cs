@@ -51,10 +51,14 @@ public partial class MainViewModel : ViewModelBase
     private readonly IRibbonRegistry _ribbonRegistry;
     private readonly PdfEditorApp.Core.Plugins.Descriptors.ISidebarRegistry? _sidebarRegistry;
     private readonly PdfEditorApp.Core.Plugins.Descriptors.IDialogRegistry? _dialogRegistry;
+    private readonly PdfEditorApp.Core.Plugins.Descriptors.IOverlayRegistry? _overlayRegistry;
 
     public IRibbonRegistry RibbonRegistry => _ribbonRegistry;
     public PdfEditorApp.Core.Plugins.Descriptors.ISidebarRegistry? SidebarRegistry => _sidebarRegistry;
     public PdfEditorApp.Core.Plugins.Descriptors.IDialogRegistry? DialogRegistry => _dialogRegistry;
+    public PdfEditorApp.Core.Plugins.Descriptors.IOverlayRegistry? OverlayRegistry => _overlayRegistry;
+    public ObservableCollection<OverlayInstanceViewModel> ActiveOverlays => (_overlayRegistry as PdfEditorApp.Services.Overlays.OverlayRegistry)?.ActiveOverlays ?? _fallbackActiveOverlays;
+    private readonly ObservableCollection<OverlayInstanceViewModel> _fallbackActiveOverlays = new();
 
     public ObservableCollection<RibbonActionDescriptor> PluginRibbonActions { get; } = new();
     public ObservableCollection<DynamicRibbonTabViewModel> DynamicRibbonTabs { get; } = new();
@@ -773,7 +777,8 @@ public partial class MainViewModel : ViewModelBase
         PdfEditorApp.Core.Plugins.Descriptors.IStatusBarRegistry? statusBarRegistry = null,
         PdfEditorApp.Core.Plugins.Descriptors.ISidebarRegistry? sidebarRegistry = null,
         PdfEditorApp.Core.Plugins.Descriptors.IDialogRegistry? dialogRegistry = null,
-        PdfEditorApp.Core.Plugins.Descriptors.INavigationRegistry? navigationRegistry = null)
+        PdfEditorApp.Core.Plugins.Descriptors.INavigationRegistry? navigationRegistry = null,
+        PdfEditorApp.Core.Plugins.Descriptors.IOverlayRegistry? overlayRegistry = null)
     {
         _exportService = exportService;
         _templateService = templateService;
@@ -797,6 +802,12 @@ public partial class MainViewModel : ViewModelBase
         _statusBarRegistry = statusBarRegistry;
         _sidebarRegistry = sidebarRegistry;
         _dialogRegistry = dialogRegistry;
+        _overlayRegistry = overlayRegistry;
+
+        if (_overlayRegistry != null)
+        {
+            _overlayRegistry.ActiveOverlaysChanged += () => OnPropertyChanged(nameof(ActiveOverlays));
+        }
 
         if (_statusBarRegistry != null)
         {
@@ -1699,6 +1710,24 @@ public partial class MainViewModel : ViewModelBase
     {
         IsDynamicDialogOpen = false;
         ActiveDynamicDialog = null;
+    }
+
+    [RelayCommand]
+    public void ToggleOverlay(string overlayId)
+    {
+        _overlayRegistry?.ToggleOverlay(overlayId);
+    }
+
+    [RelayCommand]
+    public void ShowOverlay(string overlayId)
+    {
+        _overlayRegistry?.ShowOverlay(overlayId);
+    }
+
+    [RelayCommand]
+    public void HideOverlay(string overlayId)
+    {
+        _overlayRegistry?.HideOverlay(overlayId);
     }
 
 

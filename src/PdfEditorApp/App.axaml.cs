@@ -112,7 +112,8 @@ public partial class App : Application
                 new PdfEditorApp.Plugins.Bundles.CommandPaletteBundle(),
                 new PdfEditorApp.Plugins.Bundles.WorkspacePagesBundle(),
                 new PdfEditorApp.Plugins.Bundles.DialogsBundle(),
-                new PdfEditorApp.Plugins.Bundles.EditorSidebarsBundle()
+                new PdfEditorApp.Plugins.Bundles.EditorSidebarsBundle(),
+                new PdfEditorApp.Plugins.Bundles.ShellOverlaysBundle()
             };
 
             PdfEditorApp.Core.Plugins.Profiles.ProfileLoader.ApplyProfile(profile, host, availableBundles);
@@ -194,6 +195,8 @@ public partial class App : Application
         services.AddSingleton<IDialogRegistry>(sp => sp.GetRequiredService<PdfEditorApp.Services.Dialogs.DialogRegistry>());
         services.AddSingleton<PdfEditorApp.Services.Sidebar.SidebarRegistry>();
         services.AddSingleton<ISidebarRegistry>(sp => sp.GetRequiredService<PdfEditorApp.Services.Sidebar.SidebarRegistry>());
+        services.AddSingleton<PdfEditorApp.Services.Overlays.OverlayRegistry>();
+        services.AddSingleton<PdfEditorApp.Core.Plugins.Descriptors.IOverlayRegistry>(sp => sp.GetRequiredService<PdfEditorApp.Services.Overlays.OverlayRegistry>());
         services.AddSingleton<PdfEditorApp.Core.Plugins.Settings.IPluginSettingsStore, PdfEditorApp.Core.Plugins.Settings.FilePluginSettingsStore>();
 
 

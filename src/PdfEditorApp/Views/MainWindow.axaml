@@ -3,6 +3,7 @@
         xmlns:vm="using:PdfEditorApp.ViewModels"
         xmlns:views="using:PdfEditorApp.Views"
         xmlns:dialogs="using:PdfEditorApp.Views.Dialogs"
+        xmlns:overlays="using:PdfEditorApp.Views.Overlays"
         xmlns:converters="using:PdfEditorApp.Converters"
         xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -449,6 +450,9 @@
 
         </Grid>
         <!-- END EDITOR SHELL -->
+
+        <!-- Shell Overlay Slot (shell.overlay) for Floating Plugins (DeepSeek Harness Inspired) -->
+        <overlays:ShellOverlayHost ZIndex="9500" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 
         <!-- Floating HUD Toast Notification Banner (Styled matching Image 2 with dynamic position, contrast, and dismiss button) -->
         <Border Classes="toast-banner"

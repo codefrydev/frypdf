@@ -299,5 +299,17 @@ public interface IFryPluginContext : IServiceProvider
     /// Registers a dynamic Ribbon tool group inside a Ribbon tab.
     /// </summary>
     IDisposable RegisterRibbonGroup(RibbonGroupDescriptor descriptor);
+
+    // --- 20. Shell Overlay Registry (DeepSeek Harness Inspired) ---
+
+    /// <summary>
+    /// Registers a floating shell overlay contributed by a plugin (targeting 'shell.overlay').
+    /// </summary>
+    IDisposable RegisterOverlay(OverlayDescriptor descriptor);
+
+    /// <summary>
+    /// Gets all registered floating overlay descriptors.
+    /// </summary>
+    IReadOnlyList<OverlayDescriptor> GetRegisteredOverlays();
 }
 

@@ -23,7 +23,8 @@ public static class SvgPathBuilder
         double minY,
         double width,
         double height,
-        double pageHeight)
+        double pageHeight,
+        UglyToad.PdfPig.PdfDocument? doc = null)
     {
         var sb = new StringBuilder();
         var inv = CultureInfo.InvariantCulture;
@@ -40,29 +41,13 @@ public static class SvgPathBuilder
             if (path.IsStroked)
             {
                 strokeWidth = Math.Max(0.5, path.LineWidth);
-                if (path.StrokeColor != null)
-                {
-                    var (r, g, bVal) = path.StrokeColor.ToRGBValues();
-                    strokeHex = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(bVal * 255):X2}";
-                }
-                else
-                {
-                    strokeHex = "#0F172A";
-                }
+                strokeHex = PdfColorHelper.ToHex(path.StrokeColor, doc, "#0F172A");
             }
 
             string fillHex = "none";
             if (path.IsFilled)
             {
-                if (path.FillColor != null)
-                {
-                    var (r, g, bVal) = path.FillColor.ToRGBValues();
-                    fillHex = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(bVal * 255):X2}";
-                }
-                else
-                {
-                    fillHex = strokeHex != "none" ? strokeHex : "#000000";
-                }
+                fillHex = PdfColorHelper.ToHex(path.FillColor, doc, strokeHex != "none" ? strokeHex : "#000000");
             }
 
             sb.Append($"  <path d=\"{pathData}\" fill=\"{fillHex}\" stroke=\"{strokeHex}\" stroke-width=\"{strokeWidth.ToString("F1", inv)}\" stroke-linecap=\"round\" stroke-linejoin=\"round\" />\n");
@@ -72,7 +57,7 @@ public static class SvgPathBuilder
         return sb.ToString();
     }
 
-    private static string BuildPathData(PdfPath path, double offsetX, double offsetY, double pageHeight)
+    public static string BuildPathData(PdfPath path, double offsetX, double offsetY, double pageHeight)
     {
         var sb = new StringBuilder();
         var inv = CultureInfo.InvariantCulture;
@@ -115,6 +100,11 @@ public static class SvgPathBuilder
             }
         }
 
-        return sb.ToString().TrimEnd();
+        string result = sb.ToString().TrimEnd();
+        if (path.IsFilled && !result.EndsWith("Z", StringComparison.OrdinalIgnoreCase))
+        {
+            result += " Z";
+        }
+        return result;
     }
 }

@@ -787,43 +787,66 @@ public class PdfImportAndViewerTests
 
         string baseDir = AppContext.BaseDirectory;
         string rootDir = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", ".."));
-        string sample1Path = Path.Combine(rootDir, "sample1.pdf");
-        string sample2Path = Path.Combine(rootDir, "sample2.pdf");
-        string mathChapterPath = Path.Combine(rootDir, "Class_6_Math_Chapter_1_Pattern_In_Mathematics.pdf");
-
-        if (File.Exists(sample1Path))
+        string sampleDir = Path.Combine(rootDir, "sample");
+        if (Directory.Exists(sampleDir))
         {
-            await GenerateComparisonForPdf(sample1Path, Path.Combine(artifactDir, "sample1_side_by_side.png"), "Sample 1 (Government ID Card)");
-        }
-
-        if (File.Exists(sample2Path))
-        {
-            await GenerateComparisonForPdf(sample2Path, Path.Combine(artifactDir, "sample2_side_by_side.png"), "Sample 2 (Government / Document)");
-        }
-
-        if (File.Exists(mathChapterPath))
-        {
-            await GenerateComparisonForPdf(mathChapterPath, Path.Combine(artifactDir, "sample3_math_side_by_side.png"), "Sample 3 (Textbook Chapter)");
+            var pdfFiles = Directory.GetFiles(sampleDir, "*.pdf").OrderBy(f => f).ToList();
+            foreach (var pdfFile in pdfFiles)
+            {
+                string fileName = Path.GetFileNameWithoutExtension(pdfFile);
+                string safeName = string.Join("_", fileName.Split(Path.GetInvalidFileNameChars())).Replace(" ", "_").Replace("(", "").Replace(")", "");
+                await GenerateComparisonForPdf(pdfFile, Path.Combine(artifactDir, $"{safeName}_side_by_side.png"), fileName, 1);
+            }
         }
     }
 
-    private async Task GenerateComparisonForPdf(string pdfPath, string outputPath, string title)
+    [Fact]
+    public async Task ImportPdfBytesAsync_GcdOfferLetter_CorrectlyExtractsTableAndPreservesLBracketBorders()
+    {
+        string baseDir = AppContext.BaseDirectory;
+        string rootDir = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", ".."));
+        string offerLetterPath = Path.Combine(rootDir, "sample", "GCD Offer Letter - Aayush Bhardwaj (Technology).pdf");
+        if (!File.Exists(offerLetterPath)) return;
+
+        byte[] pdfBytes = await File.ReadAllBytesAsync(offerLetterPath);
+        var docModel = await _importService.ImportPdfBytesAsync(pdfBytes, "GCD Offer Letter");
+
+        Assert.Equal(2, docModel.Pages.Count);
+
+        var page1 = docModel.Pages[0];
+        // 1. Verify compensation table text elements are extracted cleanly
+        var textElements = page1.Elements.OfType<PdfTextElement>().ToList();
+        Assert.Contains(textElements, t => t.Text.Contains("Components", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(textElements, t => t.Text.Contains("Basic", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(textElements, t => t.Text.Contains("Total Gross", StringComparison.OrdinalIgnoreCase));
+
+        // 2. Verify non-rectangular polygon border is extracted as CustomSvgPath shape, not flattened to a solid rectangle
+        var shapes = page1.Elements.OfType<PdfShapeElement>().ToList();
+        var customSvgShapes = shapes.Where(s => s.ShapeType == ShapeType.CustomSvgPath).ToList();
+        Assert.NotEmpty(customSvgShapes);
+        Assert.All(customSvgShapes, s => Assert.False(string.IsNullOrWhiteSpace(s.CustomPathData)));
+
+        // 3. Verify no giant solid rectangle covering the page area (> 50,000 sq pt)
+        Assert.DoesNotContain(shapes, s => s.ShapeType == ShapeType.Rectangle && s.Width * s.Height > 50000);
+    }
+
+    private async Task GenerateComparisonForPdf(string pdfPath, string outputPath, string title, int pageIndex = 1)
     {
         byte[] pdfBytes = await File.ReadAllBytesAsync(pdfPath);
         var docModel = await _importService.ImportPdfBytesAsync(pdfBytes, Path.GetFileName(pdfPath));
-        if (docModel.Pages.Count == 0) return;
+        if (docModel.Pages.Count < pageIndex) return;
 
         float scale = 1.5f;
 
         // 1. Render Original PDF via PdfPig + Skia
         using var rawDoc = UglyToad.PdfPig.PdfDocument.Open(pdfBytes);
         PdfPigExtensions.AddSkiaPageFactory(rawDoc);
-        using var origStream = PdfPigExtensions.GetPageAsPng(rawDoc, 1, scale, 100);
+        using var origStream = PdfPigExtensions.GetPageAsPng(rawDoc, pageIndex, scale, 100);
         using var origSkData = SkiaSharp.SKData.CreateCopy(origStream.ToArray());
         using var origBitmap = SkiaSharp.SKBitmap.Decode(origSkData);
 
         // 2. Render Deconstructed FryPDF PageModel via Skia
-        var deconstructedPage = docModel.Pages[0];
+        var deconstructedPage = docModel.Pages[pageIndex - 1];
         using var reconBitmap = RenderPageModelToSkiaBitmap(deconstructedPage, scale);
 
         // 3. Compose Side-by-Side Image
@@ -856,7 +879,7 @@ public class PdfImportAndViewerTests
 
         using var subFont = new SkiaSharp.SKFont(titleTypeface, 12);
         using var subPaint = new SkiaSharp.SKPaint { Color = new SkiaSharp.SKColor(148, 163, 184), IsAntialias = true };
-        canvas.DrawText($"Elements: {deconstructedPage.Elements.Count} ({deconstructedPage.Elements.OfType<PdfImageElement>().Count()} images, {deconstructedPage.Elements.OfType<PdfTextElement>().Count()} text blocks, {deconstructedPage.Elements.OfType<PdfShapeElement>().Count()} shapes) | Canvas Size: {deconstructedPage.Width:F0}x{deconstructedPage.Height:F0} pt", 24, 54, subFont, subPaint);
+        canvas.DrawText($"Elements: {deconstructedPage.Elements.Count} ({deconstructedPage.Elements.OfType<PdfImageElement>().Count()} images, {deconstructedPage.Elements.OfType<PdfTextElement>().Count()} text blocks, {deconstructedPage.Elements.OfType<PdfShapeElement>().Count()} shapes, {deconstructedPage.Elements.OfType<PdfSvgElement>().Count()} svgs, {deconstructedPage.Elements.OfType<PdfTableElement>().Count()} tables) | Canvas Size: {deconstructedPage.Width:F0}x{deconstructedPage.Height:F0} pt", 24, 54, subFont, subPaint);
 
         // Labels
         float leftX = 20;
@@ -937,35 +960,95 @@ public class PdfImportAndViewerTests
                 }
                 catch { }
             }
+            else if (el is PdfSvgElement svg && !string.IsNullOrWhiteSpace(svg.SvgSource))
+            {
+                try
+                {
+                    byte[]? pngBytes = PdfEditorApp.Services.Tools.Core.PdfPageRenderer.RenderSvgToPngBytes(svg.SvgSource, ew, eh);
+                    if (pngBytes != null && pngBytes.Length > 0)
+                    {
+                        using var skData = SkiaSharp.SKData.CreateCopy(pngBytes);
+                        using var skImg = SkiaSharp.SKImage.FromEncodedData(skData);
+                        if (skImg != null)
+                        {
+                            using var imgPaint = new SkiaSharp.SKPaint { Color = new SkiaSharp.SKColor(255, 255, 255, alpha) };
+                            var destRect = SkiaSharp.SKRect.Create(ex, ey, ew, eh);
+                            canvas.DrawImage(skImg, destRect, imgPaint);
+                        }
+                    }
+                }
+                catch { }
+            }
             else if (el is PdfShapeElement shp)
             {
-                if (shp.FillColorHex != "Transparent" && SkiaSharp.SKColor.TryParse(shp.FillColorHex, out var fillC))
+                if (shp.ShapeType == ShapeType.CustomSvgPath && !string.IsNullOrWhiteSpace(shp.CustomPathData))
                 {
-                    using var fPaint = new SkiaSharp.SKPaint
+                    using var skPath = SkiaSharp.SKPath.ParseSvgPathData(shp.CustomPathData);
+                    if (skPath != null)
                     {
-                        Color = fillC.WithAlpha(alpha),
-                        Style = SkiaSharp.SKPaintStyle.Fill,
-                        IsAntialias = true
-                    };
-                    if (shp.CornerRadius > 0)
-                        canvas.DrawRoundRect(ex, ey, ew, eh, (float)shp.CornerRadius * scale, (float)shp.CornerRadius * scale, fPaint);
-                    else
-                        canvas.DrawRect(ex, ey, ew, eh, fPaint);
-                }
+                        canvas.Save();
+                        canvas.Translate(ex, ey);
+                        if (scale != 1.0f)
+                        {
+                            canvas.Scale(scale, scale);
+                        }
 
-                if (shp.StrokeColorHex != "Transparent" && shp.StrokeThickness > 0 && SkiaSharp.SKColor.TryParse(shp.StrokeColorHex, out var strokeC))
+                        if (shp.FillColorHex != "Transparent" && SkiaSharp.SKColor.TryParse(shp.FillColorHex, out var fillC))
+                        {
+                            using var fPaint = new SkiaSharp.SKPaint
+                            {
+                                Color = fillC.WithAlpha(alpha),
+                                Style = SkiaSharp.SKPaintStyle.Fill,
+                                IsAntialias = true
+                            };
+                            canvas.DrawPath(skPath, fPaint);
+                        }
+
+                        if (shp.StrokeColorHex != "Transparent" && shp.StrokeThickness > 0 && SkiaSharp.SKColor.TryParse(shp.StrokeColorHex, out var strokeC))
+                        {
+                            using var sPaint = new SkiaSharp.SKPaint
+                            {
+                                Color = strokeC.WithAlpha(alpha),
+                                Style = SkiaSharp.SKPaintStyle.Stroke,
+                                StrokeWidth = (float)shp.StrokeThickness,
+                                IsAntialias = true
+                            };
+                            canvas.DrawPath(skPath, sPaint);
+                        }
+
+                        canvas.Restore();
+                    }
+                }
+                else
                 {
-                    using var sPaint = new SkiaSharp.SKPaint
+                    if (shp.FillColorHex != "Transparent" && SkiaSharp.SKColor.TryParse(shp.FillColorHex, out var fillC))
                     {
-                        Color = strokeC.WithAlpha(alpha),
-                        Style = SkiaSharp.SKPaintStyle.Stroke,
-                        StrokeWidth = (float)shp.StrokeThickness * scale,
-                        IsAntialias = true
-                    };
-                    if (shp.CornerRadius > 0)
-                        canvas.DrawRoundRect(ex, ey, ew, eh, (float)shp.CornerRadius * scale, (float)shp.CornerRadius * scale, sPaint);
-                    else
-                        canvas.DrawRect(ex, ey, ew, eh, sPaint);
+                        using var fPaint = new SkiaSharp.SKPaint
+                        {
+                            Color = fillC.WithAlpha(alpha),
+                            Style = SkiaSharp.SKPaintStyle.Fill,
+                            IsAntialias = true
+                        };
+                        if (shp.CornerRadius > 0)
+                            canvas.DrawRoundRect(ex, ey, ew, eh, (float)shp.CornerRadius * scale, (float)shp.CornerRadius * scale, fPaint);
+                        else
+                            canvas.DrawRect(ex, ey, ew, eh, fPaint);
+                    }
+
+                    if (shp.StrokeColorHex != "Transparent" && shp.StrokeThickness > 0 && SkiaSharp.SKColor.TryParse(shp.StrokeColorHex, out var strokeC))
+                    {
+                        using var sPaint = new SkiaSharp.SKPaint
+                        {
+                            Color = strokeC.WithAlpha(alpha),
+                            Style = SkiaSharp.SKPaintStyle.Stroke,
+                            StrokeWidth = (float)shp.StrokeThickness * scale,
+                            IsAntialias = true
+                        };
+                        if (shp.CornerRadius > 0)
+                            canvas.DrawRoundRect(ex, ey, ew, eh, (float)shp.CornerRadius * scale, (float)shp.CornerRadius * scale, sPaint);
+                        else
+                            canvas.DrawRect(ex, ey, ew, eh, sPaint);
+                    }
                 }
             }
             else if (el is PdfDividerElement div)
@@ -985,6 +1068,52 @@ public class PdfImportAndViewerTests
                     else
                     {
                         canvas.DrawRect(ex, ey, ew, Math.Max(1f, (float)div.Thickness * scale), dPaint);
+                    }
+                }
+            }
+            else if (el is PdfTableElement tbl)
+            {
+                using var borderPaint = new SkiaSharp.SKPaint
+                {
+                    Color = SkiaSharp.SKColor.TryParse(tbl.BorderColorHex, out var bc) ? bc : SkiaSharp.SKColors.Black,
+                    Style = SkiaSharp.SKPaintStyle.Stroke,
+                    StrokeWidth = 1f * scale
+                };
+                canvas.DrawRect(ex, ey, ew, eh, borderPaint);
+
+                float totalRows = 1 + tbl.Rows.Count;
+                float rowH = eh / Math.Max(1, totalRows);
+                float colW = ew / Math.Max(1, tbl.Headers.Count);
+
+                // Header background
+                using var hBgPaint = new SkiaSharp.SKPaint
+                {
+                    Color = SkiaSharp.SKColor.TryParse(tbl.HeaderBackgroundHex, out var hbc) ? hbc : new SkiaSharp.SKColor(218, 233, 248),
+                    Style = SkiaSharp.SKPaintStyle.Fill
+                };
+                canvas.DrawRect(ex, ey, ew, rowH, hBgPaint);
+
+                var hTextColor = SkiaSharp.SKColor.TryParse(tbl.HeaderTextHex, out var htc) ? htc : SkiaSharp.SKColors.Black;
+                using var hTextPaint = new SkiaSharp.SKPaint { Color = hTextColor, IsAntialias = true };
+                using var cellTextPaint = new SkiaSharp.SKPaint { Color = SkiaSharp.SKColors.Black, IsAntialias = true };
+                using var hFont = new SkiaSharp.SKFont(SkiaSharp.SKTypeface.FromFamilyName("Arial", SkiaSharp.SKFontStyleWeight.Bold, SkiaSharp.SKFontStyleWidth.Normal, SkiaSharp.SKFontStyleSlant.Upright), 9.5f * scale);
+                using var cellFont = new SkiaSharp.SKFont(SkiaSharp.SKTypeface.FromFamilyName("Arial", SkiaSharp.SKFontStyleWeight.Normal, SkiaSharp.SKFontStyleWidth.Normal, SkiaSharp.SKFontStyleSlant.Upright), 9.0f * scale);
+
+                for (int c = 0; c < tbl.Headers.Count; c++)
+                {
+                    canvas.DrawText(tbl.Headers[c], ex + (c * colW) + 5, ey + rowH - 4, hFont, hTextPaint);
+                    canvas.DrawLine(ex + (c * colW), ey, ex + (c * colW), ey + eh, borderPaint);
+                }
+
+                for (int r = 0; r < tbl.Rows.Count; r++)
+                {
+                    float rY = ey + ((r + 1) * rowH);
+                    canvas.DrawLine(ex, rY, ex + ew, rY, borderPaint);
+
+                    var row = tbl.Rows[r];
+                    for (int c = 0; c < Math.Min(tbl.Headers.Count, row.Count); c++)
+                    {
+                        canvas.DrawText(row[c], ex + (c * colW) + 5, rY + rowH - 4, cellFont, cellTextPaint);
                     }
                 }
             }
@@ -1009,7 +1138,19 @@ public class PdfImportAndViewerTests
 
                 for (int li = 0; li < lines.Length; li++)
                 {
-                    canvas.DrawText(lines[li], ex, curY, font, tPaint);
+                    string lineText = lines[li];
+                    if (lineText.Contains('➢'))
+                    {
+                        using var symTypeface = SkiaSharp.SKTypeface.FromFamilyName("Apple Symbols", weight, SkiaSharp.SKFontStyleWidth.Normal, slant)
+                            ?? SkiaSharp.SKTypeface.FromFamilyName("Arial Unicode MS", weight, SkiaSharp.SKFontStyleWidth.Normal, slant)
+                            ?? typeface;
+                        using var symFont = new SkiaSharp.SKFont(symTypeface, (float)txt.FontSize * scale);
+                        canvas.DrawText(lineText, ex, curY, symFont, tPaint);
+                    }
+                    else
+                    {
+                        canvas.DrawText(lineText, ex, curY, font, tPaint);
+                    }
                     curY += linePitch;
                 }
             }

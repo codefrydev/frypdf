@@ -134,6 +134,22 @@ public class MediaElementPlugin : IFryPlugin
             Factory = (sp, m) => new ImageElementViewModel()
         });
 
+        ctx.RegisterCanvasElement(new CanvasElementDescriptor
+        {
+            ElementTypeId = "frypdf.element.svg",
+            DisplayName = "Vector SVG Artwork",
+            ModelType = typeof(PdfSvgElement),
+            ViewModelType = typeof(SvgElementViewModel),
+            IconKind = "VectorSquare",
+            DefaultWidth = 180,
+            DefaultHeight = 180,
+            CanInsertFromToolbar = true,
+            InsertionCategory = "Media",
+            SortOrder = 45,
+            Tags = new[] { "svg", "vector", "graphic", "illustration" },
+            Factory = (sp, m) => new SvgElementViewModel()
+        });
+
         return Task.CompletedTask;
     }
 }

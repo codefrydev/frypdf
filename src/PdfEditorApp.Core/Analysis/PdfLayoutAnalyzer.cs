@@ -5,6 +5,7 @@ using System.Text;
 using PdfEditorApp.Core.Models;
 using PdfEditorApp.Core.Models.Elements;
 using UglyToad.PdfPig.Content;
+using PdfEditorApp.Core.Deconstruction.Utils;
 
 namespace PdfEditorApp.Core.Analysis;
 
@@ -268,16 +269,10 @@ public static class PdfLayoutAnalyzer
                 sb.Append(txt);
             }
 
-            string fullText = sb.ToString().Trim();
+            string fullText = UnicodeScriptDetector.NormalizeExtractedText(sb.ToString().Trim());
             if (string.IsNullOrWhiteSpace(fullText)) continue;
             string fontFamily = firstLetter != null ? NormalizeFontFamily(firstLetter.FontName) : "Open Sans";
-            string colorHex = "#0F172A";
-
-            if (firstLetter?.Color != null)
-            {
-                var (r, g, b) = firstLetter.Color.ToRGBValues();
-                colorHex = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(b * 255):X2}";
-            }
+            string colorHex = PdfColorHelper.ToHex(firstLetter?.Color, null, "#0F172A");
 
             double minLeft  = orderedWords.Min(w => w.BoundingBox.Left);
             double maxRight = orderedWords.Max(w => w.BoundingBox.Right);
@@ -594,11 +589,7 @@ public static class PdfLayoutAnalyzer
                 }
             }
 
-            if (firstLetter.Color != null)
-            {
-                var (r, g, b) = firstLetter.Color.ToRGBValues();
-                colorHex = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(b * 255):X2}";
-            }
+            colorHex = PdfColorHelper.ToHex(firstLetter.Color, null, colorHex);
         }
 
         var rawLineSpans = new List<PdfTextSpan>();
@@ -620,11 +611,10 @@ public static class PdfLayoutAnalyzer
             }
             if (let?.Color != null)
             {
-                var (r, g, b) = let.Color.ToRGBValues();
-                wCol = $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(b * 255):X2}";
+                wCol = PdfColorHelper.ToHex(let.Color, null, wCol);
             }
 
-            string wText = (i > 0 ? " " : "") + w.Text;
+            string wText = UnicodeScriptDetector.NormalizeExtractedText((i > 0 ? " " : "") + w.Text);
             rawLineSpans.Add(new PdfTextSpan
             {
                 Text = wText,
@@ -645,7 +635,7 @@ public static class PdfLayoutAnalyzer
             Top = maxTop,
             Bottom = minBottom,
             BaselineY = avgBaseline,
-            Text = text,
+            Text = UnicodeScriptDetector.NormalizeExtractedText(text),
             FontSize = fontSize,
             FontFamily = fontFamily,
             IsBold = isBold,
@@ -839,7 +829,7 @@ public static class PdfLayoutAnalyzer
             sb.Append(lines[i].Text);
         }
 
-        string fullText = sb.ToString().Trim();
+        string fullText = UnicodeScriptDetector.NormalizeExtractedText(sb.ToString().Trim());
         if (string.IsNullOrWhiteSpace(fullText)) return null;
 
         // Calculate average line pitch / height ratio

@@ -55,6 +55,45 @@ public static class UnicodeScriptDetector
     }
 
     /// <summary>
+    /// Normalizes extracted PDF text by decomposing typographic ligatures (ff, fi, fl, ffi, ffl, ft, st),
+    /// replacing non-breaking spaces with standard spaces, and stripping replacement characters.
+    /// Eliminates tofu boxes ("□") when rendering extracted text with standard fonts.
+    /// </summary>
+    public static string NormalizeExtractedText(string? text)
+    {
+        if (string.IsNullOrEmpty(text)) return string.Empty;
+
+        var sb = new StringBuilder(text.Length);
+        for (int i = 0; i < text.Length; i++)
+        {
+            char c = text[i];
+            switch (c)
+            {
+                case '\uFB00': sb.Append("ff"); break;
+                case '\uFB01': sb.Append("fi"); break;
+                case '\uFB02': sb.Append("fl"); break;
+                case '\uFB03': sb.Append("ffi"); break;
+                case '\uFB04': sb.Append("ffl"); break;
+                case '\uFB05': sb.Append("ft"); break;
+                case '\uFB06': sb.Append("st"); break;
+                case '\u00A0': // Non-breaking space
+                case '\u2007': // Figure space
+                case '\u202F': // Narrow no-break space
+                    sb.Append(' ');
+                    break;
+                case '\u200B': // Zero-width space
+                    break;
+                case '\uFFFD': // Replacement character artifact
+                    break;
+                default:
+                    sb.Append(c);
+                    break;
+            }
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>
     /// Quick check: does this string contain any CJK characters?
     /// </summary>
     public static bool ContainsCjk(string text)

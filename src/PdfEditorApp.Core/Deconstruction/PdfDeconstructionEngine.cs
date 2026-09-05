@@ -222,7 +222,7 @@ public static class PdfDeconstructionEngine
 
             // D. Extract Vector Paths & Geometric Shapes (Dividers, Rectangles, Borders, SVG Clusters)
             var vectorElements = PdfVectorExtractor.ExtractVectors(
-                page.Paths, consumedPathIndices, pageNumber, pageWidth, pageHeight, ref bgZIndex, ref shapeZIndex, options, logger);
+                page.Paths, consumedPathIndices, pageNumber, pageWidth, pageHeight, ref bgZIndex, ref shapeZIndex, options, logger, doc);
             pageModel.Elements.AddRange(vectorElements);
 
             // E. Add Unconsumed Text Elements with Dynamic Contrast and Container Grouping

@@ -22,7 +22,7 @@ public class PdfDeconstructionOptions
     public double WatermarkHeightRatio { get; set; } = 0.55;
 
     /// <summary>Opacity applied to detected watermark images (0.0..1.0).</summary>
-    public double WatermarkOpacity { get; set; } = 0.35;
+    public double WatermarkOpacity { get; set; } = 0.10;
 
     /// <summary>Minimum width and height ratio for an image to be considered a full-page background underlay.</summary>
     public double FullPageBgRatio { get; set; } = 0.88;
@@ -40,7 +40,7 @@ public class PdfDeconstructionOptions
     public double DividerMinWidth { get; set; } = 6.0;
 
     /// <summary>Maximum number of individual vector shapes extracted before grouping remaining excess micro-paths into a combined SVG.</summary>
-    public int MaxVectorShapesPerPage { get; set; } = 300;
+    public int MaxVectorShapesPerPage { get; set; } = 1000;
 
     /// <summary>Whether to group vector paths exceeding <see cref="MaxVectorShapesPerPage"/> into a single <see cref="Models.Elements.PdfSvgElement"/> instead of dropping them.</summary>
     public bool GroupExcessVectorsAsSvg { get; set; } = true;
@@ -61,7 +61,7 @@ public class PdfDeconstructionOptions
     public string HighContrastLightTextColor { get; set; } = "#FFFFFF";
 
     /// <summary>Minimum WCAG relative luminance contrast ratio before dynamic text contrast adjustment is applied.</summary>
-    public double MinContrastRatio { get; set; } = 3.0;
+    public double MinContrastRatio { get; set; } = 1.25;
 
     /// <summary>Column gap multiplier for landscape layout analysis.</summary>
     public double ColumnGapMultiplierLandscape { get; set; } = 1.5;

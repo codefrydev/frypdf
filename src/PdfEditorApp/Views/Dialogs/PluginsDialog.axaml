@@ -12,87 +12,83 @@
     </UserControl.Resources>
 
     <!-- Fullscreen Dimming Backdrop -->
-    <Grid Background="#70000000" PointerPressed="OnBackdropPointerPressed">
+    <Grid Background="#55000000" PointerPressed="OnBackdropPointerPressed">
         <!-- Centered M3 Expressive Dialog Card -->
-        <Border Width="820"
+        <Border Width="840"
                 MaxHeight="720"
-                Background="{DynamicResource WinPanelBrush}"
-                BorderBrush="{DynamicResource WinBorderBrush}"
+                Background="{DynamicResource M3SurfaceBrush}"
+                BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource M3ShapeCornerExtraLarge}"
-                BoxShadow="0 28 80 #50000000"
+                BoxShadow="{StaticResource M3ElevationModalDialog}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Margin="24"
-                ClipToBounds="True">
+                Margin="24">
 
-            <Grid RowDefinitions="Auto,Auto,*,Auto">
+            <!-- Inner Rounded Clipping Shell to ensure header and footer conform to 28px corners without clipping outer shadow -->
+            <Border CornerRadius="{StaticResource M3ShapeCornerExtraLarge}"
+                    ClipToBounds="True">
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
 
                 <!-- 1. Header Banner -->
                 <Border Grid.Row="0"
-                        Background="#0F172A"
-                        Padding="24,20"
-                        BorderBrush="#1E293B"
+                        Background="{DynamicResource M3SurfaceContainerLowBrush}"
+                        Padding="24,18"
+                        BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                         BorderThickness="0,0,0,1">
                     <Grid ColumnDefinitions="Auto,*,Auto">
 
-                        <!-- Left: Indigo / Purple Plugin Logo Badge -->
+                        <!-- Left: Tonal Puzzle Plugin Logo Badge -->
                         <Border Grid.Column="0"
-                                Width="52"
-                                Height="52"
-                                Background="#1E1B4B"
-                                BorderBrush="#818CF8"
-                                BorderThickness="1.5"
+                                Width="48"
+                                Height="48"
+                                Background="{DynamicResource M3PrimaryContainerBrush}"
+                                BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                BorderThickness="1"
                                 CornerRadius="{StaticResource M3ShapeCornerMedium}"
                                 Margin="0,0,16,0"
-                                BoxShadow="0 4 18 #35818CF8"
                                 VerticalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="PuzzleOutline"
-                                                       Width="28"
-                                                       Height="28"
-                                                       Foreground="#A5B4FC"
+                                                       Width="26"
+                                                       Height="26"
+                                                       Foreground="{DynamicResource M3PrimaryBrush}"
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center" />
                         </Border>
 
-                        <!-- Center: Title, Profile Tag, & Architecture Description -->
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                        <!-- Center: Title, Architecture Tag, & Subtitle -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
                             <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                                 <TextBlock Text="Plugins &amp; Extensions Studio"
                                            FontSize="18"
                                            FontWeight="Bold"
-                                           Foreground="#F8FAFC" />
-                                <Border Background="#312E81"
-                                        BorderBrush="#6366F1"
-                                        BorderThickness="1"
-                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
-                                        Padding="8,2">
+                                           Foreground="{DynamicResource M3OnSurfaceBrush}" />
+                                <Border Background="{DynamicResource M3SecondaryContainerBrush}"
+                                        CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                        Padding="10,3">
                                     <TextBlock Text="Everything is a Plugin"
-                                               FontSize="10"
+                                               FontSize="10.5"
                                                FontWeight="Bold"
-                                               Foreground="#C7D2FE" />
+                                               Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
                                 </Border>
                             </StackPanel>
-                            <TextBlock Text="Powered by DeepSeek Harness &amp; Cordis architecture with isolated .NET 10 assembly loading"
+                            <TextBlock Text="Extend and customize your studio workspace with modular plugins"
                                        FontSize="11.5"
-                                       Foreground="#94A3B8" />
+                                       Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
                         </StackPanel>
 
                         <!-- Right: Close Button -->
                         <Button Grid.Column="2"
-                                Classes="action-pill-btn"
-                                Width="32"
-                                Height="32"
-                                Padding="0"
-                                Background="#1E293B"
-                                BorderBrush="#334155"
+                                Classes="m3-icon-btn"
+                                Width="36"
+                                Height="36"
                                 Command="{Binding ClosePluginsDialogCommand}"
                                 ToolTip.Tip="Close (Esc)"
-                                VerticalAlignment="Top">
+                                VerticalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="Close"
-                                                       Width="16"
-                                                       Height="16"
-                                                       Foreground="#94A3B8"
+                                                       Width="18"
+                                                       Height="18"
+                                                       Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center" />
                         </Button>
@@ -101,8 +97,8 @@
 
                 <!-- 2. Search & Profile Filter Bar -->
                 <Border Grid.Row="1"
-                        Background="{DynamicResource WinInputBgBrush}"
-                        BorderBrush="{DynamicResource WinBorderBrush}"
+                        Background="{DynamicResource M3SurfaceBrush}"
+                        BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                         BorderThickness="0,0,0,1"
                         Padding="24,12"
                         IsVisible="{Binding !IsConfiguringPluginOpen}">
@@ -112,29 +108,31 @@
                                  Classes="m3-search"
                                  Text="{Binding PluginSearchQuery, Mode=TwoWay}"
                                  PlaceholderText="Search plugins by name, ID, or category..."
-                                 Height="36"
+                                 Height="38"
                                  Margin="0,0,16,0" />
 
-                        <!-- Active Profile Selector Pill -->
+                        <!-- Active Profile Selector Segmented Capsule -->
                         <Border Grid.Column="1"
-                                Background="{DynamicResource WinAccentLightBrush}"
-                                BorderBrush="{DynamicResource WinAccentBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="{StaticResource M3ShapeCornerFull}"
-                                Padding="8,3"
+                                Classes="m3-segmented-container"
                                 VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="Tune" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
-                                <TextBlock Text="Profile:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" />
-                                <Button Classes="action-pill-btn" Height="24" Padding="8,2" FontSize="10" FontWeight="Bold"
+                            <StackPanel Orientation="Horizontal" Spacing="2">
+                                <Button Classes="m3-segment-btn"
                                         Classes.active="{Binding ActiveProfileName, Converter={StaticResource EqualityConverter}, ConverterParameter=desktop}"
-                                        Command="{Binding SwitchProfileCommand}" CommandParameter="desktop">
-                                    <TextBlock Text="Desktop" />
+                                        Command="{Binding SwitchProfileCommand}" CommandParameter="desktop"
+                                        ToolTip.Tip="Desktop profile plugins">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="Monitor" Width="14" Height="14" />
+                                        <TextBlock Text="Desktop" />
+                                    </StackPanel>
                                 </Button>
-                                <Button Classes="action-pill-btn" Height="24" Padding="8,2" FontSize="10" FontWeight="Bold"
+                                <Button Classes="m3-segment-btn"
                                         Classes.active="{Binding ActiveProfileName, Converter={StaticResource EqualityConverter}, ConverterParameter=headless}"
-                                        Command="{Binding SwitchProfileCommand}" CommandParameter="headless">
-                                    <TextBlock Text="Headless" />
+                                        Command="{Binding SwitchProfileCommand}" CommandParameter="headless"
+                                        ToolTip.Tip="Headless CLI profile plugins">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="ConsoleLine" Width="14" Height="14" />
+                                        <TextBlock Text="Headless" />
+                                    </StackPanel>
                                 </Button>
                             </StackPanel>
                         </Border>
@@ -147,28 +145,27 @@
                     <ItemsControl ItemsSource="{Binding FilteredPluginsList}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:PluginItemViewModel">
-                                <Border Background="{DynamicResource WinInputBgBrush}"
-                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                <Border Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                        BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                                         BorderThickness="1"
                                         CornerRadius="{StaticResource M3ShapeCornerLarge}"
-                                        Padding="16,12"
+                                        BoxShadow="{StaticResource M3ElevationLevel1}"
+                                        Padding="16,14"
                                         Margin="0,0,0,10">
                                     <Grid ColumnDefinitions="Auto,*,Auto">
 
-                                        <!-- Plugin Icon -->
+                                        <!-- Plugin Icon Tonal Container -->
                                         <Border Grid.Column="0"
-                                                Width="42"
-                                                Height="42"
-                                                Background="{DynamicResource WinHoverBrush}"
-                                                BorderBrush="{DynamicResource WinBorderBrush}"
-                                                BorderThickness="1"
+                                                Width="44"
+                                                Height="44"
+                                                Background="{DynamicResource M3PrimaryContainerBrush}"
                                                 CornerRadius="{StaticResource M3ShapeCornerMedium}"
                                                 Margin="0,0,14,0"
                                                 VerticalAlignment="Center">
                                             <materialIcons:MaterialIcon Kind="{Binding IconKind}"
-                                                                       Width="22"
-                                                                       Height="22"
-                                                                       Foreground="{DynamicResource WinAccentBrush}"
+                                                                       Width="24"
+                                                                       Height="24"
+                                                                       Foreground="{DynamicResource M3PrimaryBrush}"
                                                                        HorizontalAlignment="Center"
                                                                        VerticalAlignment="Center" />
                                         </Border>
@@ -177,34 +174,34 @@
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
                                             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Name}"
-                                                           FontSize="13.5"
+                                                           FontSize="14"
                                                            FontWeight="Bold"
-                                                           Foreground="{DynamicResource WinTextBrush}" />
+                                                           Foreground="{DynamicResource M3OnSurfaceBrush}" />
                                                 <!-- Version Badge -->
-                                                <Border Background="{DynamicResource WinHoverBrush}"
+                                                <Border Background="{DynamicResource M3SurfaceContainerHighBrush}"
                                                         CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                                         Padding="6,2">
                                                     <TextBlock Text="{Binding Version, StringFormat='v{0}'}"
                                                                FontSize="10"
                                                                FontWeight="Medium"
-                                                               Foreground="{DynamicResource WinMutedBrush}" />
+                                                               Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
                                                 </Border>
                                                 <!-- Source Badge -->
-                                                <Border Background="#1E293B"
+                                                <Border Background="{DynamicResource M3TertiaryContainerBrush}"
                                                         CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                                         Padding="6,2"
                                                         IsVisible="{Binding IsExternal}">
                                                     <TextBlock Text="External ALC"
                                                                FontSize="10"
                                                                FontWeight="SemiBold"
-                                                               Foreground="#38BDF8" />
+                                                               Foreground="{DynamicResource M3OnTertiaryContainerBrush}" />
                                                 </Border>
                                             </StackPanel>
 
                                             <!-- Description -->
                                             <TextBlock Text="{Binding Description}"
                                                        FontSize="11.5"
-                                                       Foreground="{DynamicResource WinMutedBrush}"
+                                                       Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
                                                        TextTrimming="CharacterEllipsis" />
 
                                             <!-- Plugin ID & Category -->
@@ -212,27 +209,27 @@
                                                 <TextBlock Text="{Binding Id}"
                                                            FontSize="10.5"
                                                            FontFamily="Consolas,Menlo,monospace"
-                                                           Foreground="{DynamicResource WinMutedBrush}"
-                                                           Opacity="0.8" />
-                                                <TextBlock Text="•" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                                           Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                                           Opacity="0.75" />
+                                                <TextBlock Text="•" FontSize="10" Foreground="{DynamicResource M3OutlineVariantBrush}" />
                                                 <TextBlock Text="{Binding Category}"
                                                            FontSize="10.5"
-                                                           FontWeight="Medium"
-                                                           Foreground="{DynamicResource WinAccentBrush}" />
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource M3PrimaryBrush}" />
                                             </StackPanel>
                                         </StackPanel>
 
                                         <!-- Actions: Configure Button & Active ToggleSwitch -->
-                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                                             <!-- Configure Button (Visible if plugin has declarative schema) -->
-                                            <Button Classes="action-pill-btn" Height="28" Padding="10,0"
+                                            <Button Classes="m3-tonal-btn" Height="32" Padding="12,0"
                                                     IsVisible="{Binding HasSettings}"
                                                     Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).OpenPluginSettingsCommand}"
                                                     CommandParameter="{Binding}"
                                                     ToolTip.Tip="Configure plugin settings">
                                                 <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                                    <materialIcons:MaterialIcon Kind="CogOutline" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
-                                                    <TextBlock Text="Settings" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                    <materialIcons:MaterialIcon Kind="CogOutline" Width="14" Height="14" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                                    <TextBlock Text="Settings" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
 
@@ -253,45 +250,46 @@
 
                 <!-- 4. Footer Actions Bar -->
                 <Border Grid.Row="3"
-                        Background="{DynamicResource WinInputBgBrush}"
-                        BorderBrush="{DynamicResource WinBorderBrush}"
+                        Background="{DynamicResource M3SurfaceContainerLowBrush}"
+                        BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                         BorderThickness="0,1,0,0"
-                        Padding="24,12"
+                        Padding="24,14"
                         IsVisible="{Binding !IsConfiguringPluginOpen}">
                     <Grid ColumnDefinitions="Auto,*,Auto,Auto">
 
                         <!-- Plugin Count -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="CheckAll" Width="16" Height="16" Foreground="{DynamicResource WinSuccessBrush}" />
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="CheckAll" Width="18" Height="18" Foreground="{DynamicResource M3PrimaryBrush}" />
                             <TextBlock Text="{Binding FilteredPluginsList.Count, StringFormat='{}{0} Plugins Active'}"
-                                       FontSize="12"
-                                       FontWeight="Medium"
-                                       Foreground="{DynamicResource WinTextBrush}"
+                                       FontSize="12.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource M3OnSurfaceBrush}"
                                        VerticalAlignment="Center" />
                         </StackPanel>
 
                         <!-- Load / Install External Plugin Button -->
                         <Button Grid.Column="2"
-                                Classes="secondary-btn"
-                                Height="34"
-                                Padding="14,0"
+                                Classes="m3-tonal-btn"
+                                Height="36"
+                                Padding="16,0"
                                 Margin="0,0,10,0"
                                 Command="{Binding LoadExternalPluginDialogCommand}"
                                 ToolTip.Tip="Install self-contained .fryplugin package or isolated .NET 10 assembly (drag &amp; drop supported)">
                             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="PlusCircleOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
-                                <TextBlock Text="Install Plugin (.fryplugin / .dll)..." FontSize="11.5" FontWeight="Medium" />
+                                <materialIcons:MaterialIcon Kind="PlusCircleOutline" Width="16" Height="16" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                <TextBlock Text="Install Plugin (.fryplugin / .dll)..." FontSize="12" FontWeight="SemiBold" />
                             </StackPanel>
                         </Button>
 
                         <!-- Close Button -->
                         <Button Grid.Column="3"
-                                Classes="accent-btn"
-                                Height="34"
-                                Width="96"
+                                Classes="m3-filled-btn"
+                                Height="36"
+                                MinWidth="100"
+                                Padding="20,0"
                                 Command="{Binding ClosePluginsDialogCommand}"
                                 ToolTip.Tip="Close Dialog (Esc)">
-                            <TextBlock Text="Close" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                            <TextBlock Text="Close" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" />
                         </Button>
 
                     </Grid>
@@ -303,31 +301,31 @@
 
                     <!-- Settings Header -->
                     <Border Grid.Row="0"
-                            Background="{DynamicResource WinInputBgBrush}"
-                            BorderBrush="{DynamicResource WinBorderBrush}"
+                            Background="{DynamicResource M3SurfaceContainerLowBrush}"
+                            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                             BorderThickness="0,0,0,1"
                             Padding="24,12">
                         <Grid ColumnDefinitions="Auto,*">
                             <Button Grid.Column="0"
-                                    Classes="action-pill-btn"
-                                    Height="30"
-                                    Padding="10,0"
+                                    Classes="m3-tonal-btn"
+                                    Height="32"
+                                    Padding="12,0"
                                     Command="{Binding ClosePluginSettingsCommand}"
                                     Margin="0,0,14,0"
                                     ToolTip.Tip="Back to plugins list">
-                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <materialIcons:MaterialIcon Kind="ArrowLeft" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
-                                    <TextBlock Text="Back" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="ArrowLeft" Width="14" Height="14" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                    <TextBlock Text="Back" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
                                 <TextBlock Text="{Binding SelectedConfiguringPlugin.Name, StringFormat='Configure {0}'}"
-                                           FontSize="13.5"
+                                           FontSize="14"
                                            FontWeight="Bold"
-                                           Foreground="{DynamicResource WinTextBrush}" />
+                                           Foreground="{DynamicResource M3OnSurfaceBrush}" />
                                 <TextBlock Text="{Binding SelectedConfiguringPlugin.Id, StringFormat='Declarative options for {0}'}"
-                                           FontSize="10.5"
-                                           Foreground="{DynamicResource WinMutedBrush}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
                                            FontFamily="Consolas,Menlo,monospace" />
                             </StackPanel>
                         </Grid>
@@ -338,17 +336,18 @@
                         <ItemsControl ItemsSource="{Binding ActivePluginConfigSettings}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:PluginSettingItemViewModel">
-                                    <Border Background="{DynamicResource WinInputBgBrush}"
-                                            BorderBrush="{DynamicResource WinBorderBrush}"
+                                    <Border Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                                             BorderThickness="1"
                                             CornerRadius="{StaticResource M3ShapeCornerLarge}"
-                                            Padding="16,12"
+                                            BoxShadow="{StaticResource M3ElevationLevel1}"
+                                            Padding="16,14"
                                             Margin="0,0,0,10">
                                         <Grid ColumnDefinitions="*,Auto">
                                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
-                                                <TextBlock Text="{Binding Label}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
-                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
-                                                <TextBlock Text="{Binding Key, StringFormat='Key: {0}'}" FontSize="10" FontFamily="Consolas,Menlo,monospace" Foreground="{DynamicResource WinMutedBrush}" Opacity="0.7" />
+                                                <TextBlock Text="{Binding Label}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource M3OnSurfaceBrush}" />
+                                                <TextBlock Text="{Binding Description}" FontSize="11.5" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding Key, StringFormat='Key: {0}'}" FontSize="10" FontFamily="Consolas,Menlo,monospace" Foreground="{DynamicResource M3OutlineBrush}" Opacity="0.8" />
                                             </StackPanel>
 
                                             <!-- Dynamic Editor Controls based on Type -->
@@ -392,23 +391,23 @@
 
                     <!-- Settings Footer -->
                     <Border Grid.Row="2"
-                            Background="{DynamicResource WinInputBgBrush}"
-                            BorderBrush="{DynamicResource WinBorderBrush}"
+                            Background="{DynamicResource M3SurfaceContainerLowBrush}"
+                            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                             BorderThickness="0,1,0,0"
                             Padding="24,12">
                         <Grid ColumnDefinitions="*,Auto,Auto">
                             <Button Grid.Column="1"
-                                    Classes="secondary-btn"
-                                    Height="34"
-                                    Padding="16,0"
+                                    Classes="m3-tonal-btn"
+                                    Height="36"
+                                    Padding="18,0"
                                     Margin="0,0,10,0"
                                     Command="{Binding ClosePluginSettingsCommand}">
                                 <TextBlock Text="Cancel" FontSize="12" FontWeight="Medium" />
                             </Button>
                             <Button Grid.Column="2"
-                                    Classes="accent-btn"
-                                    Height="34"
-                                    Padding="16,0"
+                                    Classes="m3-filled-btn"
+                                    Height="36"
+                                    Padding="20,0"
                                     Command="{Binding SavePluginSettingsCommand}">
                                 <TextBlock Text="Save Preferences" FontSize="12" FontWeight="SemiBold" />
                             </Button>
@@ -418,6 +417,7 @@
                 </Grid>
 
             </Grid>
+            </Border>
         </Border>
     </Grid>
 

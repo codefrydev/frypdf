@@ -300,7 +300,7 @@ public interface IFryPluginContext : IServiceProvider
     /// </summary>
     IDisposable RegisterRibbonGroup(RibbonGroupDescriptor descriptor);
 
-    // --- 20. Shell Overlay Registry (DeepSeek Harness Inspired) ---
+    // --- 20. Shell Overlay Registry (Cordis Architecture Inspired) ---
 
     /// <summary>
     /// Registers a floating shell overlay contributed by a plugin (targeting 'shell.overlay').

@@ -9,7 +9,7 @@ Welcome to the **FryPDF** repository. This guide provides AI agents and human co
 **FryPDF** is a high-performance, cross-platform PDF creation, editing, and document analysis studio.
 
 - **Framework**: .NET 10 / C# 13+
-- **Architecture**: Microkernel Plugin System ("Everything is a Plugin") inspired by DeepSeek Harness and Cordis
+- **Architecture**: Microkernel Plugin System ("Everything is a Plugin") inspired by Cordis architecture
 - **UI Toolkit**: Avalonia UI (v12.x) with Google Material Design 3 (M3) Expressive styling (macOS, Windows, Linux)
 - **MVVM**: `CommunityToolkit.Mvvm` (Observable Objects, Relay Commands, Source Generators)
 - **PDF Generation & Export**: `QuestPDF`
@@ -251,7 +251,7 @@ To maintain high responsiveness and prevent memory leaks during long editing ses
 ### G. Modular Microkernel Plugin Architecture ("Everything is a Plugin") (STRICT)
 
 **CRITICAL ARCHITECTURAL MANDATE**:
-FryPDF implements an **"Everything is a Plugin"** microkernel architecture inspired by **DeepSeek Harness (`deepseek-harness`)** and the **Cordis** framework.
+FryPDF implements an **"Everything is a Plugin"** microkernel architecture inspired by the **Cordis** framework.
 **Monolithic additions, hardcoded switch-case statements, god viewmodels, and hardwired view instantiations are strictly forbidden.**
 Whenever you create new tools, add document operations, contribute ribbon actions, add sidebar panels, introduce inspector sections, or add new canvas element types, you **MUST implement them as modular plugins registered through dynamic capability registries**.
 

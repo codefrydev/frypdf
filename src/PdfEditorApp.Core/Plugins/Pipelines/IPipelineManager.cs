@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace PdfEditorApp.Core.Plugins.Pipelines;
 
 /// <summary>
-/// Orchestrates typed execution pipelines inspired by DeepSeek Harness / Cordis.
+/// Orchestrates typed execution pipelines inspired by Cordis architecture.
 /// Supports 4 primary dispatch modes: Waterfall (around-middleware), Bail (first handled result),
 /// Parallel (concurrent execution), and Serial (ordered execution).
 /// </summary>

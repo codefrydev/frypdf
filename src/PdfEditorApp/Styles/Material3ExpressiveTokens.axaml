@@ -61,6 +61,8 @@
     <BoxShadows x:Key="M3ElevationLevel3">0 4 12 #1A000000, 0 8 20 #20000000</BoxShadows>
     <BoxShadows x:Key="M3ElevationLevel4">0 6 18 #1E000000, 0 12 28 #22000000</BoxShadows>
     <BoxShadows x:Key="M3ElevationLevel5">0 8 24 #22000000, 0 16 36 #26000000</BoxShadows>
+    <!-- M3 Modal Dialog Elevation (Deep Dual-Layer Ambient + Key for Scrim Backdrops) -->
+    <BoxShadows x:Key="M3ElevationModalDialog">0 8 24 #28000000, 0 24 64 #48000000</BoxShadows>
 
     <!-- =================================================================== -->
     <!-- THEME DICTIONARIES: LIGHT & DARK M3 EXPRESSIVE PALETTES            -->

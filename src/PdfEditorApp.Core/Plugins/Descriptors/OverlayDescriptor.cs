@@ -27,7 +27,7 @@ public enum OverlayChromeMode
 
 /// <summary>
 /// Descriptor representing a non-modal floating overlay panel contributed by a plugin (targeting 'shell.overlay').
-/// Inspired by the DeepSeek Harness client-side dynamic overlay slot architecture.
+/// Inspired by the Cordis dynamic overlay slot architecture.
 /// </summary>
 public sealed class OverlayDescriptor
 {

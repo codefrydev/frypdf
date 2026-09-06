@@ -303,17 +303,17 @@ public class PluginKernelTests
 
         PdfEditorApp.Core.Models.Elements.PdfElementBase element = new CustomTestElementModel
         {
-            CustomProperty = "DeepSeekParity"
+            CustomProperty = "CordisParity"
         };
 
         string json = System.Text.Json.JsonSerializer.Serialize(element, options);
         Assert.Contains("\"$type\":\"frypdf.element.custom_test\"", json);
-        Assert.Contains("\"CustomProperty\":\"DeepSeekParity\"", json);
+        Assert.Contains("\"CustomProperty\":\"CordisParity\"", json);
 
         var deserialized = System.Text.Json.JsonSerializer.Deserialize<PdfEditorApp.Core.Models.Elements.PdfElementBase>(json, options);
         Assert.NotNull(deserialized);
         Assert.IsType<CustomTestElementModel>(deserialized);
-        Assert.Equal("DeepSeekParity", ((CustomTestElementModel)deserialized).CustomProperty);
+        Assert.Equal("CordisParity", ((CustomTestElementModel)deserialized).CustomProperty);
     }
 
     private class ActionPlugin : IFryPlugin

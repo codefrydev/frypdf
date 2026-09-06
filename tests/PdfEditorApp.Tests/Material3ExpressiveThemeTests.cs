@@ -68,6 +68,7 @@ public class Material3ExpressiveThemeTests
         Assert.Contains("BoxShadows x:Key=\"M3ElevationLevel3\"", tokens);
         Assert.Contains("BoxShadows x:Key=\"M3ElevationLevel4\"", tokens);
         Assert.Contains("BoxShadows x:Key=\"M3ElevationLevel5\"", tokens);
+        Assert.Contains("BoxShadows x:Key=\"M3ElevationModalDialog\"", tokens);
 
         // Chubby tactile slider tokens
         Assert.Contains("SliderTrackThemeHeight", tokens);
@@ -449,6 +450,45 @@ public class Material3ExpressiveThemeTests
         var viewerPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "PdfViewerView.axaml");
         var viewer = File.ReadAllText(viewerPath);
         Assert.Contains("Button Classes=\"m3-header-btn\"", viewer);
+    }
+
+    [Fact]
+    public void PluginsDialog_AdheresToMaterial3Expressive()
+    {
+        var pluginsPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "Dialogs", "PluginsDialog.axaml");
+        var xaml = File.ReadAllText(pluginsPath);
+
+        // 1. Dialog Shell uses M3 Extra Large shape, dedicated M3ElevationModalDialog elevation, and M3 Surface brush
+        Assert.Contains("CornerRadius=\"{StaticResource M3ShapeCornerExtraLarge}\"", xaml);
+        Assert.Contains("BoxShadow=\"{StaticResource M3ElevationModalDialog}\"", xaml);
+        Assert.Contains("Background=\"{DynamicResource M3SurfaceBrush}\"", xaml);
+
+        // 2. Elimination of hardcoded dark navy hex colors and raw hex box shadows
+        Assert.DoesNotContain("Background=\"#0F172A\"", xaml);
+        Assert.DoesNotContain("Background=\"#1E1B4B\"", xaml);
+        Assert.DoesNotContain("BorderBrush=\"#1E293B\"", xaml);
+        Assert.DoesNotContain("BorderBrush=\"#818CF8\"", xaml);
+        Assert.DoesNotContain("BoxShadow=\"0 28 80 #50000000\"", xaml);
+
+        // 3. Header uses dynamic M3 tokens, tonal badge, and m3-icon-btn close
+        Assert.Contains("Background=\"{DynamicResource M3SurfaceContainerLowBrush}\"", xaml);
+        Assert.Contains("Background=\"{DynamicResource M3PrimaryContainerBrush}\"", xaml);
+        Assert.Contains("Background=\"{DynamicResource M3SecondaryContainerBrush}\"", xaml);
+        Assert.Contains("Button Grid.Column=\"2\"\n                                Classes=\"m3-icon-btn\"", xaml);
+
+        // 4. Search bar uses m3-search and Profile selector uses M3 segmented container
+        Assert.Contains("Classes=\"m3-search\"", xaml);
+        Assert.Contains("Classes=\"m3-segmented-container\"", xaml);
+        Assert.Contains("Button Classes=\"m3-segment-btn\"", xaml);
+
+        // 5. Plugin cards use elevated M3 container, tonal icon container, and m3-tonal-btn
+        Assert.Contains("Background=\"{DynamicResource M3SurfaceContainerLowestBrush}\"", xaml);
+        Assert.Contains("BoxShadow=\"{StaticResource M3ElevationLevel1}\"", xaml);
+        Assert.Contains("CornerRadius=\"{StaticResource M3ShapeCornerLarge}\"", xaml);
+        Assert.Contains("Classes=\"m3-tonal-btn\"", xaml);
+
+        // 6. Footer bar uses tonal background, m3-tonal-btn, and m3-filled-btn
+        Assert.Contains("Classes=\"m3-filled-btn\"", xaml);
     }
 }
 

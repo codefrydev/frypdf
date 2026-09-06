@@ -31,7 +31,7 @@ You MUST strictly adhere to **Google Material Design 3 (M3) Expressive** wheneve
 ## 2. CRITICAL ARCHITECTURE MANDATE: Modular Plugin Pattern ("Everything is a Plugin") (STRICT)
 
 **ATTENTION AI AGENT**:
-FryPDF uses a modular microkernel plugin architecture inspired by DeepSeek Harness and Cordis.
+FryPDF uses a modular microkernel plugin architecture inspired by Cordis.
 You MUST adhere to the **Plugin Pattern** whenever adding, refactoring, or extending application capabilities:
 
 1. **No Monolithic Switches or Hardcoded Wiring**:

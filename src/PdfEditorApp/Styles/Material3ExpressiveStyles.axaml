@@ -803,8 +803,7 @@
     <Style Selector="Border.m3-dialog-card">
         <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
         <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerExtraLarge}" />
-        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel4}" />
-        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationModalDialog}" />
     </Style>
 
     <Style Selector="Border.m3-floating-hud">

@@ -1,7 +1,7 @@
 # FryPDF Plugin-Based Architecture ("Everything is a Plugin")
 
 > **Architectural Specification and Design Manual**  
-> Inspired by **DeepSeek Harness (`deepseek-harness`)** and the **Cordis** Spatiotemporal Composability Framework.
+> Inspired by the **Cordis** Spatiotemporal Composability Framework.
 
 ---
 
@@ -9,7 +9,7 @@
 
 In traditional desktop and document software architectures, core features are compiled into monolithic service collections, fixed enum registries, and rigid UI templates. Adding a new file conversion tool, AI assistant, or custom canvas element requires modifying numerous central files.
 
-**DeepSeek Harness (`deepseek-harness`)** pioneered an **"Everything is a Plugin"** paradigm:
+The **Cordis** architecture pioneered an **"Everything is a Plugin"** paradigm:
 - The core runtime does not privilege any single subsystem.
 - The agent loop, LLM providers, tool execution pipelines, memory logging, and UI shells are all plugins mounted on a unified context.
 - Plugins declare their dependencies, register capabilities dynamically, participate in execution pipelines via typed middleware, and clean up their state via reversible effects.
@@ -51,7 +51,7 @@ Plugins declare the services or capabilities they depend upon. The kernel constr
 Every registration—whether an event listener, a tool descriptor, a canvas element template, or an unmanaged Skia bitmap—is recorded as an "effect". When a plugin unloads or is disabled, its effect scope unwinds in reverse order, ensuring **zero memory leaks**, clean garbage collection, and no dangling handlers.
 
 ### D. Typed Pipeline Dispatch Modes
-FryPDF adopts the 5 dispatch modes of DeepSeek Harness / Cordis:
+FryPDF adopts the 5 dispatch modes of Cordis architecture:
 1. **`Waterfall`**: Around-middleware with `next()` delegation (e.g. Export pipelines, page rendering filters).
 2. **`Bail`**: Short-circuits on the first non-null/handled result (e.g. File format converters, OCR engines).
 3. **`Parallel`**: Concurrent asynchronous dispatch via `Task.WhenAll` (e.g. Analytics, auto-save notifications).
@@ -432,7 +432,7 @@ my-extension.fryplugin
 
 ## 11. Conclusion
 
-By adopting the **DeepSeek Harness / Cordis** architecture:
+By adopting the **Cordis** microkernel architecture:
 - **FryPDF transforms from a compiled application into a composable PDF Operating Platform**.
 - Core engines, tools, AI services, ribbon tabs, sidebars, inspector panels, and settings become modular, swappable, and testable in total isolation.
 - The system achieves infinite extensibility while remaining fast, memory-safe, and warning-free on .NET 10.

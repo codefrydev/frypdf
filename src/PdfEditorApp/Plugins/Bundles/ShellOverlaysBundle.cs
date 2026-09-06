@@ -7,7 +7,7 @@ namespace PdfEditorApp.Plugins.Bundles;
 
 /// <summary>
 /// Plugin bundle providing non-modal, interactive floating shell overlays.
-/// Adopts the DeepSeek Harness 'shell.overlay' dynamic composability model.
+/// Adopts the Cordis 'shell.overlay' dynamic composability model.
 /// </summary>
 public class ShellOverlaysBundle : IFryPluginBundle
 {

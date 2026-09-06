@@ -31,11 +31,11 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         {
             Id = "frypdf.overlay.snake",
             Name = "Retro Arcade Snake Game (Shell Overlay)",
-            Publisher = "DeepSeek Harness / FryPDF",
+            Publisher = "FryPDF Team",
             Version = "1.0.0",
             Category = "UI & Extensions",
             Description = "Playable, draggable retro-arcade Snake game floating over the application canvas in the 'shell.overlay' slot.",
-            LongDescription = "Bring playful retro-arcade entertainment into your document workflow! Inspired by the DeepSeek Harness interactive plugin showcase, this extension mounts a high-performance floating Snake game into the 'shell.overlay' slot.\n\n### Key Features:\n• **Non-Modal Floating Overlay**: Runs smoothly on top of any document or workspace page without interrupting your PDF work.\n• **60+ FPS Smooth SkiaSharp Rendering**: Fully GPU/Direct-rendered with zero Large Object Heap allocations.\n• **Tactile Custom Chrome Frame**: Dark retro arcade aesthetics with D-Pad and score counters.\n• **Interactive Controls**: Keyboard arrows/WASD, on-screen tactile D-Pad buttons, difficulty & speed selection.\n• **Deep Shell Integration**: Contributes to Command Palette (`Ctrl+Alt+S`), Status Bar (`🐍 Snake`), and Ribbon View Tab.\n\nEnjoy a quick gaming break while editing or reviewing PDFs!",
+            LongDescription = "Bring playful retro-arcade entertainment into your document workflow! This extension mounts a high-performance floating Snake game into the 'shell.overlay' slot.\n\n### Key Features:\n• **Non-Modal Floating Overlay**: Runs smoothly on top of any document or workspace page without interrupting your PDF work.\n• **60+ FPS Smooth SkiaSharp Rendering**: Fully GPU/Direct-rendered with zero Large Object Heap allocations.\n• **Tactile Custom Chrome Frame**: Dark retro arcade aesthetics with D-Pad and score counters.\n• **Interactive Controls**: Keyboard arrows/WASD, on-screen tactile D-Pad buttons, difficulty & speed selection.\n• **Deep Shell Integration**: Contributes to Command Palette (`Ctrl+Alt+S`), Status Bar (`🐍 Snake`), and Ribbon View Tab.\n\nEnjoy a quick gaming break while editing or reviewing PDFs!",
             Rating = 5.0,
             RatingCount = 128,
             InstallCount = 4200,
@@ -45,7 +45,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             License = "MIT",
             IsVerified = true,
             IsOfficial = true,
-            Tags = new[] { "snake", "game", "overlay", "arcade", "retro", "shell", "deepseek" },
+            Tags = new[] { "snake", "game", "overlay", "arcade", "retro", "shell", "widget" },
             Highlights = new[] { "60+ FPS Skia rendering", "Draggable shell.overlay card", "Tactile on-screen D-Pad" },
             ContributedFeatures = new[]
             {

@@ -99,6 +99,8 @@ public class SmartPlacementTests
     {
         var mainVm = new MainViewModel();
         Assert.NotNull(mainVm.CurrentPage);
+        mainVm.CurrentPage.Width = 800;
+        mainVm.CurrentPage.Height = 1131;
 
         // Update viewport center to lower half of page
         mainVm.SmartPlacement.UpdateViewport(400, 800, 800, 600);

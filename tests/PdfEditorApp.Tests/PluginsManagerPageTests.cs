@@ -165,7 +165,7 @@ public class PluginsManagerPageTests
 
         Assert.NotNull(vm.SelectedDetail);
         Assert.Equal("frypdf.overlay.snake", vm.SelectedDetail.Id);
-        Assert.Equal("DeepSeek Harness / FryPDF", vm.SelectedDetail.Publisher);
+        Assert.Equal("FryPDF Team", vm.SelectedDetail.Publisher);
         Assert.True(vm.SelectedDetail.IsOfficial);
         Assert.True(vm.SelectedDetail.IsVerified);
 

@@ -12,7 +12,7 @@ namespace PdfEditorApp.Plugins.Snake;
 
 /// <summary>
 /// Modular plugin contributing a playable, draggable Snake game targeting the 'shell.overlay' slot.
-/// Inspired by the DeepSeek Harness client-side dynamic plugin architecture.
+/// Inspired by the Cordis client-side dynamic plugin architecture.
 /// </summary>
 public class SnakeGamePlugin : IFryPlugin
 {

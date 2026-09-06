@@ -7,7 +7,7 @@ namespace PdfEditorApp.Core.Plugins;
 
 /// <summary>
 /// Contract implemented by all FryPDF plugins.
-/// Inspired by Cordis and DeepSeek Harness: every capability mounts into a shared context.
+/// Inspired by Cordis architecture: every capability mounts into a shared context.
 /// </summary>
 public interface IFryPlugin
 {

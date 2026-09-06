@@ -451,7 +451,7 @@
         </Grid>
         <!-- END EDITOR SHELL -->
 
-        <!-- Shell Overlay Slot (shell.overlay) for Floating Plugins (DeepSeek Harness Inspired) -->
+        <!-- Shell Overlay Slot (shell.overlay) for Floating Plugins (Cordis Architecture Inspired) -->
         <overlays:ShellOverlayHost ZIndex="9500" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 
         <!-- Floating HUD Toast Notification Banner (Styled matching Image 2 with dynamic position, contrast, and dismiss button) -->

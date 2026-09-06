@@ -586,7 +586,7 @@ public class FryPluginContext : IFryPluginContext
         });
     }
 
-    // --- Shell Overlay Registry (DeepSeek Harness Inspired) ---
+    // --- Shell Overlay Registry (Cordis Architecture Inspired) ---
 
     public virtual IDisposable RegisterOverlay(OverlayDescriptor descriptor)
     {

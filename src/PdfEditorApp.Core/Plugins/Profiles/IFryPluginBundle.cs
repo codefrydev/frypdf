@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace PdfEditorApp.Core.Plugins.Profiles;
 
 /// <summary>
-/// Represents a cohesive bundle of plugins, mirroring the DeepSeek Harness bundle concept.
+/// Represents a cohesive bundle of plugins, inspired by the Cordis bundle concept.
 /// </summary>
 public interface IFryPluginBundle
 {

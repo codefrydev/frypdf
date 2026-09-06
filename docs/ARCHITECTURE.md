@@ -115,7 +115,7 @@ Located in `src/PdfEditorApp/Services/AI/` and `src/PdfEditorApp/ViewModels/`:
 
 ## 7. Plugin-Based Architecture ("Everything is a Plugin")
 
-FryPDF incorporates an extensible, plugin-first microkernel architecture inspired by **DeepSeek Harness (`deepseek-harness`)** and the **Cordis** framework.
+FryPDF incorporates an extensible, plugin-first microkernel architecture inspired by the **Cordis** framework.
 - **Dynamic Capability Context (`IFryPluginContext`)**: Swappable services and extension points without hardcoded compile-time dependencies.
 - **12 Dynamic Registry Pillars**: Extensibility across Tools (`IPdfToolRegistry`), Ribbon Tabs (`IRibbonRegistry`), Sidebars (`ISidebarRegistry`), Contextual Inspector (`IInspectorRegistry`), Navigation Pages (`INavigationRegistry`), Canvas Elements (`ICanvasElementRegistry`), Importers/Exporters (`IDocumentImporterRegistry`, `IDocumentExporterRegistry`), AI/OCR (`IAiProviderRegistry`, `IOcrEngineRegistry`), Data Connectors (`IDataConnectorRegistry`), and Status/Dialogs (`IStatusBarRegistry`, `IDialogRegistry`).
 - **Declarative Dependency Resolution**: Directed Acyclic Graph (DAG) topological loader.

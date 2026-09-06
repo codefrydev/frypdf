@@ -6,7 +6,7 @@ namespace PdfEditorApp.Core.Plugins.Profiles;
 
 /// <summary>
 /// Defines an application runtime profile configuration.
-/// Mirrors DeepSeek Harness profiles (e.g. 'desktop', 'headless', 'sdk').
+/// Defines composable application profiles (e.g. 'desktop', 'headless', 'sdk').
 /// </summary>
 public class PluginProfile
 {

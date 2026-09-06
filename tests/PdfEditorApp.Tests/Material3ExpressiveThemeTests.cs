@@ -128,6 +128,7 @@ public class Material3ExpressiveThemeTests
         Assert.Contains("Border.m3-segmented-container", styles);
         Assert.Contains("RadioButton.m3-segment-btn", styles);
         Assert.Contains("Button.m3-chip", styles);
+        Assert.Contains("Button.m3-preset-chip", styles);
         Assert.Contains("ToggleButton.m3-filter-chip", styles);
 
         // M3 Expressive Cards & Containers
@@ -193,4 +194,148 @@ public class Material3ExpressiveThemeTests
         Assert.DoesNotContain("0 8 20 #150F6CBD", starred);
         Assert.DoesNotContain("CornerRadius=\"10\"", starred);
     }
+
+    [Fact]
+    public void InspectorSidebarView_TypographyStudioCard_AdheresToMaterial3Expressive()
+    {
+        var inspectorPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "InspectorSidebarView.axaml");
+        var inspector = File.ReadAllText(inspectorPath);
+
+        // Verify M3 card container properties on Typography Studio
+        Assert.Contains("Classes=\"m3-preset-chip\"", inspector);
+        Assert.Contains("M3SurfaceContainerLowestBrush", inspector);
+        Assert.Contains("M3PrimaryContainerBrush", inspector);
+        Assert.Contains("M3OutlineVariantBrush", inspector);
+
+        // Verify presets use proper vector MaterialIcons rather than emojis/unicode
+        Assert.Contains("Kind=\"Waves\"", inspector);
+        Assert.Contains("Kind=\"VectorCurve\"", inspector);
+        Assert.Contains("Kind=\"Arch\"", inspector);
+        Assert.Contains("Kind=\"TrendingDown\"", inspector);
+        Assert.Contains("Kind=\"TrendingUp\"", inspector);
+        Assert.Contains("Kind=\"ArrowUpBoldOutline\"", inspector);
+        Assert.Contains("Kind=\"ArrowDownBoldOutline\"", inspector);
+        Assert.Contains("Kind=\"DecagramOutline\"", inspector);
+        Assert.Contains("Kind=\"CircleHalfFull\"", inspector);
+        Assert.Contains("Kind=\"BorderColor\"", inspector);
+        Assert.Contains("Kind=\"LayersOutline\"", inspector);
+        Assert.Contains("Kind=\"Creation\"", inspector);
+        Assert.Contains("Kind=\"FormatLetterCase\"", inspector);
+
+        // Verify old typography preset buttons with emojis and math unicode symbols are removed
+        Assert.DoesNotContain("CommandParameter=\"wave\"><TextBlock Text=\"〰 Wave\"", inspector);
+        Assert.DoesNotContain("CommandParameter=\"scurve\"><TextBlock Text=\"∿ S-Curve\"", inspector);
+        Assert.DoesNotContain("CommandParameter=\"bridge\"><TextBlock Text=\"⌢ Bridge\"", inspector);
+        Assert.DoesNotContain("CommandParameter=\"valley\"><TextBlock Text=\"⌣ Valley\"", inspector);
+        Assert.DoesNotContain("CommandParameter=\"rise\"><TextBlock Text=\"↗ Rise\"", inspector);
+        Assert.DoesNotContain("CommandParameter=\"archup\"><TextBlock Text=\"⤴ Arch Up\"", inspector);
+        Assert.DoesNotContain("CommandParameter=\"archdown\"><TextBlock Text=\"⤵ Arch Down\"", inspector);
+        Assert.DoesNotContain("CommandParameter=\"circlebadge\"><TextBlock Text=\"◯ Badge\"", inspector);
+        Assert.DoesNotContain("CommandParameter=\"toparc\"><TextBlock Text=\"⌒ Top Arc\"", inspector);
+        Assert.DoesNotContain("CommandParameter=\"bottomarc\"><TextBlock Text=\"ᴗ Bottom Arc\"", inspector);
+        Assert.DoesNotContain("CommandParameter=\"neonglow\"><TextBlock Text=\"✨ Neon Glow\"", inspector);
+    }
+
+    [Fact]
+    public void InspectorSidebarView_AllCardsAndElements_AdhereToMaterial3Expressive()
+    {
+        var inspectorPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "InspectorSidebarView.axaml");
+        var inspector = File.ReadAllText(inspectorPath);
+
+        // 1. Strict elimination of legacy Win brushes in element bindings
+        Assert.DoesNotContain("{DynamicResource WinBgBrush}", inspector);
+        Assert.DoesNotContain("{DynamicResource WinPanelBrush}", inspector);
+        Assert.DoesNotContain("{DynamicResource WinBorderBrush}", inspector);
+        Assert.DoesNotContain("{DynamicResource WinAccentBrush}", inspector);
+        Assert.DoesNotContain("{DynamicResource WinAccentLightBrush}", inspector);
+        Assert.DoesNotContain("{DynamicResource WinAccentBorderBrush}", inspector);
+        Assert.DoesNotContain("{DynamicResource WinTextBrush}", inspector);
+        Assert.DoesNotContain("{DynamicResource WinMutedBrush}", inspector);
+        Assert.DoesNotContain("{DynamicResource WinHoverBrush}", inspector);
+        Assert.DoesNotContain("{DynamicResource WinActiveBrush}", inspector);
+        Assert.DoesNotContain("{DynamicResource WinInputBgBrush}", inspector);
+        Assert.DoesNotContain("{DynamicResource WinDangerBrush}", inspector);
+        Assert.DoesNotContain("{StaticResource WinSubtleBgBrush}", inspector);
+
+        // 2. Strict elimination of raw hex box shadows and rigid corner radii
+        Assert.DoesNotContain("#30000000", inspector);
+        Assert.DoesNotContain("CornerRadius=\"8\"", inspector);
+        Assert.DoesNotContain("CornerRadius=\"4\"", inspector);
+        Assert.DoesNotContain("CornerRadius=\"6\"", inspector);
+        Assert.DoesNotContain("CornerRadius=\"10\"", inspector);
+
+        // 3. Proper utilization of M3 shape tokens and elevation levels
+        Assert.Contains("{StaticResource M3ShapeCornerLarge}", inspector);
+        Assert.Contains("{StaticResource M3ShapeCornerFull}", inspector);
+        Assert.Contains("{StaticResource M3ShapeCornerMedium}", inspector);
+        Assert.Contains("{StaticResource M3ShapeCornerSmall}", inspector);
+        Assert.Contains("{StaticResource M3ElevationLevel1}", inspector);
+        Assert.Contains("{StaticResource M3ElevationLevel3}", inspector);
+
+        // 4. Modern M3 component classes across the inspector
+        Assert.Contains("Classes=\"m3-outlined\"", inspector);
+        Assert.Contains("Classes=\"m3-preset-chip\"", inspector);
+        Assert.Contains("Classes=\"m3-segmented-container\"", inspector);
+        Assert.Contains("Classes=\"m3-segment-btn\"", inspector);
+        Assert.Contains("Classes=\"m3-tonal-btn\"", inspector);
+        Assert.Contains("Classes=\"m3-icon-btn\"", inspector);
+        Assert.Contains("Classes=\"m3-filled-btn\"", inspector);
+
+        // 5. Verification of key specialized cards
+        // Mathematical Equation & Formula
+        Assert.Contains("LaTeX Formatting • MathFX Engine", inspector);
+        Assert.Contains("Kind=\"Sigma\"", inspector);
+        // Position & Geometry
+        Assert.Contains("Coordinates • Transforms • Hierarchy", inspector);
+        Assert.Contains("Kind=\"ArrowAll\"", inspector);
+        // QR Code Studio
+        Assert.Contains("Kind=\"Qrcode\"", inspector);
+        // LiveCharts2 Engine
+        Assert.Contains("Kind=\"ChartBar\"", inspector);
+        // Table Styles & Grid
+        Assert.Contains("Kind=\"TableHeadersEye\"", inspector);
+        // AcroForm Field Setup
+        Assert.Contains("Kind=\"FormTextbox\"", inspector);
+        // Legal Redaction Exemption
+        Assert.Contains("Kind=\"EyeOffOutline\"", inspector);
+        // Ink & Markup
+        Assert.Contains("Kind=\"DrawPen\"", inspector);
+        // Measurement & Scale Annotation
+        Assert.Contains("Kind=\"RulerSquare\"", inspector);
+        // SVG Vector Art Studio
+        Assert.Contains("Kind=\"VectorCurve\"", inspector);
+    }
+
+    [Fact]
+    public void Material3ExpressiveStyles_DefinesNumericUpDownAndButtonSpinnerThemes()
+    {
+        var stylesPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Styles", "Material3ExpressiveStyles.axaml");
+        var styles = File.ReadAllText(stylesPath);
+
+        // 1. Authoritative M3 ControlThemes for ButtonSpinner & NumericUpDown
+        Assert.Contains("ControlTheme x:Key=\"{x:Type ButtonSpinner}\" TargetType=\"ButtonSpinner\"", styles);
+        Assert.Contains("ControlTheme x:Key=\"{x:Type NumericUpDown}\" TargetType=\"NumericUpDown\"", styles);
+        Assert.Contains("ControlTheme x:Key=\"M3ButtonSpinnerRepeatButton\" TargetType=\"RepeatButton\"", styles);
+
+        // 2. Compact vertical chevrons layout (Width="18" with RowDefinitions="*,*")
+        Assert.Contains("Width=\"18\"", styles);
+        Assert.Contains("RowDefinitions=\"*,*\"", styles);
+        Assert.Contains("RepeatButton Name=\"PART_IncreaseButton\"", styles);
+        Assert.Contains("RepeatButton Name=\"PART_DecreaseButton\"", styles);
+
+        // 3. Seamless transparent TextBox embedding with zero text clipping
+        Assert.Contains("NumericUpDown /template/ TextBox#PART_TextBox", styles);
+        Assert.Contains("NumericUpDown /template/ TextBox#PART_TextBox /template/ Border#PART_BorderElement", styles);
+
+        // 4. Verification that InspectorSidebarView Highlight / Background Box has non-clipping Left alignment
+        var inspectorPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "InspectorSidebarView.axaml");
+        var inspector = File.ReadAllText(inspectorPath);
+        Assert.Contains("TextElement.Padding", inspector);
+        Assert.Contains("TextElement.CornerRadius", inspector);
+        Assert.Contains("TextElement.BorderThickness", inspector);
+        Assert.Contains("ToolTip.Tip=\"Internal Box Padding (0-64 px)\"", inspector);
+        Assert.Contains("ToolTip.Tip=\"Box Corner Radius (0-64 px)\"", inspector);
+        Assert.Contains("ToolTip.Tip=\"Border Stroke Thickness (0-20 pt)\"", inspector);
+    }
 }
+

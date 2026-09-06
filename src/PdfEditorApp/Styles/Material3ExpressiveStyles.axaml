@@ -6,9 +6,226 @@
     <!-- Google Material Design 3 Expressive (M3 Expressive) Component Suite -->
     <!-- =================================================================== -->
 
+    <Styles.Resources>
+        <!-- M3 Expressive Compact RepeatButton for ButtonSpinner -->
+        <ControlTheme x:Key="M3ButtonSpinnerRepeatButton" TargetType="RepeatButton">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0.5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerSmall}" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="PART_ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Padding="{TemplateBinding Padding}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+            <Style Selector="^:pointerover /template/ Border#PART_ButtonBorder">
+                <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighestBrush}" />
+            </Style>
+            <Style Selector="^:pressed /template/ Border#PART_ButtonBorder">
+                <Setter Property="Background" Value="{DynamicResource M3PrimaryContainerBrush}" />
+            </Style>
+            <Style Selector="^:disabled">
+                <Setter Property="Opacity" Value="0.35" />
+            </Style>
+        </ControlTheme>
+
+        <!-- M3 Expressive ButtonSpinner ControlTheme (Compact Vertical Chevrons) -->
+        <ControlTheme x:Key="{x:Type ButtonSpinner}" TargetType="ButtonSpinner">
+            <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+            <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowestBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerMedium}" />
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <DataValidationErrors>
+                        <Border Name="PART_SpinnerBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                ClipToBounds="True">
+                            <DockPanel>
+                                <!-- Vertical Chevrons Spinner Container (Fixed 18px compact width) -->
+                                <Border Name="PART_SpinnerContainer"
+                                        DockPanel.Dock="Right"
+                                        Width="18"
+                                        Margin="0,1,2,1"
+                                        IsVisible="{TemplateBinding ShowButtonSpinner}">
+                                    <Grid RowDefinitions="*,*">
+                                        <RepeatButton Name="PART_IncreaseButton"
+                                                      Grid.Row="0"
+                                                      Theme="{StaticResource M3ButtonSpinnerRepeatButton}"
+                                                      IsTabStop="False"
+                                                      Focusable="False"
+                                                      ToolTip.Tip="Increase">
+                                            <Path Data="M 1 4.5 L 4.5 1 L 8 4.5"
+                                                  Stroke="{DynamicResource M3OnSurfaceVariantBrush}"
+                                                  StrokeThickness="1.4"
+                                                  StrokeLineCap="Round"
+                                                  StrokeJoin="Round"
+                                                  Width="9" Height="5.5"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center" />
+                                        </RepeatButton>
+                                        <RepeatButton Name="PART_DecreaseButton"
+                                                      Grid.Row="1"
+                                                      Theme="{StaticResource M3ButtonSpinnerRepeatButton}"
+                                                      IsTabStop="False"
+                                                      Focusable="False"
+                                                      ToolTip.Tip="Decrease">
+                                            <Path Data="M 1 1 L 4.5 4.5 L 8 1"
+                                                  Stroke="{DynamicResource M3OnSurfaceVariantBrush}"
+                                                  StrokeThickness="1.4"
+                                                  StrokeLineCap="Round"
+                                                  StrokeJoin="Round"
+                                                  Width="9" Height="5.5"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center" />
+                                        </RepeatButton>
+                                    </Grid>
+                                </Border>
+
+                                <ContentPresenter Name="PART_ContentPresenter"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  Padding="{TemplateBinding Padding}" />
+                            </DockPanel>
+                        </Border>
+                    </DataValidationErrors>
+                </ControlTemplate>
+            </Setter>
+            <Style Selector="^:left /template/ Border#PART_SpinnerContainer">
+                <Setter Property="DockPanel.Dock" Value="Left" />
+                <Setter Property="Margin" Value="2,1,0,1" />
+            </Style>
+            <Style Selector="^:pointerover /template/ Border#PART_SpinnerBorder">
+                <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineBrush}" />
+            </Style>
+            <Style Selector="^:focus-within /template/ Border#PART_SpinnerBorder">
+                <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+            </Style>
+        </ControlTheme>
+
+        <!-- M3 Expressive NumericUpDown ControlTheme -->
+        <ControlTheme x:Key="{x:Type NumericUpDown}" TargetType="NumericUpDown">
+            <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+            <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowestBrush}" />
+            <Setter Property="PlaceholderForeground" Value="{DynamicResource M3OnSurfaceVariantBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="7,0,2,0" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerMedium}" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="ClipToBounds" Value="True" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <DataValidationErrors>
+                        <ButtonSpinner Name="PART_Spinner"
+                                       Background="{TemplateBinding Background}"
+                                       BorderThickness="{TemplateBinding BorderThickness}"
+                                       BorderBrush="{TemplateBinding BorderBrush}"
+                                       CornerRadius="{TemplateBinding CornerRadius}"
+                                       IsTabStop="False"
+                                       Padding="0"
+                                       MinWidth="0"
+                                       HorizontalContentAlignment="Stretch"
+                                       VerticalContentAlignment="Stretch"
+                                       AllowSpin="{TemplateBinding AllowSpin}"
+                                       ShowButtonSpinner="{TemplateBinding ShowButtonSpinner}"
+                                       ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}">
+                            <TextBox Name="PART_TextBox"
+                                     Background="Transparent"
+                                     BorderBrush="Transparent"
+                                     BorderThickness="0"
+                                     Margin="0"
+                                     Padding="{TemplateBinding Padding}"
+                                     MinWidth="0"
+                                     Foreground="{TemplateBinding Foreground}"
+                                     PlaceholderText="{TemplateBinding PlaceholderText}"
+                                     PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                                     IsReadOnly="{TemplateBinding IsReadOnly}"
+                                     VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                     HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                     Text="{TemplateBinding Text}"
+                                     TextAlignment="{TemplateBinding TextAlignment}"
+                                     AcceptsReturn="False"
+                                     TextWrapping="NoWrap"
+                                     FontSize="{TemplateBinding FontSize}"
+                                     FontWeight="{TemplateBinding FontWeight}"
+                                     CornerRadius="0"
+                                     InnerLeftContent="{Binding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
+                                     InnerRightContent="{Binding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </ButtonSpinner>
+                    </DataValidationErrors>
+                </ControlTemplate>
+            </Setter>
+            <Style Selector="^:pointerover">
+                <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineBrush}" />
+            </Style>
+            <Style Selector="^:focus-within">
+                <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+            </Style>
+        </ControlTheme>
+    </Styles.Resources>
+
     <!-- Global Application Typography -->
     <Style Selector="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource M3FontFamily}" />
+    </Style>
+
+    <!-- M3 NumericUpDown Embedded TextBox & Border Seamless Integration -->
+    <Style Selector="NumericUpDown /template/ TextBox#PART_TextBox">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource M3PrimaryBrush}" />
+    </Style>
+    <Style Selector="NumericUpDown /template/ TextBox#PART_TextBox /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="0" />
+    </Style>
+    <Style Selector="NumericUpDown /template/ TextBox#PART_TextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="NumericUpDown /template/ TextBox#PART_TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
     </Style>
 
     <!-- =================================================================== -->
@@ -307,6 +524,38 @@
         <Setter Property="Foreground" Value="{DynamicResource M3OnSecondaryContainerBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource M3SecondaryContainerBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <!-- M3 Compact Preset Pill Chip (Tactile Studio Presets) -->
+    <Style Selector="Button.m3-preset-chip">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Padding" Value="8,2,9,2" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="FontSize" Value="10.5" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12" Easing="CubicEaseOut" />
+                <BrushTransition Property="Background" Duration="0:0:0.12" />
+                <BrushTransition Property="Foreground" Duration="0:0:0.12" />
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-preset-chip:pointerover">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="RenderTransform" Value="scale(1.03)" />
+    </Style>
+    <Style Selector="Button.m3-preset-chip:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.96)" />
     </Style>
 
     <!-- =================================================================== -->

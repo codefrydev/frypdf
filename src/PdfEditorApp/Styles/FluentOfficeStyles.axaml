@@ -71,6 +71,22 @@
         <Setter Property="RenderTransform" Value="scale(0.96)" />
     </Style>
 
+    <!-- Ribbon ScrollViewer & Sleek Horizontal ScrollBar (M3 Expressive Minimalist Pill) -->
+    <Style Selector="ScrollViewer.ribbon-scroll-viewer /template/ ScrollBar:horizontal">
+        <Setter Property="Height" Value="6" />
+        <Setter Property="MinHeight" Value="6" />
+        <Setter Property="Margin" Value="0,1,0,1" />
+        <Setter Property="Opacity" Value="0.45" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="ScrollViewer.ribbon-scroll-viewer /template/ ScrollBar:horizontal:pointerover">
+        <Setter Property="Opacity" Value="0.9" />
+    </Style>
+
     <!-- Ribbon Vertical Tool Button (M3 Expressive rounded container) -->
     <Style Selector="Button.tool-btn">
         <Setter Property="Background" Value="Transparent" />

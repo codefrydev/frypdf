@@ -20,7 +20,7 @@
             <!-- 1. Ribbon Menu Tabs Bar -->
             <Border Grid.Row="0" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="12,4,12,4">
                 <Grid ColumnDefinitions="*,Auto">
-                    <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                    <ScrollViewer Classes="ribbon-scroll-viewer" Grid.Column="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                         <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
 
                             <!-- File Tab (Accent Pill) -->
@@ -178,9 +178,9 @@
             </Border>
 
             <!-- 2. Ribbon Dynamic Tools Panel -->
-            <Border Grid.Row="1" Background="{DynamicResource WinPanelBrush}" Height="100" Padding="12,5,12,5"
+            <Border Grid.Row="1" Background="{DynamicResource WinPanelBrush}" Height="114" Padding="12,4,12,4"
                     IsVisible="{Binding !IsRibbonCollapsed}">
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <ScrollViewer Classes="ribbon-scroll-viewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                     <Panel>
                         <!-- ================= TAB: DYNAMIC PLUGIN TAB ================= -->
                         <StackPanel Orientation="Horizontal" Spacing="6"

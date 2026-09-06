@@ -365,6 +365,24 @@ public class Material3ExpressiveThemeTests
         Assert.Contains("MaxHeight=\"450\"", inspector);
         Assert.Contains("ScrollViewer.VerticalScrollBarVisibility=\"Auto\"", inspector);
     }
+
+    [Fact]
+    public void RibbonView_ToolsPanel_HasSufficientHeightAndNonClippingScrollBar()
+    {
+        var ribbonPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "RibbonView.axaml");
+        var ribbon = File.ReadAllText(ribbonPath);
+
+        // 1. Tool panel height is >= 112px (114px) to ensure group titles are never clipped by scrollbars
+        Assert.Contains("Height=\"114\"", ribbon);
+
+        // 2. Uses sleek ribbon-scroll-viewer class
+        Assert.Contains("Classes=\"ribbon-scroll-viewer\"", ribbon);
+
+        // 3. FluentOfficeStyles defines sleek M3 horizontal scrollbar for ribbon
+        var stylesPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Styles", "FluentOfficeStyles.axaml");
+        var styles = File.ReadAllText(stylesPath);
+        Assert.Contains("ScrollViewer.ribbon-scroll-viewer /template/ ScrollBar:horizontal", styles);
+    }
 }
 
 

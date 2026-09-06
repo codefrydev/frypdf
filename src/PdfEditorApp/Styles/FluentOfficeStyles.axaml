@@ -130,7 +130,7 @@
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="0" />
-        <Setter Property="Width" Value="28" />
+        <Setter Property="MinWidth" Value="28" />
         <Setter Property="Height" Value="28" />
         <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerSmall}" />
         <Setter Property="Cursor" Value="Hand" />

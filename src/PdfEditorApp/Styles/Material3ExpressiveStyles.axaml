@@ -369,6 +369,32 @@
         <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowBrush}" />
     </Style>
 
+    <!-- M3 Header Interactive Item (Brand & Document Title) -->
+    <Style Selector="Button.m3-header-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerMedium}" />
+        <Setter Property="Padding" Value="6,3" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-header-btn:pointerover">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+        <Setter Property="RenderTransform" Value="scale(1.015)" />
+    </Style>
+    <Style Selector="Button.m3-header-btn:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.98)" />
+    </Style>
+
     <!-- M3 Floating Action Button (Standard FAB) -->
     <Style Selector="Button.m3-fab">
         <Setter Property="Background" Value="{DynamicResource M3PrimaryContainerBrush}" />

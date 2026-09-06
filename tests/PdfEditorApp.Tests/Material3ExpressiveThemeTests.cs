@@ -423,6 +423,33 @@ public class Material3ExpressiveThemeTests
         // 3. The old distorted 6-column unsegmented grid row is completely eliminated
         Assert.DoesNotContain("<Grid ColumnDefinitions=\"*,*,*,*,*,*\">\n                                    <Button Grid.Column=\"0\" Classes=\"m3-tonal-btn\"", inspector);
     }
+
+    [Fact]
+    public void MainWindow_TopTitleBar_UsesM3HeaderButtonsWithoutTextClipping()
+    {
+        // 1. Material3ExpressiveStyles defines m3-header-btn with natural width and hover transitions
+        var m3StylesPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Styles", "Material3ExpressiveStyles.axaml");
+        var m3Styles = File.ReadAllText(m3StylesPath);
+        Assert.Contains("Style Selector=\"Button.m3-header-btn\"", m3Styles);
+
+        // 2. FluentOfficeStyles mini-tool-btn uses MinWidth="28" instead of hardcoded Width="28"
+        var fluentStylesPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Styles", "FluentOfficeStyles.axaml");
+        var fluentStyles = File.ReadAllText(fluentStylesPath);
+        Assert.Contains("<Setter Property=\"MinWidth\" Value=\"28\" />", fluentStyles);
+
+        // 3. MainWindow brand button and document title use m3-header-btn
+        var mainPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "MainWindow.axaml");
+        var main = File.ReadAllText(mainPath);
+        Assert.Contains("Button Classes=\"m3-header-btn\"", main);
+        Assert.Contains("TextBlock Text=\"FryPDF\"", main);
+        Assert.Contains("TextBlock Text=\"by CodeFryDev\"", main);
+        Assert.Contains("TextBlock Text=\"{Binding DocumentTitle}\"", main);
+
+        // 4. PdfViewerView uses m3-header-btn for rename document title
+        var viewerPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "PdfViewerView.axaml");
+        var viewer = File.ReadAllText(viewerPath);
+        Assert.Contains("Button Classes=\"m3-header-btn\"", viewer);
+    }
 }
 
 

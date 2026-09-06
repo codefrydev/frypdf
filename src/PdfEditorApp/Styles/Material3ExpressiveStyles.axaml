@@ -558,6 +558,41 @@
         <Setter Property="RenderTransform" Value="scale(0.96)" />
     </Style>
 
+    <!-- M3 Expressive Inspector Section Header Toggle Button (Full-width expandable category bar) -->
+    <Style Selector="Button.m3-section-toggle">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="6,4" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerSmall}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.12" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.m3-section-toggle:pointerover">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+    </Style>
+    <Style Selector="Button.m3-section-toggle:pressed">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighestBrush}" />
+    </Style>
+    <Style Selector="Button.m3-section-toggle TextBlock.inspector-label">
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+    <Style Selector="Button.m3-section-toggle:pointerover TextBlock.inspector-label">
+        <Setter Property="Foreground" Value="{DynamicResource M3PrimaryBrush}" />
+    </Style>
+    <Style Selector="Button.m3-section-toggle:pointerover materialIcons|MaterialIcon">
+        <Setter Property="Foreground" Value="{DynamicResource M3PrimaryBrush}" />
+    </Style>
+
     <!-- =================================================================== -->
     <!-- 4. CARDS SUITE (Elevated, Filled, Outlined, Interactive Action Wrappers) -->
     <!-- =================================================================== -->

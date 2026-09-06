@@ -1076,7 +1076,7 @@
 
                             <!-- Shape Type Selector Grid -->
                             <StackPanel Spacing="4">
-                                <Button Classes="mini-tool-btn" HorizontalAlignment="Stretch" Padding="2,2"
+                                <Button Classes="m3-section-toggle"
                                         Command="{Binding TogglePresetGeometryExpandedCommand}"
                                         ToolTip.Tip="Collapse / Expand Preset Geometries">
                                     <Grid ColumnDefinitions="*,Auto">
@@ -1121,7 +1121,7 @@
 
                             <!-- Line Dash Pattern & Endcaps (for Lines & Curves) -->
                             <StackPanel Spacing="4">
-                                <Button Classes="mini-tool-btn" HorizontalAlignment="Stretch" Padding="2,2"
+                                <Button Classes="m3-section-toggle"
                                         Command="{Binding ToggleLineStrokePatternExpandedCommand}"
                                         ToolTip.Tip="Collapse / Expand Line Stroke Pattern">
                                     <Grid ColumnDefinitions="*,Auto">
@@ -1149,7 +1149,7 @@
 
                             <!-- Colors Section (Fill, Secondary, Border) -->
                             <StackPanel Spacing="4">
-                                <Button Classes="mini-tool-btn" HorizontalAlignment="Stretch" Padding="2,2"
+                                <Button Classes="m3-section-toggle"
                                         Command="{Binding ToggleColorsExpandedCommand}"
                                         ToolTip.Tip="Collapse / Expand Colors">
                                     <Grid ColumnDefinitions="*,Auto">
@@ -1284,7 +1284,7 @@
 
                             <!-- Radius, Border Width & Badge Text Section -->
                             <StackPanel Spacing="4">
-                                <Button Classes="mini-tool-btn" HorizontalAlignment="Stretch" Padding="2,2"
+                                <Button Classes="m3-section-toggle"
                                         Command="{Binding ToggleDimensionsExpandedCommand}"
                                         ToolTip.Tip="Collapse / Expand Radius &amp; Dimensions">
                                     <Grid ColumnDefinitions="*,Auto">
@@ -3185,36 +3185,42 @@
                             <!-- Actions Row (Front, Up, Down, Back, Duplicate, Delete) -->
                             <StackPanel Spacing="4" Margin="0,4,0,0">
                                 <TextBlock Text="Layer Order &amp; Quick Actions" Classes="inspector-label" />
-                                <Grid ColumnDefinitions="*,*,*,*,*,*">
-                                    <Button Grid.Column="0" Classes="m3-tonal-btn" Height="30" Margin="1" Padding="0"
-                                            Command="{Binding BringToFrontCommand}" ToolTip.Tip="Bring to Front (Ctrl+])">
-                                        <materialIcons:MaterialIcon Kind="ArrangeBringToFront" Width="14" Height="14" HorizontalAlignment="Center" />
-                                    </Button>
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                                    <!-- 1. Layer Order 4-Button Segmented Capsule -->
+                                    <Border Grid.Column="0" Classes="m3-segmented-container" HorizontalAlignment="Stretch" Padding="2">
+                                        <Grid ColumnDefinitions="*,*,*,*">
+                                            <Button Grid.Column="0" Classes="m3-segment-btn" Height="28" Padding="0" HorizontalAlignment="Stretch"
+                                                    Command="{Binding BringToFrontCommand}" ToolTip.Tip="Bring to Front (Ctrl+])">
+                                                <materialIcons:MaterialIcon Kind="ArrangeBringToFront" Width="14" Height="14" HorizontalAlignment="Center" />
+                                            </Button>
+                                            <Button Grid.Column="1" Classes="m3-segment-btn" Height="28" Padding="0" HorizontalAlignment="Stretch"
+                                                    Command="{Binding BringForwardCommand}" ToolTip.Tip="Bring Forward (1 Step)">
+                                                <materialIcons:MaterialIcon Kind="ArrowUpBold" Width="14" Height="14" HorizontalAlignment="Center" />
+                                            </Button>
+                                            <Button Grid.Column="2" Classes="m3-segment-btn" Height="28" Padding="0" HorizontalAlignment="Stretch"
+                                                    Command="{Binding SendBackwardCommand}" ToolTip.Tip="Send Backward (1 Step)">
+                                                <materialIcons:MaterialIcon Kind="ArrowDownBold" Width="14" Height="14" HorizontalAlignment="Center" />
+                                            </Button>
+                                            <Button Grid.Column="3" Classes="m3-segment-btn" Height="28" Padding="0" HorizontalAlignment="Stretch"
+                                                    Command="{Binding SendToBackCommand}" ToolTip.Tip="Send to Back (Ctrl+[)">
+                                                <materialIcons:MaterialIcon Kind="ArrangeSendToBack" Width="14" Height="14" HorizontalAlignment="Center" />
+                                            </Button>
+                                        </Grid>
+                                    </Border>
 
-                                    <Button Grid.Column="1" Classes="m3-tonal-btn" Height="30" Margin="1" Padding="0"
-                                            Command="{Binding BringForwardCommand}" ToolTip.Tip="Bring Forward (1 Step)">
-                                        <materialIcons:MaterialIcon Kind="ArrowUpBold" Width="14" Height="14" HorizontalAlignment="Center" />
-                                    </Button>
-
-                                    <Button Grid.Column="2" Classes="m3-tonal-btn" Height="30" Margin="1" Padding="0"
-                                            Command="{Binding SendBackwardCommand}" ToolTip.Tip="Send Backward (1 Step)">
-                                        <materialIcons:MaterialIcon Kind="ArrowDownBold" Width="14" Height="14" HorizontalAlignment="Center" />
-                                    </Button>
-
-                                    <Button Grid.Column="3" Classes="m3-tonal-btn" Height="30" Margin="1" Padding="0"
-                                            Command="{Binding SendToBackCommand}" ToolTip.Tip="Send to Back (Ctrl+[)">
-                                        <materialIcons:MaterialIcon Kind="ArrangeSendToBack" Width="14" Height="14" HorizontalAlignment="Center" />
-                                    </Button>
-
-                                    <Button Grid.Column="4" Classes="m3-tonal-btn" Height="30" Margin="1" Padding="0"
-                                            Command="{Binding DuplicateSelectedElementCommand}" ToolTip.Tip="Duplicate (Ctrl+D)">
-                                        <materialIcons:MaterialIcon Kind="ContentCopy" Width="14" Height="14" HorizontalAlignment="Center" />
-                                    </Button>
-
-                                    <Button Grid.Column="5" Classes="danger-btn" Height="30" Margin="1" Padding="0"
-                                            Command="{Binding DeleteSelectedElementCommand}" ToolTip.Tip="Delete (Del)">
-                                        <materialIcons:MaterialIcon Kind="DeleteOutline" Width="14" Height="14" Foreground="{DynamicResource M3ErrorBrush}" HorizontalAlignment="Center" />
-                                    </Button>
+                                    <!-- 2. Quick Actions: Duplicate & Delete -->
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <Button Classes="m3-tonal-btn" Width="32" Height="32" Padding="0"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                Command="{Binding DuplicateSelectedElementCommand}" ToolTip.Tip="Duplicate (Ctrl+D)">
+                                            <materialIcons:MaterialIcon Kind="ContentCopy" Width="14" Height="14" HorizontalAlignment="Center" />
+                                        </Button>
+                                        <Button Classes="danger-btn" Width="32" Height="32" Padding="0"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                Command="{Binding DeleteSelectedElementCommand}" ToolTip.Tip="Delete (Del)">
+                                            <materialIcons:MaterialIcon Kind="DeleteOutline" Width="14" Height="14" Foreground="{DynamicResource M3ErrorBrush}" HorizontalAlignment="Center" />
+                                        </Button>
+                                    </StackPanel>
                                 </Grid>
                             </StackPanel>
                         </StackPanel>

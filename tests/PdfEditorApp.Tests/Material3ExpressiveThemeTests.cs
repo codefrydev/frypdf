@@ -383,6 +383,46 @@ public class Material3ExpressiveThemeTests
         var styles = File.ReadAllText(stylesPath);
         Assert.Contains("ScrollViewer.ribbon-scroll-viewer /template/ ScrollBar:horizontal", styles);
     }
+
+    [Fact]
+    public void InspectorSidebarView_ExpandableSectionHeaders_UseM3SectionToggleWithoutWidthClipping()
+    {
+        // 1. Material3ExpressiveStyles defines m3-section-toggle with stretch alignment and no fixed width
+        var m3StylesPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Styles", "Material3ExpressiveStyles.axaml");
+        var m3Styles = File.ReadAllText(m3StylesPath);
+        Assert.Contains("Style Selector=\"Button.m3-section-toggle\"", m3Styles);
+        Assert.Contains("Property=\"HorizontalAlignment\" Value=\"Stretch\"", m3Styles);
+        Assert.Contains("Property=\"HorizontalContentAlignment\" Value=\"Stretch\"", m3Styles);
+
+        // 2. InspectorSidebarView uses m3-section-toggle for expandable headers
+        var inspectorPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "InspectorSidebarView.axaml");
+        var inspector = File.ReadAllText(inspectorPath);
+        Assert.Contains("Button Classes=\"m3-section-toggle\"", inspector);
+        Assert.DoesNotContain("Button Classes=\"mini-tool-btn\" HorizontalAlignment=\"Stretch\"", inspector);
+    }
+
+    [Fact]
+    public void InspectorSidebarView_LayerOrderAndQuickActions_UsesSegmentedCapsuleAndProportionalButtons()
+    {
+        var inspectorPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "InspectorSidebarView.axaml");
+        var inspector = File.ReadAllText(inspectorPath);
+
+        // 1. Layer order is contained within an M3 segmented container capsule with 4 segment buttons
+        Assert.Contains("Border Grid.Column=\"0\" Classes=\"m3-segmented-container\" HorizontalAlignment=\"Stretch\" Padding=\"2\"", inspector);
+        Assert.Contains("Command=\"{Binding BringToFrontCommand}\"", inspector);
+        Assert.Contains("Command=\"{Binding BringForwardCommand}\"", inspector);
+        Assert.Contains("Command=\"{Binding SendBackwardCommand}\"", inspector);
+        Assert.Contains("Command=\"{Binding SendToBackCommand}\"", inspector);
+
+        // 2. Quick Actions are proportional 32x32 circular buttons avoiding vertical oval distortion
+        Assert.Contains("Button Classes=\"m3-tonal-btn\" Width=\"32\" Height=\"32\" Padding=\"0\"", inspector);
+        Assert.Contains("Button Classes=\"danger-btn\" Width=\"32\" Height=\"32\" Padding=\"0\"", inspector);
+        Assert.Contains("Command=\"{Binding DuplicateSelectedElementCommand}\"", inspector);
+        Assert.Contains("Command=\"{Binding DeleteSelectedElementCommand}\"", inspector);
+
+        // 3. The old distorted 6-column unsegmented grid row is completely eliminated
+        Assert.DoesNotContain("<Grid ColumnDefinitions=\"*,*,*,*,*,*\">\n                                    <Button Grid.Column=\"0\" Classes=\"m3-tonal-btn\"", inspector);
+    }
 }
 
 

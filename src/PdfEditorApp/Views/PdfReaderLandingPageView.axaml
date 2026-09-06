@@ -20,9 +20,9 @@
             <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
             <Setter Property="Padding" Value="18,16" />
-            <Setter Property="BoxShadow" Value="0 2 6 #08000000" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
@@ -33,8 +33,12 @@
         </Style>
         <Style Selector="Border.reader-feature-card:pointerover">
             <Setter Property="RenderTransform" Value="translateY(-2px)" />
-            <Setter Property="BoxShadow" Value="0 6 16 #150F6CBD" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+        </Style>
+        <Style Selector="Border.reader-feature-card:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.99)" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
         </Style>
     </UserControl.Styles>
 
@@ -46,10 +50,10 @@
         <Border Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="16"
+                CornerRadius="{StaticResource M3ShapeCornerLarge}"
                 Padding="32,28"
                 Margin="0,0,0,24"
-                BoxShadow="0 2 12 #0A000000">
+                BoxShadow="{StaticResource M3ElevationLevel1}">
             <Grid ColumnDefinitions="*,Auto">
 
                 <!-- Left Info & CTA -->
@@ -83,7 +87,7 @@
                         <Button Command="{Binding OpenInViewerCommand}"
                                 Background="#DC2626"
                                 Foreground="White"
-                                CornerRadius="8"
+                                CornerRadius="{StaticResource M3ShapeCornerFull}"
                                 Padding="20,12"
                                 FontSize="13.5"
                                 FontWeight="Bold"
@@ -101,7 +105,7 @@
                                 BorderBrush="{DynamicResource WinBorderBrush}"
                                 BorderThickness="1"
                                 Foreground="{DynamicResource WinTextBrush}"
-                                CornerRadius="8"
+                                CornerRadius="{StaticResource M3ShapeCornerFull}"
                                 Padding="16,12"
                                 FontSize="13"
                                 FontWeight="SemiBold"
@@ -118,7 +122,7 @@
                                 BorderBrush="{DynamicResource WinBorderBrush}"
                                 BorderThickness="1"
                                 Foreground="{DynamicResource WinTextBrush}"
-                                CornerRadius="8"
+                                CornerRadius="{StaticResource M3ShapeCornerFull}"
                                 Padding="16,12"
                                 FontSize="13"
                                 FontWeight="SemiBold"
@@ -154,10 +158,10 @@
                         Background="{DynamicResource WinInputBgBrush}"
                         BorderBrush="{DynamicResource WinBorderBrush}"
                         BorderThickness="1"
-                        CornerRadius="20"
+                        CornerRadius="{StaticResource M3ShapeCornerLarge}"
                         Margin="24,0,0,0"
                         VerticalAlignment="Center"
-                        BoxShadow="0 4 16 #10000000">
+                        BoxShadow="{StaticResource M3ElevationLevel1}">
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
                         <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="54" Height="54" Foreground="#DC2626" HorizontalAlignment="Center" />
                         <TextBlock Text="FryPDF Reader" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
@@ -175,9 +179,9 @@
         <UniformGrid Columns="3" Margin="0,0,0,24">
 
             <!-- Card 1: Multi-Layout Modes -->
-            <Border Classes="reader-feature-card" Margin="0,0,12,12">
+            <Border Classes="reader-feature-card" Margin="0,2,12,10">
                 <Grid ColumnDefinitions="Auto,*">
-                    <Border Grid.Column="0" Width="40" Height="40" Background="#EFF6FF" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="#EFF6FF" CornerRadius="{StaticResource M3ShapeCornerMedium}" Margin="0,0,12,0" VerticalAlignment="Top">
                         <materialIcons:MaterialIcon Kind="ViewHeadline" Width="22" Height="22" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Grid.Column="1" Spacing="3">
@@ -188,9 +192,9 @@
             </Border>
 
             <!-- Card 2: Eye-Comfort Reading Themes -->
-            <Border Classes="reader-feature-card" Margin="0,0,12,12">
+            <Border Classes="reader-feature-card" Margin="0,2,12,10">
                 <Grid ColumnDefinitions="Auto,*">
-                    <Border Grid.Column="0" Width="40" Height="40" Background="#FEF3C7" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="#FEF3C7" CornerRadius="{StaticResource M3ShapeCornerMedium}" Margin="0,0,12,0" VerticalAlignment="Top">
                         <materialIcons:MaterialIcon Kind="WeatherNight" Width="22" Height="22" Foreground="#D97706" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Grid.Column="1" Spacing="3">
@@ -201,9 +205,9 @@
             </Border>
 
             <!-- Card 3: In-Document Full-Text Search -->
-            <Border Classes="reader-feature-card" Margin="0,0,0,12">
+            <Border Classes="reader-feature-card" Margin="0,2,0,10">
                 <Grid ColumnDefinitions="Auto,*">
-                    <Border Grid.Column="0" Width="40" Height="40" Background="#ECFDF5" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="#ECFDF5" CornerRadius="{StaticResource M3ShapeCornerMedium}" Margin="0,0,12,0" VerticalAlignment="Top">
                         <materialIcons:MaterialIcon Kind="Magnify" Width="22" Height="22" Foreground="#059669" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Grid.Column="1" Spacing="3">
@@ -214,9 +218,9 @@
             </Border>
 
             <!-- Card 4: Document Outline Bookmarks -->
-            <Border Classes="reader-feature-card" Margin="0,0,12,0">
+            <Border Classes="reader-feature-card" Margin="0,2,12,0">
                 <Grid ColumnDefinitions="Auto,*">
-                    <Border Grid.Column="0" Width="40" Height="40" Background="#EEF2FF" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="#EEF2FF" CornerRadius="{StaticResource M3ShapeCornerMedium}" Margin="0,0,12,0" VerticalAlignment="Top">
                         <materialIcons:MaterialIcon Kind="BookmarkOutline" Width="22" Height="22" Foreground="#4F46E5" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Grid.Column="1" Spacing="3">
@@ -227,9 +231,9 @@
             </Border>
 
             <!-- Card 5: Review Annotations -->
-            <Border Classes="reader-feature-card" Margin="0,0,12,0">
+            <Border Classes="reader-feature-card" Margin="0,2,12,0">
                 <Grid ColumnDefinitions="Auto,*">
-                    <Border Grid.Column="0" Width="40" Height="40" Background="#FDF2F8" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="#FDF2F8" CornerRadius="{StaticResource M3ShapeCornerMedium}" Margin="0,0,12,0" VerticalAlignment="Top">
                         <materialIcons:MaterialIcon Kind="FormatColorHighlight" Width="22" Height="22" Foreground="#DB2777" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Grid.Column="1" Spacing="3">
@@ -240,9 +244,9 @@
             </Border>
 
             <!-- Card 6: Studio Transition Bridge -->
-            <Border Classes="reader-feature-card" Margin="0,0,0,0">
+            <Border Classes="reader-feature-card" Margin="0,2,0,0">
                 <Grid ColumnDefinitions="Auto,*">
-                    <Border Grid.Column="0" Width="40" Height="40" Background="#F0FDF4" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="#F0FDF4" CornerRadius="{StaticResource M3ShapeCornerMedium}" Margin="0,0,12,0" VerticalAlignment="Top">
                         <materialIcons:MaterialIcon Kind="DrawPen" Width="22" Height="22" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Grid.Column="1" Spacing="3">
@@ -308,10 +312,10 @@
                             Background="{DynamicResource WinPanelBrush}"
                             BorderBrush="{DynamicResource WinBorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="10"
+                            CornerRadius="{StaticResource M3ShapeCornerLarge}"
                             Padding="12"
                             Margin="0,0,12,12"
-                            BoxShadow="0 2 6 #08000000">
+                            BoxShadow="{StaticResource M3ElevationLevel1}">
                         <!-- Right-Click Context Menu -->
                         <Border.ContextMenu>
                             <ContextMenu>
@@ -473,7 +477,7 @@
                                         CommandParameter="{Binding FilePath}"
                                         Background="#DC2626"
                                         Foreground="White"
-                                        CornerRadius="6"
+                                        CornerRadius="{StaticResource M3ShapeCornerFull}"
                                         Padding="8,5"
                                         Margin="0,0,4,0"
                                         HorizontalAlignment="Stretch"
@@ -496,7 +500,7 @@
                                         BorderBrush="{DynamicResource WinBorderBrush}"
                                         BorderThickness="1"
                                         Foreground="{DynamicResource WinTextBrush}"
-                                        CornerRadius="6"
+                                        CornerRadius="{StaticResource M3ShapeCornerFull}"
                                         Padding="8,5"
                                         Margin="4,0,0,0"
                                         HorizontalAlignment="Stretch"

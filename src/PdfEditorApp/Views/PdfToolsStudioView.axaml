@@ -46,13 +46,13 @@
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
 
-        <!-- PDF Tool Card Lift & Glow Animation -->
+        <!-- PDF Tool Card Lift & Glow Animation (Google Material 3 Expressive) -->
         <Style Selector="Border.pdf-tool-box">
             <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="BoxShadow" Value="0 2 6 #08000000" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
@@ -63,18 +63,22 @@
             </Setter>
         </Style>
         <Style Selector="Button.pdf-tool-btn:pointerover Border.pdf-tool-box">
-            <Setter Property="RenderTransform" Value="translateY(-3px)" />
-            <Setter Property="BoxShadow" Value="0 8 20 #150F6CBD" />
+            <Setter Property="RenderTransform" Value="translateY(-2px)" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
         </Style>
+        <Style Selector="Button.pdf-tool-btn:pressed Border.pdf-tool-box">
+            <Setter Property="RenderTransform" Value="scale(0.99)" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
+        </Style>
 
-        <!-- Workflow Banner Box -->
+        <!-- Workflow Banner Box (Google Material 3 Expressive) -->
         <Style Selector="Border.workflow-banner-box">
             <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="BoxShadow" Value="0 2 8 #08000000" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
@@ -85,9 +89,13 @@
             </Setter>
         </Style>
         <Style Selector="Button.workflow-banner-btn:pointerover Border.workflow-banner-box">
-            <Setter Property="RenderTransform" Value="translateY(-3px)" />
-            <Setter Property="BoxShadow" Value="0 8 20 #20EA580C" />
-            <Setter Property="BorderBrush" Value="#EA580C" />
+            <Setter Property="RenderTransform" Value="translateY(-2px)" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+        </Style>
+        <Style Selector="Button.workflow-banner-btn:pressed Border.workflow-banner-box">
+            <Setter Property="RenderTransform" Value="scale(0.99)" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
         </Style>
     </UserControl.Styles>
 
@@ -180,29 +188,26 @@
         <!-- Create a Workflow Banner Card (Top Callout) -->
         <Button Classes="workflow-banner-btn"
                 Command="{Binding OpenWorkflowBuilderCommand}"
-                Background="Transparent"
-                BorderThickness="0"
-                Padding="0"
-                Margin="0,0,0,16"
+                Margin="0,2,0,14"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
                 Cursor="Hand"
                 IsVisible="{Binding WorkflowBannerCard, Converter={StaticResource NullToBooleanConverter}}">
             <Border Classes="workflow-banner-box" Padding="18,14">
                 <Grid ColumnDefinitions="Auto,*,Auto">
-                    <Border Grid.Column="0" Width="44" Height="44" Background="#EA580C" CornerRadius="10" Margin="0,0,14,0">
+                    <Border Grid.Column="0" Width="44" Height="44" Background="#EA580C" CornerRadius="{StaticResource M3ShapeCornerMedium}" Margin="0,0,14,0">
                         <materialIcons:MaterialIcon Kind="LightningBoltOutline" Width="24" Height="24" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="Create a workflow" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                            <Border Background="#EA580C" CornerRadius="4" Padding="6,1">
+                            <Border Background="#EA580C" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,1">
                                 <TextBlock Text="AUTOMATE" FontSize="9.5" FontWeight="Bold" Foreground="White" />
                             </Border>
                         </StackPanel>
                         <TextBlock Text="Combine multiple tools into an automated batch processing pipeline for recurring document workflows." FontSize="12" Foreground="{DynamicResource WinMutedBrush}" />
                     </StackPanel>
-                    <Border Grid.Column="2" Background="#EA580C" CornerRadius="6" Padding="12,6" VerticalAlignment="Center">
+                    <Border Grid.Column="2" Background="#EA580C" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="14,6" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <TextBlock Text="Open Builder" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
                             <materialIcons:MaterialIcon Kind="ArrowRight" Width="14" Height="14" Foreground="White" VerticalAlignment="Center" />
@@ -223,10 +228,7 @@
                 <DataTemplate DataType="vm:PdfToolCardViewModel">
                     <Button Classes="pdf-tool-btn"
                             Command="{Binding SelectToolCommand}"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Padding="0"
-                            Margin="0,0,12,12"
+                            Margin="0,2,12,10"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
                             Cursor="Hand">

@@ -46,13 +46,13 @@
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
 
-        <!-- Library Card Hover Style -->
+        <!-- Library Card Hover Style (Google Material 3 Expressive) -->
         <Style Selector="Border.library-card">
             <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="BoxShadow" Value="0 2 8 #08000000" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
@@ -64,8 +64,12 @@
         </Style>
         <Style Selector="Border.library-card:pointerover">
             <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
-            <Setter Property="BoxShadow" Value="0 6 20 #120F6CBD" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
             <Setter Property="RenderTransform" Value="translateY(-2px)" />
+        </Style>
+        <Style Selector="Border.library-card:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.99)" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
         </Style>
 
         <!-- Action Button Style -->
@@ -74,7 +78,7 @@
             <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
             <Setter Property="Padding" Value="10,5" />
             <Setter Property="FontSize" Value="11.5" />
             <Setter Property="FontWeight" Value="Medium" />
@@ -334,7 +338,7 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="models:ThirdPartyToolLicense">
-                    <Border Classes="library-card" Padding="18">
+                    <Border Classes="library-card" Padding="18" Margin="0,2,0,2">
                         <Grid RowDefinitions="Auto,Auto">
 
                             <!-- Top Row: Card Summary & Actions -->

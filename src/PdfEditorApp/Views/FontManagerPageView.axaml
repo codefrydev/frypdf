@@ -44,13 +44,13 @@
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
 
-        <!-- Font Pack Card Style -->
+        <!-- Font Pack Card Style (Google Material 3 Expressive) -->
         <Style Selector="Border.font-pack-card">
             <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="BoxShadow" Value="0 2 8 #08000000" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
@@ -61,8 +61,12 @@
         </Style>
         <Style Selector="Border.font-pack-card:pointerover">
             <Setter Property="RenderTransform" Value="translateY(-2px)" />
-            <Setter Property="BoxShadow" Value="0 6 16 #120F6CBD" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+        </Style>
+        <Style Selector="Border.font-pack-card:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.99)" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
         </Style>
     </UserControl.Styles>
 
@@ -260,7 +264,7 @@
                     <DataTemplate DataType="vm:FontPackageItemViewModel">
                         <Border Classes="font-pack-card"
                                 Width="360"
-                                Margin="0,0,16,16"
+                                Margin="0,2,16,14"
                                 Padding="18">
                             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
 

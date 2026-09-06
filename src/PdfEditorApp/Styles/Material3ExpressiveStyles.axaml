@@ -310,30 +310,72 @@
     </Style>
 
     <!-- =================================================================== -->
-    <!-- 4. CARDS SUITE (Elevated, Filled, Outlined)                         -->
+    <!-- 4. CARDS SUITE (Elevated, Filled, Outlined, Interactive Action Wrappers) -->
     <!-- =================================================================== -->
+
+    <!-- Card Action Button Wrapper (Zero-leak transparent interactive container for elevated cards) -->
+    <Style Selector="Button.card-action-wrapper, Button.pdf-tool-btn, Button.template-card-btn, Button.workflow-banner-btn, Button.card-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0,3,0,1" />
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="Button.card-action-wrapper /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.pdf-tool-btn /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.template-card-btn /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.workflow-banner-btn /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.card-btn /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="ClipToBounds" Value="False" />
+    </Style>
+    <Style Selector="Button.card-action-wrapper:pointerover /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.pdf-tool-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.template-card-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.workflow-banner-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.card-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.card-action-wrapper:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.pdf-tool-btn:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.template-card-btn:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.workflow-banner-btn:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.card-btn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+
     <Style Selector="Border.m3-card-elevated">
         <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowestBrush}" />
         <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
         <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
-        <Setter Property="ClipToBounds" Value="True" />
         <Setter Property="Transitions">
             <Transitions>
                 <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
                 <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.18" />
             </Transitions>
         </Setter>
     </Style>
     <Style Selector="Border.m3-card-elevated:pointerover">
         <Setter Property="RenderTransform" Value="translateY(-2px)" />
         <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+    </Style>
+    <Style Selector="Border.m3-card-elevated:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.99)" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
     </Style>
 
     <Style Selector="Border.m3-card-filled">
         <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
         <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="ClipToBounds" Value="True" />
     </Style>
 
     <Style Selector="Border.m3-card-outlined">
@@ -341,15 +383,21 @@
         <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
-        <Setter Property="ClipToBounds" Value="True" />
         <Setter Property="Transitions">
             <Transitions>
                 <BrushTransition Property="BorderBrush" Duration="0:0:0.18" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="CubicEaseOut" />
             </Transitions>
         </Setter>
     </Style>
     <Style Selector="Border.m3-card-outlined:pointerover">
         <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="RenderTransform" Value="translateY(-2px)" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
+    </Style>
+    <Style Selector="Border.m3-card-outlined:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.99)" />
     </Style>
 
     <!-- =================================================================== -->

@@ -11,13 +11,13 @@
     </UserControl.Resources>
 
     <UserControl.Styles>
-        <!-- PDF Tool Card Lift & Glow Animation -->
+        <!-- PDF Tool Card Lift & Glow Animation (Google Material 3 Expressive) -->
         <Style Selector="Border.pdf-tool-box">
             <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="BoxShadow" Value="0 2 6 #08000000" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
@@ -28,9 +28,13 @@
             </Setter>
         </Style>
         <Style Selector="Button.pdf-tool-btn:pointerover Border.pdf-tool-box">
-            <Setter Property="RenderTransform" Value="translateY(-3px)" />
-            <Setter Property="BoxShadow" Value="0 8 20 #150F6CBD" />
+            <Setter Property="RenderTransform" Value="translateY(-2px)" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+        </Style>
+        <Style Selector="Button.pdf-tool-btn:pressed Border.pdf-tool-box">
+            <Setter Property="RenderTransform" Value="scale(0.99)" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
         </Style>
     </UserControl.Styles>
 
@@ -86,10 +90,7 @@
                 <DataTemplate DataType="vm:PdfToolCardViewModel">
                     <Button Classes="pdf-tool-btn"
                             Command="{Binding SelectToolCommand}"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Padding="0"
-                            Margin="0,0,12,12"
+                            Margin="0,2,12,10"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
                             Cursor="Hand">

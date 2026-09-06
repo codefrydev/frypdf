@@ -47,13 +47,13 @@
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
 
-        <!-- Guide Card Style -->
+        <!-- Guide Card Style (Google Material 3 Expressive) -->
         <Style Selector="Border.guide-card">
             <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="BoxShadow" Value="0 2 8 #08000000" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
@@ -65,8 +65,12 @@
         </Style>
         <Style Selector="Border.guide-card:pointerover">
             <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
-            <Setter Property="BoxShadow" Value="0 8 24 #140F6CBD" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
             <Setter Property="RenderTransform" Value="translateY(-2px)" />
+        </Style>
+        <Style Selector="Border.guide-card:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.99)" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
         </Style>
 
         <!-- Action Button Style -->
@@ -75,7 +79,7 @@
             <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
             <Setter Property="Padding" Value="10,6" />
             <Setter Property="FontSize" Value="11.5" />
             <Setter Property="FontWeight" Value="Medium" />
@@ -209,9 +213,9 @@
                 Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="14"
+                CornerRadius="{StaticResource M3ShapeCornerLarge}"
                 Padding="24"
-                BoxShadow="0 4 16 #0A000000">
+                BoxShadow="{StaticResource M3ElevationLevel1}">
             <StackPanel Spacing="20">
 
                 <!-- Top Navigation: Back Button + Quick Launch Button -->
@@ -417,7 +421,7 @@
                     <DataTemplate x:DataType="models:HelpGuideItem">
                         <Border Classes="guide-card"
                                 Width="340"
-                                Margin="0,0,16,16"
+                                Margin="0,2,16,14"
                                 Padding="16">
                             <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" MinHeight="170">
 

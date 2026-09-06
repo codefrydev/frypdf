@@ -141,4 +141,56 @@ public class Material3ExpressiveThemeTests
         Assert.Contains("TextBox.m3-outlined", styles);
         Assert.Contains("TextBox.m3-search", styles);
     }
+
+    [Fact]
+    public void Material3Styles_DefinesCardActionButtonWrapperStyles_SuppressingPointerOverPresenterBackground()
+    {
+        var stylesPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Styles", "Material3ExpressiveStyles.axaml");
+        var styles = File.ReadAllText(stylesPath);
+
+        // Verify button wrapper selectors exist
+        Assert.Contains("Button.card-action-wrapper", styles);
+        Assert.Contains("Button.pdf-tool-btn", styles);
+        Assert.Contains("Button.template-card-btn", styles);
+        Assert.Contains("Button.workflow-banner-btn", styles);
+        Assert.Contains("Button.card-btn", styles);
+
+        // Verify template pointerover and pressed content presenter backgrounds are suppressed
+        Assert.Contains(":pointerover /template/ ContentPresenter#PART_ContentPresenter", styles);
+        Assert.Contains(":pressed /template/ ContentPresenter#PART_ContentPresenter", styles);
+
+        // Verify ClipToBounds is disabled to prevent upward hover translation clipping
+        Assert.Contains("Property=\"ClipToBounds\" Value=\"False\"", styles);
+
+        // Verify vertical headroom padding is provided on button wrappers to absorb translateY(-2px)
+        Assert.Contains("Property=\"Padding\" Value=\"0,3,0,1\"", styles);
+    }
+
+    [Fact]
+    public void Views_FollowMaterial3ExpressiveCardHierarchy_WithoutStiffHexShadows()
+    {
+        var toolsStudioPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "PdfToolsStudioView.axaml");
+        var starredPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "StarredToolsPageView.axaml");
+
+        var toolsStudio = File.ReadAllText(toolsStudioPath);
+        var starred = File.ReadAllText(starredPath);
+
+        // Assert M3 elevation and corner tokens are used
+        Assert.Contains("StaticResource M3ElevationLevel1", toolsStudio);
+        Assert.Contains("StaticResource M3ElevationLevel2", toolsStudio);
+        Assert.Contains("StaticResource M3ShapeCornerLarge", toolsStudio);
+
+        Assert.Contains("StaticResource M3ElevationLevel1", starred);
+        Assert.Contains("StaticResource M3ElevationLevel2", starred);
+        Assert.Contains("StaticResource M3ShapeCornerLarge", starred);
+
+        // Assert old stiff/hardcoded shadows and radii are removed
+        Assert.DoesNotContain("0 2 6 #08000000", toolsStudio);
+        Assert.DoesNotContain("0 8 20 #150F6CBD", toolsStudio);
+        Assert.DoesNotContain("CornerRadius=\"10\"", toolsStudio);
+
+        Assert.DoesNotContain("0 2 6 #08000000", starred);
+        Assert.DoesNotContain("0 8 20 #150F6CBD", starred);
+        Assert.DoesNotContain("CornerRadius=\"10\"", starred);
+    }
 }

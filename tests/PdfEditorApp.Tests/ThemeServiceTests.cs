@@ -11,6 +11,7 @@ using Xunit;
 
 namespace PdfEditorApp.Tests;
 
+[Collection("ThemeServiceCollection")]
 public class ThemeServiceTests : IDisposable
 {
     private readonly string _settingsFilePath;

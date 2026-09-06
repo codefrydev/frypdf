@@ -51,9 +51,9 @@
             <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
             <Setter Property="Padding" Value="24,20" />
-            <Setter Property="BoxShadow" Value="0 2 8 #08000000" />
+            <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
             <Setter Property="Margin" Value="0,0,0,18" />
         </Style>
 
@@ -801,9 +801,9 @@
                                         Background="{Binding PreviewBackgroundBrush}"
                                         BorderBrush="{Binding PreviewBorderBrush}"
                                         BorderThickness="1"
-                                        CornerRadius="8"
+                                        CornerRadius="{StaticResource M3ShapeCornerMedium}"
                                         Padding="14,8"
-                                        BoxShadow="0 4 16 #25000000"
+                                        BoxShadow="{StaticResource M3ElevationLevel3}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center">
                                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalAlignment="Center">

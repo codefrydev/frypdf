@@ -78,7 +78,7 @@
                                 BorderBrush="#CBD5E1"
                                 BorderThickness="1"
                                 CornerRadius="{StaticResource M3ShapeCornerFull}"
-                                BoxShadow="0 2 8 #150D2B45"
+                                BoxShadow="{StaticResource M3ElevationLevel1}"
                                 ClipToBounds="True">
                             <Viewbox Width="26" Height="26" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Canvas Width="5064" Height="5064">

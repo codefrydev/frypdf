@@ -12,8 +12,8 @@
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
     </UserControl.Resources>
 
-    <!-- Modal Backdrop -->
-    <Grid Background="#60000000">
+    <!-- Modal Backdrop (Transparent so only the rounded card floats) -->
+    <Grid Background="Transparent">
         <Border Width="580"
                 Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
@@ -30,8 +30,8 @@
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
                     <StackPanel Grid.Column="0" Spacing="4">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border Width="30" Height="30" Background="#EFF6FF" CornerRadius="6">
-                                <materialIcons:MaterialIcon Kind="CallSplit" Width="18" Height="18" Foreground="#0F6CBD" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Width="30" Height="30" Background="{DynamicResource M3PrimaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}">
+                                <materialIcons:MaterialIcon Kind="CallSplit" Width="18" Height="18" Foreground="{DynamicResource M3PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <TextBlock Text="Organize: Split &amp; Extract Pages" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                         </StackPanel>
@@ -85,7 +85,7 @@
                     <!-- Extract Selected Page Option -->
                     <StackPanel Spacing="6" IsVisible="{Binding SplitExtractMode, Converter={StaticResource EqualityConverter}, ConverterParameter=ExtractSelectedPages}">
                         <TextBlock Text="Extract Current Active Page into New Project" Classes="inspector-label" />
-                        <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10">
+                        <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="10">
                             <TextBlock Text="{Binding CurrentPageNumber, StringFormat='Active: Page {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
                         </Border>
                     </StackPanel>
@@ -100,7 +100,7 @@
                         </Button>
                         <Button Classes="accent-btn" Height="32" Padding="16,0" Command="{Binding ExecuteSplitExtractCommand}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <materialIcons:MaterialIcon Kind="CallSplit" Width="15" Height="15" Foreground="White" />
+                                <materialIcons:MaterialIcon Kind="CallSplit" Width="15" Height="15" Foreground="{DynamicResource M3OnPrimaryBrush}" />
                                 <TextBlock Text="Execute" FontSize="12" FontWeight="SemiBold" />
                             </StackPanel>
                         </Button>

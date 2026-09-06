@@ -518,20 +518,32 @@
 
         <!-- Dialog Overlays (Complex ViewModels - own IsOpen state) -->
         <!-- CommandPaletteDialog: has rich filter/search ViewModel state, not in IDialogRegistry -->
-        <dialogs:CommandPaletteDialog IsVisible="{Binding IsCommandPaletteOpen}" />
+        <Border ZIndex="9980" IsVisible="{Binding IsCommandPaletteOpen}" Background="{DynamicResource M3ScrimBrush}">
+            <dialogs:CommandPaletteDialog />
+        </Border>
         <!-- DataStudio, WorkflowBuilder, BatchGeneration, AiAssistant: have own complex VM with IsOpen -->
-        <dialogs:DataStudioDialog DataContext="{Binding DataStudio}" IsVisible="{Binding IsOpen}" />
-        <dialogs:WorkflowBuilderDialog DataContext="{Binding WorkflowBuilder}" IsVisible="{Binding IsOpen}" />
-        <dialogs:BatchGenerationDialog DataContext="{Binding BatchGeneration}" IsVisible="{Binding IsOpen}" />
+        <Border ZIndex="9981" DataContext="{Binding DataStudio}" IsVisible="{Binding IsOpen}" Background="{DynamicResource M3ScrimBrush}">
+            <dialogs:DataStudioDialog />
+        </Border>
+        <Border ZIndex="9982" DataContext="{Binding WorkflowBuilder}" IsVisible="{Binding IsOpen}" Background="{DynamicResource M3ScrimBrush}">
+            <dialogs:WorkflowBuilderDialog />
+        </Border>
+        <Border ZIndex="9983" DataContext="{Binding BatchGeneration}" IsVisible="{Binding IsOpen}" Background="{DynamicResource M3ScrimBrush}">
+            <dialogs:BatchGenerationDialog />
+        </Border>
         <!-- RenameDocument / DeleteConfirmation: bound to Home VM, triggered from recent docs panel -->
-        <dialogs:RenameDocumentDialog DataContext="{Binding Home}" IsVisible="{Binding IsRenameDialogOpen}" />
-        <dialogs:DeleteConfirmationDialog DataContext="{Binding Home}" IsVisible="{Binding IsDeleteConfirmDialogOpen}" />
+        <Border ZIndex="9984" DataContext="{Binding Home}" IsVisible="{Binding IsRenameDialogOpen}" Background="{DynamicResource M3ScrimBrush}">
+            <dialogs:RenameDocumentDialog />
+        </Border>
+        <Border ZIndex="9985" DataContext="{Binding Home}" IsVisible="{Binding IsDeleteConfirmDialogOpen}" Background="{DynamicResource M3ScrimBrush}">
+            <dialogs:DeleteConfirmationDialog />
+        </Border>
 
 
         <!-- Dynamic Plugin Modal Dialog Overlay Host (Material 3 Expressive) -->
         <Border ZIndex="9999"
                 IsVisible="{Binding IsDynamicDialogOpen}"
-                Background="#66000000">
+                Background="{DynamicResource M3ScrimBrush}">
             <Grid>
                 <Button Background="Transparent"
                         BorderThickness="0"

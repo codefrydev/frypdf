@@ -11,8 +11,8 @@
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
     </UserControl.Resources>
 
-    <!-- Modal Backdrop -->
-    <Grid Background="#60000000">
+    <!-- Modal Backdrop (Transparent so only the rounded card floats) -->
+    <Grid Background="Transparent">
         <!-- Dialog Card -->
         <Border Width="680"
                 Background="{DynamicResource WinPanelBrush}"
@@ -30,7 +30,7 @@
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
                     <StackPanel Grid.Column="0" Spacing="4">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border Width="30" Height="30" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="6">
+                            <Border Width="30" Height="30" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}">
                                 <materialIcons:MaterialIcon Kind="Draw" Width="18" Height="18" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <TextBlock Text="Fill &amp; Sign: Digital Signature Studio" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
@@ -52,7 +52,7 @@
                     <StackPanel Spacing="6">
                         <TextBlock Text="Signer Full Legal Name" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                         <TextBox Text="{Binding SignatureSignerName, Mode=TwoWay}"
-                                 Height="36" FontSize="13" CornerRadius="6"
+                                 Height="36" FontSize="13" CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                  Padding="10,8" PlaceholderText="e.g. John Doe" />
                     </StackPanel>
 
@@ -67,7 +67,7 @@
                                     Classes.active="{Binding SelectedSignatureStyle, Converter={StaticResource EqualityConverter}, ConverterParameter=CursiveElegance}"
                                     Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).PlaceSignatureFromStudioCommand}">
                                 <StackPanel Spacing="3" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding SignatureSignerName}" FontFamily="Georgia" FontStyle="Italic" FontSize="20" FontWeight="SemiBold" Foreground="#0F2942" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding SignatureSignerName}" FontFamily="Georgia" FontStyle="Italic" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource M3OnSurfaceBrush}" HorizontalAlignment="Center" />
                                     <TextBlock Text="Executive Elegance (Formal)" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                                 </StackPanel>
                             </Button>
@@ -78,7 +78,7 @@
                                     Classes.active="{Binding SelectedSignatureStyle, Converter={StaticResource EqualityConverter}, ConverterParameter=ClassicScript}"
                                     Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).PlaceSignatureFromStudioCommand}">
                                 <StackPanel Spacing="3" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding SignatureSignerName}" FontFamily="Times New Roman" FontStyle="Italic" FontSize="20" FontWeight="Bold" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding SignatureSignerName}" FontFamily="Times New Roman" FontStyle="Italic" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource M3PrimaryBrush}" HorizontalAlignment="Center" />
                                     <TextBlock Text="Classic Fountain Blue" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                                 </StackPanel>
                             </Button>
@@ -100,7 +100,7 @@
                                     Classes.active="{Binding SelectedSignatureStyle, Converter={StaticResource EqualityConverter}, ConverterParameter=ModernHandwriting}"
                                     Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).PlaceSignatureFromStudioCommand}">
                                 <StackPanel Spacing="3" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding SignatureSignerName}" FontFamily="Arial" FontStyle="Italic" FontSize="19" FontWeight="SemiBold" Foreground="#003366" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding SignatureSignerName}" FontFamily="Arial" FontStyle="Italic" FontSize="19" FontWeight="SemiBold" Foreground="{DynamicResource M3SecondaryBrush}" HorizontalAlignment="Center" />
                                     <TextBlock Text="Legal Navy Script" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                                 </StackPanel>
                             </Button>
@@ -108,14 +108,14 @@
                     </StackPanel>
 
                     <!-- Preview Badge -->
-                    <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="16">
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <materialIcons:MaterialIcon Grid.Column="0" Kind="ShieldCheck" Width="24" Height="24" Foreground="{DynamicResource WinSuccessBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <TextBlock Text="Cryptographic &amp; Visual Authenticity" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                                 <TextBlock Text="Signature will be stamped with timestamp and author certification metadata." FontSize="10.5" Foreground="{DynamicResource WinMutedBrush}" />
                             </StackPanel>
-                            <Border Grid.Column="2" Background="{DynamicResource WinSuccessLightBrush}" BorderBrush="{DynamicResource WinSuccessBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                            <Border Grid.Column="2" Background="{DynamicResource WinSuccessLightBrush}" BorderBrush="{DynamicResource WinSuccessBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" VerticalAlignment="Center">
                                 <TextBlock Text="READY TO STAMP" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinSuccessBrush}" />
                             </Border>
                         </Grid>
@@ -130,7 +130,7 @@
 
                     <Button Grid.Column="2" Classes="primary-btn" Height="34" Padding="18,0" Command="{Binding PlaceSignatureFromStudioCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="Draw" Width="15" Height="15" Foreground="White" />
+                            <materialIcons:MaterialIcon Kind="Draw" Width="15" Height="15" Foreground="{DynamicResource M3OnPrimaryBrush}" />
                             <TextBlock Text="Place Signature on Page" FontSize="12" FontWeight="SemiBold" />
                         </StackPanel>
                     </Button>

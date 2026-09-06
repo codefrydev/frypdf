@@ -11,8 +11,8 @@
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
     </UserControl.Resources>
 
-    <!-- Fullscreen Dimming Backdrop -->
-    <Grid Background="#55000000" PointerPressed="OnBackdropPointerPressed">
+    <!-- Fullscreen Dimming Scrim Backdrop (Transparent so only the rounded card floats) -->
+    <Grid Background="Transparent" PointerPressed="OnBackdropPointerPressed">
         <!-- Centered M3 Expressive Dialog Card -->
         <Border Width="840"
                 MaxHeight="720"

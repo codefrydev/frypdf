@@ -10,8 +10,8 @@
         <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
     </UserControl.Resources>
 
-    <!-- Modal Backdrop -->
-    <Grid Background="#60000000">
+    <!-- Modal Backdrop (Transparent so only the rounded card floats) -->
+    <Grid Background="Transparent">
         <!-- Dialog Card -->
         <Border Width="640"
                 Background="{DynamicResource WinPanelBrush}"
@@ -29,8 +29,8 @@
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
                     <StackPanel Grid.Column="0" Spacing="4">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border Width="30" Height="30" Background="#FEF2F2" CornerRadius="6">
-                                <materialIcons:MaterialIcon Kind="Watermark" Width="18" Height="18" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Width="30" Height="30" Background="{DynamicResource M3ErrorContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}">
+                                <materialIcons:MaterialIcon Kind="Watermark" Width="18" Height="18" Foreground="{DynamicResource M3ErrorBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <TextBlock Text="Document Watermark Studio" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                         </StackPanel>
@@ -52,7 +52,7 @@
                     <StackPanel Spacing="6">
                         <TextBlock Text="Watermark Text" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
                         <TextBox Text="{Binding WatermarkPresetText, Mode=TwoWay}"
-                                 Height="36" FontSize="13" CornerRadius="6"
+                                 Height="36" FontSize="13" CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                  Padding="10,8" PlaceholderText="e.g. CONFIDENTIAL, DRAFT, COPY..." />
 
                         <!-- Quick Presets -->
@@ -95,11 +95,11 @@
                     <StackPanel Spacing="4">
                         <TextBlock Text="Watermark Color" FontSize="11" FontWeight="SemiBold" />
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <Button Width="24" Height="24" CornerRadius="12" Background="#DC2626" />
-                            <Button Width="24" Height="24" CornerRadius="12" Background="#0F6CBD" />
-                            <Button Width="24" Height="24" CornerRadius="12" Background="#64748B" />
-                            <Button Width="24" Height="24" CornerRadius="12" Background="#EA580C" />
-                            <Button Width="24" Height="24" CornerRadius="12" Background="#16A34A" />
+                            <Button Width="24" Height="24" CornerRadius="{StaticResource M3ShapeCornerFull}" Background="{DynamicResource M3ErrorBrush}" />
+                            <Button Width="24" Height="24" CornerRadius="{StaticResource M3ShapeCornerFull}" Background="{DynamicResource M3PrimaryBrush}" />
+                            <Button Width="24" Height="24" CornerRadius="{StaticResource M3ShapeCornerFull}" Background="{DynamicResource M3OutlineBrush}" />
+                            <Button Width="24" Height="24" CornerRadius="{StaticResource M3ShapeCornerFull}" Background="{DynamicResource M3WarningBrush}" />
+                            <Button Width="24" Height="24" CornerRadius="{StaticResource M3ShapeCornerFull}" Background="{DynamicResource M3SuccessBrush}" />
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
@@ -119,7 +119,7 @@
 
                     <Button Grid.Column="3" Classes="primary-btn" Height="34" Padding="18,0" Command="{Binding ApplyWatermarkToAllPagesCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="Watermark" Width="15" Height="15" Foreground="White" />
+                            <materialIcons:MaterialIcon Kind="Watermark" Width="15" Height="15" Foreground="{DynamicResource M3OnPrimaryBrush}" />
                             <TextBlock Text="Apply to All Pages" FontSize="12" FontWeight="SemiBold" />
                         </StackPanel>
                     </Button>

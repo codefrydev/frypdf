@@ -6,8 +6,8 @@
              x:DataType="vm:MainViewModel"
              Focusable="True">
 
-    <!-- Fullscreen Dimming Scrim Backdrop -->
-    <Grid Background="#55000000" PointerPressed="OnBackdropPointerPressed">
+    <!-- Fullscreen Dimming Scrim Backdrop (Transparent so only the rounded card is rendered in Rider and overlays) -->
+    <Grid Background="Transparent" PointerPressed="OnBackdropPointerPressed">
         <!-- Centered M3 Expressive Dialog Card (No ClipToBounds so M3ElevationModalDialog casts softly) -->
         <Border Width="720"
                 MaxHeight="680"
@@ -404,7 +404,7 @@
                                     Padding="16,12">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
                                     <Border Grid.Column="0" Width="36" Height="36"
-                                            Background="#DCFCE7"
+                                            Background="{DynamicResource M3SuccessContainerBrush}"
                                             CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                             Margin="0,0,12,0" VerticalAlignment="Center">
                                         <materialIcons:MaterialIcon Kind="HeartOutline" Width="20" Height="20" Foreground="{DynamicResource WinSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />

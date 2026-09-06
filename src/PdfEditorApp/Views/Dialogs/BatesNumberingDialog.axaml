@@ -13,8 +13,8 @@
         <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
     </UserControl.Resources>
 
-    <!-- Modal Backdrop -->
-    <Grid Background="#60000000">
+    <!-- Modal Backdrop (Transparent so only the rounded card floats) -->
+    <Grid Background="Transparent">
         <!-- Dialog Card -->
         <Border Width="620"
                 Background="{DynamicResource WinPanelBrush}"
@@ -32,8 +32,8 @@
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
                     <StackPanel Grid.Column="0" Spacing="4">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border Width="30" Height="30" Background="#EFF6FF" CornerRadius="6">
-                                <materialIcons:MaterialIcon Kind="Numeric" Width="18" Height="18" Foreground="#0F6CBD" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Width="30" Height="30" Background="{DynamicResource M3PrimaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}">
+                                <materialIcons:MaterialIcon Kind="Numeric" Width="18" Height="18" Foreground="{DynamicResource M3PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <TextBlock Text="Legal Bates Numbering Studio" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                         </StackPanel>
@@ -115,7 +115,7 @@
                     </StackPanel>
 
                     <!-- Live Sample Preview Card -->
-                    <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                    <Border Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="12">
                         <StackPanel Spacing="4">
                             <TextBlock Text="SAMPLE PREVIEW (PAGE 1)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" LetterSpacing="0.5" />
                             <TextBlock Text="{Binding BatesSamplePreview}" FontSize="13" FontWeight="SemiBold" FontFamily="Consolas, Monaco, monospace" Foreground="{DynamicResource WinAccentBrush}" />
@@ -123,14 +123,14 @@
                     </Border>
 
                     <!-- Busy Indicator: page loop yields periodically instead of blocking, this shows real progress -->
-                    <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" IsVisible="{Binding IsApplyingBatesNumbers}">
+                    <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="12" IsVisible="{Binding IsApplyingBatesNumbers}">
                         <StackPanel Spacing="8">
                             <Grid ColumnDefinitions="*,Auto">
                                 <TextBlock Grid.Column="0" Text="Applying Bates numbering..." FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="{Binding BatesProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="12" FontWeight="Bold" Foreground="#0F6CBD" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding BatesProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource M3PrimaryBrush}" VerticalAlignment="Center" />
                             </Grid>
-                            <ProgressBar Value="{Binding BatesProgressPercentage}" Minimum="0" Maximum="100" Height="6" CornerRadius="3" Foreground="#0F6CBD" Background="{DynamicResource WinHoverBrush}" />
-                            <Button Command="{Binding CancelBatesNumberingCommand}" HorizontalAlignment="Right" Background="{DynamicResource WinHoverBrush}" Foreground="{DynamicResource WinMutedBrush}" CornerRadius="6" Padding="10,4" FontSize="11" Cursor="Hand">
+                            <ProgressBar Value="{Binding BatesProgressPercentage}" Minimum="0" Maximum="100" Height="6" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Foreground="{DynamicResource M3PrimaryBrush}" Background="{DynamicResource WinHoverBrush}" />
+                            <Button Command="{Binding CancelBatesNumberingCommand}" HorizontalAlignment="Right" Background="{DynamicResource WinHoverBrush}" Foreground="{DynamicResource WinMutedBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="10,4" FontSize="11" Cursor="Hand">
                                 Cancel
                             </Button>
                         </StackPanel>
@@ -153,7 +153,7 @@
                         </Button>
                         <Button Classes="accent-btn" Height="32" Padding="16,0" IsEnabled="{Binding !IsApplyingBatesNumbers}" Command="{Binding ApplyBatesNumberingCommand}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <materialIcons:MaterialIcon Kind="Check" Width="15" Height="15" Foreground="White" />
+                                <materialIcons:MaterialIcon Kind="Check" Width="15" Height="15" Foreground="{DynamicResource M3OnPrimaryBrush}" />
                                 <TextBlock Text="Apply Bates Stamp" FontSize="12" FontWeight="SemiBold" />
                             </StackPanel>
                         </Button>

@@ -10,8 +10,8 @@
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
     </UserControl.Resources>
 
-    <!-- Modal Backdrop -->
-    <Grid Background="#65000000">
+    <!-- Modal Backdrop (Transparent so only the rounded card floats) -->
+    <Grid Background="Transparent">
         <!-- Dialog Card -->
         <Border Width="880"
                 MaxHeight="720"
@@ -32,8 +32,8 @@
                     <!-- Title & Subtitle -->
                     <StackPanel Grid.Column="0" Spacing="3" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border Width="32" Height="32" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="8">
-                                <materialIcons:MaterialIcon Kind="FileDocumentPlusOutline" Width="18" Height="18" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Width="32" Height="32" Background="{DynamicResource M3PrimaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}">
+                                <materialIcons:MaterialIcon Kind="FileDocumentPlusOutline" Width="18" Height="18" Foreground="{DynamicResource M3PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <TextBlock Text="New Document &amp; Template Gallery" FontSize="19" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                         </StackPanel>
@@ -46,9 +46,9 @@
                             Background="{DynamicResource WinInputBgBrush}"
                             BorderBrush="{DynamicResource WinBorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="8"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                             Margin="0,0,12,0"
-                            Padding="8,0">
+                            Padding="12,0">
                         <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
                             <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                             <TextBox Grid.Column="1"
@@ -97,7 +97,7 @@
                                 Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Corporate}"
                                 Command="{Binding SetTemplateCategoryCommand}" CommandParameter="Corporate">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="ChartBoxOutline" Width="14" Height="14" Foreground="#0F6CBD" />
+                                <materialIcons:MaterialIcon Kind="ChartBoxOutline" Width="14" Height="14" Foreground="{DynamicResource M3PrimaryBrush}" />
                                 <TextBlock Text="Corporate &amp; Reports" />
                             </StackPanel>
                         </Button>
@@ -107,7 +107,7 @@
                                 Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Finance}"
                                 Command="{Binding SetTemplateCategoryCommand}" CommandParameter="Finance">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="ReceiptTextOutline" Width="14" Height="14" Foreground="#16A34A" />
+                                <materialIcons:MaterialIcon Kind="ReceiptTextOutline" Width="14" Height="14" Foreground="{DynamicResource M3SuccessBrush}" />
                                 <TextBlock Text="Finance &amp; Invoices" />
                             </StackPanel>
                         </Button>
@@ -117,7 +117,7 @@
                                 Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Career}"
                                 Command="{Binding SetTemplateCategoryCommand}" CommandParameter="Career">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="AccountTieOutline" Width="14" Height="14" Foreground="#7C3AED" />
+                                <materialIcons:MaterialIcon Kind="AccountTieOutline" Width="14" Height="14" Foreground="{DynamicResource M3TertiaryBrush}" />
                                 <TextBlock Text="Resume &amp; CV" />
                             </StackPanel>
                         </Button>
@@ -127,7 +127,7 @@
                                 Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Academic}"
                                 Command="{Binding SetTemplateCategoryCommand}" CommandParameter="Academic">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="14" Height="14" Foreground="#D97706" />
+                                <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="14" Height="14" Foreground="{DynamicResource M3WarningBrush}" />
                                 <TextBlock Text="Academic &amp; Research" />
                             </StackPanel>
                         </Button>
@@ -137,7 +137,7 @@
                                 Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Certificates}"
                                 Command="{Binding SetTemplateCategoryCommand}" CommandParameter="Certificates">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="CertificateOutline" Width="14" Height="14" Foreground="#2563EB" />
+                                <materialIcons:MaterialIcon Kind="CertificateOutline" Width="14" Height="14" Foreground="{DynamicResource M3PrimaryBrush}" />
                                 <TextBlock Text="Certificates &amp; Awards" />
                             </StackPanel>
                         </Button>
@@ -147,7 +147,7 @@
                                 Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Education}"
                                 Command="{Binding SetTemplateCategoryCommand}" CommandParameter="Education">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="SchoolOutline" Width="14" Height="14" Foreground="#0284C7" />
+                                <materialIcons:MaterialIcon Kind="SchoolOutline" Width="14" Height="14" Foreground="{DynamicResource M3SecondaryBrush}" />
                                 <TextBlock Text="Education &amp; Worksheets" />
                             </StackPanel>
                         </Button>
@@ -157,7 +157,7 @@
                                 Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter='Cheat Sheets'}"
                                 Command="{Binding SetTemplateCategoryCommand}" CommandParameter="Cheat Sheets">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="CodeBraces" Width="14" Height="14" Foreground="#0D9488" />
+                                <materialIcons:MaterialIcon Kind="CodeBraces" Width="14" Height="14" Foreground="{DynamicResource M3SecondaryBrush}" />
                                 <TextBlock Text="Cheat Sheets &amp; Posters" />
                             </StackPanel>
                         </Button>
@@ -188,47 +188,47 @@
                                     Command="{Binding SelectTemplateCommand}" CommandParameter="AnnualReport">
                                 <Grid RowDefinitions="125,Auto">
                                     <!-- Visual Mockup Area -->
-                                    <Border Grid.Row="0" Background="{DynamicResource WinHoverBrush}" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
+                                    <Border Grid.Row="0" Background="{DynamicResource WinHoverBrush}" CornerRadius="{StaticResource M3ShapeTopRoundedMedium}" Padding="12,10" ClipToBounds="True">
                                         <Grid>
                                             <!-- Mini Paper Sheet Mockup -->
-                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
+                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" BoxShadow="{StaticResource M3ElevationLevel1}" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
                                                 <StackPanel Spacing="3">
                                                     <!-- Header Line & Logo -->
                                                     <Grid ColumnDefinitions="*,Auto">
-                                                        <Border Grid.Column="0" Height="5" Width="55" Background="#1E293B" CornerRadius="1" HorizontalAlignment="Left" />
-                                                        <Border Grid.Column="1" Width="10" Height="10" Background="#0F6CBD" CornerRadius="2" />
+                                                        <Border Grid.Column="0" Height="5" Width="55" Background="{DynamicResource M3OnSurfaceBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Left" />
+                                                        <Border Grid.Column="1" Width="10" Height="10" Background="{DynamicResource M3PrimaryBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" />
                                                     </Grid>
-                                                    <Border Height="2" Background="#0F6CBD" Margin="0,1,0,3" />
+                                                    <Border Height="2" Background="{DynamicResource M3PrimaryBrush}" Margin="0,1,0,3" />
                                                     <!-- Mock Summary Paragraph -->
-                                                    <Border Height="3" Background="#94A3B8" Width="90" HorizontalAlignment="Left" CornerRadius="1" />
-                                                    <Border Height="3" Background="#CBD5E1" Width="80" HorizontalAlignment="Left" CornerRadius="1" />
+                                                    <Border Height="3" Background="{DynamicResource M3OutlineVariantBrush}" Width="90" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
+                                                    <Border Height="3" Background="{DynamicResource M3OutlineVariantBrush}" Width="80" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
                                                     <!-- Mini 4-Bar Chart Mockup -->
-                                                    <Border Height="36" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="2" Margin="0,3,0,0" Padding="6,2">
+                                                    <Border Height="36" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Margin="0,3,0,0" Padding="6,2">
                                                         <Grid ColumnDefinitions="*,*,*,*" VerticalAlignment="Bottom">
-                                                            <Border Grid.Column="0" Width="10" Height="12" Background="#93C5FD" CornerRadius="1,1,0,0" HorizontalAlignment="Center" />
-                                                            <Border Grid.Column="1" Width="10" Height="18" Background="#60A5FA" CornerRadius="1,1,0,0" HorizontalAlignment="Center" />
-                                                            <Border Grid.Column="2" Width="10" Height="24" Background="#3B82F6" CornerRadius="1,1,0,0" HorizontalAlignment="Center" />
-                                                            <Border Grid.Column="3" Width="10" Height="30" Background="#0F6CBD" CornerRadius="1,1,0,0" HorizontalAlignment="Center" />
+                                                            <Border Grid.Column="0" Width="10" Height="12" Background="{DynamicResource M3PrimaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Center" />
+                                                            <Border Grid.Column="1" Width="10" Height="18" Background="{DynamicResource M3SecondaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Center" />
+                                                            <Border Grid.Column="2" Width="10" Height="24" Background="{DynamicResource M3SecondaryBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Center" />
+                                                            <Border Grid.Column="3" Width="10" Height="30" Background="{DynamicResource M3PrimaryBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Center" />
                                                         </Grid>
                                                     </Border>
                                                 </StackPanel>
                                             </Border>
 
                                             <!-- Badge Tag Top Right -->
-                                            <Border Background="#1E293B" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" BoxShadow="0 2 4 #20000000">
-                                                <TextBlock Text="3 Pages • A4" FontSize="9.5" FontWeight="Bold" Foreground="White" />
+                                            <Border Background="{DynamicResource M3InverseSurfaceBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" BoxShadow="{StaticResource M3ElevationLevel1}">
+                                                <TextBlock Text="3 Pages • A4" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3InverseOnSurfaceBrush}" />
                                             </Border>
                                         </Grid>
                                     </Border>
 
                                     <!-- Card Content Info -->
-                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="0,0,11,11">
+                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="{StaticResource M3ShapeBottomRoundedMedium}">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
-                                                <Border Grid.Column="0" Background="#EFF6FF" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
-                                                    <TextBlock Text="CORPORATE" FontSize="9.5" FontWeight="Bold" Foreground="#0F6CBD" />
+                                                <Border Grid.Column="0" Background="{DynamicResource M3PrimaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" HorizontalAlignment="Left">
+                                                    <TextBlock Text="CORPORATE" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3PrimaryBrush}" />
                                                 </Border>
-                                                <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="#0F6CBD" />
+                                                <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="{DynamicResource M3PrimaryBrush}" />
                                             </Grid>
                                             <TextBlock Text="Annual Corporate Report" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,2,0,0" />
                                             <TextBlock Text="Executive summary, infrastructure SLA table &amp; balance sheet" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
@@ -245,44 +245,44 @@
                                     Command="{Binding SelectTemplateCommand}" CommandParameter="Invoice">
                                 <Grid RowDefinitions="125,Auto">
                                     <!-- Visual Mockup Area -->
-                                    <Border Grid.Row="0" Background="#F0FDF4" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
+                                    <Border Grid.Row="0" Background="{DynamicResource M3SuccessContainerBrush}" CornerRadius="{StaticResource M3ShapeTopRoundedMedium}" Padding="12,10" ClipToBounds="True">
                                         <Grid>
                                             <!-- Mini Paper Sheet Mockup -->
-                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
+                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" BoxShadow="{StaticResource M3ElevationLevel1}" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
                                                 <StackPanel Spacing="3">
                                                     <!-- Top Invoice Banner -->
                                                     <Grid ColumnDefinitions="*,Auto">
-                                                        <Border Grid.Column="0" Height="6" Width="40" Background="#16A34A" CornerRadius="1" HorizontalAlignment="Left" />
-                                                        <Border Grid.Column="1" Height="4" Width="30" Background="#94A3B8" CornerRadius="1" />
+                                                        <Border Grid.Column="0" Height="6" Width="40" Background="{DynamicResource M3SuccessBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Left" />
+                                                        <Border Grid.Column="1" Height="4" Width="30" Background="{DynamicResource M3OutlineVariantBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" />
                                                     </Grid>
-                                                    <Border Height="1.5" Background="#16A34A" Margin="0,2,0,4" />
+                                                    <Border Height="1.5" Background="{DynamicResource M3SuccessBrush}" Margin="0,2,0,4" />
                                                     <!-- Mini Itemized Table Rows -->
-                                                    <Border Height="10" Background="#0F6CBD" CornerRadius="1" Margin="0,0,0,1" />
+                                                    <Border Height="10" Background="{DynamicResource M3PrimaryBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" Margin="0,0,0,1" />
                                                     <Border Height="6" Background="{DynamicResource WinInputBgBrush}" Margin="0,0,0,1" />
                                                     <Border Height="6" Background="{DynamicResource WinHoverBrush}" Margin="0,0,0,1" />
                                                     <Border Height="6" Background="{DynamicResource WinInputBgBrush}" Margin="0,0,0,3" />
                                                     <!-- Total Due Badge -->
-                                                    <Border Height="10" Width="45" Background="#DCFCE7" BorderBrush="#86EFAC" BorderThickness="0.5" CornerRadius="2" HorizontalAlignment="Right">
-                                                        <TextBlock Text="$27,125" FontSize="7" FontWeight="Bold" Foreground="#166534" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    <Border Height="10" Width="45" Background="{DynamicResource M3SuccessContainerBrush}" BorderBrush="{DynamicResource M3SuccessBrush}" BorderThickness="0.5" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" HorizontalAlignment="Right">
+                                                        <TextBlock Text="$27,125" FontSize="7" FontWeight="Bold" Foreground="{DynamicResource M3OnSuccessContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                     </Border>
                                                 </StackPanel>
                                             </Border>
 
                                             <!-- Badge Tag Top Right -->
-                                            <Border Background="#166534" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" BoxShadow="0 2 4 #20000000">
-                                                <TextBlock Text="1 Page • Finance" FontSize="9.5" FontWeight="Bold" Foreground="White" />
+                                            <Border Background="{DynamicResource M3SuccessBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" BoxShadow="{StaticResource M3ElevationLevel1}">
+                                                <TextBlock Text="1 Page • Finance" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnSuccessBrush}" />
                                             </Border>
                                         </Grid>
                                     </Border>
 
                                     <!-- Card Content Info -->
-                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="0,0,11,11">
+                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="{StaticResource M3ShapeBottomRoundedMedium}">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
-                                                <Border Grid.Column="0" Background="#DCFCE7" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
-                                                    <TextBlock Text="FINANCE" FontSize="9.5" FontWeight="Bold" Foreground="#16A34A" />
+                                                <Border Grid.Column="0" Background="{DynamicResource M3SuccessContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" HorizontalAlignment="Left">
+                                                    <TextBlock Text="FINANCE" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3SuccessBrush}" />
                                                 </Border>
-                                                <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="#16A34A" />
+                                                <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="{DynamicResource M3SuccessBrush}" />
                                             </Grid>
                                             <TextBlock Text="Modern Service Invoice" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,2,0,0" />
                                             <TextBlock Text="Itemized billing table, tax calculation &amp; payment terms" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
@@ -299,51 +299,51 @@
                                     Command="{Binding SelectTemplateCommand}" CommandParameter="Resume">
                                 <Grid RowDefinitions="125,Auto">
                                     <!-- Visual Mockup Area -->
-                                    <Border Grid.Row="0" Background="#F5F3FF" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
+                                    <Border Grid.Row="0" Background="{DynamicResource M3TertiaryContainerBrush}" CornerRadius="{StaticResource M3ShapeTopRoundedMedium}" Padding="12,10" ClipToBounds="True">
                                         <Grid>
                                             <!-- Mini Paper Sheet Mockup -->
-                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
+                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" BoxShadow="{StaticResource M3ElevationLevel1}" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
                                                 <StackPanel Spacing="3">
                                                     <!-- Header with Avatar & QR -->
                                                     <Grid ColumnDefinitions="Auto,*,Auto">
-                                                        <Border Grid.Column="0" Width="12" Height="12" Background="#7C3AED" CornerRadius="3" Margin="0,0,4,0" />
+                                                        <Border Grid.Column="0" Width="12" Height="12" Background="{DynamicResource M3TertiaryBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Margin="0,0,4,0" />
                                                         <StackPanel Grid.Column="1" Spacing="1.5" VerticalAlignment="Center">
-                                                            <Border Height="4" Width="40" Background="#1E293B" CornerRadius="1" HorizontalAlignment="Left" />
-                                                            <Border Height="2.5" Width="50" Background="#7C3AED" CornerRadius="1" HorizontalAlignment="Left" />
+                                                            <Border Height="4" Width="40" Background="{DynamicResource M3OnSurfaceBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Left" />
+                                                            <Border Height="2.5" Width="50" Background="{DynamicResource M3TertiaryBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Left" />
                                                         </StackPanel>
-                                                        <Border Grid.Column="2" Width="11" Height="11" Background="#EDE9FE" BorderBrush="#7C3AED" BorderThickness="1" CornerRadius="1" />
+                                                        <Border Grid.Column="2" Width="11" Height="11" Background="{DynamicResource M3TertiaryContainerBrush}" BorderBrush="{DynamicResource M3TertiaryBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" />
                                                     </Grid>
-                                                    <Border Height="1.5" Background="#7C3AED" Margin="0,2,0,3" />
+                                                    <Border Height="1.5" Background="{DynamicResource M3TertiaryBrush}" Margin="0,2,0,3" />
                                                     <!-- Summary Card -->
-                                                    <Border Height="14" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0.5" CornerRadius="2" Padding="3,1">
-                                                        <Border Height="2.5" Background="#64748B" Width="80" HorizontalAlignment="Left" CornerRadius="1" />
+                                                    <Border Height="14" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0.5" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="3,1">
+                                                        <Border Height="2.5" Background="{DynamicResource M3OutlineBrush}" Width="80" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
                                                     </Border>
                                                     <!-- 2 Columns Skills Matrix -->
                                                     <Grid ColumnDefinitions="*,*" Margin="0,2,0,2">
-                                                        <Border Grid.Column="0" Height="12" Background="{DynamicResource WinHoverBrush}" CornerRadius="1.5" Margin="0,0,2,0" />
-                                                        <Border Grid.Column="1" Height="12" Background="{DynamicResource WinHoverBrush}" CornerRadius="1.5" Margin="2,0,0,0" />
+                                                        <Border Grid.Column="0" Height="12" Background="{DynamicResource WinHoverBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Margin="0,0,2,0" />
+                                                        <Border Grid.Column="1" Height="12" Background="{DynamicResource WinHoverBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Margin="2,0,0,0" />
                                                     </Grid>
                                                     <!-- Experience Lines -->
-                                                    <Border Height="3" Background="#334155" Width="85" HorizontalAlignment="Left" CornerRadius="1" />
-                                                    <Border Height="2.5" Background="#94A3B8" Width="75" HorizontalAlignment="Left" CornerRadius="1" />
+                                                    <Border Height="3" Background="{DynamicResource M3OnSurfaceVariantBrush}" Width="85" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
+                                                    <Border Height="2.5" Background="{DynamicResource M3OutlineVariantBrush}" Width="75" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
                                                 </StackPanel>
                                             </Border>
 
                                             <!-- Badge Tag Top Right -->
-                                            <Border Background="#6D28D9" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" BoxShadow="0 2 4 #20000000">
-                                                <TextBlock Text="1 Page • ATS Ready" FontSize="9.5" FontWeight="Bold" Foreground="White" />
+                                            <Border Background="{DynamicResource M3TertiaryBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" BoxShadow="{StaticResource M3ElevationLevel1}">
+                                                <TextBlock Text="1 Page • ATS Ready" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnTertiaryBrush}" />
                                             </Border>
                                         </Grid>
                                     </Border>
 
                                     <!-- Card Content Info -->
-                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="0,0,11,11">
+                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="{StaticResource M3ShapeBottomRoundedMedium}">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
-                                                <Border Grid.Column="0" Background="#EDE9FE" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
-                                                    <TextBlock Text="CAREER" FontSize="9.5" FontWeight="Bold" Foreground="#7C3AED" />
+                                                <Border Grid.Column="0" Background="{DynamicResource M3TertiaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" HorizontalAlignment="Left">
+                                                    <TextBlock Text="CAREER" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3TertiaryBrush}" />
                                                 </Border>
-                                                <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="#7C3AED" />
+                                                <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="{DynamicResource M3TertiaryBrush}" />
                                             </Grid>
                                             <TextBlock Text="Executive Resume / CV" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,2,0,0" />
                                             <TextBlock Text="Complete career layout with QR code, metrics &amp; credentials" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
@@ -360,52 +360,52 @@
                                     Command="{Binding SelectTemplateCommand}" CommandParameter="AcademicPaper">
                                 <Grid RowDefinitions="125,Auto">
                                     <!-- Visual Mockup Area -->
-                                    <Border Grid.Row="0" Background="#FFFBEB" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
+                                    <Border Grid.Row="0" Background="{DynamicResource M3WarningContainerBrush}" CornerRadius="{StaticResource M3ShapeTopRoundedMedium}" Padding="12,10" ClipToBounds="True">
                                         <Grid>
                                             <!-- Mini Paper Sheet Mockup -->
-                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
+                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" BoxShadow="{StaticResource M3ElevationLevel1}" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="8,6">
                                                 <StackPanel Spacing="3">
                                                     <!-- Centered Paper Title -->
-                                                    <Border Height="5" Width="70" Background="#1E293B" CornerRadius="1" HorizontalAlignment="Center" />
-                                                    <Border Height="3" Width="50" Background="#64748B" CornerRadius="1" HorizontalAlignment="Center" />
-                                                    <Border Height="1" Background="#CBD5E1" Margin="0,2,0,2" />
+                                                    <Border Height="5" Width="70" Background="{DynamicResource M3OnSurfaceBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Center" />
+                                                    <Border Height="3" Width="50" Background="{DynamicResource M3OutlineBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Center" />
+                                                    <Border Height="1" Background="{DynamicResource M3OutlineVariantBrush}" Margin="0,2,0,2" />
                                                     <!-- Abstract Box -->
-                                                    <Border Height="12" Background="#FEF3C7" CornerRadius="1.5" Padding="4,2">
-                                                        <Border Height="2" Background="#92400E" Width="80" HorizontalAlignment="Left" CornerRadius="0.5" />
+                                                    <Border Height="12" Background="{DynamicResource M3WarningContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="4,2">
+                                                        <Border Height="2" Background="{DynamicResource M3OnWarningContainerBrush}" Width="80" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
                                                     </Border>
                                                     <!-- 2 Text Columns Mockup -->
                                                     <Grid ColumnDefinitions="*,*" Margin="0,3,0,0">
                                                         <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,3,0">
-                                                            <Border Height="3" Background="#334155" Width="38" HorizontalAlignment="Left" CornerRadius="0.5" />
-                                                            <Border Height="2" Background="#94A3B8" Width="42" HorizontalAlignment="Left" CornerRadius="0.5" />
-                                                            <Border Height="2" Background="#CBD5E1" Width="40" HorizontalAlignment="Left" CornerRadius="0.5" />
-                                                            <Border Height="2" Background="#CBD5E1" Width="36" HorizontalAlignment="Left" CornerRadius="0.5" />
+                                                            <Border Height="3" Background="{DynamicResource M3OnSurfaceVariantBrush}" Width="38" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
+                                                            <Border Height="2" Background="{DynamicResource M3OutlineVariantBrush}" Width="42" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
+                                                            <Border Height="2" Background="{DynamicResource M3OutlineVariantBrush}" Width="40" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
+                                                            <Border Height="2" Background="{DynamicResource M3OutlineVariantBrush}" Width="36" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
                                                         </StackPanel>
                                                         <StackPanel Grid.Column="1" Spacing="2" Margin="3,0,0,0">
-                                                            <Border Height="3" Background="#334155" Width="38" HorizontalAlignment="Left" CornerRadius="0.5" />
-                                                            <Border Height="2" Background="#94A3B8" Width="42" HorizontalAlignment="Left" CornerRadius="0.5" />
-                                                            <Border Height="2" Background="#CBD5E1" Width="40" HorizontalAlignment="Left" CornerRadius="0.5" />
-                                                            <Border Height="2" Background="#CBD5E1" Width="36" HorizontalAlignment="Left" CornerRadius="0.5" />
+                                                            <Border Height="3" Background="{DynamicResource M3OnSurfaceVariantBrush}" Width="38" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
+                                                            <Border Height="2" Background="{DynamicResource M3OutlineVariantBrush}" Width="42" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
+                                                            <Border Height="2" Background="{DynamicResource M3OutlineVariantBrush}" Width="40" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
+                                                            <Border Height="2" Background="{DynamicResource M3OutlineVariantBrush}" Width="36" HorizontalAlignment="Left" CornerRadius="{StaticResource M3ShapeCornerNone}" />
                                                         </StackPanel>
                                                     </Grid>
                                                 </StackPanel>
                                             </Border>
 
                                             <!-- Badge Tag Top Right -->
-                                            <Border Background="#B45309" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" BoxShadow="0 2 4 #20000000">
-                                                <TextBlock Text="2-Column • IEEE" FontSize="9.5" FontWeight="Bold" Foreground="White" />
+                                            <Border Background="{DynamicResource M3WarningBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" BoxShadow="{StaticResource M3ElevationLevel1}">
+                                                <TextBlock Text="2-Column • IEEE" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnWarningBrush}" />
                                             </Border>
                                         </Grid>
                                     </Border>
 
                                     <!-- Card Content Info -->
-                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="0,0,11,11">
+                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="{StaticResource M3ShapeBottomRoundedMedium}">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
-                                                <Border Grid.Column="0" Background="#FEF3C7" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
-                                                    <TextBlock Text="ACADEMIC" FontSize="9.5" FontWeight="Bold" Foreground="#D97706" />
+                                                <Border Grid.Column="0" Background="{DynamicResource M3WarningContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" HorizontalAlignment="Left">
+                                                    <TextBlock Text="ACADEMIC" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3WarningBrush}" />
                                                 </Border>
-                                                <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="#D97706" />
+                                                <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="{DynamicResource M3WarningBrush}" />
                                             </Grid>
                                             <TextBlock Text="Academic Research Paper" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,2,0,0" />
                                             <TextBlock Text="2-column formatted research paper with abstract &amp; references" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
@@ -422,40 +422,40 @@
                                     Command="{Binding SelectTemplateCommand}" CommandParameter="Certificate">
                                 <Grid RowDefinitions="125,Auto">
                                     <!-- Visual Mockup Area -->
-                                    <Border Grid.Row="0" Background="#EFF6FF" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
+                                    <Border Grid.Row="0" Background="{DynamicResource M3PrimaryContainerBrush}" CornerRadius="{StaticResource M3ShapeTopRoundedMedium}" Padding="12,10" ClipToBounds="True">
                                         <Grid>
                                             <!-- Mini Landscape Certificate Sheet -->
-                                            <Border Width="135" Height="92" Background="{DynamicResource WinPanelBrush}" BorderBrush="#0F6CBD" BorderThickness="1.5" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="4">
-                                                <Border BorderBrush="#F59E0B" BorderThickness="0.75" CornerRadius="2" Padding="6,4">
+                                            <Border Width="135" Height="92" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource M3PrimaryBrush}" BorderThickness="1.5" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" BoxShadow="{StaticResource M3ElevationLevel1}" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="4">
+                                                <Border BorderBrush="{DynamicResource M3WarningBrush}" BorderThickness="0.75" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,4">
                                                     <StackPanel Spacing="2.5" VerticalAlignment="Center">
-                                                        <Border Height="4" Width="70" Background="#0F6CBD" CornerRadius="1" HorizontalAlignment="Center" />
-                                                        <Border Height="2" Width="55" Background="#64748B" CornerRadius="0.5" HorizontalAlignment="Center" />
-                                                        <Border Height="5" Width="75" Background="#1E293B" CornerRadius="1" HorizontalAlignment="Center" Margin="0,1,0,1" />
+                                                        <Border Height="4" Width="70" Background="{DynamicResource M3PrimaryBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Center" />
+                                                        <Border Height="2" Width="55" Background="{DynamicResource M3OutlineBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Center" />
+                                                        <Border Height="5" Width="75" Background="{DynamicResource M3OnSurfaceBrush}" CornerRadius="{StaticResource M3ShapeCornerNone}" HorizontalAlignment="Center" Margin="0,1,0,1" />
                                                         <!-- Gold Seal & Signatures Row -->
                                                         <Grid ColumnDefinitions="*,Auto,*" Margin="0,2,0,0">
-                                                            <Border Grid.Column="0" Height="1" Background="#94A3B8" Width="30" HorizontalAlignment="Center" />
-                                                            <Border Grid.Column="1" Width="11" Height="11" Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="5.5" />
-                                                            <Border Grid.Column="2" Height="1" Background="#94A3B8" Width="30" HorizontalAlignment="Center" />
+                                                            <Border Grid.Column="0" Height="1" Background="{DynamicResource M3OutlineVariantBrush}" Width="30" HorizontalAlignment="Center" />
+                                                            <Border Grid.Column="1" Width="11" Height="11" Background="{DynamicResource M3WarningContainerBrush}" BorderBrush="{DynamicResource M3WarningBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerFull}" />
+                                                            <Border Grid.Column="2" Height="1" Background="{DynamicResource M3OutlineVariantBrush}" Width="30" HorizontalAlignment="Center" />
                                                         </Grid>
                                                     </StackPanel>
                                                 </Border>
                                             </Border>
 
                                             <!-- Badge Tag Top Right -->
-                                            <Border Background="#1D4ED8" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" BoxShadow="0 2 4 #20000000">
-                                                <TextBlock Text="Landscape • Award" FontSize="9.5" FontWeight="Bold" Foreground="White" />
+                                            <Border Background="{DynamicResource M3PrimaryBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" BoxShadow="{StaticResource M3ElevationLevel1}">
+                                                <TextBlock Text="Landscape • Award" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnPrimaryBrush}" />
                                             </Border>
                                         </Grid>
                                     </Border>
 
                                     <!-- Card Content Info -->
-                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="0,0,11,11">
+                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="{StaticResource M3ShapeBottomRoundedMedium}">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
-                                                <Border Grid.Column="0" Background="#EFF6FF" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
-                                                    <TextBlock Text="RECOGNITION" FontSize="9.5" FontWeight="Bold" Foreground="#2563EB" />
+                                                <Border Grid.Column="0" Background="{DynamicResource M3PrimaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" HorizontalAlignment="Left">
+                                                    <TextBlock Text="RECOGNITION" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3PrimaryBrush}" />
                                                 </Border>
-                                                <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="#2563EB" />
+                                                <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="{DynamicResource M3PrimaryBrush}" />
                                             </Grid>
                                             <TextBlock Text="Certificate of Achievement" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" Margin="0,2,0,0" />
                                             <TextBlock Text="Award of excellence with double ornamental borders &amp; gold seal" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" MaxLines="2" />
@@ -472,32 +472,32 @@
                                     Command="{Binding SelectTemplateCommand}" CommandParameter="Blank">
                                 <Grid RowDefinitions="125,Auto">
                                     <!-- Visual Mockup Area -->
-                                    <Border Grid.Row="0" Background="{DynamicResource WinInputBgBrush}" CornerRadius="11,11,0,0" Padding="12,10" ClipToBounds="True">
+                                    <Border Grid.Row="0" Background="{DynamicResource WinInputBgBrush}" CornerRadius="{StaticResource M3ShapeTopRoundedMedium}" Padding="12,10" ClipToBounds="True">
                                         <Grid>
                                             <!-- Mini Paper Sheet Mockup -->
-                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="3" BoxShadow="0 4 12 #14000000" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Border Width="110" Height="105" Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" BoxShadow="{StaticResource M3ElevationLevel1}" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                 <StackPanel Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <Border Width="32" Height="32" Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
+                                                    <Border Width="32" Height="32" Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerFull}" HorizontalAlignment="Center">
                                                         <materialIcons:MaterialIcon Kind="Plus" Width="18" Height="18" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                     </Border>
-                                                    <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="3" Padding="6,1.5">
+                                                    <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,1.5">
                                                         <TextBlock Text="Custom Page" FontSize="8.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                                                     </Border>
                                                 </StackPanel>
                                             </Border>
 
                                             <!-- Badge Tag Top Right -->
-                                            <Border Background="#475569" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" BoxShadow="0 2 4 #20000000">
-                                                <TextBlock Text="Custom Blank" FontSize="9.5" FontWeight="Bold" Foreground="White" />
+                                            <Border Background="{DynamicResource M3OutlineBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Top" BoxShadow="{StaticResource M3ElevationLevel1}">
+                                                <TextBlock Text="Custom Blank" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3SurfaceBrush}" />
                                             </Border>
                                         </Grid>
                                     </Border>
 
                                     <!-- Card Content Info -->
-                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="0,0,11,11">
+                                    <Border Grid.Row="1" Padding="14,12" Background="{DynamicResource WinPanelBrush}" CornerRadius="{StaticResource M3ShapeBottomRoundedMedium}">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
-                                                <Border Grid.Column="0" Background="{DynamicResource WinHoverBrush}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left">
+                                                <Border Grid.Column="0" Background="{DynamicResource WinHoverBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,2" HorizontalAlignment="Left">
                                                     <TextBlock Text="GENERAL" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" />
                                                 </Border>
                                                 <materialIcons:MaterialIcon Grid.Column="1" Kind="ArrowRight" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
@@ -512,9 +512,9 @@
                         </Grid>
 
                         <!-- No Matching Templates Empty State -->
-                        <Border IsVisible="{Binding HasNoMatchingTemplates}" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="32,48" HorizontalAlignment="Stretch" Margin="8">
+                        <Border IsVisible="{Binding HasNoMatchingTemplates}" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerLarge}" Padding="32,48" HorizontalAlignment="Stretch" Margin="8">
                             <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                <Border Width="48" Height="48" Background="{DynamicResource WinHoverBrush}" CornerRadius="24" HorizontalAlignment="Center">
+                                <Border Width="48" Height="48" Background="{DynamicResource WinHoverBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" HorizontalAlignment="Center">
                                     <materialIcons:MaterialIcon Kind="MagnifyClose" Width="24" Height="24" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <TextBlock Text="No templates found" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />

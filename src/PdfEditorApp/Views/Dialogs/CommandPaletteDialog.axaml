@@ -13,8 +13,8 @@
         <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
     </UserControl.Resources>
 
-    <!-- Fullscreen Dark Blur Backdrop -->
-    <Grid Background="#60000000" PointerPressed="OnBackdropPointerPressed">
+    <!-- Fullscreen Dark Blur Backdrop (Transparent so only the rounded card floats) -->
+    <Grid Background="Transparent" PointerPressed="OnBackdropPointerPressed">
         <!-- Centered Command Palette Card -->
         <Border Width="580"
                 MaxHeight="480"

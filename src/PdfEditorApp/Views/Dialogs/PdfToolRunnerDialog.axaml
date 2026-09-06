@@ -12,8 +12,8 @@
         <converters:EqualityToBooleanConverter x:Key="EqualityConverter" />
     </UserControl.Resources>
 
-    <!-- Modal Backdrop -->
-    <Grid Background="#70000000" IsVisible="{Binding IsOpen}">
+    <!-- Modal Backdrop (Transparent so only the rounded card floats) -->
+    <Grid Background="Transparent" IsVisible="{Binding IsOpen}">
         <Border Width="720"
                 MaxHeight="680"
                 Background="{DynamicResource WinPanelBrush}"
@@ -40,7 +40,7 @@
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                             <Border Width="40" Height="40"
                                     Background="{Binding Tool.BackgroundAccentHex, Converter={StaticResource HexToBrushConverter}}"
-                                    CornerRadius="10">
+                                    CornerRadius="{StaticResource M3ShapeCornerMedium}">
                                 <materialIcons:MaterialIcon Kind="{Binding Tool.IconKind}"
                                                             Width="22" Height="22"
                                                             Foreground="{Binding Tool.IconColorHex, Converter={StaticResource HexToBrushConverter}}"
@@ -50,8 +50,8 @@
                             <StackPanel Spacing="2" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBlock Text="{Binding Tool.Name}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                                    <Border Background="#EFF6FF" CornerRadius="4" Padding="6,1" IsVisible="{Binding Tool.IsNew}">
-                                        <TextBlock Text="NEW" FontSize="9.5" FontWeight="Bold" Foreground="#0F6CBD" />
+                                    <Border Background="{DynamicResource M3PrimaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Padding="6,1" IsVisible="{Binding Tool.IsNew}">
+                                        <TextBlock Text="NEW" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3PrimaryBrush}" />
                                     </Border>
                                 </StackPanel>
                                 <TextBlock Text="{Binding Tool.Description}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" MaxWidth="480" TextWrapping="Wrap" />
@@ -75,38 +75,38 @@
                     <StackPanel Spacing="18">
 
                         <!-- Error Message Banner -->
-                        <Border Background="#FEF2F2"
-                                BorderBrush="#FCA5A5"
+                        <Border Background="{DynamicResource M3ErrorContainerBrush}"
+                                BorderBrush="{DynamicResource M3ErrorBrush}"
                                 BorderThickness="1"
-                                CornerRadius="8"
+                                CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                 Padding="14,10"
                                 IsVisible="{Binding HasError}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
-                                <materialIcons:MaterialIcon Kind="AlertCircleOutline" Width="20" Height="20" Foreground="#DC2626" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="#991B1B" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                <materialIcons:MaterialIcon Kind="AlertCircleOutline" Width="20" Height="20" Foreground="{DynamicResource M3ErrorBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="{DynamicResource M3OnErrorContainerBrush}" VerticalAlignment="Center" TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
 
                         <!-- Success State Banner -->
-                        <Border Background="#F0FDF4"
-                                BorderBrush="#86EFAC"
+                        <Border Background="{DynamicResource M3SuccessContainerBrush}"
+                                BorderBrush="{DynamicResource M3SuccessBrush}"
                                 BorderThickness="1"
-                                CornerRadius="8"
+                                CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                 Padding="16,14"
                                 IsVisible="{Binding IsComplete}">
                             <StackPanel Spacing="10">
                                 <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <materialIcons:MaterialIcon Kind="CheckCircleOutline" Width="24" Height="24" Foreground="#16A34A" VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Kind="CheckCircleOutline" Width="24" Height="24" Foreground="{DynamicResource M3SuccessBrush}" VerticalAlignment="Center" />
                                     <StackPanel VerticalAlignment="Center" Spacing="2">
-                                        <TextBlock Text="Operation Completed Successfully!" FontSize="14" FontWeight="Bold" Foreground="#166534" />
-                                        <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="12" Foreground="#15803D" TextWrapping="Wrap" />
+                                        <TextBlock Text="Operation Completed Successfully!" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource M3OnSuccessContainerBrush}" />
+                                        <TextBlock Text="{Binding ResultSummaryMessage}" FontSize="12" Foreground="{DynamicResource M3OnSuccessContainerBrush}" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Spacing="10" Margin="34,4,0,0">
                                     <Button Command="{Binding OpenOutputFileCommand}"
-                                            Background="#16A34A"
-                                            Foreground="White"
-                                            CornerRadius="6"
+                                            Background="{DynamicResource M3SuccessBrush}"
+                                            Foreground="{DynamicResource M3OnSuccessBrush}"
+                                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                                             Padding="14,6"
                                             FontSize="12"
                                             FontWeight="SemiBold"
@@ -117,11 +117,11 @@
                                         </StackPanel>
                                     </Button>
                                     <Button Command="{Binding OpenOutputFolderCommand}"
-                                            Background="#DCFCE7"
-                                            Foreground="#166534"
-                                            BorderBrush="#86EFAC"
+                                            Background="{DynamicResource M3SuccessContainerBrush}"
+                                            Foreground="{DynamicResource M3OnSuccessContainerBrush}"
+                                            BorderBrush="{DynamicResource M3SuccessBrush}"
                                             BorderThickness="1"
-                                            CornerRadius="6"
+                                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                                             Padding="14,6"
                                             FontSize="12"
                                             FontWeight="SemiBold"
@@ -139,17 +139,17 @@
                         <Border Background="{DynamicResource WinInputBgBrush}"
                                 BorderBrush="{DynamicResource WinBorderBrush}"
                                 BorderThickness="1.5"
-                                CornerRadius="10"
+                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
                                 Padding="16">
                             <StackPanel Spacing="12">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <TextBlock Grid.Column="0" Text="Input Files" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                                         <Button Command="{Binding AddFilesCommand}"
-                                                Background="#0F6CBD"
-                                                Foreground="White"
-                                                CornerRadius="6"
-                                                Padding="12,5"
+                                                Background="{DynamicResource M3PrimaryBrush}"
+                                                Foreground="{DynamicResource M3OnPrimaryBrush}"
+                                                CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                                Padding="14,6"
                                                 FontSize="11.5"
                                                 FontWeight="SemiBold"
                                                 Cursor="Hand">
@@ -175,7 +175,7 @@
                                 <Border Background="{DynamicResource WinPanelBrush}"
                                         BorderBrush="{DynamicResource WinBorderBrush}"
                                         BorderThickness="1"
-                                        CornerRadius="8"
+                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                         Padding="20"
                                         IsVisible="{Binding !HasSelectedFiles}">
                                     <StackPanel HorizontalAlignment="Center" Spacing="6">
@@ -191,11 +191,11 @@
                                             <Border Background="{DynamicResource WinPanelBrush}"
                                                     BorderBrush="{DynamicResource WinBorderBrush}"
                                                     BorderThickness="1"
-                                                    CornerRadius="6"
+                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                                     Padding="10,8"
                                                     Margin="0,0,0,6">
                                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="FileDocumentOutline" Width="18" Height="18" Foreground="#0F6CBD" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="FileDocumentOutline" Width="18" Height="18" Foreground="{DynamicResource M3PrimaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                                     <TextBlock Grid.Column="1" Text="{Binding}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                                     <Button Grid.Column="2"
                                                             Command="{Binding $parent[UserControl].((vm:PdfToolRunnerViewModel)DataContext).RemoveFileCommand}"
@@ -218,7 +218,7 @@
                         <Border Background="{DynamicResource WinPanelBrush}"
                                 BorderBrush="{DynamicResource WinBorderBrush}"
                                 BorderThickness="1"
-                                CornerRadius="10"
+                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
                                 Padding="16">
                             <StackPanel Spacing="14">
                                 <TextBlock Text="Configuration &amp; Options" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
@@ -345,15 +345,15 @@
                         <Border Background="{DynamicResource WinInputBgBrush}"
                                 BorderBrush="{DynamicResource WinBorderBrush}"
                                 BorderThickness="1"
-                                CornerRadius="8"
+                                CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                 Padding="14,10"
                                 IsVisible="{Binding IsRunning}">
                             <StackPanel Spacing="8">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
-                                    <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="12" FontWeight="Bold" Foreground="#0F6CBD" />
+                                    <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource M3PrimaryBrush}" />
                                 </Grid>
-                                <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="6" CornerRadius="3" Foreground="#0F6CBD" />
+                                <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="6" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Foreground="{DynamicResource M3PrimaryBrush}" />
                             </StackPanel>
                         </Border>
 
@@ -375,7 +375,7 @@
                             <Button Command="{Binding CancelExecutionCommand}"
                                     Background="{DynamicResource WinHoverBrush}"
                                     Foreground="{DynamicResource WinMutedBrush}"
-                                    CornerRadius="6"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
                                     Padding="14,8"
                                     FontSize="12"
                                     FontWeight="SemiBold"
@@ -386,7 +386,7 @@
                             <Button Command="{Binding CloseCommand}"
                                     Background="{DynamicResource WinHoverBrush}"
                                     Foreground="{DynamicResource WinMutedBrush}"
-                                    CornerRadius="6"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
                                     Padding="14,8"
                                     FontSize="12"
                                     FontWeight="SemiBold"
@@ -397,7 +397,7 @@
                             <Button Command="{Binding ExecuteToolCommand}"
                                     Background="{Binding Tool.IconColorHex, Converter={StaticResource HexToBrushConverter}}"
                                     Foreground="White"
-                                    CornerRadius="6"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
                                     Padding="18,8"
                                     FontSize="12.5"
                                     FontWeight="Bold"

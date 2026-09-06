@@ -5,8 +5,8 @@
              x:Class="PdfEditorApp.Views.Dialogs.RenameDocumentDialog"
              x:DataType="vm:HomeViewModel">
 
-    <!-- Modal Backdrop -->
-    <Grid Background="#60000000" PointerPressed="OnBackdropPointerPressed">
+    <!-- Modal Backdrop Overlay (Transparent so only the rounded card floats) -->
+    <Grid Background="Transparent" PointerPressed="OnBackdropPointerPressed">
         <!-- Dialog Card -->
         <Border Width="480"
                 Background="{DynamicResource WinPanelBrush}"
@@ -23,7 +23,7 @@
             <StackPanel Spacing="16">
                 <!-- Header -->
                 <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
-                    <Border Grid.Column="0" Width="40" Height="40" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="10" Margin="0,0,12,0">
+                    <Border Grid.Column="0" Width="40" Height="40" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="{StaticResource M3ShapeCornerMedium}" Margin="0,0,12,0">
                         <materialIcons:MaterialIcon Kind="PencilOutline" Width="22" Height="22" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
 
@@ -45,7 +45,7 @@
                 <Border Background="{DynamicResource WinInputBgBrush}"
                         BorderBrush="{DynamicResource WinBorderBrush}"
                         BorderThickness="1"
-                        CornerRadius="6"
+                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
                         Padding="10,7">
                     <Grid ColumnDefinitions="Auto,*">
                         <materialIcons:MaterialIcon Grid.Column="0" Kind="FolderOutline" Width="15" Height="15" Foreground="{DynamicResource WinSubtleBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
@@ -65,7 +65,7 @@
                     <Border Background="{DynamicResource WinInputBgBrush}"
                             BorderBrush="{DynamicResource WinBorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="8"
+                            CornerRadius="{StaticResource M3ShapeCornerSmall}"
                             Padding="8,2">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBox x:Name="RenameTextBox"
@@ -82,7 +82,7 @@
                             <!-- Extension Pill -->
                             <Border Grid.Column="1"
                                     Background="{DynamicResource WinHoverBrush}"
-                                    CornerRadius="4"
+                                    CornerRadius="{StaticResource M3ShapeCornerExtraSmall}"
                                     Padding="6,3"
                                     Margin="4,0,0,0"
                                     VerticalAlignment="Center">
@@ -96,15 +96,15 @@
                 </StackPanel>
 
                 <!-- Validation Error Message -->
-                <Border Background="#FEE2E2"
-                        BorderBrush="#FCA5A5"
+                <Border Background="{DynamicResource M3ErrorContainerBrush}"
+                        BorderBrush="{DynamicResource M3ErrorBrush}"
                         BorderThickness="1"
-                        CornerRadius="6"
+                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
                         Padding="10,6"
                         IsVisible="{Binding HasRenameError}">
                     <Grid ColumnDefinitions="Auto,*">
-                        <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="16" Height="16" Foreground="#DC2626" Margin="0,0,8,0" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="{Binding RenameErrorMessage}" FontSize="11" Foreground="#DC2626" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="16" Height="16" Foreground="{DynamicResource M3OnErrorContainerBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding RenameErrorMessage}" FontSize="11" Foreground="{DynamicResource M3OnErrorContainerBrush}" VerticalAlignment="Center" TextWrapping="Wrap" />
                     </Grid>
                 </Border>
 
@@ -116,7 +116,7 @@
                             BorderBrush="{DynamicResource WinBorderBrush}"
                             BorderThickness="1"
                             Foreground="{DynamicResource WinTextBrush}"
-                            CornerRadius="6"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                             Padding="16,8"
                             FontSize="12"
                             FontWeight="SemiBold"
@@ -126,8 +126,8 @@
                     <Button Grid.Column="2"
                             Content="Rename"
                             Background="{DynamicResource WinAccentBrush}"
-                            Foreground="White"
-                            CornerRadius="6"
+                            Foreground="{DynamicResource M3OnPrimaryBrush}"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                             Padding="20,8"
                             FontSize="12"
                             FontWeight="Bold"

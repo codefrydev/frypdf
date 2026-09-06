@@ -123,6 +123,7 @@
             <Color x:Key="M3InverseSurfaceColor">#2E3135</Color>
             <Color x:Key="M3InverseOnSurfaceColor">#F0F1F5</Color>
             <Color x:Key="M3InversePrimaryColor">#A8C7FA</Color>
+            <Color x:Key="M3ScrimColor">#52000000</Color>
 
             <!-- M3 SolidColorBrushes (Light) -->
             <SolidColorBrush x:Key="M3PrimaryBrush" Color="{StaticResource M3PrimaryColor}" />
@@ -171,6 +172,7 @@
             <SolidColorBrush x:Key="M3InverseSurfaceBrush" Color="{StaticResource M3InverseSurfaceColor}" />
             <SolidColorBrush x:Key="M3InverseOnSurfaceBrush" Color="{StaticResource M3InverseOnSurfaceColor}" />
             <SolidColorBrush x:Key="M3InversePrimaryBrush" Color="{StaticResource M3InversePrimaryColor}" />
+            <SolidColorBrush x:Key="M3ScrimBrush" Color="{StaticResource M3ScrimColor}" />
 
             <!-- =============================================================== -->
             <!-- BACKWARD COMPATIBILITY ALIASES (LIGHT THEME)                    -->
@@ -219,6 +221,7 @@
             <SolidColorBrush x:Key="WinDangerBorderBrush" Color="{StaticResource WinDangerBorderColor}" />
             <SolidColorBrush x:Key="WinSuccessBrush" Color="{StaticResource WinSuccessColor}" />
             <SolidColorBrush x:Key="WinSuccessLightBrush" Color="{StaticResource WinSuccessLightColor}" />
+            <SolidColorBrush x:Key="WinScrimBrush" Color="{StaticResource M3ScrimColor}" />
 
             <!-- Slider Brushes (Light Theme) -->
             <SolidColorBrush x:Key="SliderTrackFill" Color="{StaticResource M3SurfaceContainerHighestColor}" />
@@ -286,6 +289,7 @@
             <Color x:Key="M3InverseSurfaceColor">#E2E2E6</Color>
             <Color x:Key="M3InverseOnSurfaceColor">#191C20</Color>
             <Color x:Key="M3InversePrimaryColor">#1E5EEB</Color>
+            <Color x:Key="M3ScrimColor">#80000000</Color>
 
             <!-- M3 SolidColorBrushes (Dark) -->
             <SolidColorBrush x:Key="M3PrimaryBrush" Color="{StaticResource M3PrimaryColor}" />
@@ -334,6 +338,7 @@
             <SolidColorBrush x:Key="M3InverseSurfaceBrush" Color="{StaticResource M3InverseSurfaceColor}" />
             <SolidColorBrush x:Key="M3InverseOnSurfaceBrush" Color="{StaticResource M3InverseOnSurfaceColor}" />
             <SolidColorBrush x:Key="M3InversePrimaryBrush" Color="{StaticResource M3InversePrimaryColor}" />
+            <SolidColorBrush x:Key="M3ScrimBrush" Color="{StaticResource M3ScrimColor}" />
 
             <!-- =============================================================== -->
             <!-- BACKWARD COMPATIBILITY ALIASES (DARK THEME)                     -->
@@ -382,6 +387,7 @@
             <SolidColorBrush x:Key="WinDangerBorderBrush" Color="{StaticResource WinDangerBorderColor}" />
             <SolidColorBrush x:Key="WinSuccessBrush" Color="{StaticResource WinSuccessColor}" />
             <SolidColorBrush x:Key="WinSuccessLightBrush" Color="{StaticResource WinSuccessLightColor}" />
+            <SolidColorBrush x:Key="WinScrimBrush" Color="{StaticResource M3ScrimColor}" />
 
             <!-- Slider Brushes (Dark Theme) -->
             <SolidColorBrush x:Key="SliderTrackFill" Color="{StaticResource M3SurfaceContainerHighestColor}" />

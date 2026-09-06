@@ -3,12 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using PdfEditorApp.Core.Plugins;
 using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Core.Plugins.Marketplace;
-using PdfEditorApp.Plugins.Scratchpad;
-using PdfEditorApp.Plugins.Snake;
-using PdfEditorApp.Plugins.Telemetry;
 using PdfEditorApp.Services.Overlays;
 using PdfEditorApp.ViewModels;
 using Xunit;
@@ -43,6 +39,55 @@ public class OverlayExtensibilityTests
             ChromeMode = OverlayChromeMode.FloatingPill
         };
         Assert.Equal(OverlayChromeMode.FloatingPill, pillDesc.ChromeMode);
+    }
+
+    [Fact]
+    public void OverlayRegistry_Registers_Shows_Toggles_And_Hides_Overlay()
+    {
+        var services = new ServiceCollection().BuildServiceProvider();
+        var registry = new OverlayRegistry(services);
+
+        bool registryChangedFired = false;
+        registry.RegistryChanged += () => registryChangedFired = true;
+
+        var desc = new OverlayDescriptor
+        {
+            Id = "test.overlay.custom",
+            Title = "Custom Overlay",
+            Slot = "shell.overlay",
+            DefaultWidth = 300,
+            DefaultHeight = 400,
+            ViewFactory = _ => "MockView"
+        };
+
+        using var unreg = registry.RegisterOverlay(desc);
+        Assert.True(registryChangedFired);
+        Assert.NotNull(registry.GetOverlay("test.overlay.custom"));
+        Assert.Single(registry.GetAllOverlays());
+
+        // Initially not visible
+        Assert.False(registry.IsOverlayVisible("test.overlay.custom"));
+
+        // Show
+        registry.ShowOverlay("test.overlay.custom");
+        Assert.True(registry.IsOverlayVisible("test.overlay.custom"));
+        Assert.Single(registry.ActiveOverlays);
+        Assert.Equal("Custom Overlay", registry.ActiveOverlays[0].Title);
+
+        // Toggle (hides)
+        registry.ToggleOverlay("test.overlay.custom");
+        Assert.False(registry.IsOverlayVisible("test.overlay.custom"));
+        Assert.Empty(registry.ActiveOverlays);
+
+        // Toggle (shows again)
+        registry.ToggleOverlay("test.overlay.custom");
+        Assert.True(registry.IsOverlayVisible("test.overlay.custom"));
+        Assert.Single(registry.ActiveOverlays);
+
+        // Hide
+        registry.HideOverlay("test.overlay.custom");
+        Assert.False(registry.IsOverlayVisible("test.overlay.custom"));
+        Assert.Empty(registry.ActiveOverlays);
     }
 
     [Fact]
@@ -120,99 +165,46 @@ public class OverlayExtensibilityTests
     }
 
     [Fact]
-    public async Task CompanionOverlays_CanInstallAndOperateSimultaneously()
+    public void CompanionOverlays_CanOperateSimultaneously_WithChromePinAndMinimize()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, $"frypdf_companion_test_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(tempDir);
-        try
+        var services = new ServiceCollection().BuildServiceProvider();
+        var overlayReg = new OverlayRegistry(services);
+
+        var desc1 = new OverlayDescriptor
         {
-            var services = new ServiceCollection();
-            App.ConfigureServices(services);
-            var tempFile = Path.Combine(tempDir, "installed_plugins.json");
-            services.AddSingleton<IInstalledPluginStore>(new FileInstalledPluginStore(tempFile));
-            services.AddSingleton<IPluginMarketplaceService>(sp =>
-            {
-                var host = sp.GetRequiredService<PluginHost>();
-                var overlay = sp.GetService<IOverlayRegistry>();
-                var store = sp.GetRequiredService<IInstalledPluginStore>();
-                var pluginsDir = Path.Combine(tempDir, "plugins");
-                return new PdfEditorApp.Services.Plugins.PluginMarketplaceService(host, overlay, store, null, null, pluginsDir);
-            });
-            var sp = services.BuildServiceProvider();
-
-            var host = sp.GetRequiredService<PluginHost>();
-            var overlayReg = sp.GetRequiredService<OverlayRegistry>();
-            var marketplace = sp.GetRequiredService<PdfEditorApp.Core.Plugins.Marketplace.IPluginMarketplaceService>();
-
-            await host.StartAsync();
-
-            // Install Scratchpad
-            bool installed1 = await marketplace.InstallPluginAsync("frypdf.overlay.scratchpad");
-            Assert.True(installed1);
-            Assert.True(host.IsPluginActive("frypdf.overlay.scratchpad"));
-            Assert.True(overlayReg.IsOverlayVisible("frypdf.overlay.scratchpad"));
-
-            // Install Telemetry
-            bool installed2 = await marketplace.InstallPluginAsync("frypdf.overlay.telemetry");
-            Assert.True(installed2);
-            Assert.True(host.IsPluginActive("frypdf.overlay.telemetry"));
-            Assert.True(overlayReg.IsOverlayVisible("frypdf.overlay.telemetry"));
-
-            // Both are active simultaneously
-            Assert.Equal(2, overlayReg.ActiveOverlays.Count);
-            Assert.Contains(overlayReg.ActiveOverlays, o => o.Id == "frypdf.overlay.scratchpad");
-            Assert.Contains(overlayReg.ActiveOverlays, o => o.Id == "frypdf.overlay.telemetry");
-
-            // Verify StandardCard chrome on both
-            var scratchInst = overlayReg.ActiveOverlays.First(o => o.Id == "frypdf.overlay.scratchpad");
-            var telemInst = overlayReg.ActiveOverlays.First(o => o.Id == "frypdf.overlay.telemetry");
-
-            Assert.True(scratchInst.HasStandardChrome);
-            Assert.True(telemInst.HasStandardChrome);
-
-            // Test Pin and Minimize commands
-            scratchInst.TogglePin();
-            Assert.True(scratchInst.IsPinned);
-
-            scratchInst.ToggleMinimize();
-            Assert.True(scratchInst.IsMinimized);
-
-            await host.StopAsync();
-        }
-        finally
+            Id = "test.overlay.card1",
+            Title = "Test Card 1",
+            ChromeMode = OverlayChromeMode.StandardCard,
+            ViewFactory = _ => "CardView1"
+        };
+        var desc2 = new OverlayDescriptor
         {
-            try { Directory.Delete(tempDir, recursive: true); } catch { }
-        }
-    }
-
-    [Fact]
-    public void ScratchpadViewModel_TracksCounts_AndAddsTimestamps()
-    {
-        var vm = new ScratchpadViewModel
-        {
-            NotesText = "Hello World PDF"
+            Id = "test.overlay.card2",
+            Title = "Test Card 2",
+            ChromeMode = OverlayChromeMode.StandardCard,
+            ViewFactory = _ => "CardView2"
         };
 
-        Assert.Equal(3, vm.WordCount);
-        Assert.Equal(15, vm.CharacterCount);
+        using var reg1 = overlayReg.RegisterOverlay(desc1);
+        using var reg2 = overlayReg.RegisterOverlay(desc2);
 
-        vm.AddTimestamp();
-        Assert.Contains("Note (", vm.NotesText);
-        Assert.True(vm.WordCount > 3);
+        overlayReg.ShowOverlay("test.overlay.card1");
+        overlayReg.ShowOverlay("test.overlay.card2");
 
-        vm.ClearNotes();
-        Assert.Equal(0, vm.WordCount);
-        Assert.Equal(0, vm.CharacterCount);
-    }
+        Assert.Equal(2, overlayReg.ActiveOverlays.Count);
+        Assert.Contains(overlayReg.ActiveOverlays, o => o.Id == "test.overlay.card1");
+        Assert.Contains(overlayReg.ActiveOverlays, o => o.Id == "test.overlay.card2");
 
-    [Fact]
-    public void DocumentTelemetryViewModel_RefreshesMetrics_AndTrimsHeap()
-    {
-        var vm = new DocumentTelemetryViewModel();
-        Assert.False(string.IsNullOrWhiteSpace(vm.MemoryAllocatedMb));
-        Assert.True(vm.GarbageCollections >= 0);
+        var inst1 = overlayReg.ActiveOverlays.First(o => o.Id == "test.overlay.card1");
+        var inst2 = overlayReg.ActiveOverlays.First(o => o.Id == "test.overlay.card2");
 
-        vm.RunGCTrim();
-        Assert.False(string.IsNullOrWhiteSpace(vm.MemoryAllocatedMb));
+        Assert.True(inst1.HasStandardChrome);
+        Assert.True(inst2.HasStandardChrome);
+
+        inst1.TogglePin();
+        Assert.True(inst1.IsPinned);
+
+        inst1.ToggleMinimize();
+        Assert.True(inst1.IsMinimized);
     }
 }

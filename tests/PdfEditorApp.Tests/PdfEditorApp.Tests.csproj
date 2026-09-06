@@ -23,9 +23,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\PdfEditorApp.Core\PdfEditorApp.Core.csproj" />
     <ProjectReference Include="..\..\src\PdfEditorApp\PdfEditorApp.csproj" />
-    <ProjectReference Include="..\..\docs\examples\SnakePlugin\SnakePlugin.csproj" />
-    <ProjectReference Include="..\..\docs\examples\ScratchpadPlugin\ScratchpadPlugin.csproj" />
-    <ProjectReference Include="..\..\docs\examples\TelemetryPlugin\TelemetryPlugin.csproj" />
   </ItemGroup>
-
 </Project>

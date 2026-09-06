@@ -99,94 +99,6 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                     }
                 }
             }
-
-            DiscoverFromLocalExamples();
-        }
-        catch { }
-    }
-
-    private static string? FindExamplesDirectory()
-    {
-        var current = AppContext.BaseDirectory;
-        while (!string.IsNullOrEmpty(current))
-        {
-            var candidate = Path.Combine(current, "docs", "examples");
-            if (Directory.Exists(candidate))
-            {
-                return Path.GetFullPath(candidate);
-            }
-
-            var parent = Directory.GetParent(current);
-            if (parent == null || parent.FullName == current) break;
-            current = parent.FullName;
-        }
-
-        current = Directory.GetCurrentDirectory();
-        while (!string.IsNullOrEmpty(current))
-        {
-            var candidate = Path.Combine(current, "docs", "examples");
-            if (Directory.Exists(candidate))
-            {
-                return Path.GetFullPath(candidate);
-            }
-
-            var parent = Directory.GetParent(current);
-            if (parent == null || parent.FullName == current) break;
-            current = parent.FullName;
-        }
-
-        return null;
-    }
-
-    private void DiscoverFromLocalExamples()
-    {
-        try
-        {
-            var examplesDir = FindExamplesDirectory();
-            if (examplesDir != null && Directory.Exists(examplesDir))
-            {
-                foreach (var dir in Directory.GetDirectories(examplesDir))
-                {
-                    var manifestPath = Path.Combine(dir, "plugin.json");
-                    if (File.Exists(manifestPath))
-                    {
-                        var json = File.ReadAllText(manifestPath);
-                        using var doc = JsonDocument.Parse(json);
-                        var rootElem = doc.RootElement;
-                        var id = rootElem.TryGetProperty("id", out var idProp) ? idProp.GetString() : null;
-                        var name = rootElem.TryGetProperty("name", out var nameProp) ? nameProp.GetString() : null;
-                        var author = rootElem.TryGetProperty("author", out var authorProp) ? authorProp.GetString() : "Community";
-                        var version = rootElem.TryGetProperty("version", out var verProp) ? verProp.GetString() : "1.0.0";
-                        var desc = rootElem.TryGetProperty("description", out var descProp) ? descProp.GetString() : "";
-                        var icon = rootElem.TryGetProperty("icon", out var iconProp) ? iconProp.GetString() : "PuzzleOutline";
-
-                        if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(name))
-                        {
-                            lock (_catalogLock)
-                            {
-                                if (!_remoteExtensions.Any(e => string.Equals(e?.Id, id, StringComparison.OrdinalIgnoreCase)))
-                                {
-                                    var rawShort = id.Split('.').Last();
-                                    var shortName = char.ToUpperInvariant(rawShort[0]) + (rawShort.Length > 1 ? rawShort.Substring(1) : "");
-                                    _remoteExtensions.Add(new MarketplacePluginItem
-                                    {
-                                        Id = id,
-                                        Name = name,
-                                        Publisher = author ?? "FryPDF Team",
-                                        Version = version ?? "1.0.0",
-                                        Description = desc ?? "",
-                                        IconKind = icon ?? "PuzzleOutline",
-                                        IsOfficial = true,
-                                        IsVerified = true,
-                                        Category = "UI & Extensions",
-                                        DownloadUrl = $"{_registryBaseUrl}/{id}/{shortName}.fryplugin"
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
         catch { }
     }
@@ -363,9 +275,6 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                         }
                     }
 
-                    // Also merge any local examples not present in remote catalog yet
-                    DiscoverFromLocalExamples();
-
                     // Persist to local disk cache for fast/offline resilience
                     try
                     {
@@ -523,26 +432,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         statusCallback?.Invoke($"Connecting to FryPDF Marketplace registry for '{item.Name}'...");
         progress?.Report(0.1);
 
-        // Check if pre-packaged local archive exists in docs/examples for fast/offline test environments
-        string? localArchive = null;
-        var shortId = pluginId.Split('.').Last();
-        var capitalized = char.ToUpperInvariant(shortId[0]) + (shortId.Length > 1 ? shortId.Substring(1) : "");
-        var candidateNames = new[] { shortId, capitalized, "Snake", "TicTacToe", "Scratchpad", "Telemetry" };
-        var examplesDir = FindExamplesDirectory();
-        if (examplesDir != null)
-        {
-            foreach (var name in candidateNames.Distinct(StringComparer.OrdinalIgnoreCase))
-            {
-                var candidate = Path.Combine(examplesDir, $"{name}Plugin", "bin", "Release", "net10.0", $"{name}.fryplugin");
-                if (File.Exists(candidate))
-                {
-                    localArchive = candidate;
-                    break;
-                }
-            }
-        }
-
-        // Case A: Remote package download from GitHub repository (with offline local fallback)
+        // Case A: Remote package download from registry
         if (!string.IsNullOrWhiteSpace(item.DownloadUrl))
         {
             statusCallback?.Invoke($"Downloading {item.FormattedSize} package archive from registry...");
@@ -555,47 +445,41 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             try
             {
                 bool downloaded = false;
-            try
-            {
-                using (var response = await _httpClient.GetAsync(item.DownloadUrl, HttpCompletionOption.ResponseHeadersRead, ct))
+                try
                 {
-                    if (response.IsSuccessStatusCode)
+                    using (var response = await _httpClient.GetAsync(item.DownloadUrl, HttpCompletionOption.ResponseHeadersRead, ct))
                     {
-                        var contentLength = response.Content.Headers.ContentLength ?? 1;
-                        await using var stream = await response.Content.ReadAsStreamAsync(ct);
-                        await using var fileStream = File.Create(tempPackagePath);
-
-                        var buffer = new byte[8192];
-                        long totalBytesRead = 0;
-                        int bytesRead;
-
-                        while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, ct)) > 0)
+                        if (response.IsSuccessStatusCode)
                         {
-                            await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), ct);
-                            totalBytesRead += bytesRead;
-                            progress?.Report(0.2 + 0.5 * ((double)totalBytesRead / contentLength));
+                            var contentLength = response.Content.Headers.ContentLength ?? 1;
+                            await using var stream = await response.Content.ReadAsStreamAsync(ct);
+                            await using var fileStream = File.Create(tempPackagePath);
+
+                            var buffer = new byte[8192];
+                            long totalBytesRead = 0;
+                            int bytesRead;
+
+                            while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, ct)) > 0)
+                            {
+                                await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), ct);
+                                totalBytesRead += bytesRead;
+                                progress?.Report(0.2 + 0.5 * ((double)totalBytesRead / contentLength));
+                            }
+                            downloaded = true;
                         }
-                        downloaded = true;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PluginMarketplaceService] Remote package download failed: {ex.Message}");
-            }
-
-            if (!downloaded)
-            {
-                if (localArchive != null && File.Exists(localArchive))
+                catch (Exception ex)
                 {
-                    File.Copy(localArchive, tempPackagePath, overwrite: true);
+                    System.Diagnostics.Debug.WriteLine($"[PluginMarketplaceService] Remote package download failed: {ex.Message}");
                 }
-                else
+
+                if (!downloaded)
                 {
                     item.Status = MarketplacePluginStatus.Available;
+                    statusCallback?.Invoke($"Failed to download '{item.Name}' package from registry.");
                     return false;
                 }
-            }
 
                 statusCallback?.Invoke("Unpacking package archive and verifying manifest...");
                 progress?.Report(0.75);

@@ -21,7 +21,8 @@ public interface IPdfStudioAgentService
         PageViewModel targetPage,
         AiSettingsModel settings,
         Action<string>? progressCallback = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        (double X, double Y)? targetPoint = null);
 
     /// <summary>
     /// Modifies an existing canvas element in-place using natural language instructions via Microsoft.Extensions.AI.

@@ -8,6 +8,7 @@
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:models1="clr-namespace:PdfEditorApp.Core.Models;assembly=PdfEditorApp.Core"
              xmlns:descriptors="clr-namespace:PdfEditorApp.Core.Plugins.Descriptors;assembly=PdfEditorApp.Core"
+             xmlns:views="using:PdfEditorApp.Views"
              x:Class="PdfEditorApp.Views.ThumbnailSidebarView"
              x:DataType="vm:MainViewModel">
 
@@ -51,8 +52,9 @@
 
     <!-- Outer Container: dynamically switches between Expanded (240px) and Collapsed (38px) mode -->
     <Panel>
-        <!-- A. EXPANDED MODE (Width 240) -->
-        <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,1,0" Width="240"
+        <!-- A. EXPANDED MODE (Flexible Resizable Width, Min 240, Max 650) -->
+        <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,1,0"
+                HorizontalAlignment="Stretch" MinWidth="240" MaxWidth="650"
                 IsVisible="{Binding !IsLeftSidebarCollapsed}">
             <Grid RowDefinitions="Auto,*,Auto">
 
@@ -83,6 +85,14 @@
                                     CommandParameter="{x:Static models1:SidebarTabKind.Comments}"
                                     ToolTip.Tip="Comments &amp; Review Annotations">
                                 <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                            </Button>
+
+                            <!-- AI Studio Assistant Tab -->
+                            <Button Classes="mini-tool-btn" Width="30" Height="30"
+                                    Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=AiAssistant}"
+                                    Command="{Binding OpenAiAssistantCommand}"
+                                    ToolTip.Tip="AI Studio Assistant (⌘I / Ctrl+I)">
+                                <materialIcons:MaterialIcon Kind="AutoFixHigh" Width="16" Height="16" Foreground="#7C3AED" />
                             </Button>
 
                             <!-- Dynamic Plugin Contributed Sidebar Tabs -->
@@ -129,6 +139,10 @@
 
             <!-- 2. Content Area (Dynamically changes based on ActiveSidebarTab) -->
             <Panel Grid.Row="1">
+
+                <!-- 2D. TAB: AI STUDIO ASSISTANT -->
+                <views:AiAssistantSidebarView DataContext="{Binding AiAssistant}"
+                                              IsVisible="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=AiAssistant}" />
 
                 <!-- 2G. DYNAMIC PLUGIN SIDEBAR TAB CONTENT -->
                 <ContentControl Content="{Binding ActiveDynamicSidebarView}"
@@ -508,8 +522,9 @@
 
             </Panel>
 
-            <!-- 3. Bottom Reorder Page Actions -->
-            <Border Grid.Row="2" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,1,0,0" Padding="10,8">
+            <!-- 3. Bottom Reorder Page Actions (Only visible for Thumbnails tab) -->
+            <Border Grid.Row="2" Background="{DynamicResource WinBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,1,0,0" Padding="10,8"
+                    IsVisible="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Thumbnails}">
                 <Grid ColumnDefinitions="*,*">
                     <Button Grid.Column="0"
                             Classes="secondary-btn"
@@ -576,6 +591,14 @@
                         CommandParameter="{x:Static models1:SidebarTabKind.Comments}"
                         ToolTip.Tip="Open Comments &amp; Review Annotations">
                     <materialIcons:MaterialIcon Kind="CommentTextMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                </Button>
+
+                <!-- AI Studio Assistant Tab Button (Collapsed Mini Rail) -->
+                <Button Classes="mini-tool-btn" Width="30" Height="30"
+                        Classes.active="{Binding ActiveSidebarTab, Converter={StaticResource EqualityConverter}, ConverterParameter=AiAssistant}"
+                        Command="{Binding OpenAiAssistantCommand}"
+                        ToolTip.Tip="Open AI Studio Assistant (⌘I / Ctrl+I)">
+                    <materialIcons:MaterialIcon Kind="AutoFixHigh" Width="16" Height="16" Foreground="#7C3AED" />
                 </Button>
             </StackPanel>
 

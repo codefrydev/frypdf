@@ -211,7 +211,40 @@ public partial class MainViewModel : ViewModelBase
     private bool _isRibbonCollapsed;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsLeftSidebarResizable))]
     private bool _isLeftSidebarCollapsed;
+
+    [ObservableProperty]
+    private GridLength _leftSidebarGridLength = new(340, GridUnitType.Pixel);
+
+    private double _savedExpandedLeftSidebarWidth = 340;
+
+    public bool IsLeftSidebarResizable => !IsLeftSidebarCollapsed && !IsPresentationMode;
+
+    partial void OnIsLeftSidebarCollapsedChanged(bool value)
+    {
+        if (value)
+        {
+            if (LeftSidebarGridLength.IsAbsolute && LeftSidebarGridLength.Value > 100)
+            {
+                _savedExpandedLeftSidebarWidth = LeftSidebarGridLength.Value;
+            }
+            LeftSidebarGridLength = new GridLength(38, GridUnitType.Pixel);
+        }
+        else
+        {
+            LeftSidebarGridLength = new GridLength(Math.Max(260, _savedExpandedLeftSidebarWidth), GridUnitType.Pixel);
+        }
+        OnPropertyChanged(nameof(IsLeftSidebarResizable));
+    }
+
+    partial void OnLeftSidebarGridLengthChanged(GridLength value)
+    {
+        if (!IsLeftSidebarCollapsed && value.IsAbsolute && value.Value >= 200)
+        {
+            _savedExpandedLeftSidebarWidth = value.Value;
+        }
+    }
 
     [ObservableProperty]
     private bool _isInspectorCollapsed;
@@ -681,6 +714,7 @@ public partial class MainViewModel : ViewModelBase
 
     // Presentation / Read Mode & Theme
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsLeftSidebarResizable))]
     private bool _isPresentationMode;
 
     [ObservableProperty]
@@ -914,7 +948,8 @@ public partial class MainViewModel : ViewModelBase
             GetCurrentPage = () => CurrentPage,
             GetSelectedElement = () => CurrentPage?.SelectedElement ?? Inspector.SelectedElement,
             UndoRedo = UndoRedo,
-            RequestOpenSettings = () => NavigateToSettingsCommand.Execute(null)
+            RequestOpenSettings = () => NavigateToSettingsCommand.Execute(null),
+            RequestReturnToThumbnails = () => SelectSidebarTab(SidebarTabKind.Thumbnails)
         };
 
         // Set up Home page
@@ -1059,6 +1094,18 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void OpenAiAssistant()
     {
+        if (IsLeftSidebarCollapsed)
+        {
+            IsLeftSidebarCollapsed = false;
+        }
+        if (LeftSidebarGridLength.IsAbsolute && LeftSidebarGridLength.Value < 340)
+        {
+            LeftSidebarGridLength = new GridLength(340, GridUnitType.Pixel);
+        }
+        ActiveDynamicSidebarTabId = null;
+        ActiveDynamicSidebarView = null;
+        ActiveSidebarTab = SidebarTabKind.AiAssistant;
+
         var target = CurrentPage?.SelectedElement ?? Inspector.SelectedElement;
         if (target != null)
         {
@@ -1073,6 +1120,18 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void AskAiToModify(ElementViewModelBase? element = null)
     {
+        if (IsLeftSidebarCollapsed)
+        {
+            IsLeftSidebarCollapsed = false;
+        }
+        if (LeftSidebarGridLength.IsAbsolute && LeftSidebarGridLength.Value < 340)
+        {
+            LeftSidebarGridLength = new GridLength(340, GridUnitType.Pixel);
+        }
+        ActiveDynamicSidebarTabId = null;
+        ActiveDynamicSidebarView = null;
+        ActiveSidebarTab = SidebarTabKind.AiAssistant;
+
         var target = element ?? CurrentPage?.SelectedElement ?? Inspector.SelectedElement;
         if (target != null)
         {
@@ -1082,6 +1141,58 @@ public partial class MainViewModel : ViewModelBase
         {
             AiAssistant.Open();
         }
+    }
+
+    [ObservableProperty]
+    private (double X, double Y)? _lastCanvasClickPoint;
+
+    [RelayCommand]
+    public void AskAiAtPoint(object? param = null)
+    {
+        if (IsLeftSidebarCollapsed)
+        {
+            IsLeftSidebarCollapsed = false;
+        }
+        if (LeftSidebarGridLength.IsAbsolute && LeftSidebarGridLength.Value < 340)
+        {
+            LeftSidebarGridLength = new GridLength(340, GridUnitType.Pixel);
+        }
+        ActiveDynamicSidebarTabId = null;
+        ActiveDynamicSidebarView = null;
+        ActiveSidebarTab = SidebarTabKind.AiAssistant;
+
+        double targetX = LastCanvasClickPoint?.X ?? 100;
+        double targetY = LastCanvasClickPoint?.Y ?? 150;
+
+        if (param is (double px, double py))
+        {
+            targetX = px;
+            targetY = py;
+        }
+
+        AiAssistant.TargetPointOnPage(targetX, targetY, CurrentPage);
+    }
+
+    [RelayCommand]
+    public void SelectEntirePageForAi()
+    {
+        if (CurrentPage != null)
+        {
+            CurrentPage.ClearSelection();
+        }
+        if (IsLeftSidebarCollapsed)
+        {
+            IsLeftSidebarCollapsed = false;
+        }
+        if (LeftSidebarGridLength.IsAbsolute && LeftSidebarGridLength.Value < 340)
+        {
+            LeftSidebarGridLength = new GridLength(340, GridUnitType.Pixel);
+        }
+        ActiveDynamicSidebarTabId = null;
+        ActiveDynamicSidebarView = null;
+        ActiveSidebarTab = SidebarTabKind.AiAssistant;
+
+        AiAssistant.TargetEntirePage(CurrentPage);
     }
 
     [RelayCommand]
@@ -1438,6 +1549,10 @@ public partial class MainViewModel : ViewModelBase
     public void OnElementSelectionChanged(ElementViewModelBase? selectedElement)
     {
         Inspector.UpdateSelection(selectedElement, CurrentPage);
+        if (ActiveSidebarTab == SidebarTabKind.AiAssistant)
+        {
+            AiAssistant.UpdateTargetElement(selectedElement);
+        }
     }
 
     // --- TOAST HUD NOTIFICATION FEEDBACK ---

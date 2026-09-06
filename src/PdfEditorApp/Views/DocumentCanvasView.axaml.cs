@@ -469,13 +469,19 @@ public partial class DocumentCanvasView : UserControl
 
         var pos = e.GetPosition(PageElementsCanvas);
         double zoom = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
-        double canvasX = pos.X / zoom;
-        double canvasY = pos.Y / zoom;
+        double canvasX = Math.Max(0, pos.X / zoom);
+        double canvasY = Math.Max(0, pos.Y / zoom);
 
-        // Register right-click point for context-menu placement (Adobe Acrobat / Photoshop standard)
+        ViewModel.LastCanvasClickPoint = (canvasX, canvasY);
+
+        // Register right-click point for context-menu placement and AI Studio point targeting
         if (pointerPoint.Properties.IsRightButtonPressed)
         {
             ViewModel.SmartPlacement.SetContextMenuPointer(canvasX, canvasY);
+        }
+        else if (ViewModel.AiAssistant.IsPointTargetMode)
+        {
+            ViewModel.AiAssistant.TargetPointOnPage(canvasX, canvasY, ViewModel.CurrentPage);
         }
 
         if (ViewModel.ActiveToolMode == ToolMode.Draw || ViewModel.ActiveToolMode == ToolMode.Highlight)

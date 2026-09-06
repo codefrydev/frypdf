@@ -437,7 +437,8 @@ public enum SidebarTabKind
 {
     Thumbnails,
     Outline,
-    Comments
+    Comments,
+    AiAssistant
 }
 
 public enum HomeNavSection

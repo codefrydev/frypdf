@@ -863,4 +863,229 @@ public class AiServiceTests : IDisposable
         Assert.Equal(24, btn.Height);
         Assert.Equal(Avalonia.Layout.HorizontalAlignment.Left, btn.HorizontalAlignment);
     }
+
+    [Fact]
+    public void AiAssistantViewModel_NewChat_CreatesFreshSession()
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        var aiService = new AiService();
+        var agentService = new PdfStudioAgentService(aiService);
+        var vm = new AiAssistantViewModel(agentService, uiSettings, aiService);
+
+        Assert.NotEmpty(vm.Sessions);
+        Assert.NotNull(vm.CurrentSession);
+        var initialSession = vm.CurrentSession;
+
+        vm.NewChatCommand.Execute(null);
+
+        Assert.NotSame(initialSession, vm.CurrentSession);
+        Assert.Equal("New Chat", vm.CurrentSession.Title);
+        Assert.Empty(vm.CurrentSession.Messages);
+        Assert.Equal(2, vm.Sessions.Count);
+    }
+
+    [Fact]
+    public void AiAssistantViewModel_SwitchSession_ChangesCurrentMessages()
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        var aiService = new AiService();
+        var agentService = new PdfStudioAgentService(aiService);
+        var vm = new AiAssistantViewModel(agentService, uiSettings, aiService);
+
+        var session1 = vm.CurrentSession;
+        Assert.NotNull(session1);
+        session1.Messages.Add(new AiChatMessage { Content = "Hello from session 1" });
+
+        vm.NewChatCommand.Execute(null);
+        var session2 = vm.CurrentSession;
+        Assert.NotNull(session2);
+        session2.Messages.Add(new AiChatMessage { Content = "Hello from session 2" });
+
+        Assert.NotNull(vm.CurrentSession);
+        Assert.Single(vm.CurrentSession.Messages);
+        Assert.Equal("Hello from session 2", vm.CurrentSession.Messages[0].Content);
+
+        // Switch back to session 1
+        vm.SwitchSessionCommand.Execute(session1);
+        Assert.Same(session1, vm.CurrentSession);
+        Assert.Single(vm.CurrentSession.Messages);
+        Assert.Equal("Hello from session 1", vm.CurrentSession.Messages[0].Content);
+    }
+
+    [Fact]
+    public void AiAssistantViewModel_DeleteSession_RemovesSessionAndMaintainsActive()
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        var aiService = new AiService();
+        var agentService = new PdfStudioAgentService(aiService);
+        var vm = new AiAssistantViewModel(agentService, uiSettings, aiService);
+
+        var session1 = vm.CurrentSession;
+        Assert.NotNull(session1);
+        vm.NewChatCommand.Execute(null);
+        var session2 = vm.CurrentSession;
+        Assert.NotNull(session2);
+
+        Assert.Equal(2, vm.Sessions.Count);
+
+        // Delete active session2
+        vm.DeleteSessionCommand.Execute(session2);
+
+        Assert.Single(vm.Sessions);
+        Assert.Same(session1, vm.CurrentSession);
+    }
+
+    [Fact]
+    public void AiAssistantViewModel_ToggleHistoryDrawer_TogglesDrawerState()
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        var aiService = new AiService();
+        var agentService = new PdfStudioAgentService(aiService);
+        var vm = new AiAssistantViewModel(agentService, uiSettings, aiService);
+
+        Assert.False(vm.IsHistoryDrawerOpen);
+        vm.ToggleHistoryDrawerCommand.Execute(null);
+        Assert.True(vm.IsHistoryDrawerOpen);
+        vm.ToggleHistoryDrawerCommand.Execute(null);
+        Assert.False(vm.IsHistoryDrawerOpen);
+    }
+
+    [Fact]
+    public void AiAssistantViewModel_TargetEntirePage_SetsEntirePageScopeAndSuggestions()
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        var aiService = new AiService();
+        var agentService = new PdfStudioAgentService(aiService);
+        var vm = new AiAssistantViewModel(agentService, uiSettings, aiService);
+        var page = new PageViewModel { PageNumber = 2, Width = 800, Height = 1131 };
+
+        vm.TargetEntirePage(page);
+
+        Assert.Equal(AiTargetKind.EntirePage, vm.TargetKind);
+        Assert.True(vm.IsPageTargetMode);
+        Assert.False(vm.IsPointTargetMode);
+        Assert.False(vm.HasTargetPoint);
+        Assert.False(vm.HasTargetElement);
+        Assert.Equal(2, vm.TargetPageNumber);
+        Assert.Contains("Page 2", vm.TargetDescription);
+        Assert.Contains("800 × 1131", vm.TargetDescription);
+        Assert.NotEmpty(vm.SuggestedPrompts);
+        Assert.Contains(vm.SuggestedPrompts, p => p.Contains("invoice", StringComparison.OrdinalIgnoreCase) || p.Contains("page", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void AiAssistantViewModel_TargetPointOnPage_SetsCoordinatesAndSuggestions()
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        var aiService = new AiService();
+        var agentService = new PdfStudioAgentService(aiService);
+        var vm = new AiAssistantViewModel(agentService, uiSettings, aiService);
+        var page = new PageViewModel { PageNumber = 3, Width = 800, Height = 1131 };
+
+        vm.TargetPointOnPage(185.5, 340.2, page);
+
+        Assert.Equal(AiTargetKind.PointOnPage, vm.TargetKind);
+        Assert.True(vm.IsPointTargetMode);
+        Assert.False(vm.IsPageTargetMode);
+        Assert.True(vm.HasTargetPoint);
+        Assert.NotNull(vm.TargetPoint);
+        Assert.Equal(185.5, vm.TargetPointX);
+        Assert.Equal(340.2, vm.TargetPointY);
+        Assert.Contains("186", vm.TargetPointDisplay);
+        Assert.Contains("340", vm.TargetPointDisplay);
+        Assert.Contains("Point at", vm.TargetDescription);
+        Assert.Contains("Page 3", vm.TargetDescription);
+        Assert.NotEmpty(vm.SuggestedPrompts);
+        Assert.Contains(vm.SuggestedPrompts, p => p.Contains("here", StringComparison.OrdinalIgnoreCase) || p.Contains("point", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void AiAssistantViewModel_ClearTargetPoint_RevertsToEntirePage()
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        var aiService = new AiService();
+        var agentService = new PdfStudioAgentService(aiService);
+        var vm = new AiAssistantViewModel(agentService, uiSettings, aiService);
+        var page = new PageViewModel { PageNumber = 1, Width = 800, Height = 1131 };
+
+        vm.TargetPointOnPage(200, 400, page);
+        Assert.True(vm.HasTargetPoint);
+
+        vm.ClearTargetPointCommand.Execute(null);
+
+        Assert.False(vm.HasTargetPoint);
+        Assert.Null(vm.TargetPoint);
+        Assert.Equal(AiTargetKind.EntirePage, vm.TargetKind);
+        Assert.True(vm.IsPageTargetMode);
+    }
+
+    [Fact]
+    public void AiAssistantViewModel_SwitchModes_UpdatesScopeAndSuggestions()
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        var aiService = new AiService();
+        var agentService = new PdfStudioAgentService(aiService);
+        var vm = new AiAssistantViewModel(agentService, uiSettings, aiService);
+        var page = new PageViewModel { PageNumber = 1, Width = 800, Height = 1131 };
+        vm.GetCurrentPage = () => page;
+
+        // Start in Entire Page mode
+        vm.SwitchToEntirePageModeCommand.Execute(null);
+        Assert.Equal(AiTargetKind.EntirePage, vm.TargetKind);
+
+        // Switch to Point Target mode
+        vm.SwitchToPointTargetModeCommand.Execute(null);
+        Assert.Equal(AiTargetKind.PointOnPage, vm.TargetKind);
+        Assert.True(vm.HasTargetPoint);
+
+        // Switch back to Entire Page mode
+        vm.SwitchToEntirePageModeCommand.Execute(null);
+        Assert.Equal(AiTargetKind.EntirePage, vm.TargetKind);
+        Assert.False(vm.HasTargetPoint);
+    }
+
+    [Fact]
+    public void AiAssistantViewModel_UpdateTargetElement_OverridesPointAndPage()
+    {
+        var uiSettings = new UiSettingsService(_tempSettingsPath);
+        var aiService = new AiService();
+        var agentService = new PdfStudioAgentService(aiService);
+        var vm = new AiAssistantViewModel(agentService, uiSettings, aiService);
+        var page = new PageViewModel { PageNumber = 1 };
+        vm.GetCurrentPage = () => page;
+
+        vm.TargetPointOnPage(100, 200, page);
+        Assert.True(vm.HasTargetPoint);
+
+        var textElement = new PdfEditorApp.ViewModels.ElementViewModels.TextElementViewModel { Text = "Sample Heading" };
+        vm.UpdateTargetElement(textElement);
+
+        Assert.Equal(AiTargetKind.Element, vm.TargetKind);
+        Assert.True(vm.HasTargetElement);
+        Assert.False(vm.HasTargetPoint);
+        Assert.Contains("Sample Heading", vm.TargetElementTitle);
+
+        // Deselect element
+        vm.UpdateTargetElement(null);
+        Assert.False(vm.HasTargetElement);
+        Assert.Equal(AiTargetKind.EntirePage, vm.TargetKind);
+    }
+
+    [Fact]
+    public void AiChatMessage_Undo_TriggersUndoCallback()
+    {
+        bool undoCalled = false;
+        var msg = new AiChatMessage
+        {
+            Role = AiChatRole.Assistant,
+            CanUndo = true,
+            UndoAction = () => undoCalled = true
+        };
+
+        Assert.True(msg.CanUndo);
+        msg.UndoCommand.Execute(null);
+
+        Assert.True(undoCalled);
+        Assert.False(msg.CanUndo);
+    }
 }

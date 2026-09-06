@@ -107,6 +107,13 @@
                 <!-- Canvas Background Context Menu -->
                 <ScrollViewer.ContextMenu>
                     <ContextMenu>
+                        <MenuItem Header="Ask AI: Insert / Edit Here (⌘I)" Command="{Binding AskAiAtPointCommand}">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="AutoFixHigh" Width="16" Height="16" Foreground="#7C3AED" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Target Entire Page for AI" Command="{Binding SelectEntirePageForAiCommand}">
+                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
+                        </MenuItem>
+                        <Separator />
                         <MenuItem Header="Paste" InputGesture="Ctrl+V" Command="{Binding PasteCommand}">
                             <MenuItem.Icon><materialIcons:MaterialIcon Kind="ContentPaste" Width="16" Height="16" Foreground="#0F6CBD" /></MenuItem.Icon>
                         </MenuItem>
@@ -1039,6 +1046,87 @@
                                     Width="0"
                                     Height="0" />
                         </Canvas>
+
+                        <!-- Interactive AI Target Point Reticle / Pin Overlay -->
+                        <Canvas Width="{Binding CurrentPage.Width, FallbackValue=800}"
+                                Height="{Binding CurrentPage.Height, FallbackValue=1131}"
+                                IsVisible="{Binding AiAssistant.HasTargetPoint}"
+                                IsHitTestVisible="True">
+                            <Grid Canvas.Left="{Binding AiAssistant.TargetPointX}"
+                                  Canvas.Top="{Binding AiAssistant.TargetPointY}"
+                                  Margin="-18,-18,0,0">
+                                <!-- Pulsing Outer Glow Ring -->
+                                <Border Width="36" Height="36"
+                                        CornerRadius="18"
+                                        BorderBrush="#7C3AED"
+                                        BorderThickness="1.5"
+                                        Background="#207C3AED"
+                                        BoxShadow="0 0 16 #507C3AED" />
+
+                                <!-- Inner Target Center Dot -->
+                                <Border Width="8" Height="8"
+                                        CornerRadius="4"
+                                        Background="#7C3AED"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+
+                                <!-- Floating Coordinate Tag Pill with Close Button -->
+                                <Border HorizontalAlignment="Left"
+                                        VerticalAlignment="Top"
+                                        Margin="24,-12,0,0"
+                                        Background="#1E1B4B"
+                                        BorderBrush="#7C3AED"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="8,3"
+                                        BoxShadow="0 4 12 #60000000">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="Target" Width="12" Height="12" Foreground="#C4B5FD" />
+                                        <TextBlock Text="{Binding AiAssistant.TargetPointDisplay, StringFormat='AI Target ({0})'}"
+                                                   Foreground="#EDE9FE"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="10.5"
+                                                   VerticalAlignment="Center" />
+                                        <Button Classes="mini-tool-btn"
+                                                Width="16" Height="16"
+                                                Padding="0"
+                                                Command="{Binding AiAssistant.ClearTargetPointCommand}"
+                                                ToolTip.Tip="Clear target point (Revert to Entire Page)">
+                                            <materialIcons:MaterialIcon Kind="Close" Width="10" Height="10" Foreground="#C4B5FD" />
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Canvas>
+
+                        <!-- Entire Page Focus Outline (when whole page is selected and no element is selected) -->
+                        <Border IsVisible="{Binding AiAssistant.IsPageTargetMode}"
+                                IsHitTestVisible="False"
+                                BorderBrush="{DynamicResource M3PrimaryBrush}"
+                                BorderThickness="1.5"
+                                CornerRadius="2">
+                            <!-- Floating Page Focus Pill Badge in Top-Left Corner -->
+                            <Border HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    Margin="10,10,0,0"
+                                    Background="{DynamicResource M3SurfaceContainerHighestBrush}"
+                                    BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Padding="8,3.5"
+                                    BoxShadow="0 2 8 #20000000">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="13" Height="13" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                    <TextBlock Text="{Binding CurrentPage.PageNumber, StringFormat='Page {0} Selected'}"
+                                               FontSize="10.5"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource M3OnSurfaceBrush}" />
+                                    <TextBlock Text="{Binding AiAssistant.TargetPageDimensions, StringFormat='• {0}'}"
+                                               FontSize="10"
+                                               Foreground="{DynamicResource WinMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </Border>
                     </Grid>
                 </Border>
             </LayoutTransformControl>

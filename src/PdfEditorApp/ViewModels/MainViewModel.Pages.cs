@@ -42,6 +42,7 @@ public partial class MainViewModel
         }
         if (tab == SidebarTabKind.Outline) RefreshOutline();
         if (tab == SidebarTabKind.Comments) RefreshComments();
+        if (tab == SidebarTabKind.AiAssistant) OpenAiAssistant();
     }
 
     [RelayCommand]

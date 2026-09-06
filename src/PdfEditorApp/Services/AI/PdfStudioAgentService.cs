@@ -38,7 +38,8 @@ public class PdfStudioAgentService : IPdfStudioAgentService
         PageViewModel targetPage,
         AiSettingsModel settings,
         Action<string>? progressCallback = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        (double X, double Y)? targetPoint = null)
     {
         if (string.IsNullOrWhiteSpace(userPrompt))
         {
@@ -56,6 +57,25 @@ public class PdfStudioAgentService : IPdfStudioAgentService
         var createdElements = new List<ElementViewModelBase>();
         var actionsTaken = new List<string>();
 
+        double baseX = targetPoint?.X ?? 40;
+        double baseY = targetPoint?.Y ?? 40;
+
+        double ResolveX(double x) => (targetPoint.HasValue && Math.Abs(x - 40) < 0.1) ? targetPoint.Value.X : x;
+        double ResolveY(double y, double defaultY = 40) => (targetPoint.HasValue && Math.Abs(y - defaultY) < 0.1) ? targetPoint.Value.Y : y;
+
+        string targetScopeInstruction = targetPoint.HasValue
+            ? $"""
+            Target Location:
+            - The user explicitly pointed to coordinate X: {targetPoint.Value.X:0} pt, Y: {targetPoint.Value.Y:0} pt on Page {targetPage.PageNumber}.
+            - Place newly created elements starting at or centered near this target position (X: {targetPoint.Value.X:0}, Y: {targetPoint.Value.Y:0}).
+            - For composed layouts (e.g. heading + paragraph + button), position elements sequentially from Y: {targetPoint.Value.Y:0} downwards.
+            """
+            : $"""
+            Target Scope:
+            - The user has selected ENTIRE Page {targetPage.PageNumber} (Width: {targetPage.Width:0} pt, Height: {targetPage.Height:0} pt).
+            - You have full creative authority to structure, align, and compose elements across the entire page layout.
+            """;
+
         // System prompt guiding design principles and canvas coordinate system
         string systemPrompt = $"""
             You are FryPDF Studio Agent, an expert AI document layout designer.
@@ -65,6 +85,8 @@ public class PdfStudioAgentService : IPdfStudioAgentService
             - Page Width: {targetPage.Width:0} pt, Height: {targetPage.Height:0} pt.
             - Coordinate origin (0, 0) is top-left.
             - Safe printable margins: X: 40 to {targetPage.Width - 40:0} pt, Y: 40 to {targetPage.Height - 40:0} pt.
+
+            {targetScopeInstruction}
 
             Design Guidelines:
             1. Visual Hierarchy: Use clear contrast in font sizes (Headings 20-28pt bold, Subheadings 14-16pt, Paragraphs 10-12pt).
@@ -104,10 +126,12 @@ public class PdfStudioAgentService : IPdfStudioAgentService
                  [Description("Bold typeface")] bool isBold = true,
                  [Description("Text alignment: Left, Center, or Right")] string alignment = "Left") =>
                 {
-                    var el = CreateHeadingElement(text, x, y, width, height, fontSize, fontFamily, textColorHex, isBold, alignment);
+                    double rx = ResolveX(x);
+                    double ry = ResolveY(y, 40);
+                    var el = CreateHeadingElement(text, rx, ry, width, height, fontSize, fontFamily, textColorHex, isBold, alignment);
                     targetPage.AddElement(el);
                     createdElements.Add(el);
-                    string desc = $"Heading: \"{Truncate(text, 25)}\" at ({x:0},{y:0})";
+                    string desc = $"Heading: \"{Truncate(text, 25)}\" at ({rx:0},{ry:0})";
                     actionsTaken.Add(desc);
                     progressCallback?.Invoke($"Created {desc}");
                     return $"Created heading element ID {el.Id}";
@@ -126,10 +150,12 @@ public class PdfStudioAgentService : IPdfStudioAgentService
                  [Description("Hex text color (e.g. #374151)")] string textColorHex = "#374151",
                  [Description("Text alignment: Left, Center, or Right")] string alignment = "Left") =>
                 {
-                    var el = CreateParagraphElement(text, x, y, width, height, fontSize, fontFamily, textColorHex, alignment);
+                    double rx = ResolveX(x);
+                    double ry = ResolveY(y, 90);
+                    var el = CreateParagraphElement(text, rx, ry, width, height, fontSize, fontFamily, textColorHex, alignment);
                     targetPage.AddElement(el);
                     createdElements.Add(el);
-                    string desc = $"Paragraph: \"{Truncate(text, 25)}\" at ({x:0},{y:0})";
+                    string desc = $"Paragraph: \"{Truncate(text, 25)}\" at ({rx:0},{ry:0})";
                     actionsTaken.Add(desc);
                     progressCallback?.Invoke($"Created {desc}");
                     return $"Created paragraph element ID {el.Id}";
@@ -148,10 +174,12 @@ public class PdfStudioAgentService : IPdfStudioAgentService
                  [Description("Stroke thickness in pt")] double strokeThickness = 1.0,
                  [Description("Corner radius for rounded rectangle")] double cornerRadius = 8.0) =>
                 {
-                    var el = CreateShapeElement(shapeType, x, y, width, height, fillColorHex, strokeColorHex, strokeThickness, cornerRadius);
+                    double rx = ResolveX(x);
+                    double ry = ResolveY(y, 40);
+                    var el = CreateShapeElement(shapeType, rx, ry, width, height, fillColorHex, strokeColorHex, strokeThickness, cornerRadius);
                     targetPage.AddElement(el);
                     createdElements.Add(el);
-                    string desc = $"Shape: {shapeType} at ({x:0},{y:0})";
+                    string desc = $"Shape: {shapeType} at ({rx:0},{ry:0})";
                     actionsTaken.Add(desc);
                     progressCallback?.Invoke($"Created {desc}");
                     return $"Created shape element ID {el.Id}";
@@ -169,10 +197,12 @@ public class PdfStudioAgentService : IPdfStudioAgentService
                  [Description("Header background color hex")] string headerBgColorHex = "#0F6CBD",
                  [Description("Header text color hex")] string headerTextColorHex = "#FFFFFF") =>
                 {
-                    var el = CreateTableElement(headers, rows, x, y, width, height, headerBgColorHex, headerTextColorHex);
+                    double rx = ResolveX(x);
+                    double ry = ResolveY(y, 160);
+                    var el = CreateTableElement(headers, rows, rx, ry, width, height, headerBgColorHex, headerTextColorHex);
                     targetPage.AddElement(el);
                     createdElements.Add(el);
-                    string desc = $"Table: {headers?.Length ?? 0} cols × {rows?.Length ?? 0} rows at ({x:0},{y:0})";
+                    string desc = $"Table: {headers?.Length ?? 0} cols × {rows?.Length ?? 0} rows at ({rx:0},{ry:0})";
                     actionsTaken.Add(desc);
                     progressCallback?.Invoke($"Created {desc}");
                     return $"Created table element ID {el.Id}";
@@ -189,10 +219,12 @@ public class PdfStudioAgentService : IPdfStudioAgentService
                  [Description("Line thickness in pt")] double thickness = 1.0,
                  [Description("Orientation: Horizontal or Vertical")] string orientation = "Horizontal") =>
                 {
-                    var el = CreateDividerElement(x, y, width, height, colorHex, thickness, orientation);
+                    double rx = ResolveX(x);
+                    double ry = ResolveY(y, 150);
+                    var el = CreateDividerElement(rx, ry, width, height, colorHex, thickness, orientation);
                     targetPage.AddElement(el);
                     createdElements.Add(el);
-                    string desc = $"Divider: {orientation} at ({x:0},{y:0})";
+                    string desc = $"Divider: {orientation} at ({rx:0},{ry:0})";
                     actionsTaken.Add(desc);
                     progressCallback?.Invoke($"Created {desc}");
                     return $"Created divider element ID {el.Id}";
@@ -209,10 +241,12 @@ public class PdfStudioAgentService : IPdfStudioAgentService
                  [Description("Badge background fill color hex")] string bgColorHex = "#EFF6FF",
                  [Description("Badge text color hex")] string textColorHex = "#1D4ED8") =>
                 {
-                    var el = CreateBadgeElement(text, x, y, width, height, bgColorHex, textColorHex);
+                    double rx = ResolveX(x);
+                    double ry = ResolveY(y, 40);
+                    var el = CreateBadgeElement(text, rx, ry, width, height, bgColorHex, textColorHex);
                     targetPage.AddElement(el);
                     createdElements.Add(el);
-                    string desc = $"Badge: \"{text}\" at ({x:0},{y:0})";
+                    string desc = $"Badge: \"{text}\" at ({rx:0},{ry:0})";
                     actionsTaken.Add(desc);
                     progressCallback?.Invoke($"Created {desc}");
                     return $"Created badge element ID {el.Id}";
@@ -230,13 +264,15 @@ public class PdfStudioAgentService : IPdfStudioAgentService
                  [Description("Height in pt")] double height = 130,
                  [Description("Theme accent color hex")] string themeColorHex = "#0F6CBD") =>
                 {
-                    var elements = CreateCardElements(title, subtitle, body, x, y, width, height, themeColorHex);
+                    double rx = ResolveX(x);
+                    double ry = ResolveY(y, 100);
+                    var elements = CreateCardElements(title, subtitle, body, rx, ry, width, height, themeColorHex);
                     foreach (var el in elements)
                     {
                         targetPage.AddElement(el);
                         createdElements.Add(el);
                     }
-                    string desc = $"Card: \"{Truncate(title, 20)}\" (container + text) at ({x:0},{y:0})";
+                    string desc = $"Card: \"{Truncate(title, 20)}\" (container + text) at ({rx:0},{ry:0})";
                     actionsTaken.Add(desc);
                     progressCallback?.Invoke($"Created {desc}");
                     return $"Created card composed of {elements.Count} elements";
@@ -252,10 +288,12 @@ public class PdfStudioAgentService : IPdfStudioAgentService
                  [Description("Height in pt")] double height = 80,
                  [Description("Tint color hex")] string colorHex = "#0F6CBD") =>
                 {
-                    var el = CreateSvgOrnamentElement(ornamentName, x, y, width, height, colorHex);
+                    double rx = ResolveX(x);
+                    double ry = ResolveY(y, 40);
+                    var el = CreateSvgOrnamentElement(ornamentName, rx, ry, width, height, colorHex);
                     targetPage.AddElement(el);
                     createdElements.Add(el);
-                    string desc = $"SVG Ornament: {ornamentName} at ({x:0},{y:0})";
+                    string desc = $"SVG Ornament: {ornamentName} at ({rx:0},{ry:0})";
                     actionsTaken.Add(desc);
                     progressCallback?.Invoke($"Created {desc}");
                     return $"Created SVG ornament element ID {el.Id}";
@@ -269,10 +307,12 @@ public class PdfStudioAgentService : IPdfStudioAgentService
                  [Description("Y position in pt")] double y = 40,
                  [Description("Size in pt")] double size = 80) =>
                 {
-                    var el = CreateQrCodeElement(payload, x, y, size);
+                    double rx = ResolveX(x);
+                    double ry = ResolveY(y, 40);
+                    var el = CreateQrCodeElement(payload, rx, ry, size);
                     targetPage.AddElement(el);
                     createdElements.Add(el);
-                    string desc = $"QR Code at ({x:0},{y:0})";
+                    string desc = $"QR Code at ({rx:0},{ry:0})";
                     actionsTaken.Add(desc);
                     progressCallback?.Invoke($"Created {desc}");
                     return $"Created QR code element ID {el.Id}";
@@ -288,10 +328,12 @@ public class PdfStudioAgentService : IPdfStudioAgentService
                  [Description("Width in pt")] double width = 180,
                  [Description("Height in pt")] double height = 55) =>
                 {
-                    var el = CreateBarcodeElement(payload, format, x, y, width, height);
+                    double rx = ResolveX(x);
+                    double ry = ResolveY(y, 40);
+                    var el = CreateBarcodeElement(payload, format, rx, ry, width, height);
                     targetPage.AddElement(el);
                     createdElements.Add(el);
-                    string desc = $"Barcode: {payload} at ({x:0},{y:0})";
+                    string desc = $"Barcode: {payload} at ({rx:0},{ry:0})";
                     actionsTaken.Add(desc);
                     progressCallback?.Invoke($"Created {desc}");
                     return $"Created barcode element ID {el.Id}";
@@ -331,7 +373,7 @@ public class PdfStudioAgentService : IPdfStudioAgentService
             if (createdElements.Count == 0 && !string.IsNullOrWhiteSpace(replyText))
             {
                 progressCallback?.Invoke("Parsing structured element instructions...");
-                ParseAndExecuteJsonFallback(replyText, targetPage, createdElements, actionsTaken, progressCallback);
+                ParseAndExecuteJsonFallback(replyText, targetPage, createdElements, actionsTaken, progressCallback, targetPoint);
             }
 
             // ATOMIC UNDO/REDO RECORDING: Wrap all created elements in a single atomic undo transaction
@@ -1306,7 +1348,8 @@ public class PdfStudioAgentService : IPdfStudioAgentService
         PageViewModel page,
         List<ElementViewModelBase> created,
         List<string> actions,
-        Action<string>? progress)
+        Action<string>? progress,
+        (double X, double Y)? targetPoint = null)
     {
         var match = Regex.Match(text, """\[[\s\S]*\]""");
         if (!match.Success) return;
@@ -1316,13 +1359,16 @@ public class PdfStudioAgentService : IPdfStudioAgentService
             using var doc = JsonDocument.Parse(match.Value);
             if (doc.RootElement.ValueKind != JsonValueKind.Array) return;
 
+            double defaultX = targetPoint?.X ?? 40;
+            double defaultY = targetPoint?.Y ?? 40;
+
             foreach (var item in doc.RootElement.EnumerateArray())
             {
                 if (!item.TryGetProperty("action", out var actionProp)) continue;
                 string action = actionProp.GetString() ?? "";
 
-                double x = GetDouble(item, "x", 40);
-                double y = GetDouble(item, "y", 40);
+                double x = GetDouble(item, "x", defaultX);
+                double y = GetDouble(item, "y", defaultY);
                 double w = GetDouble(item, "width", 300);
                 double h = GetDouble(item, "height", 50);
 

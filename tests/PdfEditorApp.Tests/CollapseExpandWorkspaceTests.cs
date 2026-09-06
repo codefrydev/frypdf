@@ -247,5 +247,90 @@ public class CollapseExpandWorkspaceTests
         Assert.True(vm.IsToastVisible);
         Assert.Contains("All Workspace Panels Expanded", vm.ToastMessage);
     }
+
+    [Fact]
+    public void LeftSidebar_ResizingAndCollapseExpand_MaintainsWidth()
+    {
+        var vm = new MainViewModel();
+        Assert.False(vm.IsLeftSidebarCollapsed);
+        Assert.True(vm.IsLeftSidebarResizable);
+        Assert.Equal(340, vm.LeftSidebarGridLength.Value);
+
+        // Simulate user dragging GridSplitter to 450px
+        vm.LeftSidebarGridLength = new Avalonia.Controls.GridLength(450, Avalonia.Controls.GridUnitType.Pixel);
+        Assert.Equal(450, vm.LeftSidebarGridLength.Value);
+
+        // Collapse left sidebar (e.g. ⌘B)
+        vm.ToggleLeftSidebarCommand.Execute(null);
+        Assert.True(vm.IsLeftSidebarCollapsed);
+        Assert.False(vm.IsLeftSidebarResizable);
+        Assert.Equal(38, vm.LeftSidebarGridLength.Value);
+
+        // Expand left sidebar again (⌘B) -> should restore 450px
+        vm.ToggleLeftSidebarCommand.Execute(null);
+        Assert.False(vm.IsLeftSidebarCollapsed);
+        Assert.True(vm.IsLeftSidebarResizable);
+        Assert.Equal(450, vm.LeftSidebarGridLength.Value);
+    }
+
+    [Fact]
+    public void OpenAiAssistant_ExpandsSidebar_SelectsAiTab_AndEnsuresComfortableWidth()
+    {
+        var vm = new MainViewModel();
+        vm.IsLeftSidebarCollapsed = true;
+        Assert.True(vm.IsLeftSidebarCollapsed);
+
+        vm.OpenAiAssistantCommand.Execute(null);
+
+        Assert.False(vm.IsLeftSidebarCollapsed);
+        Assert.Equal(SidebarTabKind.AiAssistant, vm.ActiveSidebarTab);
+        Assert.True(vm.LeftSidebarGridLength.Value >= 340);
+        Assert.True(vm.AiAssistant.IsOpen);
+    }
+
+    [Fact]
+    public void CanvasSelectionChanged_WhenAiSidebarActive_LiveUpdatesTargetElement()
+    {
+        var vm = new MainViewModel();
+        Assert.NotNull(vm.CurrentPage);
+
+        var chartVm = new PdfEditorApp.ViewModels.ElementViewModels.ChartElementViewModel
+        {
+            Title = "Live Performance Metrics"
+        };
+        vm.CurrentPage.AddElement(chartVm);
+
+        // Open AI in sidebar
+        vm.OpenAiAssistantCommand.Execute(null);
+        Assert.Equal(SidebarTabKind.AiAssistant, vm.ActiveSidebarTab);
+
+        // Click element on canvas
+        vm.CurrentPage.SelectElement(chartVm);
+
+        // Assert AI Assistant updated live
+        Assert.True(vm.AiAssistant.IsModifyMode);
+        Assert.Same(chartVm, vm.AiAssistant.TargetElement);
+        Assert.Equal("Live Performance Metrics", vm.AiAssistant.TargetElementTitle);
+
+        // Deselect element
+        vm.CurrentPage.SelectElement(null);
+        Assert.False(vm.AiAssistant.IsModifyMode);
+        Assert.Null(vm.AiAssistant.TargetElement);
+    }
+
+    [Fact]
+    public void AiAssistant_CloseOrDone_ReturnsToThumbnails()
+    {
+        var vm = new MainViewModel();
+        vm.OpenAiAssistantCommand.Execute(null);
+        Assert.Equal(SidebarTabKind.AiAssistant, vm.ActiveSidebarTab);
+        Assert.True(vm.AiAssistant.IsOpen);
+
+        // User clicks Close or Done
+        vm.AiAssistant.CloseCommand.Execute(null);
+
+        Assert.False(vm.AiAssistant.IsOpen);
+        Assert.Equal(SidebarTabKind.Thumbnails, vm.ActiveSidebarTab);
+    }
 }
 

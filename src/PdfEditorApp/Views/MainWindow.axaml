@@ -272,16 +272,31 @@
             <!-- 2. Ribbon Menu & Toolbars -->
             <views:RibbonView Grid.Row="1" IsVisible="{Binding !IsPresentationMode}" />
 
-            <!-- 3. Main Workspace: Left Thumbnails + Center Document Canvas + Right Inspector -->
-            <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto">
-                <!-- Left: Thumbnails Sidebar -->
+            <!-- 3. Main Workspace: Left Sidebar + Resizable Splitter + Center Canvas + Right Inspector -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="{Binding LeftSidebarGridLength, Mode=TwoWay}" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Thumbnails, Outline, Comments & AI Studio Assistant Sidebar -->
                 <views:ThumbnailSidebarView Grid.Column="0" IsVisible="{Binding !IsPresentationMode}" />
 
+                <!-- Resizable Draggable Splitter for Left Sidebar -->
+                <GridSplitter Grid.Column="1"
+                              Width="4"
+                              Background="{DynamicResource WinBorderBrush}"
+                              ResizeDirection="Columns"
+                              ShowsPreview="False"
+                              IsVisible="{Binding IsLeftSidebarResizable}" />
+
                 <!-- Center: Interactive PDF Document Canvas -->
-                <views:DocumentCanvasView Grid.Column="1" />
+                <views:DocumentCanvasView Grid.Column="2" />
 
                 <!-- Right: Format & Properties Inspector -->
-                <Panel Grid.Column="2" IsVisible="{Binding !IsPresentationMode}">
+                <Panel Grid.Column="3" IsVisible="{Binding !IsPresentationMode}">
                     <views:InspectorSidebarView DataContext="{Binding Inspector}" />
                 </Panel>
             </Grid>
@@ -508,7 +523,6 @@
         <dialogs:DataStudioDialog DataContext="{Binding DataStudio}" IsVisible="{Binding IsOpen}" />
         <dialogs:WorkflowBuilderDialog DataContext="{Binding WorkflowBuilder}" IsVisible="{Binding IsOpen}" />
         <dialogs:BatchGenerationDialog DataContext="{Binding BatchGeneration}" IsVisible="{Binding IsOpen}" />
-        <dialogs:AiAssistantDialog DataContext="{Binding AiAssistant}" IsVisible="{Binding IsOpen}" />
         <!-- RenameDocument / DeleteConfirmation: bound to Home VM, triggered from recent docs panel -->
         <dialogs:RenameDocumentDialog DataContext="{Binding Home}" IsVisible="{Binding IsRenameDialogOpen}" />
         <dialogs:DeleteConfirmationDialog DataContext="{Binding Home}" IsVisible="{Binding IsDeleteConfirmDialogOpen}" />

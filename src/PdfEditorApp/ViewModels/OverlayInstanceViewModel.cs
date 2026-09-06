@@ -32,32 +32,51 @@ public partial class OverlayInstanceViewModel : ObservableObject
     private double _width = 340;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EffectiveHeight))]
     private double _height = 420;
 
     [ObservableProperty]
     private int _zIndex = 1;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanResize))]
+    private bool _isResizable = true;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasStandardChrome))]
     [NotifyPropertyChangedFor(nameof(HasCustomChrome))]
     [NotifyPropertyChangedFor(nameof(HasFloatingPill))]
+    [NotifyPropertyChangedFor(nameof(CustomChromeContent))]
+    [NotifyPropertyChangedFor(nameof(StandardChromeContent))]
     private OverlayChromeMode _chromeMode = OverlayChromeMode.StandardCard;
 
     [ObservableProperty]
     private bool _isPinned;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EffectiveHeight))]
+    [NotifyPropertyChangedFor(nameof(EffectiveMinHeight))]
+    [NotifyPropertyChangedFor(nameof(CanResize))]
     private bool _isMinimized;
 
     [ObservableProperty]
     private bool _isVisible = true;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CustomChromeContent))]
+    [NotifyPropertyChangedFor(nameof(StandardChromeContent))]
     private object? _content;
 
     public bool HasStandardChrome => ChromeMode == OverlayChromeMode.StandardCard;
     public bool HasCustomChrome => ChromeMode == OverlayChromeMode.CustomChrome;
     public bool HasFloatingPill => ChromeMode == OverlayChromeMode.FloatingPill;
+
+    public double EffectiveHeight => IsMinimized ? double.NaN : Height;
+    public double EffectiveMinHeight => IsMinimized ? 42 : Descriptor.MinHeight;
+    public bool CanResize => IsResizable && !IsMinimized;
+
+    public object? CustomChromeContent => HasCustomChrome ? Content : null;
+    public object? StandardChromeContent => HasStandardChrome ? Content : null;
 
     public OverlayDescriptor Descriptor { get; }
 
@@ -69,8 +88,20 @@ public partial class OverlayInstanceViewModel : ObservableObject
         _iconKind = descriptor.IconKind;
         _width = descriptor.DefaultWidth;
         _height = descriptor.DefaultHeight;
+        _isResizable = descriptor.IsResizable;
         _chromeMode = descriptor.ChromeMode;
         _onClose = onClose;
+    }
+
+    public void Resize(double newWidth, double newHeight, double maxCanvasWidth = double.PositiveInfinity, double maxCanvasHeight = double.PositiveInfinity)
+    {
+        var minW = Math.Max(120, Descriptor.MinWidth);
+        var minH = Math.Max(80, Descriptor.MinHeight);
+        var maxW = Math.Min(Descriptor.MaxWidth, maxCanvasWidth);
+        var maxH = Math.Min(Descriptor.MaxHeight, maxCanvasHeight);
+
+        Width = Math.Clamp(newWidth, minW, Math.Max(minW, maxW));
+        Height = Math.Clamp(newHeight, minH, Math.Max(minH, maxH));
     }
 
     [RelayCommand]

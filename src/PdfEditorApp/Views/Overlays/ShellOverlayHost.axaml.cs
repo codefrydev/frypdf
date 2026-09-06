@@ -48,6 +48,20 @@ public partial class ShellOverlayHost : UserControl
     private Point _dragStartPoint;
     private bool _isDraggingStandardHeader;
 
+    private enum ResizeMode
+    {
+        None,
+        Right,
+        Bottom,
+        BottomRight
+    }
+
+    private ResizeMode _currentResizeMode = ResizeMode.None;
+    private Point _resizeStartPointer;
+    private double _resizeStartWidth;
+    private double _resizeStartHeight;
+    private OverlayInstanceViewModel? _resizingVm;
+
     private void OnOverlayPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (sender is Control ctrl && ctrl.DataContext is OverlayInstanceViewModel vm && _observedVm != null)
@@ -83,8 +97,11 @@ public partial class ShellOverlayHost : UserControl
             var deltaY = currentPoint.Y - _dragStartPoint.Y;
             _dragStartPoint = currentPoint;
 
-            vm.X = Math.Max(0, vm.X + deltaX);
-            vm.Y = Math.Max(0, vm.Y + deltaY);
+            var maxCanvasX = Bounds.Width > 100 ? Math.Max(20, Bounds.Width - 80) : double.PositiveInfinity;
+            var maxCanvasY = Bounds.Height > 100 ? Math.Max(20, Bounds.Height - 60) : double.PositiveInfinity;
+
+            vm.X = Math.Clamp(vm.X + deltaX, 0, maxCanvasX);
+            vm.Y = Math.Clamp(vm.Y + deltaY, 0, maxCanvasY);
             e.Handled = true;
         }
     }
@@ -94,6 +111,78 @@ public partial class ShellOverlayHost : UserControl
         if (_isDraggingStandardHeader)
         {
             _isDraggingStandardHeader = false;
+            e.Pointer.Capture(null);
+            e.Handled = true;
+        }
+    }
+
+    private void OnResizeRightPointerPressed(object? sender, PointerPressedEventArgs e)
+        => StartResize(sender, e, ResizeMode.Right);
+
+    private void OnResizeBottomPointerPressed(object? sender, PointerPressedEventArgs e)
+        => StartResize(sender, e, ResizeMode.Bottom);
+
+    private void OnResizeBottomRightPointerPressed(object? sender, PointerPressedEventArgs e)
+        => StartResize(sender, e, ResizeMode.BottomRight);
+
+    private void StartResize(object? sender, PointerPressedEventArgs e, ResizeMode mode)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && sender is Control ctrl && ctrl.DataContext is OverlayInstanceViewModel vm)
+        {
+            _currentResizeMode = mode;
+            _resizingVm = vm;
+            _resizeStartWidth = vm.Width;
+            _resizeStartHeight = vm.Height;
+
+            var root = this.VisualRoot as Visual ?? this;
+            _resizeStartPointer = e.GetPosition(root);
+
+            e.Pointer.Capture(ctrl);
+
+            if (_observedVm != null)
+            {
+                vm.BringToFront(_observedVm.ActiveOverlays);
+            }
+            e.Handled = true;
+        }
+    }
+
+    private void OnResizePointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (_currentResizeMode != ResizeMode.None && _resizingVm != null)
+        {
+            var root = this.VisualRoot as Visual ?? this;
+            var currentPoint = e.GetPosition(root);
+            var deltaX = currentPoint.X - _resizeStartPointer.X;
+            var deltaY = currentPoint.Y - _resizeStartPointer.Y;
+
+            var newWidth = _resizeStartWidth;
+            var newHeight = _resizeStartHeight;
+
+            if (_currentResizeMode is ResizeMode.Right or ResizeMode.BottomRight)
+            {
+                newWidth += deltaX;
+            }
+
+            if (_currentResizeMode is ResizeMode.Bottom or ResizeMode.BottomRight)
+            {
+                newHeight += deltaY;
+            }
+
+            var maxCanvasWidth = Bounds.Width > 0 ? Math.Max(120, Bounds.Width - _resizingVm.X) : double.PositiveInfinity;
+            var maxCanvasHeight = Bounds.Height > 0 ? Math.Max(80, Bounds.Height - _resizingVm.Y) : double.PositiveInfinity;
+
+            _resizingVm.Resize(newWidth, newHeight, maxCanvasWidth, maxCanvasHeight);
+            e.Handled = true;
+        }
+    }
+
+    private void OnResizePointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (_currentResizeMode != ResizeMode.None)
+        {
+            _currentResizeMode = ResizeMode.None;
+            _resizingVm = null;
             e.Pointer.Capture(null);
             e.Handled = true;
         }

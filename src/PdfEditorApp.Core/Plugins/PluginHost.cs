@@ -115,9 +115,15 @@ public class PluginHost : IAsyncDisposable, IDisposable
         ArgumentNullException.ThrowIfNull(plugin);
         lock (_lock)
         {
-            if (_entries.ContainsKey(plugin.Id))
+            if (_entries.TryGetValue(plugin.Id, out var existing))
             {
-                throw new InvalidOperationException($"A plugin with ID '{plugin.Id}' has already been registered.");
+                if (ReferenceEquals(existing.Plugin, plugin)) return;
+
+                // Replace previous registration with the new plugin instance
+                _registeredPlugins.Remove(existing.Plugin);
+                _registeredPlugins.Add(plugin);
+                _entries[plugin.Id] = new PluginEntry(plugin);
+                return;
             }
             _registeredPlugins.Add(plugin);
             _entries[plugin.Id] = new PluginEntry(plugin);

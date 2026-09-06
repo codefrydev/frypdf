@@ -33,6 +33,25 @@ public sealed class OverlayRegistry : IOverlayRegistry
         ArgumentNullException.ThrowIfNull(descriptor);
         _descriptors[descriptor.Id] = descriptor;
 
+        if (_activeInstances.TryGetValue(descriptor.Id, out var existingInstance))
+        {
+            try
+            {
+                var newContent = descriptor.ViewFactory != null
+                    ? descriptor.ViewFactory(_serviceProvider)
+                    : (descriptor.ViewType != null ? Activator.CreateInstance(descriptor.ViewType) : null);
+
+                RunOnUIThread(() =>
+                {
+                    existingInstance.Content = newContent;
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[OverlayRegistry] Error refreshing view for {descriptor.Id}: {ex.Message}");
+            }
+        }
+
         RegistryChanged?.Invoke();
 
         return new UnregisterDisposable(() =>
@@ -84,6 +103,12 @@ public sealed class OverlayRegistry : IOverlayRegistry
         {
             RunOnUIThread(() =>
             {
+                if (existingInstance.Content == null)
+                {
+                    existingInstance.Content = desc.ViewFactory != null
+                        ? desc.ViewFactory(_serviceProvider)
+                        : (desc.ViewType != null ? Activator.CreateInstance(desc.ViewType) : null);
+                }
                 existingInstance.IsVisible = true;
                 existingInstance.IsMinimized = false;
                 if (!ActiveOverlays.Contains(existingInstance))

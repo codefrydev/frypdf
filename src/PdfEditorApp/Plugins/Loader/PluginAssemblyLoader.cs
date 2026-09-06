@@ -34,9 +34,12 @@ public sealed class PluginAssemblyPackage : IDisposable
         if (_isDisposed) return;
         _isDisposed = true;
 
-        _context.Unload();
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
+        if (_context.IsCollectible)
+        {
+            _context.Unload();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
     }
 }
 
@@ -46,17 +49,88 @@ public sealed class PluginAssemblyPackage : IDisposable
 public sealed class CollectiblePluginLoadContext : AssemblyLoadContext
 {
     private readonly AssemblyDependencyResolver _resolver;
+    private readonly string _pluginDirectory;
 
-    public CollectiblePluginLoadContext(string pluginPath)
-        : base(name: Path.GetFileNameWithoutExtension(pluginPath), isCollectible: true)
+    public CollectiblePluginLoadContext(string pluginPath, bool isCollectible = false)
+        : base(name: Path.GetFileNameWithoutExtension(pluginPath), isCollectible: isCollectible)
     {
         _resolver = new AssemblyDependencyResolver(pluginPath);
+        _pluginDirectory = Path.GetDirectoryName(pluginPath) ?? string.Empty;
     }
 
     protected override Assembly? Load(AssemblyName assemblyName)
     {
         string? assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
-        return assemblyPath != null ? LoadFromAssemblyPath(assemblyPath) : null;
+        if (assemblyPath != null && File.Exists(assemblyPath))
+        {
+            return LoadFromAssemblyPath(assemblyPath);
+        }
+
+        // Direct fallback: check for <assemblyName.Name>.dll in the plugin directory
+        if (!string.IsNullOrEmpty(_pluginDirectory))
+        {
+            var candidate = Path.Combine(_pluginDirectory, $"{assemblyName.Name}.dll");
+            if (File.Exists(candidate))
+            {
+                return LoadFromAssemblyPath(candidate);
+            }
+
+            // Also search plugin directory recursively if dependencies are in subfolders
+            try
+            {
+                var match = Directory.GetFiles(_pluginDirectory, $"{assemblyName.Name}.dll", SearchOption.AllDirectories).FirstOrDefault();
+                if (match != null && File.Exists(match))
+                {
+                    return LoadFromAssemblyPath(match);
+                }
+            }
+            catch { }
+        }
+
+        return null;
+    }
+
+    protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
+    {
+        string? libraryPath = _resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
+        if (libraryPath != null && File.Exists(libraryPath))
+        {
+            return LoadUnmanagedDllFromPath(libraryPath);
+        }
+
+        // Direct fallback: check in runtimes/<rid>/native/ or plugin directory
+        if (!string.IsNullOrEmpty(_pluginDirectory))
+        {
+            string rid = OperatingSystem.IsMacOS()
+                ? (System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64 ? "osx-arm64" : "osx-x64")
+                : OperatingSystem.IsWindows()
+                    ? (System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64 ? "win-arm64" : "win-x64")
+                    : (System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64 ? "linux-arm64" : "linux-x64");
+
+            var candidatePaths = new[]
+            {
+                Path.Combine(_pluginDirectory, "runtimes", rid, "native", unmanagedDllName),
+                Path.Combine(_pluginDirectory, "runtimes", rid, "native", $"{unmanagedDllName}.dylib"),
+                Path.Combine(_pluginDirectory, "runtimes", rid, "native", $"lib{unmanagedDllName}.dylib"),
+                Path.Combine(_pluginDirectory, "runtimes", rid, "native", $"{unmanagedDllName}.so"),
+                Path.Combine(_pluginDirectory, "runtimes", rid, "native", $"lib{unmanagedDllName}.so"),
+                Path.Combine(_pluginDirectory, "runtimes", rid, "native", $"{unmanagedDllName}.dll"),
+                Path.Combine(_pluginDirectory, unmanagedDllName),
+                Path.Combine(_pluginDirectory, $"{unmanagedDllName}.dylib"),
+                Path.Combine(_pluginDirectory, $"lib{unmanagedDllName}.dylib"),
+                Path.Combine(_pluginDirectory, $"{unmanagedDllName}.dll")
+            };
+
+            foreach (var p in candidatePaths)
+            {
+                if (File.Exists(p))
+                {
+                    return LoadUnmanagedDllFromPath(p);
+                }
+            }
+        }
+
+        return base.LoadUnmanagedDll(unmanagedDllName);
     }
 }
 
@@ -65,8 +139,10 @@ public sealed class CollectiblePluginLoadContext : AssemblyLoadContext
 /// </summary>
 public static class PluginAssemblyLoader
 {
+    private static readonly List<PluginAssemblyPackage> _activePackages = new();
+
     /// <summary>
-    /// Loads an isolated assembly, instantiates any <see cref="IFryPlugin"/> implementations, and returns a collectible package.
+    /// Loads an isolated assembly, instantiates any <see cref="IFryPlugin"/> implementations, and returns a package.
     /// </summary>
     public static PluginAssemblyPackage LoadPluginAssembly(string assemblyPath)
     {
@@ -100,7 +176,12 @@ public static class PluginAssemblyLoader
             }
         }
 
-        return new PluginAssemblyPackage(fullPath, plugins, alc);
+        var package = new PluginAssemblyPackage(fullPath, plugins, alc);
+        lock (_activePackages)
+        {
+            _activePackages.Add(package);
+        }
+        return package;
     }
 
     /// <summary>

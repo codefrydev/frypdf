@@ -44,9 +44,11 @@ public sealed class OverlayDescriptor
     public string IconKind { get; init; } = "WindowRestore";
     public OverlayChromeMode ChromeMode { get; init; } = OverlayChromeMode.StandardCard;
     public bool HasCustomChrome => ChromeMode == OverlayChromeMode.CustomChrome;
-    public bool IsResizable { get; init; } = false;
+    public bool IsResizable { get; init; } = true;
     public double MinWidth { get; init; } = 220;
     public double MinHeight { get; init; } = 100;
+    public double MaxWidth { get; init; } = 1600;
+    public double MaxHeight { get; init; } = 1400;
     public Type? ViewType { get; init; }
     public Type? ViewModelType { get; init; }
     public Func<IServiceProvider, object>? ViewFactory { get; init; }

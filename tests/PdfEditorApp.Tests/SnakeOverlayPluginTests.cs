@@ -291,4 +291,67 @@ public class SnakeOverlayPluginTests
         Assert.True(instance.Y >= 60);
         Assert.True(instance.Y + instance.Height <= 800);
     }
+
+    [Fact]
+    public void OverlayInstanceViewModel_SupportsResizing_AndRespectsConstraints()
+    {
+        var desc = new OverlayDescriptor
+        {
+            Id = "test.overlay.resizing",
+            Title = "Resizing Test",
+            DefaultWidth = 360,
+            DefaultHeight = 480,
+            MinWidth = 300,
+            MinHeight = 400,
+            MaxWidth = 800,
+            MaxHeight = 900,
+            IsResizable = true
+        };
+
+        var vm = new OverlayInstanceViewModel(desc);
+
+        Assert.True(vm.IsResizable);
+        Assert.True(vm.CanResize);
+        Assert.Equal(360, vm.Width);
+        Assert.Equal(480, vm.Height);
+        Assert.Equal(480, vm.EffectiveHeight);
+        Assert.Equal(400, vm.EffectiveMinHeight);
+
+        // Test normal resize
+        vm.Resize(500, 600);
+        Assert.Equal(500, vm.Width);
+        Assert.Equal(600, vm.Height);
+        Assert.Equal(600, vm.EffectiveHeight);
+
+        // Test below MinWidth / MinHeight
+        vm.Resize(200, 250);
+        Assert.Equal(300, vm.Width);
+        Assert.Equal(400, vm.Height);
+
+        // Test above MaxWidth / MaxHeight
+        vm.Resize(1200, 1500);
+        Assert.Equal(800, vm.Width);
+        Assert.Equal(900, vm.Height);
+
+        // Test canvas boundary clamping
+        vm.X = 100;
+        vm.Y = 50;
+        vm.Resize(750, 850, maxCanvasWidth: 500, maxCanvasHeight: 600);
+        Assert.Equal(500, vm.Width);
+        Assert.Equal(600, vm.Height);
+
+        // Test Minimize behavior
+        vm.ToggleMinimize();
+        Assert.True(vm.IsMinimized);
+        Assert.False(vm.CanResize);
+        Assert.True(double.IsNaN(vm.EffectiveHeight));
+        Assert.Equal(42, vm.EffectiveMinHeight);
+
+        // Restore behavior
+        vm.ToggleMinimize();
+        Assert.False(vm.IsMinimized);
+        Assert.True(vm.CanResize);
+        Assert.Equal(600, vm.EffectiveHeight);
+        Assert.Equal(400, vm.EffectiveMinHeight);
+    }
 }

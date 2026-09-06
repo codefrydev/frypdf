@@ -1,4 +1,5 @@
 #!/bin/bash
 dotnet clean
+dotnet build
 
 dotnet watch --project src/PdfEditorApp "$@"

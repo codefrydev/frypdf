@@ -51,7 +51,7 @@ dotnet run --project src/PdfEditorApp/PdfEditorApp.csproj
 - Implement new capabilities (tools, canvas elements, ribbon actions, sidebars, inspector sections, workspace pages, AI providers, and converters) as modular plugins (`IFryPlugin` or `ToolPluginBase`) mounted into an `IFryPluginBundle`.
 - Register components through the 12 dynamic capability registries (`IPdfToolRegistry`, `IRibbonRegistry`, `ISidebarRegistry`, `IInspectorRegistry`, etc.).
 - Track all side effects via `ctx.RegisterEffect` to guarantee leak-free reversible unmounting.
-- For complete specifications, see [Plugin-Based Architecture Manual](PLUGIN_BASED_ARCHITECTURE.md).
+- For complete specifications, see [Plugin-Based Architecture Manual](PLUGIN_BASED_ARCHITECTURE.md) and the step-by-step [External Plugin Development Guide](EXTERNAL_PLUGIN_DEVELOPMENT_GUIDE.md).
 
 ### C. Zero-Lag Performance & Responsiveness Mandate
 - **Zero UI Thread Blocking**: PDF parsing, Skia rasterization, QuestPDF export, OCR, and AI inference must run asynchronously on background threads via `Task.Run`. Never call `.Result` or `.Wait()` on the UI thread.

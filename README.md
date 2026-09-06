@@ -26,7 +26,7 @@
 
 ## ✨ Key Capabilities & Highlights
 
-- 🧩 **Modular Microkernel Plugin Architecture ("Everything is a Plugin")**: Inspired by Cordis architecture. Every tool, canvas element, ribbon action, sidebar panel, inspector section, AI provider, and file connector is an isolated, dynamic plugin mounted through composable plugin bundles with reversible LIFO rollback and zero memory leaks.
+- 🧩 **Modular Microkernel Plugin Architecture ("Everything is a Plugin")**: Inspired by Cordis architecture. Every tool, canvas element, ribbon action, sidebar panel, inspector section, AI provider, and file connector is an isolated, dynamic plugin mounted through composable plugin bundles with reversible LIFO rollback and zero memory leaks. Supports third-party `.fryplugin` external packages (see the [External Plugin Development Guide](docs/EXTERNAL_PLUGIN_DEVELOPMENT_GUIDE.md)).
 - 🎨 **Google Material Design 3 (M3) Expressive UI**: Beautiful cross-platform user experience across macOS, Windows, and Linux. Features expressive pill shapes, segmented button capsules, floating action buttons (FABs), chubby tactile sliders (8–10px track, 20–22px thumbs), elevation shadows, and dynamic light/dark tonal themes.
 - ⚡ **Zero-Lag, 60+ FPS Real-Time Performance**: Multi-tier view caching (`_dynamicViewCache`), virtualized UI recycling (`ItemsRepeater`, `VirtualizingStackPanel`), debounced high-frequency inputs (pinch-to-zoom deltas, search filters), and asynchronous non-blocking worker thread pipelines (`Task.Run`).
 - 📕 **Dedicated PDF Reader Mode**: Pure reading mode with continuous vertical scroll, single-page fit, and two-page book spreads. Includes eye-comfort color themes (Daylight, Warm Sepia, Dark Night, High Contrast), real page thumbnail strip, bookmarks/TOC tree, live search with match jumping, review annotations (multi-color highlights, sticky notes, approval stamps), and a 1-click bridge to the visual editor.
@@ -74,6 +74,8 @@ PDFCreator/
 │   └── windows/                    # Inno Setup installer & Windows MSIX packaging with full store assets
 ├── docs/                           # Architecture, M3 Expressive guidelines, and plugin manuals
 │   ├── PLUGIN_BASED_ARCHITECTURE.md
+│   ├── EXTERNAL_PLUGIN_DEVELOPMENT_GUIDE.md # Step-by-step external plugin developer tutorial
+│   ├── TIC_TAC_TOE_EXAMPLE.md       # Complete playable Tic-Tac-Toe reference plugin tutorial
 │   ├── MATERIAL_DESIGN_3_EXPRESSIVE_GUIDELINES.md
 │   ├── ARCHITECTURE.md
 │   ├── FEATURES.md

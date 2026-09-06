@@ -1,7 +1,8 @@
 # FryPDF Plugin-Based Architecture ("Everything is a Plugin")
 
 > **Architectural Specification and Design Manual**  
-> Inspired by the **Cordis** Spatiotemporal Composability Framework.
+> Inspired by the **Cordis** Spatiotemporal Composability Framework.  
+> 💡 *Looking to build an external plugin? See the step-by-step [External Plugin Development Guide](EXTERNAL_PLUGIN_DEVELOPMENT_GUIDE.md).*
 
 ---
 
@@ -427,6 +428,7 @@ my-extension.fryplugin
 - **Drag-and-Drop**: Users can drag `.fryplugin` or `.dll` files directly onto `PluginsDialog.axaml`. Avalonia's `DataTransfer` API extracts file paths and initiates automated installation.
 - **`FryPluginPackageLoader`**: Unpacks the archive into the isolated user plugin directory (`~/.frypdf/plugins/<id>/`) and loads the entry assembly using a collectible `AssemblyLoadContext`.
 - **Instant Hot-Mount**: The plugin is immediately registered, dependency-resolved, and mounted without restarting the application.
+- **Developer Guide**: For a complete step-by-step tutorial on building `.fryplugin` packages with automated MSBuild packaging targets, see the [External Plugin Development Guide](EXTERNAL_PLUGIN_DEVELOPMENT_GUIDE.md).
 
 ---
 

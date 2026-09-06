@@ -12,10 +12,11 @@
                 Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="12"
-                BoxShadow="0 20 60 #35000000"
+                CornerRadius="{StaticResource M3ShapeCornerExtraLarge}"
+                BoxShadow="{StaticResource M3ElevationModalDialog}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
+                Margin="24"
                 Padding="24"
                 PointerPressed="OnCardPointerPressed">
 

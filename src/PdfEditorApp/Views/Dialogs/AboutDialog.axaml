@@ -6,385 +6,504 @@
              x:DataType="vm:MainViewModel"
              Focusable="True">
 
-    <!-- Fullscreen Backdrop -->
-    <Grid Background="#70000000" PointerPressed="OnBackdropPointerPressed">
-        <!-- Centered About Card -->
+    <!-- Fullscreen Dimming Scrim Backdrop -->
+    <Grid Background="#55000000" PointerPressed="OnBackdropPointerPressed">
+        <!-- Centered M3 Expressive Dialog Card (No ClipToBounds so M3ElevationModalDialog casts softly) -->
         <Border Width="720"
-                Background="{DynamicResource WinPanelBrush}"
-                BorderBrush="{DynamicResource WinBorderBrush}"
+                MaxHeight="680"
+                Background="{DynamicResource M3SurfaceBrush}"
+                BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource M3ShapeCornerExtraLarge}"
-                BoxShadow="0 28 80 #50000000"
+                BoxShadow="{StaticResource M3ElevationModalDialog}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Margin="20"
-                ClipToBounds="True">
+                Margin="24">
 
-            <Grid RowDefinitions="Auto,*,Auto">
+            <!-- Inner Rounded Clipping Shell to ensure header and footer conform to 28px corners without clipping outer shadow -->
+            <Border CornerRadius="{StaticResource M3ShapeCornerExtraLarge}"
+                    ClipToBounds="True">
+                <Grid RowDefinitions="Auto,*,Auto">
 
-                <!-- 1. Header Banner with Brand Identity -->
-                <Border Grid.Row="0"
-                        Background="#0B1222"
-                        Padding="24,20"
-                        BorderBrush="#1E293B"
-                        BorderThickness="0,0,0,1">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
+                    <!-- 1. Header Banner with Brand Identity -->
+                    <Border Grid.Row="0"
+                            Background="{DynamicResource M3SurfaceContainerLowBrush}"
+                            Padding="24,18"
+                            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                            BorderThickness="0,0,0,1">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
 
-                        <!-- Left: Glowing CodeFryDev Vector Logo Badge -->
-                        <Border Grid.Column="0"
-                                Width="60"
-                                Height="60"
-                                Background="#FFFFFF"
-                                BorderBrush="#CBD5E1"
-                                BorderThickness="1.5"
-                                CornerRadius="{StaticResource M3ShapeCornerFull}"
-                                Margin="0,0,16,0"
-                                BoxShadow="0 4 16 #250D2B45"
-                                ClipToBounds="True"
-                                VerticalAlignment="Center">
-                            <!-- Dragon Breathing Fire SVG Vector Graphic -->
-                            <Viewbox Width="46" Height="46" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Canvas Width="5064" Height="5064">
-                                    <Path Fill="#0D2B45" Data="M2474 751C2532.5 786.5 2609.5 835.5 2682.5 859.5C2768.74 897.828 2854.61 905.811 2884 925.5C2935.5 960 2964.5 1038.74 3038 1085C3111.5 1131.26 3226 1156 3267 1156.5C3308 1157 3322.5 1124 3356 1128C3389.5 1132 3422.5 1199.5 3431 1251C3439.5 1302.5 3449.5 1442 3417.5 1450.5C3385.5 1459 3252 1403 3164 1391.5C3076 1380 2823 1391.5 2823 1391.5C2823 1391.5 2973 1587.5 3068.5 1626C3164 1664.5 3244.5 1651.5 3257.5 1664.5C3270.5 1677.5 3226.5 1772 3164 1813.5C3101.5 1855 3011 1874.5 2995.5 1864.5C2980 1854.5 2903 1640.5 2742 1630.5C2581 1620.5 2531 1626 2481.5 1607C2432 1588 2370.5 1526 2345.5 1479.5C2320.5 1433 2325 1310 2287.5 1311C2250 1312 1948 1522.5 1927.5 1743C1907 1963.5 1943 2117.5 1968 2220.5C1993 2323.5 2133 2584 2133 2584C2133 2584 1945.5 2439.5 1887 2353C1828.5 2266.5 1747.5 2037 1747.5 2037L1645 2220.5C1645 2220.5 1619 2037 1619 1916C1619 1795 1667 1626 1667 1626C1667 1626 1633 1639 1589.5 1662C1546 1685 1493 1736.5 1493 1736.5C1493 1736.5 1547.5 1549 1615 1457C1682.5 1365 1855.5 1222.5 1855.5 1222.5C1855.5 1222.5 1751.5 1217 1717.5 1215C1683.5 1213 1575 1222.5 1575 1222.5C1575 1222.5 1727.5 1086 1832.5 1045C1937.5 1004 2133 973 2133 973C2133 973 1961 878 1832.5 753C1704 628 1667 353 1667 353C1667 353 1824.5 563.337 1958.5 664C2092.5 764.663 2290.5 822.5 2290.5 822.5C2290.5 822.5 2245.5 757 2203 650C2160.5 543 2158.5 411.5 2158.5 411.5C2158.5 411.5 2415.5 715.5 2474 751Z" />
-                                    <Path Fill="#1A3D5C" Data="M2291.5 1633C2291.5 1633 2268.5 1913.5 2645.5 2143C3022.5 2372.5 3176.5 2469.5 3337 2716C3497.5 2962.5 3276.5 3592.5 3276.5 3592.5C3276.5 3592.5 3305 3376 3276.5 3111C3248 2846 3028 2641.5 2916 2545C2804 2448.5 2527 2287.5 2437.5 2205.5C2348 2123.5 2273.5 2027.5 2263.5 1917.5C2253.5 1807.5 2291.5 1633 2291.5 1633Z" />
-                                    <Path Fill="#EE4B32" Data="M3923.5 1249.38C4041 1220.88 4226 1235.38 4240.5 1249.38C4255 1263.38 4188.34 1286.7 4122 1325.38C4063.62 1359.41 4013 1386.88 4013 1386.88C4013 1386.88 4199.5 1427.38 4269 1449.38C4338.5 1471.38 4440 1518.88 4550.5 1515.88C4661 1512.88 4833 1449.38 4833 1449.38C4833 1449.38 4741 1566.38 4601.5 1702.88C4462 1839.38 4132.5 1807.38 4132.5 1807.38C4132.5 1807.38 4177.5 1873.38 4218.5 1895.38C4259.5 1917.38 4338.5 1940.38 4338.5 1940.38C4338.5 1940.38 4153 2032.38 3987 2032.38C3821 2032.38 3695.5 1889.38 3603 1815.38C3510.5 1741.38 3227 1608.38 3227 1586.38C3227 1564.38 3453 1589.54 3597 1515.88C3741 1442.22 3806 1277.88 3923.5 1249.38Z" />
-                                    <Path Fill="#0D2B45" Data="M4213 2989C4213 3215.14 4168.46 3439.06 4081.92 3647.98C3995.38 3856.9 3868.54 4046.74 3708.64 4206.64C3548.74 4366.54 3358.9 4493.38 3149.98 4579.92C2941.06 4666.46 2717.14 4711 2491 4711C2264.86 4711 2040.94 4666.46 1832.02 4579.92C1623.1 4493.38 1433.26 4366.54 1273.36 4206.64C1113.46 4046.74 986.618 3856.9 900.079 3647.98C813.541 3439.06 769 3215.14 769 2989H1299C1299 3142.65 1329.25 3294.79 1388.02 3436.74C1446.8 3578.69 1532.94 3707.67 1641.54 3816.31C1750.14 3924.96 1879.06 4011.14 2020.95 4069.94C2162.84 4128.74 2314.92 4159 2468.5 4159C2622.08 4159 2774.16 4128.74 2916.05 4069.94C3057.94 4011.14 3186.86 3924.96 3295.46 3816.32C3404.06 3707.67 3490.2 3578.69 3548.98 3436.74C3607.75 3294.79 3638 3142.65 3638 2989H4213Z" />
-                                    <Path Fill="#7CA2C2" Data="M2654.5 1023.5C2654.5 1023.5 2753.5 1021 2810 1033C2866.5 1045 2920 1126 2920 1126C2920 1126 2872 1139 2847 1140C2822 1141 2757.5 1132.5 2718.5 1111.5C2679.5 1090.5 2654.5 1023.5 2654.5 1023.5Z" />
-                                </Canvas>
-                            </Viewbox>
-                        </Border>
-
-                        <!-- Center: App Title, Badges & Tagline -->
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                                <TextBlock Text="FryPDF"
-                                           FontSize="22"
-                                           FontWeight="Bold"
-                                           Foreground="White" />
-                                <Border Background="#1E293B" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="6" Padding="8,2">
-                                    <TextBlock Text="{Binding AppVersionDisplay}" FontSize="11" FontWeight="SemiBold" Foreground="#38BDF8" />
+                            <!-- Left: Glowing CodeFryDev Vector Logo Badge -->
+                            <Border Grid.Column="0"
+                                    Width="58"
+                                    Height="58"
+                                    Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                    BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                    BorderThickness="1.5"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Margin="0,0,16,0"
+                                    BoxShadow="{StaticResource M3ElevationLevel2}"
+                                    VerticalAlignment="Center">
+                                <Border CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                        ClipToBounds="True">
+                                    <!-- Dragon Breathing Fire SVG Vector Graphic -->
+                                    <Viewbox Width="44" Height="44" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Canvas Width="5064" Height="5064">
+                                            <Path Fill="#0D2B45" Data="M2474 751C2532.5 786.5 2609.5 835.5 2682.5 859.5C2768.74 897.828 2854.61 905.811 2884 925.5C2935.5 960 2964.5 1038.74 3038 1085C3111.5 1131.26 3226 1156 3267 1156.5C3308 1157 3322.5 1124 3356 1128C3389.5 1132 3422.5 1199.5 3431 1251C3439.5 1302.5 3449.5 1442 3417.5 1450.5C3385.5 1459 3252 1403 3164 1391.5C3076 1380 2823 1391.5 2823 1391.5C2823 1391.5 2973 1587.5 3068.5 1626C3164 1664.5 3244.5 1651.5 3257.5 1664.5C3270.5 1677.5 3226.5 1772 3164 1813.5C3101.5 1855 3011 1874.5 2995.5 1864.5C2980 1854.5 2903 1640.5 2742 1630.5C2581 1620.5 2531 1626 2481.5 1607C2432 1588 2370.5 1526 2345.5 1479.5C2320.5 1433 2325 1310 2287.5 1311C2250 1312 1948 1522.5 1927.5 1743C1907 1963.5 1943 2117.5 1968 2220.5C1993 2323.5 2133 2584 2133 2584C2133 2584 1945.5 2439.5 1887 2353C1828.5 2266.5 1747.5 2037 1747.5 2037L1645 2220.5C1645 2220.5 1619 2037 1619 1916C1619 1795 1667 1626 1667 1626C1667 1626 1633 1639 1589.5 1662C1546 1685 1493 1736.5 1493 1736.5C1493 1736.5 1547.5 1549 1615 1457C1682.5 1365 1855.5 1222.5 1855.5 1222.5C1855.5 1222.5 1751.5 1217 1717.5 1215C1683.5 1213 1575 1222.5 1575 1222.5C1575 1222.5 1727.5 1086 1832.5 1045C1937.5 1004 2133 973 2133 973C2133 973 1961 878 1832.5 753C1704 628 1667 353 1667 353C1667 353 1824.5 563.337 1958.5 664C2092.5 764.663 2290.5 822.5 2290.5 822.5C2290.5 822.5 2245.5 757 2203 650C2160.5 543 2158.5 411.5 2158.5 411.5C2158.5 411.5 2415.5 715.5 2474 751Z" />
+                                            <Path Fill="#1A3D5C" Data="M2291.5 1633C2291.5 1633 2268.5 1913.5 2645.5 2143C3022.5 2372.5 3176.5 2469.5 3337 2716C3497.5 2962.5 3276.5 3592.5 3276.5 3592.5C3276.5 3592.5 3305 3376 3276.5 3111C3248 2846 3028 2641.5 2916 2545C2804 2448.5 2527 2287.5 2437.5 2205.5C2348 2123.5 2273.5 2027.5 2263.5 1917.5C2253.5 1807.5 2291.5 1633 2291.5 1633Z" />
+                                            <Path Fill="#EE4B32" Data="M3923.5 1249.38C4041 1220.88 4226 1235.38 4240.5 1249.38C4255 1263.38 4188.34 1286.7 4122 1325.38C4063.62 1359.41 4013 1386.88 4013 1386.88C4013 1386.88 4199.5 1427.38 4269 1449.38C4338.5 1471.38 4440 1518.88 4550.5 1515.88C4661 1512.88 4833 1449.38 4833 1449.38C4833 1449.38 4741 1566.38 4601.5 1702.88C4462 1839.38 4132.5 1807.38 4132.5 1807.38C4132.5 1807.38 4177.5 1873.38 4218.5 1895.38C4259.5 1917.38 4338.5 1940.38 4338.5 1940.38C4338.5 1940.38 4153 2032.38 3987 2032.38C3821 2032.38 3695.5 1889.38 3603 1815.38C3510.5 1741.38 3227 1608.38 3227 1586.38C3227 1564.38 3453 1589.54 3597 1515.88C3741 1442.22 3806 1277.88 3923.5 1249.38Z" />
+                                            <Path Fill="#0D2B45" Data="M4213 2989C4213 3215.14 4168.46 3439.06 4081.92 3647.98C3995.38 3856.9 3868.54 4046.74 3708.64 4206.64C3548.74 4366.54 3358.9 4493.38 3149.98 4579.92C2941.06 4666.46 2717.14 4711 2491 4711C2264.86 4711 2040.94 4666.46 1832.02 4579.92C1623.1 4493.38 1433.26 4366.54 1273.36 4206.64C1113.46 4046.74 986.618 3856.9 900.079 3647.98C813.541 3439.06 769 3215.14 769 2989H1299C1299 3142.65 1329.25 3294.79 1388.02 3436.74C1446.8 3578.69 1532.94 3707.67 1641.54 3816.31C1750.14 3924.96 1879.06 4011.14 2020.95 4069.94C2162.84 4128.74 2314.92 4159 2468.5 4159C2622.08 4159 2774.16 4128.74 2916.05 4069.94C3057.94 4011.14 3186.86 3924.96 3295.46 3816.32C3404.06 3707.67 3490.2 3578.69 3548.98 3436.74C3607.75 3294.79 3638 3142.65 3638 2989H4213Z" />
+                                            <Path Fill="#7CA2C2" Data="M2654.5 1023.5C2654.5 1023.5 2753.5 1021 2810 1033C2866.5 1045 2920 1126 2920 1126C2920 1126 2872 1139 2847 1140C2822 1141 2757.5 1132.5 2718.5 1111.5C2679.5 1090.5 2654.5 1023.5 2654.5 1023.5Z" />
+                                        </Canvas>
+                                    </Viewbox>
                                 </Border>
-                                <Border Background="#062E1A" BorderBrush="#22C55E" BorderThickness="1" CornerRadius="6" Padding="8,2">
-                                    <TextBlock Text="MIT License" FontSize="11" FontWeight="SemiBold" Foreground="#4ADE80" />
-                                </Border>
-                            </StackPanel>
-                            <TextBlock Text="Next-Gen Cross-Platform PDF Creator, Editor &amp; Executive Publishing Studio"
-                                       FontSize="12"
-                                       Foreground="#94A3B8" />
-                            <TextBlock Text="Crafted with ❤️ by CodeFryDev • High-Performance Vector Graphics"
-                                       FontSize="11"
-                                       FontWeight="Medium"
-                                       Foreground="#64748B" />
-                        </StackPanel>
+                            </Border>
 
-                        <!-- Right: Close Button -->
-                        <Button Grid.Column="2"
-                                Classes="action-pill-btn"
-                                Width="32"
-                                Height="32"
-                                Padding="0"
-                                Background="#1E293B"
-                                BorderBrush="#334155"
-                                Command="{Binding CloseAboutDialogCommand}"
-                                ToolTip.Tip="Close (Esc)"
-                                VerticalAlignment="Top">
-                            <materialIcons:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Button>
-                    </Grid>
-                </Border>
-
-                <!-- 2. Main Content Body -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,18">
-                    <StackPanel Spacing="16">
-
-                        <!-- SECTION A: COMPANY & SUPPORT CONTACT CARD -->
-                        <Border Background="{DynamicResource WinInputBgBrush}"
-                                BorderBrush="{DynamicResource WinBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="12"
-                                Padding="16">
-                            <Grid ColumnDefinitions="*,*">
-
-                                <!-- Support Contact Column -->
-                                <StackPanel Grid.Column="0" Spacing="10" Margin="0,0,10,0">
-                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Border Width="26" Height="26" Background="{DynamicResource WinAccentLightBrush}" BorderBrush="{DynamicResource WinAccentBorderBrush}" BorderThickness="1" CornerRadius="6">
-                                            <materialIcons:MaterialIcon Kind="EmailOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="Support &amp; Community" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                    </StackPanel>
-
-                                    <TextBlock Text="Have a feature request, found a bug, or need enterprise support?"
-                                               FontSize="11.5"
-                                               Foreground="{DynamicResource WinMutedBrush}"
-                                               TextWrapping="Wrap" />
-
-                                    <!-- Email Card & Action -->
-                                    <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8">
-                                        <Grid ColumnDefinitions="Auto,*,Auto">
-                                            <Border Grid.Column="0" Width="28" Height="28" Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" CornerRadius="6" Margin="0,0,8,0" VerticalAlignment="Center">
-                                                <materialIcons:MaterialIcon Kind="Gmail" Width="15" Height="15" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,6,0">
-                                                <TextBlock Text="codefrydev@gmail.com"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{DynamicResource WinTextBrush}" />
-                                                <TextBlock Text="Direct developer support"
-                                                           FontSize="9.5"
-                                                           Foreground="{DynamicResource WinMutedBrush}" />
-                                            </StackPanel>
-                                            <Button Grid.Column="2"
-                                                    Classes="action-pill-btn"
-                                                    Command="{Binding CopySupportEmailCommand}"
-                                                    ToolTip.Tip="Copy Email to Clipboard">
-                                                <StackPanel Orientation="Horizontal" Spacing="5">
-                                                    <materialIcons:MaterialIcon Kind="ContentCopy" Width="13" Height="13" Foreground="{DynamicResource WinAccentBrush}" />
-                                                    <TextBlock Text="Copy" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
-                                                </StackPanel>
-                                            </Button>
-                                        </Grid>
+                            <!-- Center: App Title, Badges & Tagline -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="5">
+                                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                    <TextBlock Text="FryPDF"
+                                               FontSize="22"
+                                               FontWeight="Bold"
+                                               Foreground="{DynamicResource M3OnSurfaceBrush}" />
+                                    <Border Background="{DynamicResource M3PrimaryContainerBrush}"
+                                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                            Padding="10,3">
+                                        <TextBlock Text="{Binding AppVersionDisplay}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource M3OnPrimaryContainerBrush}" />
                                     </Border>
-
-                                    <!-- GitHub Repository Card & Action -->
-                                    <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8">
-                                        <Grid ColumnDefinitions="Auto,*,Auto">
-                                            <Border Grid.Column="0" Width="28" Height="28" Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="6" Margin="0,0,8,0" VerticalAlignment="Center">
-                                                <materialIcons:MaterialIcon Kind="Github" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,6,0">
-                                                <TextBlock Text="github.com/codefrydev"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{DynamicResource WinTextBrush}" />
-                                                <TextBlock Text="Source code &amp; contributions"
-                                                           FontSize="9.5"
-                                                           Foreground="{DynamicResource WinMutedBrush}" />
-                                            </StackPanel>
-                                            <Button Grid.Column="2"
-                                                    Classes="action-pill-btn"
-                                                    Command="{Binding OpenGitHubCommand}"
-                                                    ToolTip.Tip="Open GitHub Repository &amp; Profile">
-                                                <StackPanel Orientation="Horizontal" Spacing="5">
-                                                    <materialIcons:MaterialIcon Kind="OpenInNew" Width="13" Height="13" Foreground="{DynamicResource WinAccentBrush}" />
-                                                    <TextBlock Text="Star ↗" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
-                                                </StackPanel>
-                                            </Button>
-                                        </Grid>
+                                    <Border Background="{DynamicResource M3SecondaryContainerBrush}"
+                                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                            Padding="10,3">
+                                        <TextBlock Text="MIT License"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
                                     </Border>
                                 </StackPanel>
-
-                                <!-- Company & Ecosystem Column -->
-                                <StackPanel Grid.Column="1" Spacing="10" Margin="10,0,0,0">
-                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Border Width="26" Height="26" Background="#FEF3C7" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6">
-                                            <materialIcons:MaterialIcon Kind="Web" Width="15" Height="15" Foreground="#D97706" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Border>
-                                        <TextBlock Text="Official Ecosystem" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                                    </StackPanel>
-
-                                    <TextBlock Text="Visit CodeFryDev for open-source projects, developer tools, and updates."
-                                               FontSize="11.5"
-                                               Foreground="{DynamicResource WinMutedBrush}"
-                                               TextWrapping="Wrap" />
-
-                                    <!-- Website Link Card & Action -->
-                                    <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8">
-                                        <Grid ColumnDefinitions="Auto,*,Auto">
-                                            <Border Grid.Column="0" Width="28" Height="28" Background="#E0F2FE" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="6" Margin="0,0,8,0" VerticalAlignment="Center">
-                                                <materialIcons:MaterialIcon Kind="Web" Width="15" Height="15" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,6,0">
-                                                <TextBlock Text="codefrydev.in"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{DynamicResource WinTextBrush}" />
-                                                <TextBlock Text="Developer portal &amp; updates"
-                                                           FontSize="9.5"
-                                                           Foreground="{DynamicResource WinMutedBrush}" />
-                                            </StackPanel>
-                                            <Button Grid.Column="2"
-                                                    Classes="action-pill-btn"
-                                                    Command="{Binding OpenCompanyWebsiteCommand}"
-                                                    ToolTip.Tip="Open Official Website">
-                                                <StackPanel Orientation="Horizontal" Spacing="5">
-                                                    <materialIcons:MaterialIcon Kind="OpenInNew" Width="13" Height="13" Foreground="#0284C7" />
-                                                    <TextBlock Text="Visit ↗" FontSize="11" FontWeight="SemiBold" Foreground="#0284C7" />
-                                                </StackPanel>
-                                            </Button>
-                                        </Grid>
-                                    </Border>
-
-                                    <!-- Microsoft Store Link Card & Action -->
-                                    <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8">
-                                        <Grid ColumnDefinitions="Auto,*,Auto">
-                                            <Border Grid.Column="0" Width="28" Height="28" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Margin="0,0,8,0" VerticalAlignment="Center">
-                                                <materialIcons:MaterialIcon Kind="Microsoft" Width="15" Height="15" Foreground="#0078D4" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,6,0">
-                                                <TextBlock Text="Microsoft Store" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
-                                                <TextBlock Text="ID: 9P5GW2Q81B33" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" />
-                                            </StackPanel>
-                                            <Button Grid.Column="2"
-                                                    Classes="action-pill-btn"
-                                                    Command="{Binding OpenMicrosoftStoreCommand}"
-                                                    ToolTip.Tip="Open in Microsoft Store (9P5GW2Q81B33)">
-                                                <StackPanel Orientation="Horizontal" Spacing="5">
-                                                    <materialIcons:MaterialIcon Kind="OpenInNew" Width="13" Height="13" Foreground="#0078D4" />
-                                                    <TextBlock Text="Store ↗" FontSize="11" FontWeight="SemiBold" Foreground="#0078D4" />
-                                                </StackPanel>
-                                            </Button>
-                                        </Grid>
-                                    </Border>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-
-                        <!-- SECTION B: ARCHITECTURE & CORE TECHNOLOGIES -->
-                        <StackPanel Spacing="8">
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="CodeTags" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
-                                <TextBlock Text="POWERED BY OPEN-SOURCE INNOVATION"
+                                <TextBlock Text="Next-Gen Cross-Platform PDF Creator, Editor &amp; Executive Publishing Studio"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                                <TextBlock Text="Crafted with ❤️ by CodeFryDev • High-Performance Vector Graphics"
                                            FontSize="11"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource WinMutedBrush}"
-                                           LetterSpacing="0.5" />
+                                           FontWeight="Medium"
+                                           Foreground="{DynamicResource M3OutlineBrush}" />
                             </StackPanel>
 
-                            <Grid ColumnDefinitions="*,*,*,*" Margin="0,2,0,0">
-                                <!-- Tech 1: Avalonia UI -->
-                                <Border Grid.Column="0" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,10" Margin="0,0,4,0">
-                                    <StackPanel Spacing="3" HorizontalAlignment="Center">
-                                        <materialIcons:MaterialIcon Kind="ApplicationOutline" Width="20" Height="20" Foreground="#6366F1" HorizontalAlignment="Center" />
-                                        <TextBlock Text="Avalonia UI 12" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
-                                        <TextBlock Text="Cross-Platform UI" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                    </StackPanel>
-                                </Border>
+                            <!-- Right: Close Button -->
+                            <Button Grid.Column="2"
+                                    Classes="m3-icon-btn"
+                                    Width="36"
+                                    Height="36"
+                                    Padding="0"
+                                    Command="{Binding CloseAboutDialogCommand}"
+                                    ToolTip.Tip="Close (Esc)"
+                                    VerticalAlignment="Top">
+                                <materialIcons:MaterialIcon Kind="Close" Width="18" Height="18" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Button>
+                        </Grid>
+                    </Border>
 
-                                <!-- Tech 2: QuestPDF -->
-                                <Border Grid.Column="1" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,10" Margin="4,0,4,0">
-                                    <StackPanel Spacing="3" HorizontalAlignment="Center">
-                                        <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" />
-                                        <TextBlock Text="QuestPDF 2026" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
-                                        <TextBlock Text="Vector PDF Engine" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                    </StackPanel>
-                                </Border>
+                    <!-- 2. Main Content Body -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,18">
+                        <StackPanel Spacing="16">
 
-                                <!-- Tech 3: SkiaSharp -->
-                                <Border Grid.Column="2" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,10" Margin="4,0,4,0">
-                                    <StackPanel Spacing="3" HorizontalAlignment="Center">
-                                        <materialIcons:MaterialIcon Kind="VectorCircle" Width="20" Height="20" Foreground="#0EA5E9" HorizontalAlignment="Center" />
-                                        <TextBlock Text="Skia 2D Canvas" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
-                                        <TextBlock Text="Sub-pixel Precision" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                    </StackPanel>
-                                </Border>
+                            <!-- SECTION A: COMPANY & SUPPORT CONTACT CARD -->
+                            <Border Background="{DynamicResource M3SurfaceContainerLowBrush}"
+                                    BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                    Padding="16">
+                                <Grid ColumnDefinitions="*,*">
 
-                                <!-- Tech 4: .NET 10 -->
-                                <Border Grid.Column="3" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,10" Margin="4,0,0,0">
-                                    <StackPanel Spacing="3" HorizontalAlignment="Center">
-                                        <materialIcons:MaterialIcon Kind="Microsoft" Width="20" Height="20" Foreground="#8B5CF6" HorizontalAlignment="Center" />
-                                        <TextBlock Text=".NET 10.0" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
-                                        <TextBlock Text="Modern Runtime" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                    </StackPanel>
-                                </Border>
-                            </Grid>
-                        </StackPanel>
+                                    <!-- Support Contact Column -->
+                                    <StackPanel Grid.Column="0" Spacing="10" Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <Border Width="28" Height="28"
+                                                    Background="{DynamicResource M3PrimaryContainerBrush}"
+                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}">
+                                                <materialIcons:MaterialIcon Kind="EmailOutline" Width="15" Height="15" Foreground="{DynamicResource M3OnPrimaryContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="Support &amp; Community" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource M3OnSurfaceBrush}" VerticalAlignment="Center" />
+                                        </StackPanel>
 
-                        <!-- SECTION C: OPEN SOURCE MISSION & LICENSES LINK -->
-                        <Border Background="{DynamicResource WinSuccessLightBrush}"
-                                BorderBrush="{DynamicResource WinSuccessBrush}"
-                                BorderThickness="1"
-                                CornerRadius="10"
-                                Padding="14,10">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <materialIcons:MaterialIcon Grid.Column="0" Kind="HeartOutline" Width="18" Height="18" Foreground="{DynamicResource WinSuccessBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,12,0">
-                                    <TextBlock Text="FryPDF is 100% Free and Open-Source Software under the MIT License."
-                                               FontSize="11.5"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource WinSuccessBrush}" />
-                                    <TextBlock Text="Zero telemetry, zero user tracking, and zero remote data collection. Offline &amp; private."
-                                               FontSize="10"
-                                               Foreground="{DynamicResource WinSuccessBrush}"
-                                               Opacity="0.85" />
+                                        <TextBlock Text="Have a feature request, found a bug, or need enterprise support?"
+                                                   FontSize="11.5"
+                                                   Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                                   TextWrapping="Wrap" />
+
+                                        <!-- Email Card & Action -->
+                                        <Border Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                                BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                                BoxShadow="{StaticResource M3ElevationLevel1}"
+                                                Padding="12,10">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <Border Grid.Column="0" Width="32" Height="32"
+                                                        Background="{DynamicResource M3ErrorContainerBrush}"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Margin="0,0,10,0" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="Gmail" Width="16" Height="16" Foreground="{DynamicResource M3OnErrorContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                    <TextBlock Text="codefrydev@gmail.com"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource M3OnSurfaceBrush}" />
+                                                    <TextBlock Text="Direct developer support"
+                                                               FontSize="10"
+                                                               Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2"
+                                                        Classes="m3-tonal-btn"
+                                                        Height="30"
+                                                        Padding="12,0"
+                                                        CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                                        Command="{Binding CopySupportEmailCommand}"
+                                                        ToolTip.Tip="Copy Email to Clipboard">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <materialIcons:MaterialIcon Kind="ContentCopy" Width="13" Height="13" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                                        <TextBlock Text="Copy" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- GitHub Repository Card & Action -->
+                                        <Border Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                                BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                                BoxShadow="{StaticResource M3ElevationLevel1}"
+                                                Padding="12,10">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <Border Grid.Column="0" Width="32" Height="32"
+                                                        Background="{DynamicResource M3SurfaceContainerHighestBrush}"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Margin="0,0,10,0" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="Github" Width="16" Height="16" Foreground="{DynamicResource M3OnSurfaceBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                    <TextBlock Text="github.com/codefrydev"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource M3OnSurfaceBrush}" />
+                                                    <TextBlock Text="Source code &amp; contributions"
+                                                               FontSize="10"
+                                                               Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2"
+                                                        Classes="m3-tonal-btn"
+                                                        Height="30"
+                                                        Padding="12,0"
+                                                        CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                                        Command="{Binding OpenGitHubCommand}"
+                                                        ToolTip.Tip="Open GitHub Repository &amp; Profile">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <materialIcons:MaterialIcon Kind="StarOutline" Width="13" Height="13" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                                        <TextBlock Text="Star ↗" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <!-- Company & Ecosystem Column -->
+                                    <StackPanel Grid.Column="1" Spacing="10" Margin="10,0,0,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <Border Width="28" Height="28"
+                                                    Background="{DynamicResource M3TertiaryContainerBrush}"
+                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}">
+                                                <materialIcons:MaterialIcon Kind="Web" Width="15" Height="15" Foreground="{DynamicResource M3OnTertiaryContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="Official Ecosystem" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource M3OnSurfaceBrush}" VerticalAlignment="Center" />
+                                        </StackPanel>
+
+                                        <TextBlock Text="Visit CodeFryDev for open-source projects, developer tools, and updates."
+                                                   FontSize="11.5"
+                                                   Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                                   TextWrapping="Wrap" />
+
+                                        <!-- Website Link Card & Action -->
+                                        <Border Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                                BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                                BoxShadow="{StaticResource M3ElevationLevel1}"
+                                                Padding="12,10">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <Border Grid.Column="0" Width="32" Height="32"
+                                                        Background="{DynamicResource M3SecondaryContainerBrush}"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Margin="0,0,10,0" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="Web" Width="16" Height="16" Foreground="{DynamicResource M3OnSecondaryContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                    <TextBlock Text="codefrydev.in"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource M3OnSurfaceBrush}" />
+                                                    <TextBlock Text="Developer portal &amp; updates"
+                                                               FontSize="10"
+                                                               Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2"
+                                                        Classes="m3-tonal-btn"
+                                                        Height="30"
+                                                        Padding="12,0"
+                                                        CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                                        Command="{Binding OpenCompanyWebsiteCommand}"
+                                                        ToolTip.Tip="Open Official Website">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <materialIcons:MaterialIcon Kind="OpenInNew" Width="13" Height="13" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                                        <TextBlock Text="Visit ↗" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Microsoft Store Link Card & Action -->
+                                        <Border Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                                BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                                BoxShadow="{StaticResource M3ElevationLevel1}"
+                                                Padding="12,10">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <Border Grid.Column="0" Width="32" Height="32"
+                                                        Background="{DynamicResource M3TertiaryContainerBrush}"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Margin="0,0,10,0" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="Microsoft" Width="16" Height="16" Foreground="{DynamicResource M3OnTertiaryContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                    <TextBlock Text="Microsoft Store" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource M3OnSurfaceBrush}" />
+                                                    <TextBlock Text="ID: 9P5GW2Q81B33" FontSize="10" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2"
+                                                        Classes="m3-tonal-btn"
+                                                        Height="30"
+                                                        Padding="12,0"
+                                                        CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                                        Command="{Binding OpenMicrosoftStoreCommand}"
+                                                        ToolTip.Tip="Open in Microsoft Store (9P5GW2Q81B33)">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <materialIcons:MaterialIcon Kind="OpenInNew" Width="13" Height="13" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                                        <TextBlock Text="Store ↗" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- SECTION B: ARCHITECTURE & CORE TECHNOLOGIES -->
+                            <StackPanel Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="CodeTags" Width="14" Height="14" Foreground="{DynamicResource M3PrimaryBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="POWERED BY OPEN-SOURCE INNOVATION"
+                                               FontSize="11"
+                                               FontWeight="Bold"
+                                               Foreground="{DynamicResource M3PrimaryBrush}"
+                                               LetterSpacing="0.5" />
                                 </StackPanel>
-                                <Button Grid.Column="2"
-                                        Classes="success-pill-btn"
-                                        Command="{Binding NavigateToLicensingCommand}"
-                                        ToolTip.Tip="View full list of 20 open-source libraries, packages, and full license texts">
-                                    <StackPanel Orientation="Horizontal" Spacing="5">
-                                        <materialIcons:MaterialIcon Kind="CertificateOutline" Width="14" Height="14" Foreground="{DynamicResource WinSuccessBrush}" />
-                                        <TextBlock Text="View 20 Licenses &amp; Tools →" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinSuccessBrush}" />
+
+                                <Grid ColumnDefinitions="*,*,*,*" Margin="0,2,0,0">
+                                    <!-- Tech 1: Avalonia UI -->
+                                    <Border Grid.Column="0"
+                                            Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                            BoxShadow="{StaticResource M3ElevationLevel1}"
+                                            Padding="10,12" Margin="0,0,4,0">
+                                        <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                            <Border Width="36" Height="36"
+                                                    Background="{DynamicResource M3PrimaryContainerBrush}"
+                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                    HorizontalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="ApplicationOutline" Width="20" Height="20" Foreground="{DynamicResource M3OnPrimaryContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="Avalonia UI 12" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource M3OnSurfaceBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Cross-Platform UI" FontSize="9.5" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Tech 2: QuestPDF -->
+                                    <Border Grid.Column="1"
+                                            Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                            BoxShadow="{StaticResource M3ElevationLevel1}"
+                                            Padding="10,12" Margin="4,0,4,0">
+                                        <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                            <Border Width="36" Height="36"
+                                                    Background="{DynamicResource M3ErrorContainerBrush}"
+                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                    HorizontalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="{DynamicResource M3OnErrorContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="QuestPDF 2026" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource M3OnSurfaceBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Vector PDF Engine" FontSize="9.5" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Tech 3: SkiaSharp -->
+                                    <Border Grid.Column="2"
+                                            Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                            BoxShadow="{StaticResource M3ElevationLevel1}"
+                                            Padding="10,12" Margin="4,0,4,0">
+                                        <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                            <Border Width="36" Height="36"
+                                                    Background="{DynamicResource M3SecondaryContainerBrush}"
+                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                    HorizontalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="VectorCircle" Width="20" Height="20" Foreground="{DynamicResource M3OnSecondaryContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="Skia 2D Canvas" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource M3OnSurfaceBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Sub-pixel Precision" FontSize="9.5" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Tech 4: .NET 10 -->
+                                    <Border Grid.Column="3"
+                                            Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                            BoxShadow="{StaticResource M3ElevationLevel1}"
+                                            Padding="10,12" Margin="4,0,0,0">
+                                        <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                            <Border Width="36" Height="36"
+                                                    Background="{DynamicResource M3TertiaryContainerBrush}"
+                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                    HorizontalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="Microsoft" Width="20" Height="20" Foreground="{DynamicResource M3OnTertiaryContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text=".NET 10.0" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource M3OnSurfaceBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Modern Runtime" FontSize="9.5" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- SECTION C: OPEN SOURCE MISSION & LICENSES LINK -->
+                            <Border Background="{DynamicResource WinSuccessLightBrush}"
+                                    BorderBrush="{DynamicResource WinSuccessBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                    BoxShadow="{StaticResource M3ElevationLevel1}"
+                                    Padding="16,12">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <Border Grid.Column="0" Width="36" Height="36"
+                                            Background="#DCFCE7"
+                                            CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                            Margin="0,0,12,0" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="HeartOutline" Width="20" Height="20" Foreground="{DynamicResource WinSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,12,0">
+                                        <TextBlock Text="FryPDF is 100% Free and Open-Source Software under the MIT License."
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource WinSuccessBrush}" />
+                                        <TextBlock Text="Zero telemetry, zero user tracking, and zero remote data collection. Offline &amp; private."
+                                                   FontSize="10.5"
+                                                   Foreground="{DynamicResource WinSuccessBrush}"
+                                                   Opacity="0.85" />
                                     </StackPanel>
-                                </Button>
-                            </Grid>
-                        </Border>
+                                    <Button Grid.Column="2"
+                                            Classes="m3-tonal-btn"
+                                            Height="34"
+                                            Padding="14,0"
+                                            CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                            Command="{Binding NavigateToLicensingCommand}"
+                                            ToolTip.Tip="View full list of 20 open-source libraries, packages, and full license texts">
+                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="CertificateOutline" Width="15" Height="15" Foreground="{DynamicResource WinSuccessBrush}" />
+                                            <TextBlock Text="View 20 Licenses &amp; Tools →" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinSuccessBrush}" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </Border>
 
-                    </StackPanel>
-                </ScrollViewer>
+                        </StackPanel>
+                    </ScrollViewer>
 
-                <!-- 3. Footer Actions Bar -->
-                <Border Grid.Row="2"
-                        Background="{DynamicResource WinInputBgBrush}"
-                        BorderBrush="{DynamicResource WinBorderBrush}"
-                        BorderThickness="0,1,0,0"
-                        Padding="20,12">
-                    <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                    <!-- 3. Footer Actions Bar -->
+                    <Border Grid.Row="2"
+                            Background="{DynamicResource M3SurfaceContainerLowBrush}"
+                            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                            BorderThickness="0,1,0,0"
+                            Padding="20,12">
+                        <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
 
-                        <!-- System Diagnostics Copy Button -->
-                        <Button Grid.Column="0"
-                                Classes="secondary-btn"
-                                Height="32"
-                                Padding="12,0"
-                                Command="{Binding CopyDiagnosticsCommand}"
-                                ToolTip.Tip="Copy OS, Runtime &amp; App Diagnostics for Bug Reports">
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="InformationOutline" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
-                                <TextBlock Text="Copy Diagnostics" FontSize="11.5" FontWeight="Medium" />
-                            </StackPanel>
-                        </Button>
+                            <!-- System Diagnostics Copy Button -->
+                            <Button Grid.Column="0"
+                                    Classes="m3-tonal-btn"
+                                    Height="34"
+                                    Padding="14,0"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Command="{Binding CopyDiagnosticsCommand}"
+                                    ToolTip.Tip="Copy OS, Runtime &amp; App Diagnostics for Bug Reports">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="15" Height="15" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                                    <TextBlock Text="Copy Diagnostics" FontSize="11.5" FontWeight="Medium" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                                </StackPanel>
+                            </Button>
 
-                        <!-- Shortcuts Button -->
-                        <Button Grid.Column="1"
-                                Classes="secondary-btn"
-                                Height="32"
-                                Padding="12,0"
-                                Margin="8,0,0,0"
-                                Command="{Binding OpenShortcutsHelpCommand}"
-                                ToolTip.Tip="Open Keyboard Shortcuts Reference (F1)">
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="KeyboardOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
-                                <TextBlock Text="Shortcuts (F1)" FontSize="11.5" FontWeight="Medium" />
-                            </StackPanel>
-                        </Button>
+                            <!-- Shortcuts Button -->
+                            <Button Grid.Column="1"
+                                    Classes="m3-tonal-btn"
+                                    Height="34"
+                                    Padding="14,0"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Margin="8,0,0,0"
+                                    Command="{Binding OpenShortcutsHelpCommand}"
+                                    ToolTip.Tip="Open Keyboard Shortcuts Reference (F1)">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="KeyboardOutline" Width="15" Height="15" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                    <TextBlock Text="Shortcuts (F1)" FontSize="11.5" FontWeight="Medium" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                </StackPanel>
+                            </Button>
 
-                        <!-- Help Guides Page Button -->
-                        <Button Grid.Column="3"
-                                Classes="secondary-btn"
-                                Height="32"
-                                Padding="12,0"
-                                Margin="0,0,10,0"
-                                Command="{Binding NavigateToHelpCommand}"
-                                ToolTip.Tip="Open dedicated Help &amp; User Guides page for all 32 tools">
-                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="15" Height="15" Foreground="#0284C7" />
-                                <TextBlock Text="Help &amp; Guides" FontSize="11.5" FontWeight="Medium" />
-                            </StackPanel>
-                        </Button>
+                            <!-- Help Guides Page Button -->
+                            <Button Grid.Column="3"
+                                    Classes="m3-tonal-btn"
+                                    Height="34"
+                                    Padding="14,0"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Margin="0,0,10,0"
+                                    Command="{Binding NavigateToHelpCommand}"
+                                    ToolTip.Tip="Open dedicated Help &amp; User Guides page for all 32 tools">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="15" Height="15" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                    <TextBlock Text="Help &amp; Guides" FontSize="11.5" FontWeight="Medium" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                </StackPanel>
+                            </Button>
 
-                        <!-- Primary Close Button -->
-                        <Button Grid.Column="4"
-                                Classes="accent-btn"
-                                Height="32"
-                                Width="96"
-                                Command="{Binding CloseAboutDialogCommand}"
-                                ToolTip.Tip="Close Dialog (Esc)">
-                            <TextBlock Text="Close" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                        </Button>
-                    </Grid>
-                </Border>
+                            <!-- Primary Close Button -->
+                            <Button Grid.Column="4"
+                                    Classes="m3-filled-btn"
+                                    Height="34"
+                                    Width="100"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Command="{Binding CloseAboutDialogCommand}"
+                                    ToolTip.Tip="Close Dialog (Esc)">
+                                <TextBlock Text="Close" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                            </Button>
+                        </Grid>
+                    </Border>
 
-            </Grid>
+                </Grid>
+            </Border>
         </Border>
     </Grid>
 

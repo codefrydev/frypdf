@@ -638,9 +638,9 @@
                     <ScrollViewer IsVisible="{Binding HasSelectedDetail}"
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Margin="32,24,32,40" Spacing="20"
-                                    DataContext="{Binding SelectedDetail}"
-                                    x:DataType="vm:PluginsManagerDetailViewModel">
+                        <Panel DataContext="{Binding SelectedDetail}">
+                            <StackPanel Margin="32,24,32,40" Spacing="20"
+                                        x:DataType="vm:PluginsManagerDetailViewModel">
 
                             <!-- 1. Extension Hero Header -->
                             <Border Background="{DynamicResource WinPanelBrush}"
@@ -1069,6 +1069,7 @@
                             </StackPanel>
 
                         </StackPanel>
+                        </Panel>
                     </ScrollViewer>
                 </Panel>
             </Border>

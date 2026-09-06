@@ -18,10 +18,11 @@
                 Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="16"
-                BoxShadow="0 24 64 #40000000, 0 4 20 #15000000"
+                CornerRadius="{StaticResource M3ShapeCornerExtraLarge}"
+                BoxShadow="{StaticResource M3ElevationModalDialog}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
+                Margin="24"
                 Padding="24,20,24,20">
 
             <Grid RowDefinitions="Auto,Auto,*,Auto">

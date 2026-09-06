@@ -490,6 +490,69 @@ public class Material3ExpressiveThemeTests
         // 6. Footer bar uses tonal background, m3-tonal-btn, and m3-filled-btn
         Assert.Contains("Classes=\"m3-filled-btn\"", xaml);
     }
+
+    [Fact]
+    public void AboutDialog_AdheresToMaterial3Expressive()
+    {
+        var aboutPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "Dialogs", "AboutDialog.axaml");
+        var xaml = File.ReadAllText(aboutPath);
+
+        // 1. Dialog Shell uses M3 Extra Large shape, dedicated M3ElevationModalDialog elevation, and M3 Surface brush
+        Assert.Contains("CornerRadius=\"{StaticResource M3ShapeCornerExtraLarge}\"", xaml);
+        Assert.Contains("BoxShadow=\"{StaticResource M3ElevationModalDialog}\"", xaml);
+        Assert.Contains("Background=\"{DynamicResource M3SurfaceBrush}\"", xaml);
+
+        // 2. Elimination of harsh raw box shadows and hardcoded dark navy header
+        Assert.DoesNotContain("BoxShadow=\"0 28 80 #50000000\"", xaml);
+        Assert.DoesNotContain("BoxShadow=\"0 4 16 #250D2B45\"", xaml);
+        Assert.DoesNotContain("Background=\"#0B1222\"", xaml);
+        Assert.DoesNotContain("BorderBrush=\"#1E293B\"", xaml);
+
+        // 3. Inner 28px clipping shell preserves outer shadow without clipping
+        Assert.Contains("<!-- Inner Rounded Clipping Shell to ensure header and footer conform to 28px corners without clipping outer shadow -->", xaml);
+
+        // 4. Content cards use M3 ElevationLevel1 and M3 shape tokens
+        Assert.Contains("BoxShadow=\"{StaticResource M3ElevationLevel1}\"", xaml);
+        Assert.Contains("BoxShadow=\"{StaticResource M3ElevationLevel2}\"", xaml);
+        Assert.Contains("CornerRadius=\"{StaticResource M3ShapeCornerMedium}\"", xaml);
+        Assert.Contains("CornerRadius=\"{StaticResource M3ShapeCornerLarge}\"", xaml);
+
+        // 5. Interactive controls use M3 button classes and pill geometry
+        Assert.Contains("Classes=\"m3-icon-btn\"", xaml);
+        Assert.Contains("Classes=\"m3-tonal-btn\"", xaml);
+        Assert.Contains("Classes=\"m3-filled-btn\"", xaml);
+    }
+
+    [Fact]
+    public void ModalDialogCards_UseM3ElevationModalDialog_AndDoNotClipOuterShadow()
+    {
+        var dialogFiles = new[]
+        {
+            "AboutDialog.axaml",
+            "PluginsDialog.axaml",
+            "CommandPaletteDialog.axaml",
+            "ShortcutsHelpDialog.axaml",
+            "WorkflowBuilderDialog.axaml",
+            "PdfToolRunnerDialog.axaml",
+            "BatchGenerationDialog.axaml",
+            "DeleteConfirmationDialog.axaml",
+            "CompareDocumentsDialog.axaml",
+            "SignatureStudioDialog.axaml",
+            "PreflightDiagnosticsDialog.axaml",
+            "CustomStampDialog.axaml",
+            "DataStudioDialog.axaml",
+            "MathEquationStudioDialog.axaml"
+        };
+
+        foreach (var file in dialogFiles)
+        {
+            var path = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "Dialogs", file);
+            var xaml = File.ReadAllText(path);
+
+            Assert.Contains("BoxShadow=\"{StaticResource M3ElevationModalDialog}\"", xaml);
+            Assert.Contains("CornerRadius=\"{StaticResource M3ShapeCornerExtraLarge}\"", xaml);
+        }
+    }
 }
 
 

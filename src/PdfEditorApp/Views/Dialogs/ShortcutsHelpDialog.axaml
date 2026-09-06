@@ -13,14 +13,16 @@
                 Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="12"
-                BoxShadow="0 24 72 #40000000"
+                CornerRadius="{StaticResource M3ShapeCornerExtraLarge}"
+                BoxShadow="{StaticResource M3ElevationModalDialog}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Margin="20"
-                ClipToBounds="True">
+                Margin="24">
 
-            <Grid RowDefinitions="Auto,*,Auto">
+            <!-- Inner Rounded Clipping Shell to preserve 28px corners without clipping outer shadow -->
+            <Border CornerRadius="{StaticResource M3ShapeCornerExtraLarge}"
+                    ClipToBounds="True">
+                <Grid RowDefinitions="Auto,*,Auto">
 
                 <!-- 1. Header Bar -->
                 <Border Grid.Row="0"
@@ -307,6 +309,7 @@
                 </Border>
 
             </Grid>
+            </Border>
         </Border>
     </Grid>
 

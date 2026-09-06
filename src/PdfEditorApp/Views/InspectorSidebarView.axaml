@@ -420,14 +420,47 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <!-- In-Inspector Text Editor -->
+                            <!-- In-Inspector Text Editor (Vertically Resizable with Drag Handle) -->
                             <StackPanel Spacing="3">
-                                <TextBlock Text="Text Content" Classes="inspector-label" />
-                                <TextBox Classes="m3-outlined"
-                                         Text="{Binding TextElement.Text, Mode=TwoWay}"
-                                         AcceptsReturn="True" TextWrapping="Wrap"
-                                         Height="54" FontSize="12" Padding="8,5"
-                                         AttachedToVisualTree="OnSidebarTextBoxAttached" />
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Text Content" Classes="inspector-label" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Classes="m3-icon-btn" Width="22" Height="22"
+                                            Click="OnToggleTextEditorExpandClicked"
+                                            ToolTip.Tip="Toggle Editor Size (Compact / Expanded)">
+                                        <materialIcons:MaterialIcon Name="TextEditorExpandIcon" Kind="ArrowExpandVertical" Width="13" Height="13" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                                    </Button>
+                                </Grid>
+                                <Border Classes="m3-resizable-editor">
+                                    <Grid RowDefinitions="*,Auto">
+                                        <TextBox Grid.Row="0"
+                                                 Name="SidebarTextEditor"
+                                                 Classes="m3-outlined"
+                                                 BorderThickness="0"
+                                                 CornerRadius="0"
+                                                 Background="Transparent"
+                                                 Text="{Binding TextElement.Text, Mode=TwoWay}"
+                                                 AcceptsReturn="True" TextWrapping="Wrap"
+                                                 Height="72" MinHeight="44" MaxHeight="450"
+                                                 FontSize="12" Padding="8,6"
+                                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                 AttachedToVisualTree="OnSidebarTextBoxAttached" />
+                                        <Border Grid.Row="1"
+                                                Classes="m3-resize-grip"
+                                                Height="11"
+                                                CornerRadius="0,0,12,12"
+                                                PointerPressed="OnTextEditorResizeGripPointerPressed"
+                                                PointerMoved="OnTextEditorResizeGripPointerMoved"
+                                                PointerReleased="OnTextEditorResizeGripPointerReleased"
+                                                DoubleTapped="OnTextEditorResizeGripDoubleTapped"
+                                                ToolTip.Tip="Drag vertically to resize editor • Double-click to toggle">
+                                            <Border Classes="m3-grip-pill"
+                                                    Width="28" Height="3.5"
+                                                    CornerRadius="2"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
                             </StackPanel>
 
                             <!-- Font Family & Font Size -->

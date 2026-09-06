@@ -672,6 +672,51 @@
         <Setter Property="BorderThickness" Value="2" />
     </Style>
 
+    <!-- M3 Resizable Editor Container (Multi-line text editor with tactile drag resize grip) -->
+    <Style Selector="Border.m3-resizable-editor">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowestBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerMedium}" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.m3-resizable-editor:focus-within">
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+    </Style>
+    <Style Selector="Border.m3-resizable-editor:pointerover">
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineBrush}" />
+    </Style>
+
+    <!-- M3 Tactile Bottom Resize Grip -->
+    <Style Selector="Border.m3-resize-grip">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowBrush}" />
+        <Setter Property="Cursor" Value="SizeNorthSouth" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.12" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.m3-resize-grip:pointerover">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+    </Style>
+    <Style Selector="Border.m3-grip-pill">
+        <Setter Property="Background" Value="{DynamicResource M3OutlineVariantBrush}" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.12" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.m3-resize-grip:pointerover Border.m3-grip-pill">
+        <Setter Property="Background" Value="{DynamicResource M3PrimaryBrush}" />
+    </Style>
+
     <!-- M3 Search Bar (Full Pill) -->
     <Style Selector="TextBox.m3-search">
         <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />

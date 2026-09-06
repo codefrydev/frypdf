@@ -337,5 +337,34 @@ public class Material3ExpressiveThemeTests
         Assert.Contains("ToolTip.Tip=\"Box Corner Radius (0-64 px)\"", inspector);
         Assert.Contains("ToolTip.Tip=\"Border Stroke Thickness (0-20 pt)\"", inspector);
     }
+
+    [Fact]
+    public void InspectorSidebarView_TextContentEditor_IsVerticallyResizableWithDragGripAndExpandToggle()
+    {
+        var inspectorPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "InspectorSidebarView.axaml");
+        var inspector = File.ReadAllText(inspectorPath);
+
+        // 1. Resizable editor container with M3 styling
+        Assert.Contains("Classes=\"m3-resizable-editor\"", inspector);
+        Assert.Contains("Classes=\"m3-resize-grip\"", inspector);
+        Assert.Contains("Classes=\"m3-grip-pill\"", inspector);
+
+        // 2. Interactive drag event bindings and tooltip
+        Assert.Contains("PointerPressed=\"OnTextEditorResizeGripPointerPressed\"", inspector);
+        Assert.Contains("PointerMoved=\"OnTextEditorResizeGripPointerMoved\"", inspector);
+        Assert.Contains("PointerReleased=\"OnTextEditorResizeGripPointerReleased\"", inspector);
+        Assert.Contains("DoubleTapped=\"OnTextEditorResizeGripDoubleTapped\"", inspector);
+
+        // 3. Quick toggle expand/collapse button in header
+        Assert.Contains("Click=\"OnToggleTextEditorExpandClicked\"", inspector);
+        Assert.Contains("Name=\"TextEditorExpandIcon\"", inspector);
+
+        // 4. TextBox dynamic height bounds and scrollbar support
+        Assert.Contains("Name=\"SidebarTextEditor\"", inspector);
+        Assert.Contains("MinHeight=\"44\"", inspector);
+        Assert.Contains("MaxHeight=\"450\"", inspector);
+        Assert.Contains("ScrollViewer.VerticalScrollBarVisibility=\"Auto\"", inspector);
+    }
 }
+
 

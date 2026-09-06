@@ -128,9 +128,44 @@ public partial class PluginsManagerViewModel : ViewModelBase
         {
             UpdateDetailFromInstalled(SelectedInstalledPlugin);
         }
-        else if (value == PluginsManagerTab.Marketplace && SelectedMarketplacePlugin != null)
+        else if (value == PluginsManagerTab.Marketplace)
         {
-            UpdateDetailFromMarketplace(SelectedMarketplacePlugin);
+            if (SelectedMarketplacePlugin != null)
+            {
+                UpdateDetailFromMarketplace(SelectedMarketplacePlugin);
+            }
+
+            // Auto-sync with remote GitHub CDN registry in background
+            _ = SyncRemoteRegistrySilentlyAsync();
+        }
+    }
+
+    private async Task SyncRemoteRegistrySilentlyAsync()
+    {
+        try
+        {
+            await _marketplaceService.FetchRemoteCatalogAsync();
+            var catalog = await _marketplaceService.GetCatalogAsync();
+            void Update()
+            {
+                _allMarketplace.Clear();
+                _allMarketplace.AddRange(catalog);
+                ApplyFilters();
+                OnPropertyChanged(nameof(MarketplaceCount));
+            }
+
+            if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            {
+                Update();
+            }
+            else
+            {
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(Update);
+            }
+        }
+        catch
+        {
+            // Silent fallback to curated offline items
         }
     }
 
@@ -179,11 +214,13 @@ public partial class PluginsManagerViewModel : ViewModelBase
         try
         {
             PopulateInstalledPlugins();
+            await _marketplaceService.FetchRemoteCatalogAsync();
             var catalog = await _marketplaceService.GetCatalogAsync();
             _allMarketplace.Clear();
             _allMarketplace.AddRange(catalog);
 
             ApplyFilters();
+            OnPropertyChanged(nameof(MarketplaceCount));
 
             if (SelectedDetail == null && FilteredInstalledPlugins.Count > 0)
             {
@@ -193,6 +230,55 @@ public partial class PluginsManagerViewModel : ViewModelBase
         catch (Exception ex)
         {
             StatusMessage = $"Error loading plugins: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task SyncRemoteRegistryAsync()
+    {
+        try
+        {
+            StatusMessage = "Syncing with remote FryPDF registry...";
+            await _marketplaceService.FetchRemoteCatalogAsync(forceRefresh: true);
+            var catalog = await _marketplaceService.GetCatalogAsync();
+            _allMarketplace.Clear();
+            _allMarketplace.AddRange(catalog);
+            ApplyFilters();
+            OnPropertyChanged(nameof(MarketplaceCount));
+            ShowToastCallback?.Invoke($"Registry synced: {catalog.Count} extensions available.");
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Sync error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task CheckForUpdatesAsync()
+    {
+        IsBusy = true;
+        StatusMessage = "Checking remote registry for plugin updates...";
+
+        try
+        {
+            var updates = await _marketplaceService.CheckForUpdatesAsync();
+            if (updates.Count > 0)
+            {
+                ShowToastCallback?.Invoke($"Found {updates.Count} plugin update(s) available!");
+            }
+            else
+            {
+                ShowToastCallback?.Invoke("All installed plugins are up to date.");
+            }
+            await LoadAllDataAsync();
+        }
+        catch (Exception ex)
+        {
+            ShowToastCallback?.Invoke($"Failed to check updates: {ex.Message}");
         }
         finally
         {
@@ -265,7 +351,7 @@ public partial class PluginsManagerViewModel : ViewModelBase
         }
 
         // Filter Marketplace
-        FilteredMarketplacePlugins.Clear();
+        var matchedMarketplace = new List<MarketplacePluginItem>();
         foreach (var m in _allMarketplace)
         {
             if (cat != "All" && !string.Equals(m.Category, cat, StringComparison.OrdinalIgnoreCase))
@@ -278,8 +364,30 @@ public partial class PluginsManagerViewModel : ViewModelBase
                 m.Description.ToLowerInvariant().Contains(q) ||
                 m.Tags.Any(t => t.ToLowerInvariant().Contains(q)))
             {
-                FilteredMarketplacePlugins.Add(m);
+                matchedMarketplace.Add(m);
             }
+        }
+
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            matchedMarketplace = matchedMarketplace
+                .OrderByDescending(m =>
+                {
+                    var name = m.Name.ToLowerInvariant();
+                    var id = m.Id.ToLowerInvariant();
+                    if (name == q || id == q) return 100;
+                    if (name.StartsWith(q)) return 80;
+                    if (name.Contains(q)) return 60;
+                    if (id.Contains(q)) return 40;
+                    return 10;
+                })
+                .ToList();
+        }
+
+        FilteredMarketplacePlugins.Clear();
+        foreach (var item in matchedMarketplace)
+        {
+            FilteredMarketplacePlugins.Add(item);
         }
 
         // Maintain selection stability or select the first item so the detail pane is never left blank unexpectedly

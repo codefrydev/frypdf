@@ -257,7 +257,7 @@
                                                 CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                                 Padding="4,1"
                                                 VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding FilteredMarketplacePlugins.Count}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
+                                            <TextBlock Text="{Binding MarketplaceCount}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
                                         </Border>
                                     </StackPanel>
                                 </Button>
@@ -396,13 +396,37 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                            </StackPanel>
-
-                            <!-- 4B. Marketplace / Store List -->
+                            </StackPanel>                            <!-- 4B. Marketplace / Store List -->
                             <StackPanel IsVisible="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Marketplace}" Spacing="2">
-                                <TextBlock Text="{Binding FilteredMarketplacePlugins.Count, StringFormat='AVAILABLE EXTENSIONS ({0})'}"
-                                           FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}"
-                                           Margin="4,4,0,8" />
+                                <Grid ColumnDefinitions="*,Auto" Margin="4,4,4,8">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding FilteredMarketplacePlugins.Count, StringFormat='ONLINE EXTENSIONS ({0})'}"
+                                                   FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" />
+                                        <Border Background="{DynamicResource WinSuccessLightBrush}"
+                                                BorderBrush="{DynamicResource WinSuccessBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                Padding="5,1">
+                                            <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="Github" Width="10" Height="10" Foreground="{DynamicResource WinSuccessBrush}" />
+                                                <TextBlock Text="GitHub CDN" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource WinSuccessBrush}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <!-- Quick Sync Button with Registry -->
+                                    <Button Grid.Column="1"
+                                            Classes="action-pill-btn"
+                                            Height="22"
+                                            Padding="8,0"
+                                            Command="{Binding SyncRemoteRegistryCommand}"
+                                            ToolTip.Tip="Sync online catalog from GitHub resources repository">
+                                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                            <materialIcons:MaterialIcon Kind="CloudSyncOutline" Width="12" Height="12" Foreground="{DynamicResource WinAccentBrush}" />
+                                            <TextBlock Text="Sync" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
 
                                 <ItemsControl ItemsSource="{Binding FilteredMarketplacePlugins}">
                                     <ItemsControl.ItemTemplate>
@@ -421,10 +445,10 @@
                                                             Margin="0,0,12,0"
                                                             VerticalAlignment="Center">
                                                         <materialIcons:MaterialIcon Kind="{Binding IconKind}"
-                                                                                   Width="20" Height="20"
-                                                                                   Foreground="{Binding IconColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                                                   HorizontalAlignment="Center"
-                                                                                   VerticalAlignment="Center" />
+                                                                                    Width="20" Height="20"
+                                                                                    Foreground="{Binding IconColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                                                                    HorizontalAlignment="Center"
+                                                                                    VerticalAlignment="Center" />
                                                     </Border>
 
                                                     <!-- Info -->
@@ -459,18 +483,35 @@
                                                         </StackPanel>
                                                     </StackPanel>
 
-                                                    <!-- Install Action Button -->
-                                                    <Button Grid.Column="2"
-                                                            Classes="action-pill-btn"
-                                                            Height="28"
-                                                            Padding="12,0"
-                                                            Command="{Binding $parent[UserControl].((vm:PluginsManagerViewModel)DataContext).InstallMarketplacePluginCommand}"
-                                                            CommandParameter="{Binding Id}"
-                                                            IsVisible="{Binding Status, Converter={StaticResource EqualityConverter}, ConverterParameter=Available}"
-                                                            ToolTip.Tip="1-click install into FryPDF"
-                                                            VerticalAlignment="Center">
-                                                        <TextBlock Text="Install" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
-                                                    </Button>
+                                                    <!-- Action Column: Install vs Installed Badge -->
+                                                    <Panel Grid.Column="2" VerticalAlignment="Center">
+                                                        <!-- Install Action Button -->
+                                                        <Button Classes="action-pill-btn"
+                                                                Height="28"
+                                                                Padding="12,0"
+                                                                Command="{Binding $parent[UserControl].((vm:PluginsManagerViewModel)DataContext).InstallMarketplacePluginCommand}"
+                                                                CommandParameter="{Binding Id}"
+                                                                IsVisible="{Binding Status, Converter={StaticResource EqualityConverter}, ConverterParameter=Available}"
+                                                                ToolTip.Tip="1-click install into FryPDF"
+                                                                VerticalAlignment="Center">
+                                                            <TextBlock Text="Install" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
+                                                        </Button>
+
+                                                        <!-- Installed Badge (like VS Code) -->
+                                                        <Border Background="{DynamicResource WinHoverBrush}"
+                                                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                                                Padding="8,3"
+                                                                IsVisible="{Binding Status, Converter={StaticResource EqualityConverter}, ConverterParameter=Installed}"
+                                                                ToolTip.Tip="This extension is already installed"
+                                                                VerticalAlignment="Center">
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                                <materialIcons:MaterialIcon Kind="Check" Width="11" Height="11" Foreground="{DynamicResource WinSuccessBrush}" />
+                                                                <TextBlock Text="Installed" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </Panel>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>

@@ -122,50 +122,67 @@ public class OverlayExtensibilityTests
     [Fact]
     public async Task CompanionOverlays_CanInstallAndOperateSimultaneously()
     {
-        var services = new ServiceCollection();
-        App.ConfigureServices(services);
-        var tempFile = Path.Combine(Path.GetTempPath(), $"test_installed_{Guid.NewGuid():N}.json");
-        services.AddSingleton<IInstalledPluginStore>(new FileInstalledPluginStore(tempFile));
-        var sp = services.BuildServiceProvider();
+        var tempDir = Path.Combine(AppContext.BaseDirectory, $"frypdf_companion_test_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            var services = new ServiceCollection();
+            App.ConfigureServices(services);
+            var tempFile = Path.Combine(tempDir, "installed_plugins.json");
+            services.AddSingleton<IInstalledPluginStore>(new FileInstalledPluginStore(tempFile));
+            services.AddSingleton<IPluginMarketplaceService>(sp =>
+            {
+                var host = sp.GetRequiredService<PluginHost>();
+                var overlay = sp.GetService<IOverlayRegistry>();
+                var store = sp.GetRequiredService<IInstalledPluginStore>();
+                var pluginsDir = Path.Combine(tempDir, "plugins");
+                return new PdfEditorApp.Services.Plugins.PluginMarketplaceService(host, overlay, store, null, null, pluginsDir);
+            });
+            var sp = services.BuildServiceProvider();
 
-        var host = sp.GetRequiredService<PluginHost>();
-        var overlayReg = sp.GetRequiredService<OverlayRegistry>();
-        var marketplace = sp.GetRequiredService<PdfEditorApp.Core.Plugins.Marketplace.IPluginMarketplaceService>();
+            var host = sp.GetRequiredService<PluginHost>();
+            var overlayReg = sp.GetRequiredService<OverlayRegistry>();
+            var marketplace = sp.GetRequiredService<PdfEditorApp.Core.Plugins.Marketplace.IPluginMarketplaceService>();
 
-        await host.StartAsync();
+            await host.StartAsync();
 
-        // Install Scratchpad
-        bool installed1 = await marketplace.InstallPluginAsync("frypdf.overlay.scratchpad");
-        Assert.True(installed1);
-        Assert.True(host.IsPluginActive("frypdf.overlay.scratchpad"));
-        Assert.True(overlayReg.IsOverlayVisible("frypdf.overlay.scratchpad"));
+            // Install Scratchpad
+            bool installed1 = await marketplace.InstallPluginAsync("frypdf.overlay.scratchpad");
+            Assert.True(installed1);
+            Assert.True(host.IsPluginActive("frypdf.overlay.scratchpad"));
+            Assert.True(overlayReg.IsOverlayVisible("frypdf.overlay.scratchpad"));
 
-        // Install Telemetry
-        bool installed2 = await marketplace.InstallPluginAsync("frypdf.overlay.telemetry");
-        Assert.True(installed2);
-        Assert.True(host.IsPluginActive("frypdf.overlay.telemetry"));
-        Assert.True(overlayReg.IsOverlayVisible("frypdf.overlay.telemetry"));
+            // Install Telemetry
+            bool installed2 = await marketplace.InstallPluginAsync("frypdf.overlay.telemetry");
+            Assert.True(installed2);
+            Assert.True(host.IsPluginActive("frypdf.overlay.telemetry"));
+            Assert.True(overlayReg.IsOverlayVisible("frypdf.overlay.telemetry"));
 
-        // Both are active simultaneously
-        Assert.Equal(2, overlayReg.ActiveOverlays.Count);
-        Assert.Contains(overlayReg.ActiveOverlays, o => o.Id == "frypdf.overlay.scratchpad");
-        Assert.Contains(overlayReg.ActiveOverlays, o => o.Id == "frypdf.overlay.telemetry");
+            // Both are active simultaneously
+            Assert.Equal(2, overlayReg.ActiveOverlays.Count);
+            Assert.Contains(overlayReg.ActiveOverlays, o => o.Id == "frypdf.overlay.scratchpad");
+            Assert.Contains(overlayReg.ActiveOverlays, o => o.Id == "frypdf.overlay.telemetry");
 
-        // Verify StandardCard chrome on both
-        var scratchInst = overlayReg.ActiveOverlays.First(o => o.Id == "frypdf.overlay.scratchpad");
-        var telemInst = overlayReg.ActiveOverlays.First(o => o.Id == "frypdf.overlay.telemetry");
+            // Verify StandardCard chrome on both
+            var scratchInst = overlayReg.ActiveOverlays.First(o => o.Id == "frypdf.overlay.scratchpad");
+            var telemInst = overlayReg.ActiveOverlays.First(o => o.Id == "frypdf.overlay.telemetry");
 
-        Assert.True(scratchInst.HasStandardChrome);
-        Assert.True(telemInst.HasStandardChrome);
+            Assert.True(scratchInst.HasStandardChrome);
+            Assert.True(telemInst.HasStandardChrome);
 
-        // Test Pin and Minimize commands
-        scratchInst.TogglePin();
-        Assert.True(scratchInst.IsPinned);
+            // Test Pin and Minimize commands
+            scratchInst.TogglePin();
+            Assert.True(scratchInst.IsPinned);
 
-        scratchInst.ToggleMinimize();
-        Assert.True(scratchInst.IsMinimized);
+            scratchInst.ToggleMinimize();
+            Assert.True(scratchInst.IsMinimized);
 
-        await host.StopAsync();
+            await host.StopAsync();
+        }
+        finally
+        {
+            try { Directory.Delete(tempDir, recursive: true); } catch { }
+        }
     }
 
     [Fact]

@@ -40,4 +40,9 @@ public interface IPluginMarketplaceService
     /// Checks for available updates across all installed marketplace plugins.
     /// </summary>
     Task<IReadOnlyList<MarketplacePluginItem>> CheckForUpdatesAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Fetches and synchronizes extensions from the remote registry (e.g. PDFCreator-resources).
+    /// </summary>
+    Task<IReadOnlyList<MarketplacePluginItem>> FetchRemoteCatalogAsync(bool forceRefresh = false, CancellationToken ct = default);
 }

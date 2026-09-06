@@ -241,12 +241,12 @@ public class SnakeOverlayPluginTests
     }
 
     [Fact]
-    public void ShellOverlaysBundle_Contains_SnakePlugin()
+    public void SnakeGamePlugin_IsStandaloneOverlayPlugin()
     {
-        var bundle = new ShellOverlaysBundle();
-        Assert.Equal("FryPdf.Bundle.ShellOverlays", bundle.Id);
-        Assert.Single(bundle.Plugins);
-        Assert.IsType<SnakeGamePlugin>(bundle.Plugins[0]);
+        var plugin = new SnakeGamePlugin();
+        Assert.Equal("frypdf.overlay.snake", plugin.Id);
+        Assert.Equal("Playable Snake Game", plugin.Name);
+        Assert.Equal(new Version(1, 0, 0), plugin.Version);
     }
 
     [Fact]

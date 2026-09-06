@@ -19,25 +19,40 @@ namespace PdfEditorApp.Tests;
 
 public class SnakeMarketplaceIntegrationTests
 {
-    private ServiceProvider CreateTestServices()
+    private ServiceProvider CreateTestServices(string? testDir = null)
     {
         var services = new ServiceCollection();
         App.ConfigureServices(services);
-        var tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"test_installed_{Guid.NewGuid():N}.json");
-        services.AddSingleton<IInstalledPluginStore>(new FileInstalledPluginStore(tempFile));
+        if (testDir != null)
+        {
+            var tempFile = Path.Combine(testDir, "installed_plugins.json");
+            services.AddSingleton<IInstalledPluginStore>(new FileInstalledPluginStore(tempFile));
+            services.AddSingleton<IPluginMarketplaceService>(sp =>
+            {
+                var host = sp.GetRequiredService<PluginHost>();
+                var overlay = sp.GetRequiredService<OverlayRegistry>();
+                var store = sp.GetRequiredService<IInstalledPluginStore>();
+                var pluginsDir = Path.Combine(testDir, "plugins");
+                return new PluginMarketplaceService(host, overlay, store, null, null, pluginsDir);
+            });
+        }
         return services.BuildServiceProvider();
     }
 
     [Fact]
     public async Task SnakePlugin_IsNotInstalledByDefault_AndInstallsAndUninstallsViaMarketplace()
     {
-        var sp = CreateTestServices();
-        var host = sp.GetRequiredService<PluginHost>();
-        var overlayReg = sp.GetRequiredService<OverlayRegistry>();
-        var commandReg = sp.GetRequiredService<ICommandPaletteRegistry>();
-        var statusReg = sp.GetRequiredService<IStatusBarRegistry>();
-        var ribbonReg = sp.GetRequiredService<IRibbonRegistry>();
-        var marketplace = sp.GetRequiredService<IPluginMarketplaceService>();
+        var tempDir = Path.Combine(AppContext.BaseDirectory, $"frypdf_snake_test_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            var sp = CreateTestServices(tempDir);
+            var host = sp.GetRequiredService<PluginHost>();
+            var overlayReg = sp.GetRequiredService<OverlayRegistry>();
+            var commandReg = sp.GetRequiredService<ICommandPaletteRegistry>();
+            var statusReg = sp.GetRequiredService<IStatusBarRegistry>();
+            var ribbonReg = sp.GetRequiredService<IRibbonRegistry>();
+            var marketplace = sp.GetRequiredService<IPluginMarketplaceService>();
 
         // 1. Mount standard profile bundles (does NOT include ShellOverlaysBundle)
         var bundles = new IFryPluginBundle[]
@@ -62,18 +77,20 @@ public class SnakeMarketplaceIntegrationTests
         Assert.False(overlayReg.IsOverlayVisible("frypdf.overlay.snake"));
 
         // 3. Verify Snake Game and companion overlays are available in the Marketplace catalog
+        await marketplace.FetchRemoteCatalogAsync();
         var catalog = await marketplace.GetCatalogAsync();
-        Assert.Equal(3, catalog.Count);
+        Assert.True(catalog.Count >= 3);
         var snakeItem = catalog.First(c => c.Id == "frypdf.overlay.snake");
         Assert.Equal(MarketplacePluginStatus.Available, snakeItem.Status);
-        Assert.Equal("Retro Arcade Snake Game (Shell Overlay)", snakeItem.Name);
+        Assert.StartsWith("Retro Arcade Snake Game", snakeItem.Name);
 
         Assert.Contains(catalog, c => c.Id == "frypdf.overlay.scratchpad");
         Assert.Contains(catalog, c => c.Id == "frypdf.overlay.telemetry");
 
         // 4. Install plugin via Marketplace
-        bool installed = await marketplace.InstallPluginAsync("frypdf.overlay.snake");
-        Assert.True(installed);
+        string lastStatus = "";
+        bool installed = await marketplace.InstallPluginAsync("frypdf.overlay.snake", statusCallback: s => lastStatus = s);
+        Assert.True(installed, $"Install failed: {lastStatus}");
 
         // 5. Verify plugin is now active in host and overlay is registered and visible
         Assert.True(host.IsPluginActive("frypdf.overlay.snake"));
@@ -96,7 +113,7 @@ public class SnakeMarketplaceIntegrationTests
         Assert.True(store.IsInstalled("frypdf.overlay.snake"));
 
         var newHost = new PluginHost(new FryPluginContext(sp));
-        var newMarketplace = new PluginMarketplaceService(newHost, overlayReg, store);
+        var newMarketplace = new PluginMarketplaceService(newHost, overlayReg, store, null, null, Path.Combine(tempDir, "plugins"));
         Assert.True(newMarketplace.IsPluginInstalled("frypdf.overlay.snake"));
         Assert.True(newHost.IsPluginActive("frypdf.overlay.snake"));
 
@@ -121,5 +138,10 @@ public class SnakeMarketplaceIntegrationTests
         Assert.DoesNotContain(ribbonReg.GetActionsForTab("view"), a => a.Id == "frypdf.ribbon.action.snake");
 
         await host.StopAsync();
+        }
+        finally
+        {
+            try { Directory.Delete(tempDir, recursive: true); } catch { }
+        }
     }
 }

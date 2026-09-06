@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using PdfEditorApp.Core.Plugins;
+using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Core.Plugins.Marketplace;
 using PdfEditorApp.Core.Plugins.Profiles;
 using PdfEditorApp.Plugins.Bundles;
@@ -16,10 +17,23 @@ namespace PdfEditorApp.Tests;
 
 public class PluginsManagerPageTests
 {
-    private ServiceProvider CreateTestServices()
+    private ServiceProvider CreateTestServices(string? testDir = null)
     {
         var services = new ServiceCollection();
         App.ConfigureServices(services);
+        if (testDir != null)
+        {
+            var storePath = Path.Combine(testDir, "installed_plugins.json");
+            services.AddSingleton<IInstalledPluginStore>(new FileInstalledPluginStore(storePath));
+            services.AddSingleton<IPluginMarketplaceService>(sp =>
+            {
+                var host = sp.GetRequiredService<PluginHost>();
+                var overlay = sp.GetService<IOverlayRegistry>();
+                var store = sp.GetRequiredService<IInstalledPluginStore>();
+                var pluginsDir = Path.Combine(testDir, "plugins");
+                return new PluginMarketplaceService(host, overlay, store, null, null, pluginsDir);
+            });
+        }
         return services.BuildServiceProvider();
     }
 
@@ -100,8 +114,9 @@ public class PluginsManagerPageTests
         Assert.Equal("frypdf.overlay.snake", vm.FilteredMarketplacePlugins[0].Id);
 
         vm.SearchQuery = "Arcade";
-        Assert.Single(vm.FilteredMarketplacePlugins);
-        Assert.Equal("frypdf.overlay.snake", vm.FilteredMarketplacePlugins[0].Id);
+        Assert.Equal(2, vm.FilteredMarketplacePlugins.Count);
+        Assert.Contains(vm.FilteredMarketplacePlugins, m => m.Id == "frypdf.overlay.snake");
+        Assert.Contains(vm.FilteredMarketplacePlugins, m => m.Id == "com.frypdf.plugin.tictactoe");
 
         // 4. Filter by Category
         vm.SearchQuery = "";
@@ -152,36 +167,45 @@ public class PluginsManagerPageTests
     [Fact]
     public async Task PluginsManager_Marketplace_InstallsAndMountsRealPluginIntoHost()
     {
-        var sp = CreateTestServices();
-        var host = sp.GetRequiredService<PluginHost>();
-        var marketplace = sp.GetRequiredService<IPluginMarketplaceService>();
+        var tempDir = Path.Combine(AppContext.BaseDirectory, $"frypdf_pm_test_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            var sp = CreateTestServices(tempDir);
+            var host = sp.GetRequiredService<PluginHost>();
+            var marketplace = sp.GetRequiredService<IPluginMarketplaceService>();
 
-        var vm = new PluginsManagerViewModel(host, marketplace);
-        await vm.LoadAllDataAsync();
+            var vm = new PluginsManagerViewModel(host, marketplace);
+            await vm.LoadAllDataAsync();
 
-        vm.SelectedTab = PluginsManagerTab.Marketplace;
-        var snakeItem = vm.FilteredMarketplacePlugins.First(m => m.Id == "frypdf.overlay.snake");
-        vm.SelectedMarketplacePlugin = snakeItem;
+            vm.SelectedTab = PluginsManagerTab.Marketplace;
+            var snakeItem = vm.FilteredMarketplacePlugins.First(m => m.Id == "frypdf.overlay.snake");
+            vm.SelectedMarketplacePlugin = snakeItem;
 
-        Assert.NotNull(vm.SelectedDetail);
-        Assert.Equal("frypdf.overlay.snake", vm.SelectedDetail.Id);
-        Assert.Equal("FryPDF Team", vm.SelectedDetail.Publisher);
-        Assert.True(vm.SelectedDetail.IsOfficial);
-        Assert.True(vm.SelectedDetail.IsVerified);
+            Assert.NotNull(vm.SelectedDetail);
+            Assert.Equal("frypdf.overlay.snake", vm.SelectedDetail.Id);
+            Assert.Equal("FryPDF Team", vm.SelectedDetail.Publisher);
+            Assert.True(vm.SelectedDetail.IsOfficial);
+            Assert.True(vm.SelectedDetail.IsVerified);
 
-        // Verify initially not active in host
-        Assert.False(host.IsPluginActive("frypdf.overlay.snake"));
+            // Verify initially not active in host
+            Assert.False(host.IsPluginActive("frypdf.overlay.snake"));
 
-        // Perform 1-click install: mounts real SnakeGamePlugin into PluginHost and activates it!
-        await vm.InstallMarketplacePluginCommand.ExecuteAsync("frypdf.overlay.snake");
+            // Perform 1-click install: mounts real SnakeGamePlugin into PluginHost and activates it!
+            await vm.InstallMarketplacePluginCommand.ExecuteAsync("frypdf.overlay.snake");
 
-        Assert.True(marketplace.IsPluginInstalled("frypdf.overlay.snake"));
-        Assert.True(host.IsPluginActive("frypdf.overlay.snake"));
+            Assert.True(marketplace.IsPluginInstalled("frypdf.overlay.snake"));
+            Assert.True(host.IsPluginActive("frypdf.overlay.snake"));
 
-        // Clean up: uninstalls and disables from host
-        await marketplace.UninstallPluginAsync("frypdf.overlay.snake");
-        Assert.False(marketplace.IsPluginInstalled("frypdf.overlay.snake"));
-        Assert.False(host.IsPluginActive("frypdf.overlay.snake"));
+            // Clean up: uninstalls and disables from host
+            await marketplace.UninstallPluginAsync("frypdf.overlay.snake");
+            Assert.False(marketplace.IsPluginInstalled("frypdf.overlay.snake"));
+            Assert.False(host.IsPluginActive("frypdf.overlay.snake"));
+        }
+        finally
+        {
+            try { Directory.Delete(tempDir, recursive: true); } catch { }
+        }
     }
 
     [Fact]

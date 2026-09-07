@@ -74,6 +74,7 @@
             <converters:MathMaxMultiConverter x:Key="MathMaxMultiConverter" />
             <converters:MathMinMultiConverter x:Key="MathMinMultiConverter" />
             <converters:ValuesEqualMultiConverter x:Key="ValuesEqualMultiConverter" />
+            <converters:SafeMaterialIconKindConverter x:Key="SafeMaterialIconKindConverter" />
 
             <!-- Modern Chubby Slider Dimensions & Metrics -->
             <x:Double x:Key="SliderTrackThemeHeight">8</x:Double>

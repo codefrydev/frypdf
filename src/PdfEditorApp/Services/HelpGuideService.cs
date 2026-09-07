@@ -1075,7 +1075,7 @@ public class HelpGuideService : IHelpGuideService
                 },
                 SupportedFormats = "Input: .pdf | Output: Stamped .pdf",
                 RelatedToolId = PdfToolId.PdfForms,
-                IconKind = "Stamp",
+                IconKind = "CertificateOutline",
                 IconColorHex = "#EA580C",
                 BackgroundAccentHex = "#FFF7ED",
                 Badge = "Editor",

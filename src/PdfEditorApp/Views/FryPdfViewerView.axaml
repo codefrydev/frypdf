@@ -345,18 +345,19 @@
                     </LayoutTransformControl.LayoutTransform>
 
                     <!-- Active Page Surface -->
-                    <Border Width="{Binding CurrentPage.Width, FallbackValue=800}"
-                            Height="{Binding CurrentPage.Height, FallbackValue=1131}"
-                            Background="{Binding CurrentPage.BackgroundColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue=White}"
+                    <Border DataContext="{Binding CurrentPage}"
+                            Width="{Binding Width, FallbackValue=800}"
+                            Height="{Binding Height, FallbackValue=1131}"
+                            Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue=White}"
                             BorderBrush="{DynamicResource WinBorderBrush}"
-                            BorderThickness="{Binding PageBorderThickness, Converter={StaticResource DoubleToThickness}}"
-                            CornerRadius="{Binding PageCornerRadius}"
-                            BoxShadow="{Binding PageBoxShadow}"
+                            BorderThickness="{Binding $parent[UserControl].((vm:FryPdfViewerViewModel)DataContext).PageBorderThickness, Converter={StaticResource DoubleToThickness}}"
+                            CornerRadius="{Binding $parent[UserControl].((vm:FryPdfViewerViewModel)DataContext).PageCornerRadius}"
+                            BoxShadow="{Binding $parent[UserControl].((vm:FryPdfViewerViewModel)DataContext).PageBoxShadow}"
                             ClipToBounds="True">
 
                         <!-- Page Root Grid: Exact Match of Document Sheet Geometry -->
-                        <Grid Width="{Binding CurrentPage.Width, FallbackValue=800}"
-                              Height="{Binding CurrentPage.Height, FallbackValue=1131}">
+                        <Grid Width="{Binding Width, FallbackValue=800}"
+                              Height="{Binding Height, FallbackValue=1131}">
 
                             <!-- Header Overlay (if enabled) -->
                             <Border VerticalAlignment="Top"
@@ -364,24 +365,24 @@
                                     Padding="28,8"
                                     ZIndex="1900"
                                     IsHitTestVisible="False"
-                                    IsVisible="{Binding ShowHeaderFooterInView}">
+                                    IsVisible="{Binding $parent[UserControl].((vm:FryPdfViewerViewModel)DataContext).ShowHeaderFooterInView}">
                                 <Grid ColumnDefinitions="*,*,*">
-                                    <TextBlock Grid.Column="0" Text="{Binding CurrentPage.HeaderLeft}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="1" Text="{Binding CurrentPage.HeaderCenter}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="2" Text="{Binding CurrentPage.HeaderRight}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="{Binding HeaderLeft}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding HeaderCenter}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding HeaderRight}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                                 </Grid>
                             </Border>
 
                             <!-- Elements Canvas ItemsControl: Single flat canvas for all page elements -->
                             <ItemsControl x:Name="PageElementsCanvas"
-                                          ItemsSource="{Binding CurrentPage.Elements}"
-                                          Width="{Binding CurrentPage.Width, FallbackValue=800}"
-                                          Height="{Binding CurrentPage.Height, FallbackValue=1131}">
+                                          ItemsSource="{Binding Elements}"
+                                          Width="{Binding Width, FallbackValue=800}"
+                                          Height="{Binding Height, FallbackValue=1131}">
 
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <Canvas Width="{Binding CurrentPage.Width, FallbackValue=800}"
-                                                Height="{Binding CurrentPage.Height, FallbackValue=1131}"
+                                        <Canvas Width="{Binding Width, FallbackValue=800}"
+                                                Height="{Binding Height, FallbackValue=1131}"
                                                 Background="Transparent" />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
@@ -950,11 +951,11 @@
                                     Padding="28,8"
                                     ZIndex="1900"
                                     IsHitTestVisible="False"
-                                    IsVisible="{Binding ShowHeaderFooterInView}">
+                                    IsVisible="{Binding $parent[UserControl].((vm:FryPdfViewerViewModel)DataContext).ShowHeaderFooterInView}">
                                 <Grid ColumnDefinitions="*,*,*">
-                                    <TextBlock Grid.Column="0" Text="{Binding CurrentPage.FooterLeft}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="1" Text="{Binding CurrentPage.FooterCenter}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="2" Text="{Binding CurrentPage.FooterRight}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="0" Text="{Binding FooterLeft}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding FooterCenter}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding FooterRight}" FontSize="9.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                                 </Grid>
                             </Border>
 

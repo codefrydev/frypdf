@@ -14,6 +14,7 @@ internal static class QuestPdfInitializer
     internal static void Initialize()
     {
         QuestPDF.Settings.License = LicenseType.Community;
+        QuestPDF.Settings.UseEnvironmentFonts = false;
     }
 #pragma warning restore CA2255
 }

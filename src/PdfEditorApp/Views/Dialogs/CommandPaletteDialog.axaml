@@ -96,7 +96,7 @@
                                                 CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                                 Margin="0,0,10,0"
                                                 VerticalAlignment="Center">
-                                            <materialIcons:MaterialIcon Kind="{Binding IconKind}"
+                                            <materialIcons:MaterialIcon Kind="{Binding IconKind, Converter={StaticResource SafeMaterialIconKindConverter}}"
                                                                         Width="18"
                                                                         Height="18"
                                                                         Foreground="{DynamicResource WinAccentBrush}"

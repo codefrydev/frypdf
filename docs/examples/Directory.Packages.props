@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Standalone example plugins manage their own packages for external developers -->
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>

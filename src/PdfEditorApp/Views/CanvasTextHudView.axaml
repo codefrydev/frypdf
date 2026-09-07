@@ -67,28 +67,28 @@
 
             <!-- Bold / Italic / Underline / Strikethrough -->
             <Button Classes="mini-tool-btn" Width="26" Height="26" Focusable="False"
-                    Classes.active="{Binding Inspector.TextElement.IsBold, FallbackValue=False}"
+                    Classes.active="{Binding Inspector.IsSelectedTextBold, FallbackValue=False}"
                     Command="{Binding Inspector.ToggleBoldCommand}"
                     ToolTip.Tip="Bold (Ctrl+B / ⌘B)">
                 <materialIcons:MaterialIcon Kind="FormatBold" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
             </Button>
 
             <Button Classes="mini-tool-btn" Width="26" Height="26" Focusable="False"
-                    Classes.active="{Binding Inspector.TextElement.IsItalic, FallbackValue=False}"
+                    Classes.active="{Binding Inspector.IsSelectedTextItalic, FallbackValue=False}"
                     Command="{Binding Inspector.ToggleItalicCommand}"
                     ToolTip.Tip="Italic (Ctrl+I / ⌘I)">
                 <materialIcons:MaterialIcon Kind="FormatItalic" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
             </Button>
 
             <Button Classes="mini-tool-btn" Width="26" Height="26" Focusable="False"
-                    Classes.active="{Binding Inspector.TextElement.IsUnderline, FallbackValue=False}"
+                    Classes.active="{Binding Inspector.IsSelectedTextUnderline, FallbackValue=False}"
                     Command="{Binding Inspector.ToggleUnderlineCommand}"
                     ToolTip.Tip="Underline (Ctrl+U / ⌘U)">
                 <materialIcons:MaterialIcon Kind="FormatUnderline" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
             </Button>
 
             <Button Classes="mini-tool-btn" Width="26" Height="26" Focusable="False"
-                    Classes.active="{Binding Inspector.TextElement.IsStrikethrough, FallbackValue=False}"
+                    Classes.active="{Binding Inspector.IsSelectedTextStrikethrough, FallbackValue=False}"
                     Command="{Binding Inspector.ToggleStrikethroughCommand}"
                     ToolTip.Tip="Strikethrough">
                 <materialIcons:MaterialIcon Kind="FormatStrikethrough" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
@@ -117,7 +117,7 @@
 
                                 <Rectangle Height="1" Fill="{DynamicResource WinBorderBrush}" />
 
-                                <ColorView Color="{Binding Inspector.TextElement.TextColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
+                                <ColorView Color="{Binding Inspector.SelectedTextColorHex, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"
                                            IsAlphaEnabled="True" IsHexInputVisible="True" Width="240" />
                             </StackPanel>
                         </Border>
@@ -126,7 +126,7 @@
                 <Grid Width="18" Height="18">
                     <materialIcons:MaterialIcon Kind="FormatColorText" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Top" />
                     <Border Height="3" CornerRadius="1" VerticalAlignment="Bottom"
-                            Background="{Binding Inspector.TextElement.TextColorHex, FallbackValue='#000000', Converter={StaticResource HexToBrushConverter}}" />
+                            Background="{Binding Inspector.SelectedTextColorHex, FallbackValue='#000000', Converter={StaticResource HexToBrushConverter}}" />
                 </Grid>
             </Button>
 
@@ -134,25 +134,25 @@
 
             <!-- Horizontal Alignment -->
             <Button Classes="mini-tool-btn" Width="26" Height="26" Focusable="False"
-                    Classes.active="{Binding Inspector.TextElement.Alignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Left}"
+                    Classes.active="{Binding Inspector.SelectedTextAlignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Left}"
                     Command="{Binding Inspector.SetAlignmentCommand}" CommandParameter="Left" ToolTip.Tip="Align Left">
                 <materialIcons:MaterialIcon Kind="FormatAlignLeft" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
             </Button>
 
             <Button Classes="mini-tool-btn" Width="26" Height="26" Focusable="False"
-                    Classes.active="{Binding Inspector.TextElement.Alignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Center}"
+                    Classes.active="{Binding Inspector.SelectedTextAlignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Center}"
                     Command="{Binding Inspector.SetAlignmentCommand}" CommandParameter="Center" ToolTip.Tip="Align Center">
                 <materialIcons:MaterialIcon Kind="FormatAlignCenter" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
             </Button>
 
             <Button Classes="mini-tool-btn" Width="26" Height="26" Focusable="False"
-                    Classes.active="{Binding Inspector.TextElement.Alignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Right}"
+                    Classes.active="{Binding Inspector.SelectedTextAlignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Right}"
                     Command="{Binding Inspector.SetAlignmentCommand}" CommandParameter="Right" ToolTip.Tip="Align Right">
                 <materialIcons:MaterialIcon Kind="FormatAlignRight" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
             </Button>
 
             <Button Classes="mini-tool-btn" Width="26" Height="26" Focusable="False"
-                    Classes.active="{Binding Inspector.TextElement.Alignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Justify}"
+                    Classes.active="{Binding Inspector.SelectedTextAlignment, Converter={StaticResource EqualityConverter}, ConverterParameter=Justify}"
                     Command="{Binding Inspector.SetAlignmentCommand}" CommandParameter="Justify" ToolTip.Tip="Justify">
                 <materialIcons:MaterialIcon Kind="FormatAlignJustify" Width="14" Height="14" Foreground="{DynamicResource WinTextBrush}" />
             </Button>
@@ -206,7 +206,7 @@
 
             <!-- Start In-Place Editing (Visible when not yet editing) -->
             <Button Classes="mini-tool-btn" Width="26" Height="26" Focusable="False"
-                    IsVisible="{Binding !Inspector.TextElement.IsInEditMode, FallbackValue=True}"
+                    IsVisible="{Binding !Inspector.IsSelectedTextInEditMode, FallbackValue=True}"
                     Command="{Binding Inspector.StartEditModeCommand}"
                     ToolTip.Tip="Edit Text Directly on Canvas (Double-Click / Enter / F2)">
                 <materialIcons:MaterialIcon Kind="PencilOutline" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
@@ -214,7 +214,7 @@
 
             <!-- Finish Editing Checkmark (Visible when in edit mode) -->
             <Button Classes="mini-tool-btn" Width="26" Height="26" Focusable="False"
-                    IsVisible="{Binding Inspector.TextElement.IsInEditMode, FallbackValue=False}"
+                    IsVisible="{Binding Inspector.IsSelectedTextInEditMode, FallbackValue=False}"
                     Command="{Binding Inspector.FinishEditModeCommand}"
                     ToolTip.Tip="Done Editing (Escape / Enter)">
                 <materialIcons:MaterialIcon Kind="Check" Width="15" Height="15" Foreground="#16A34A" />

@@ -820,7 +820,7 @@ public partial class MainViewModel
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Stamp Signer Initials", Subtitle = "Insert circular monogram initial stamp", Category = "Sign", IconKind = "AccountOutline", Action = () => AddInitialsBadgeCommand.Execute("JD") });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Stamp Checkmark (✓)", Subtitle = "Insert green verification checkmark", Category = "Sign", IconKind = "CheckBold", Action = () => AddCheckmarkBadgeCommand.Execute(null) });
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Stamp Cross (✕)", Subtitle = "Insert red rejection cross mark", Category = "Sign", IconKind = "CloseThick", Action = () => AddCrossBadgeCommand.Execute(null) });
-        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Custom Stamp Creator", Subtitle = "Create timestamped custom legal certification stamp", Category = "Stamps", IconKind = "Stamp", Action = () => OpenCustomStampDialogCommand.Execute(null) });
+        AllPaletteCommands.Add(new CommandPaletteItem { Title = "Custom Stamp Creator", Subtitle = "Create timestamped custom legal certification stamp", Category = "Stamps", IconKind = "CertificateOutline", Action = () => OpenCustomStampDialogCommand.Execute(null) });
 
         // 8. Watermarks & Headers/Footers
         AllPaletteCommands.Add(new CommandPaletteItem { Title = "Header & Footer Studio", Subtitle = "Configure multi-zone header/footer with dynamic macros", Category = "Organize", IconKind = "PageLayoutHeaderFooter", Action = () => OpenHeaderFooterDialogCommand.Execute(null) });

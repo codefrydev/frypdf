@@ -123,7 +123,7 @@ public partial class PdfViewerViewModel
             Author = "Auditor",
             Content = $"Stamp: {text}",
             ColorHex = color,
-            IconKind = "Stamp"
+            IconKind = "CertificateOutline"
         };
         Annotations.Add(ann);
         SelectedPage.PageAnnotations.Add(ann);

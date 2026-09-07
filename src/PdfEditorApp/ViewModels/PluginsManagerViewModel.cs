@@ -35,6 +35,7 @@ public partial class PluginsManagerViewModel : ViewModelBase
     private readonly PluginHost? _pluginHost;
     private readonly IPluginMarketplaceService _marketplaceService;
     private readonly IPdfToolRegistry? _toolRegistry;
+    private readonly object _dataLock = new();
     private readonly List<PluginItemViewModel> _allInstalled = new();
     private readonly List<MarketplacePluginItem> _allMarketplace = new();
 
@@ -67,15 +68,25 @@ public partial class PluginsManagerViewModel : ViewModelBase
     private MarketplacePluginItem? _selectedMarketplacePlugin;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSelectedDetail))]
     private PluginsManagerDetailViewModel? _selectedDetail;
 
     public ObservableCollection<PluginItemViewModel> FilteredInstalledPlugins { get; } = new();
     public ObservableCollection<MarketplacePluginItem> FilteredMarketplacePlugins { get; } = new();
     public ObservableCollection<string> AvailableCategories { get; } = new();
 
-    public int InstalledCount => _allInstalled.Count;
-    public int ActiveInstalledCount => _allInstalled.Count(p => p.IsActive);
-    public int MarketplaceCount => _allMarketplace.Count;
+    public int InstalledCount
+    {
+        get { lock (_dataLock) return _allInstalled.Count; }
+    }
+    public int ActiveInstalledCount
+    {
+        get { lock (_dataLock) return _allInstalled.Count(p => p.IsActive); }
+    }
+    public int MarketplaceCount
+    {
+        get { lock (_dataLock) return _allMarketplace.Count; }
+    }
 
     public bool HasSelectedDetail => SelectedDetail != null;
 
@@ -148,8 +159,11 @@ public partial class PluginsManagerViewModel : ViewModelBase
             var catalog = await _marketplaceService.GetCatalogAsync();
             void Update()
             {
-                _allMarketplace.Clear();
-                _allMarketplace.AddRange(catalog);
+                lock (_dataLock)
+                {
+                    _allMarketplace.Clear();
+                    _allMarketplace.AddRange(catalog);
+                }
                 ApplyFilters();
                 OnPropertyChanged(nameof(MarketplaceCount));
                 // Only show a toast if extensions were actually found — never show
@@ -216,8 +230,11 @@ public partial class PluginsManagerViewModel : ViewModelBase
             PopulateInstalledPlugins();
             await _marketplaceService.FetchRemoteCatalogAsync();
             var catalog = await _marketplaceService.GetCatalogAsync();
-            _allMarketplace.Clear();
-            _allMarketplace.AddRange(catalog);
+            lock (_dataLock)
+            {
+                _allMarketplace.Clear();
+                _allMarketplace.AddRange(catalog);
+            }
 
             ApplyFilters();
             OnPropertyChanged(nameof(MarketplaceCount));
@@ -245,8 +262,11 @@ public partial class PluginsManagerViewModel : ViewModelBase
             StatusMessage = "Syncing with remote FryPDF registry...";
             await _marketplaceService.FetchRemoteCatalogAsync(forceRefresh: true);
             var catalog = await _marketplaceService.GetCatalogAsync();
-            _allMarketplace.Clear();
-            _allMarketplace.AddRange(catalog);
+            lock (_dataLock)
+            {
+                _allMarketplace.Clear();
+                _allMarketplace.AddRange(catalog);
+            }
             ApplyFilters();
             OnPropertyChanged(nameof(MarketplaceCount));
             // Show meaningful feedback: if we got results, report the count;
@@ -292,7 +312,7 @@ public partial class PluginsManagerViewModel : ViewModelBase
 
     public void PopulateInstalledPlugins()
     {
-        _allInstalled.Clear();
+        var items = new List<PluginItemViewModel>();
 
         if (_pluginHost != null)
         {
@@ -324,8 +344,14 @@ public partial class PluginsManagerViewModel : ViewModelBase
                         OnPropertyChanged(nameof(ActiveInstalledCount));
                     }
                 };
-                _allInstalled.Add(vm);
+                items.Add(vm);
             }
+        }
+
+        lock (_dataLock)
+        {
+            _allInstalled.Clear();
+            _allInstalled.AddRange(items);
         }
 
         OnPropertyChanged(nameof(InstalledCount));
@@ -334,87 +360,93 @@ public partial class PluginsManagerViewModel : ViewModelBase
 
     private void ApplyFilters()
     {
-        var q = SearchQuery.Trim().ToLowerInvariant();
-        var cat = SelectedCategory;
-
-        // Filter Installed
-        FilteredInstalledPlugins.Clear();
-        foreach (var p in _allInstalled)
+        lock (_dataLock)
         {
-            if (cat != "All" && !string.Equals(p.Category, cat, StringComparison.OrdinalIgnoreCase))
-                continue;
+            var q = SearchQuery.Trim().ToLowerInvariant();
+            var cat = SelectedCategory;
 
-            if (string.IsNullOrWhiteSpace(q) ||
-                p.Name.ToLowerInvariant().Contains(q) ||
-                p.Id.ToLowerInvariant().Contains(q) ||
-                p.Category.ToLowerInvariant().Contains(q) ||
-                p.Description.ToLowerInvariant().Contains(q))
+            var installedSnapshot = _allInstalled.ToList();
+            var marketplaceSnapshot = _allMarketplace.ToList();
+
+            // Filter Installed
+            FilteredInstalledPlugins.Clear();
+            foreach (var p in installedSnapshot)
             {
-                FilteredInstalledPlugins.Add(p);
-            }
-        }
+                if (cat != "All" && !string.Equals(p.Category, cat, StringComparison.OrdinalIgnoreCase))
+                    continue;
 
-        // Filter Marketplace
-        var matchedMarketplace = new List<MarketplacePluginItem>();
-        foreach (var m in _allMarketplace)
-        {
-            if (cat != "All" && !string.Equals(m.Category, cat, StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            if (string.IsNullOrWhiteSpace(q) ||
-                m.Name.ToLowerInvariant().Contains(q) ||
-                m.Id.ToLowerInvariant().Contains(q) ||
-                m.Publisher.ToLowerInvariant().Contains(q) ||
-                m.Description.ToLowerInvariant().Contains(q) ||
-                m.Tags.Any(t => t.ToLowerInvariant().Contains(q)))
-            {
-                matchedMarketplace.Add(m);
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(q))
-        {
-            matchedMarketplace = matchedMarketplace
-                .OrderByDescending(m =>
+                if (string.IsNullOrWhiteSpace(q) ||
+                    p.Name.ToLowerInvariant().Contains(q) ||
+                    p.Id.ToLowerInvariant().Contains(q) ||
+                    p.Category.ToLowerInvariant().Contains(q) ||
+                    p.Description.ToLowerInvariant().Contains(q))
                 {
-                    var name = m.Name.ToLowerInvariant();
-                    var id = m.Id.ToLowerInvariant();
-                    if (name == q || id == q) return 100;
-                    if (name.StartsWith(q)) return 80;
-                    if (name.Contains(q)) return 60;
-                    if (id.Contains(q)) return 40;
-                    return 10;
-                })
-                .ToList();
-        }
+                    FilteredInstalledPlugins.Add(p);
+                }
+            }
 
-        FilteredMarketplacePlugins.Clear();
-        foreach (var item in matchedMarketplace)
-        {
-            FilteredMarketplacePlugins.Add(item);
-        }
+            // Filter Marketplace
+            var matchedMarketplace = new List<MarketplacePluginItem>();
+            foreach (var m in marketplaceSnapshot)
+            {
+                if (cat != "All" && !string.Equals(m.Category, cat, StringComparison.OrdinalIgnoreCase))
+                    continue;
 
-        // Maintain selection stability or select the first item so the detail pane is never left blank unexpectedly
-        if (SelectedTab == PluginsManagerTab.Installed)
-        {
-            if (SelectedInstalledPlugin == null || !FilteredInstalledPlugins.Contains(SelectedInstalledPlugin))
-            {
-                SelectedInstalledPlugin = FilteredInstalledPlugins.Count > 0 ? FilteredInstalledPlugins[0] : null;
+                if (string.IsNullOrWhiteSpace(q) ||
+                    m.Name.ToLowerInvariant().Contains(q) ||
+                    m.Id.ToLowerInvariant().Contains(q) ||
+                    m.Publisher.ToLowerInvariant().Contains(q) ||
+                    m.Description.ToLowerInvariant().Contains(q) ||
+                    m.Tags.Any(t => t.ToLowerInvariant().Contains(q)))
+                {
+                    matchedMarketplace.Add(m);
+                }
             }
-            else
+
+            if (!string.IsNullOrWhiteSpace(q))
             {
-                UpdateDetailFromInstalled(SelectedInstalledPlugin);
+                matchedMarketplace = matchedMarketplace
+                    .OrderByDescending(m =>
+                    {
+                        var name = m.Name.ToLowerInvariant();
+                        var id = m.Id.ToLowerInvariant();
+                        if (name == q || id == q) return 100;
+                        if (name.StartsWith(q)) return 80;
+                        if (name.Contains(q)) return 60;
+                        if (id.Contains(q)) return 40;
+                        return 10;
+                    })
+                    .ToList();
             }
-        }
-        else if (SelectedTab == PluginsManagerTab.Marketplace)
-        {
-            if (SelectedMarketplacePlugin == null || !FilteredMarketplacePlugins.Contains(SelectedMarketplacePlugin))
+
+            FilteredMarketplacePlugins.Clear();
+            foreach (var item in matchedMarketplace)
             {
-                SelectedMarketplacePlugin = FilteredMarketplacePlugins.Count > 0 ? FilteredMarketplacePlugins[0] : null;
+                FilteredMarketplacePlugins.Add(item);
             }
-            else
+
+            // Maintain selection stability or select the first item so the detail pane is never left blank unexpectedly
+            if (SelectedTab == PluginsManagerTab.Installed)
             {
-                UpdateDetailFromMarketplace(SelectedMarketplacePlugin);
+                if (SelectedInstalledPlugin == null || !FilteredInstalledPlugins.Contains(SelectedInstalledPlugin))
+                {
+                    SelectedInstalledPlugin = FilteredInstalledPlugins.Count > 0 ? FilteredInstalledPlugins[0] : null;
+                }
+                else
+                {
+                    UpdateDetailFromInstalled(SelectedInstalledPlugin);
+                }
+            }
+            else if (SelectedTab == PluginsManagerTab.Marketplace)
+            {
+                if (SelectedMarketplacePlugin == null || !FilteredMarketplacePlugins.Contains(SelectedMarketplacePlugin))
+                {
+                    SelectedMarketplacePlugin = FilteredMarketplacePlugins.Count > 0 ? FilteredMarketplacePlugins[0] : null;
+                }
+                else
+                {
+                    UpdateDetailFromMarketplace(SelectedMarketplacePlugin);
+                }
             }
         }
     }

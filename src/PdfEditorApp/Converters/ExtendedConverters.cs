@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
+using Material.Icons;
 
 namespace PdfEditorApp.Converters;
 
@@ -1215,3 +1216,47 @@ public sealed class LogLevelToLabelConverter : IValueConverter
 }
 
 #endregion
+
+#region 100. Material Icon Converters
+
+/// <summary>
+/// Safely converts string icon names into <see cref="MaterialIconKind"/>,
+/// resolving legacy aliases (e.g. "Stamp" -> CertificateOutline) and falling back gracefully
+/// to a safe default icon instead of failing or throwing a binding error.
+/// </summary>
+public sealed class SafeMaterialIconKindConverter : IValueConverter
+{
+    public static readonly SafeMaterialIconKindConverter Instance = new();
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is MaterialIconKind kind)
+            return kind;
+
+        if (value is string s && !string.IsNullOrWhiteSpace(s))
+        {
+            // Normalize known aliases
+            if (string.Equals(s, "Stamp", StringComparison.OrdinalIgnoreCase))
+                return MaterialIconKind.CertificateOutline;
+            if (string.Equals(s, "Draft", StringComparison.OrdinalIgnoreCase))
+                return MaterialIconKind.FileDocumentOutline;
+
+            if (Enum.TryParse<MaterialIconKind>(s, ignoreCase: true, out var parsed))
+                return parsed;
+        }
+
+        // Safe fallback if specified as converter parameter, else FileDocumentOutline
+        if (parameter is MaterialIconKind fallbackKind)
+            return fallbackKind;
+        if (parameter is string paramStr && Enum.TryParse<MaterialIconKind>(paramStr, ignoreCase: true, out var parsedParam))
+            return parsedParam;
+
+        return MaterialIconKind.FileDocumentOutline;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value?.ToString();
+}
+
+#endregion
+

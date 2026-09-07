@@ -133,30 +133,72 @@ public sealed class AppLogService : IAppLogService, IDisposable
         WeakReferenceMessenger.Default.Send(new NewLogEntryMessage(entry));
     }
 
-    private static (string category, string body, AppLogLevel level) ParseRaw(string raw)
+    internal static (string category, string body, AppLogLevel level) ParseRaw(string raw)
     {
         raw = raw?.Trim() ?? string.Empty;
 
         string category = "App";
         string body = raw;
+        AppLogLevel? explicitLevel = null;
 
-        // "[CategoryHere] rest of message"
-        if (raw.StartsWith('['))
+        // 1. Check for standard .NET TraceSource format: "Source Warning: 0 : Message"
+        var traceColonIdx = raw.IndexOf(" : ", StringComparison.Ordinal);
+        if (traceColonIdx > 0 && traceColonIdx < 50)
         {
-            var end = raw.IndexOf(']');
+            var prefix = raw[..traceColonIdx];
+            if (prefix.Contains("Warning", StringComparison.OrdinalIgnoreCase))
+                explicitLevel = AppLogLevel.Warning;
+            else if (prefix.Contains("Error", StringComparison.OrdinalIgnoreCase))
+                explicitLevel = AppLogLevel.Error;
+            else if (prefix.Contains("Information", StringComparison.OrdinalIgnoreCase))
+                explicitLevel = AppLogLevel.Info;
+            else if (prefix.Contains("Verbose", StringComparison.OrdinalIgnoreCase))
+                explicitLevel = AppLogLevel.Debug;
+
+            body = raw[(traceColonIdx + 3)..].TrimStart();
+        }
+
+        // 2. Extract [Category] prefix from body
+        if (body.StartsWith('['))
+        {
+            var end = body.IndexOf(']');
             if (end > 1)
             {
-                category = raw[1..end].Trim();
-                body = raw[(end + 1)..].TrimStart();
+                category = body[1..end].Trim();
+                body = body[(end + 1)..].TrimStart();
             }
         }
 
+        if (explicitLevel.HasValue)
+        {
+            return (category, body, explicitLevel.Value);
+        }
+
+        // 3. Special handling for Avalonia [Binding] messages
+        if (string.Equals(category, "Binding", StringComparison.OrdinalIgnoreCase))
+        {
+            // If the binding evaluated to null along an optional intermediate path
+            // (e.g. unselected element, document not yet loaded), Avalonia outputs:
+            // "An error occurred binding ... 'Value is null.'"
+            // In XAML/MVVM this is normal lifecycle behavior rather than an error.
+            if (body.Contains("Value is null", StringComparison.OrdinalIgnoreCase))
+            {
+                return (category, body, AppLogLevel.Debug);
+            }
+
+            // Real binding failures (conversion failures, missing properties, exceptions)
+            return (category, body, AppLogLevel.Error);
+        }
+
+        // 4. Heuristic classification based on keywords
         var level = AppLogLevel.Debug;
         var lower = body.ToLowerInvariant();
-        if (lower.Contains("error") || lower.Contains("exception") || lower.Contains("fail") || lower.Contains("denied"))
-            level = AppLogLevel.Error;
-        else if (lower.Contains("warn") || lower.Contains("fallback") || lower.Contains("retry"))
+
+        // Check warning first so advisory warnings containing phrases like "may fail to render" remain warnings
+        if (lower.Contains("warn") || lower.Contains("fallback") || lower.Contains("retry"))
             level = AppLogLevel.Warning;
+        else if (lower.Contains("error") || lower.Contains("exception") || lower.Contains("fail") || lower.Contains("denied"))
+            level = AppLogLevel.Error;
         else if (lower.Contains("success") || lower.Contains("installed") || lower.Contains("mounted") || lower.Contains("synced"))
             level = AppLogLevel.Info;
 

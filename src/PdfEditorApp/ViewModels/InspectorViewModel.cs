@@ -441,6 +441,52 @@ public partial class InspectorViewModel : ViewModelBase
     public SvgElementViewModel? SvgElement => SelectedElement as SvgElementViewModel;
     public MathElementViewModel? MathElement => SelectedElement as MathElementViewModel;
 
+    // Direct text formatting passthroughs for Ribbon & CanvasTextHud (prevents null path traversal errors)
+    private TextElementViewModel? _trackedTextElement;
+
+    public bool IsSelectedTextBold => TextElement?.IsBold ?? false;
+    public bool IsSelectedTextItalic => TextElement?.IsItalic ?? false;
+    public bool IsSelectedTextUnderline => TextElement?.IsUnderline ?? false;
+    public bool IsSelectedTextStrikethrough => TextElement?.IsStrikethrough ?? false;
+    public string SelectedTextColorHex
+    {
+        get => TextElement?.TextColorHex ?? "#201F1E";
+        set
+        {
+            if (TextElement != null && TextElement.TextColorHex != value)
+            {
+                SetTextColor(value);
+            }
+        }
+    }
+    public TextAlignmentMode SelectedTextAlignment => TextElement?.Alignment ?? TextAlignmentMode.Left;
+    public bool IsSelectedTextInEditMode => TextElement?.IsInEditMode ?? false;
+
+    public void NotifyTextFormattingChanged()
+    {
+        OnPropertyChanged(nameof(IsSelectedTextBold));
+        OnPropertyChanged(nameof(IsSelectedTextItalic));
+        OnPropertyChanged(nameof(IsSelectedTextUnderline));
+        OnPropertyChanged(nameof(IsSelectedTextStrikethrough));
+        OnPropertyChanged(nameof(SelectedTextColorHex));
+        OnPropertyChanged(nameof(SelectedTextAlignment));
+        OnPropertyChanged(nameof(IsSelectedTextInEditMode));
+    }
+
+    private void OnTrackedTextElementPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(TextElementViewModel.IsBold)
+            or nameof(TextElementViewModel.IsItalic)
+            or nameof(TextElementViewModel.IsUnderline)
+            or nameof(TextElementViewModel.IsStrikethrough)
+            or nameof(TextElementViewModel.TextColorHex)
+            or nameof(TextElementViewModel.Alignment)
+            or nameof(TextElementViewModel.IsInEditMode))
+        {
+            NotifyTextFormattingChanged();
+        }
+    }
+
     public string ActiveCategoryName => SelectedElement != null ? SelectedElement.Kind.ToString() : "Document";
     public ObservableCollection<ColorSwatchItem> ColorSwatches => Swatches;
 
@@ -481,6 +527,22 @@ public partial class InspectorViewModel : ViewModelBase
                 AvailableFontSizes.Add(textVm.FontSize);
             }
         }
+
+        if (_trackedTextElement != null)
+        {
+            _trackedTextElement.PropertyChanged -= OnTrackedTextElementPropertyChanged;
+        }
+        if (element is TextElementViewModel newTextEl)
+        {
+            newTextEl.PropertyChanged += OnTrackedTextElementPropertyChanged;
+            _trackedTextElement = newTextEl;
+        }
+        else
+        {
+            _trackedTextElement = null;
+        }
+
+        NotifyTextFormattingChanged();
 
         OnPropertyChanged(nameof(TextElement));
         OnPropertyChanged(nameof(ShapeElement));

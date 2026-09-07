@@ -464,14 +464,15 @@
                                     <Panel>
                                         <!-- Live Preview (if PagePreview is loaded) -->
                                         <Viewbox Width="192" Height="118" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding HasLivePreview}">
-                                            <Border Width="{Binding PagePreview.Width, FallbackValue=800}"
-                                                    Height="{Binding PagePreview.Height, FallbackValue=1131}"
-                                                    Background="{Binding PagePreview.BackgroundColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='White'}"
+                                            <Border DataContext="{Binding PagePreview}"
+                                                    Width="{Binding Width, FallbackValue=800}"
+                                                    Height="{Binding Height, FallbackValue=1131}"
+                                                    Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='White'}"
                                                     ClipToBounds="True">
-                                                <ItemsControl ItemsSource="{Binding PagePreview.Elements}">
+                                                <ItemsControl ItemsSource="{Binding Elements}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
-                                                            <Canvas Width="{Binding PagePreview.Width, FallbackValue=800}" Height="{Binding PagePreview.Height, FallbackValue=1131}" />
+                                                            <Canvas Width="{Binding Width, FallbackValue=800}" Height="{Binding Height, FallbackValue=1131}" />
                                                         </ItemsPanelTemplate>
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemContainerTheme>

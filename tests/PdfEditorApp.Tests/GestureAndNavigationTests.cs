@@ -347,4 +347,60 @@ public class GestureAndNavigationTests
         Assert.False(home.IsSidebarCompactRail);
         Assert.Null(home.DynamicPageView);
     }
+
+    [Fact]
+    public void HomeViewModel_DynamicPageView_MutualExclusionBetweenFullViewportAndScrollable()
+    {
+        var navReg = new PdfEditorApp.Services.Navigation.NavigationRegistry();
+        var fullViewportControl = new Avalonia.Controls.Panel();
+        var scrollableControl = new Avalonia.Controls.Panel();
+
+        navReg.RegisterNavigationItem(new PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor
+        {
+            Id = "FullViewportStudio",
+            Title = "Full Viewport Studio",
+            Group = "Creative Studios",
+            DisplayMode = PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.FullViewport,
+            ViewFactory = _ => fullViewportControl
+        });
+
+        navReg.RegisterNavigationItem(new PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor
+        {
+            Id = "ScrollableDocPage",
+            Title = "Scrollable Doc Page",
+            Group = "Documents",
+            DisplayMode = PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.ScrollableDocument,
+            ViewFactory = _ => scrollableControl
+        });
+
+        var home = new HomeViewModel(
+            new RecentDocumentsService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            new PdfEditorApp.Services.Tools.Core.PdfToolRegistry(),
+            navigationRegistry: navReg);
+
+        // Initially on Home: both dynamic views must be null
+        Assert.Null(home.DynamicPageView);
+        Assert.Null(home.DynamicFullViewportPageView);
+        Assert.Null(home.DynamicScrollablePageView);
+
+        // 1. Navigate to FullViewportStudio
+        home.SelectNavSectionCommand.Execute("FullViewportStudio");
+        Assert.Same(fullViewportControl, home.DynamicPageView);
+        Assert.Same(fullViewportControl, home.DynamicFullViewportPageView);
+        Assert.Null(home.DynamicScrollablePageView); // MUST be null to prevent visual parent clash!
+
+        // 2. Navigate to ScrollableDocPage
+        home.SelectNavSectionCommand.Execute("ScrollableDocPage");
+        Assert.Same(scrollableControl, home.DynamicPageView);
+        Assert.Null(home.DynamicFullViewportPageView); // MUST be null to prevent visual parent clash!
+        Assert.Same(scrollableControl, home.DynamicScrollablePageView);
+
+        // 3. Navigate back to Home
+        home.SelectNavSectionCommand.Execute("Home");
+        Assert.Null(home.DynamicPageView);
+        Assert.Null(home.DynamicFullViewportPageView);
+        Assert.Null(home.DynamicScrollablePageView);
+    }
 }

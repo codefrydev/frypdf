@@ -612,8 +612,8 @@
                         <views:PluginsManagerPageView DataContext="{Binding PluginsManager}" />
                     </Panel>
                     <!-- Dynamic Full-Viewport Plugin Tool / Workspace -->
-                    <ContentControl Content="{Binding DynamicPageView}"
-                                    IsVisible="{Binding DynamicPageView, Converter={StaticResource NullToBooleanConverter}}"
+                    <ContentControl Content="{Binding DynamicFullViewportPageView}"
+                                    IsVisible="{Binding DynamicFullViewportPageView, Converter={StaticResource NullToBooleanConverter}}"
                                     HorizontalContentAlignment="Stretch"
                                     VerticalContentAlignment="Stretch" />
                 </Panel>
@@ -625,7 +625,7 @@
                               VerticalScrollBarVisibility="Auto">
                     <Panel>
                         <!-- Dynamic Plugin Page View -->
-                        <ContentControl Content="{Binding DynamicPageView}" IsVisible="{Binding DynamicPageView, Converter={StaticResource NullToBooleanConverter}}" />
+                        <ContentControl Content="{Binding DynamicScrollablePageView}" IsVisible="{Binding DynamicScrollablePageView, Converter={StaticResource NullToBooleanConverter}}" />
 
                         <!-- Built-in Pages (shown when DynamicPageView is not active) -->
                         <Panel IsVisible="{Binding DynamicPageView, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">

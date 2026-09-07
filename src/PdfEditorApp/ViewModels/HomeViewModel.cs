@@ -47,6 +47,8 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     public ObservableCollection<NavGroupViewModel> NavGroups { get; } = new();
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DynamicFullViewportPageView))]
+    [NotifyPropertyChangedFor(nameof(DynamicScrollablePageView))]
     private object? _dynamicPageView;
 
     private readonly Dictionary<string, object?> _dynamicViewCache = new(StringComparer.OrdinalIgnoreCase);
@@ -118,6 +120,8 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     [NotifyPropertyChangedFor(nameof(IsStandardScrollableContentActive))]
     [NotifyPropertyChangedFor(nameof(IsTopSearchBarVisible))]
     [NotifyPropertyChangedFor(nameof(IsSidebarCompactRail))]
+    [NotifyPropertyChangedFor(nameof(DynamicFullViewportPageView))]
+    [NotifyPropertyChangedFor(nameof(DynamicScrollablePageView))]
     private bool _isToolPageActive;
 
     [ObservableProperty]
@@ -125,6 +129,8 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     [NotifyPropertyChangedFor(nameof(IsStandardScrollableContentActive))]
     [NotifyPropertyChangedFor(nameof(IsTopSearchBarVisible))]
     [NotifyPropertyChangedFor(nameof(IsSidebarCompactRail))]
+    [NotifyPropertyChangedFor(nameof(DynamicFullViewportPageView))]
+    [NotifyPropertyChangedFor(nameof(DynamicScrollablePageView))]
     private PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor? _activeNavDescriptor;
 
     [ObservableProperty]
@@ -168,6 +174,9 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     public bool IsStandardScrollableContentActive => !IsToolPageActive && !IsFullViewportActive;
     public bool IsTopSearchBarVisible => !IsToolPageActive && !(ActiveNavDescriptor?.HideTopSearchBar ?? false) && SelectedNavSection != HomeNavSection.Plugins;
     public bool IsSidebarCompactRail => !IsToolPageActive && ActiveNavDescriptor?.DisplayMode == PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.ImmersiveStudio;
+
+    public object? DynamicFullViewportPageView => IsFullViewportActive && !IsPluginsWorkspaceActive ? DynamicPageView : null;
+    public object? DynamicScrollablePageView => IsStandardScrollableContentActive ? DynamicPageView : null;
 
     public FontManagerViewModel FontManager { get; } = new();
     public TesseractManagerViewModel TesseractManager { get; } = new();
@@ -479,6 +488,8 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
         OnPropertyChanged(nameof(IsStandardScrollableContentActive));
         OnPropertyChanged(nameof(IsTopSearchBarVisible));
         OnPropertyChanged(nameof(IsSidebarCompactRail));
+        OnPropertyChanged(nameof(DynamicFullViewportPageView));
+        OnPropertyChanged(nameof(DynamicScrollablePageView));
 
         if (value == HomeNavSection.TesseractData)
         {
@@ -701,10 +712,11 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     {
         PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor? activeDesc = null;
 
+        object? targetView = null;
+
         // Special case for Plugins: HomeView hosts a dedicated full-viewport PluginsManagerPageView
         if (string.Equals(sectionName, "Plugins", StringComparison.OrdinalIgnoreCase))
         {
-            DynamicPageView = null;
             if (_navigationRegistry != null)
             {
                 activeDesc = _navigationRegistry.GetItem(sectionName);
@@ -730,19 +742,12 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
                         cachedView = null;
                     }
                 }
-                DynamicPageView = cachedView;
+                targetView = cachedView;
             }
-            else
-            {
-                DynamicPageView = null;
-            }
-        }
-        else
-        {
-            DynamicPageView = null;
         }
 
         ActiveNavDescriptor = activeDesc;
+        DynamicPageView = targetView;
 
         // Update active states across all flat nav items
         foreach (var item in DynamicNavigationItems)

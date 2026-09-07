@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="src/PdfEditorApp/Assets/app-logo.png" alt="FryPDF App Logo" width="160" height="160" />
+<img src="src/PdfEditorApp/Assets/app-logo.svg" alt="FryPDF App Logo" width="160" height="160" />
 
 ### **Privacy-First, Professional Desktop PDF Creator, Editor & Document Studio**
 *Engineered with .NET 10, Avalonia UI, QuestPDF, SkiaSharp & Modular Microkernel Plugins.*

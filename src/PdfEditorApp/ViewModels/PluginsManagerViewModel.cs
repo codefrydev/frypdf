@@ -152,20 +152,20 @@ public partial class PluginsManagerViewModel : ViewModelBase
                 _allMarketplace.AddRange(catalog);
                 ApplyFilters();
                 OnPropertyChanged(nameof(MarketplaceCount));
+                // Only show a toast if extensions were actually found — never show
+                // "0 extensions available" which misleads users on a slow first open.
+                if (catalog.Count > 0)
+                    ShowToastCallback?.Invoke($"{catalog.Count} online extensions available.");
             }
 
             if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
-            {
                 Update();
-            }
             else
-            {
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(Update);
-            }
         }
         catch
         {
-            // Silent fallback to curated offline items
+            // Silent fallback — cached offline items remain visible; no toast on network failure.
         }
     }
 
@@ -249,7 +249,11 @@ public partial class PluginsManagerViewModel : ViewModelBase
             _allMarketplace.AddRange(catalog);
             ApplyFilters();
             OnPropertyChanged(nameof(MarketplaceCount));
-            ShowToastCallback?.Invoke($"Registry synced: {catalog.Count} extensions available.");
+            // Show meaningful feedback: if we got results, report the count;
+            // if still 0 (CDN unreachable), tell the user rather than showing "0 available".
+            ShowToastCallback?.Invoke(catalog.Count > 0
+                ? $"Registry synced: {catalog.Count} extensions available."
+                : "Registry sync complete — no online extensions found. Check your connection.");
         }
         catch (Exception ex)
         {

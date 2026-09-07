@@ -1156,3 +1156,62 @@ public class MathMinMultiConverter : IMultiValueConverter
 }
 
 #endregion
+
+#region 99. Diagnostic Log Converters
+
+/// <summary>
+/// Maps <see cref="PdfEditorApp.Services.AppLogLevel"/> to a solid <see cref="ISolidColorBrush"/>
+/// colour suitable for the level indicator dot in the Diagnostic Logs dialog.
+/// </summary>
+public sealed class LogLevelToColorConverter : IValueConverter
+{
+    // Shared brushes — allocated once per process
+    private static readonly ISolidColorBrush ErrorBrush   = new SolidColorBrush(Color.Parse("#EF4444"));
+    private static readonly ISolidColorBrush WarningBrush = new SolidColorBrush(Color.Parse("#F59E0B"));
+    private static readonly ISolidColorBrush InfoBrush    = new SolidColorBrush(Color.Parse("#22C55E"));
+    private static readonly ISolidColorBrush DebugBrush   = new SolidColorBrush(Color.Parse("#94A3B8"));
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is PdfEditorApp.Services.AppLogLevel level)
+        {
+            return level switch
+            {
+                PdfEditorApp.Services.AppLogLevel.Error   => ErrorBrush,
+                PdfEditorApp.Services.AppLogLevel.Warning => WarningBrush,
+                PdfEditorApp.Services.AppLogLevel.Info    => InfoBrush,
+                _                                         => DebugBrush
+            };
+        }
+        return DebugBrush;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => AvaloniaProperty.UnsetValue;
+}
+
+/// <summary>
+/// Maps <see cref="PdfEditorApp.Services.AppLogLevel"/> to a short display label (e.g. "ERR", "WRN").
+/// </summary>
+public sealed class LogLevelToLabelConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is PdfEditorApp.Services.AppLogLevel level)
+        {
+            return level switch
+            {
+                PdfEditorApp.Services.AppLogLevel.Error   => "ERR",
+                PdfEditorApp.Services.AppLogLevel.Warning => "WRN",
+                PdfEditorApp.Services.AppLogLevel.Info    => "INF",
+                _                                         => "DBG"
+            };
+        }
+        return "DBG";
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => AvaloniaProperty.UnsetValue;
+}
+
+#endregion

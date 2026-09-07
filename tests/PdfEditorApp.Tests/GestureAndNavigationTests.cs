@@ -271,4 +271,80 @@ public class GestureAndNavigationTests
         Assert.Null(home.ActiveToolViewModel);
         Assert.True(home.IsSettingsSection);
     }
+
+    [Fact]
+    public void HomeViewModel_FullViewportPluginNavigation_ActivatesFullViewportAndSuppressesOuterScroll()
+    {
+        var navReg = new PdfEditorApp.Services.Navigation.NavigationRegistry();
+        navReg.RegisterNavigationItem(new PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor
+        {
+            Id = "CanvaImageEditor",
+            Title = "Image Studio",
+            Group = "Creative Studios",
+            DisplayMode = PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.FullViewport,
+            HideTopSearchBar = false,
+            ViewFactory = sp => new object()
+        });
+
+        var home = new HomeViewModel(
+            new RecentDocumentsService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            new PdfEditorApp.Services.Tools.Core.PdfToolRegistry(),
+            navigationRegistry: navReg);
+
+        // Before navigation: Home dashboard is active (scrollable, search bar visible)
+        Assert.False(home.IsFullViewportActive);
+        Assert.True(home.IsStandardScrollableContentActive);
+        Assert.True(home.IsTopSearchBarVisible);
+
+        // Navigate to full-viewport tool
+        home.SelectNavSectionCommand.Execute("CanvaImageEditor");
+
+        Assert.True(home.IsFullViewportActive);
+        Assert.False(home.IsStandardScrollableContentActive);
+        Assert.True(home.IsTopSearchBarVisible);
+        Assert.False(home.IsSidebarCompactRail);
+        Assert.NotNull(home.DynamicPageView);
+    }
+
+    [Fact]
+    public void HomeViewModel_ImmersiveStudioPluginNavigation_ActivatesFullViewportHidesSearchBarAndEnablesCompactRail()
+    {
+        var navReg = new PdfEditorApp.Services.Navigation.NavigationRegistry();
+        navReg.RegisterNavigationItem(new PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor
+        {
+            Id = "ImmersiveFormDesigner",
+            Title = "Form Studio",
+            Group = "Design",
+            DisplayMode = PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.ImmersiveStudio,
+            HideTopSearchBar = true,
+            ViewFactory = sp => new object()
+        });
+
+        var home = new HomeViewModel(
+            new RecentDocumentsService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            new PdfEditorApp.Services.Tools.Core.PdfToolRegistry(),
+            navigationRegistry: navReg);
+
+        // Navigate to immersive studio
+        home.SelectNavSectionCommand.Execute("ImmersiveFormDesigner");
+
+        Assert.True(home.IsFullViewportActive);
+        Assert.False(home.IsStandardScrollableContentActive);
+        Assert.False(home.IsTopSearchBarVisible);
+        Assert.True(home.IsSidebarCompactRail);
+        Assert.NotNull(home.DynamicPageView);
+
+        // Navigate back to standard section (Home) restores all standard layout flags
+        home.SelectNavSectionCommand.Execute("Home");
+
+        Assert.False(home.IsFullViewportActive);
+        Assert.True(home.IsStandardScrollableContentActive);
+        Assert.True(home.IsTopSearchBarVisible);
+        Assert.False(home.IsSidebarCompactRail);
+        Assert.Null(home.DynamicPageView);
+    }
 }

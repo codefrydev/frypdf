@@ -4,6 +4,30 @@ using System.Collections.Generic;
 namespace PdfEditorApp.Core.Plugins.Descriptors;
 
 /// <summary>
+/// Defines how a navigation section or workspace view is hosted within the application window.
+/// </summary>
+public enum NavigationDisplayMode
+{
+    /// <summary>
+    /// Hosted inside standard scrollable container beneath the global search bar.
+    /// Ideal for dashboards, lists, settings, and documentation pages.
+    /// </summary>
+    ScrollableDocument = 0,
+
+    /// <summary>
+    /// Fills the content viewport completely without an outer ScrollViewer.
+    /// Ideal for interactive canvases, graphic editors, split views, and tools that manage their own scrolling and layout.
+    /// </summary>
+    FullViewport = 1,
+
+    /// <summary>
+    /// Immersive studio mode: fills the entire viewport, hides the top global search bar,
+    /// and collapses the navigation sidebar to an icon rail to maximize workspace canvas space.
+    /// </summary>
+    ImmersiveStudio = 2
+}
+
+/// <summary>
 /// Descriptor representing a workspace page or navigation section contributed by a plugin.
 /// </summary>
 public sealed class NavigationItemDescriptor
@@ -18,6 +42,22 @@ public sealed class NavigationItemDescriptor
     public Type? ViewModelType { get; init; }
     public Func<IServiceProvider, object>? ViewFactory { get; init; }
     public Func<IServiceProvider, object>? ViewModelFactory { get; init; }
+
+    /// <summary>
+    /// Controls how the host shell renders this navigation item (e.g. standard scrollable vs full-bleed viewport).
+    /// </summary>
+    public NavigationDisplayMode DisplayMode { get; init; } = NavigationDisplayMode.ScrollableDocument;
+
+    /// <summary>
+    /// When true, hides the top global search bar so the workspace page can occupy the full vertical height
+    /// or supply its own contextual command/header bar.
+    /// </summary>
+    public bool HideTopSearchBar { get; init; } = false;
+
+    /// <summary>
+    /// Optional factory to create a contextual header bar to display in the top slot.
+    /// </summary>
+    public Func<IServiceProvider, object>? HeaderFactory { get; init; }
 }
 
 /// <summary>

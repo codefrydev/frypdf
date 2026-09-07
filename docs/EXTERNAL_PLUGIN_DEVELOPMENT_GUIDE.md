@@ -106,14 +106,15 @@ FryPDF provides 12 dynamic extension pillars accessible through `IFryPluginConte
 | **2. Dynamic Ribbon** | `ctx.RegisterRibbonAction(RibbonActionDescriptor)`<br/>`ctx.RegisterRibbonTab(RibbonTabDescriptor)`<br/>`ctx.RegisterRibbonGroup(RibbonGroupDescriptor)` | Action pill buttons, custom ribbon groups, or dedicated ribbon tabs. |
 | **3. Extensible Sidebars** | `ctx.RegisterSidebarTab(SidebarTabDescriptor)` | Custom sidebar panels (e.g. Audit Logs, Bookmarks, AI Chat, Metadata). |
 | **4. Contextual Inspector** | `ctx.RegisterInspectorSection(InspectorSectionDescriptor)` | Custom property editor panels targeting specific canvas elements. |
-| **5. Canvas Elements** | `ctx.RegisterCanvasElement(CanvasElementDescriptor)` | Custom vector elements (Barcode, LaTeX Math, Stamps, Ink, Form Fields). |
-| **6. Shell Overlays** | `ctx.RegisterOverlay(OverlayDescriptor)` | Floating, draggable, minimizable M3 utility cards (e.g. Scratchpad, Notes). |
-| **7. Command Palette** | `ctx.RegisterCommand(CommandPaletteDescriptor)` | Searchable commands triggered via ⌘K / Ctrl+K with keyboard shortcuts. |
-| **8. Status Bar Widgets** | `ctx.RegisterStatusBarWidget(StatusBarWidgetDescriptor)` | Footer status pills, counters, toggles, or telemetry badges. |
-| **9. Document Importers** | `ctx.RegisterImporter(IDocumentImporter)` | Custom file format decoders (Markdown, DOCX, XLSX, HTML, EPUB). |
-| **10. Document Exporters** | `ctx.RegisterExporter(IDocumentExporter)` | Custom file generators (PDF/A, multi-image sequences, CSV, HTML). |
-| **11. OCR & AI Engines** | `ctx.RegisterOcrEngine(IOcrEngine)` | Platform-specific OCR engines (Apple Vision, Tesseract) or local AI models. |
-| **12. Data Connectors** | `ctx.RegisterDataConnector(IDataConnector)` | Tabular data loaders (REST APIs, SQLite databases, JSON feeds). |
+| **5. Workspace Pages & Sidebar Navigation** | `ctx.RegisterNavigationItem(NavigationItemDescriptor)` | Full workspace pages, analytics studios, integrated editors, or diagnostics appearing directly in the left sidebar navigation. |
+| **6. Canvas Elements** | `ctx.RegisterCanvasElement(CanvasElementDescriptor)` | Custom vector elements (Barcode, LaTeX Math, Stamps, Ink, Form Fields). |
+| **7. Shell Overlays** | `ctx.RegisterOverlay(OverlayDescriptor)` | Floating, draggable, minimizable M3 utility cards (e.g. Scratchpad, Notes). |
+| **8. Command Palette** | `ctx.RegisterCommand(CommandPaletteDescriptor)` | Searchable commands triggered via ⌘K / Ctrl+K with keyboard shortcuts. |
+| **9. Status Bar Widgets** | `ctx.RegisterStatusBarWidget(StatusBarWidgetDescriptor)` | Footer status pills, counters, toggles, or telemetry badges. |
+| **10. Document Importers** | `ctx.RegisterImporter(IDocumentImporter)` | Custom file format decoders (Markdown, DOCX, XLSX, HTML, EPUB). |
+| **11. Document Exporters** | `ctx.RegisterExporter(IDocumentExporter)` | Custom file generators (PDF/A, multi-image sequences, CSV, HTML). |
+| **12. OCR & AI Engines** | `ctx.RegisterOcrEngine(IOcrEngine)` | Platform-specific OCR engines (Apple Vision, Tesseract) or local AI models. |
+| **13. Data Connectors** | `ctx.RegisterDataConnector(IDataConnector)` | Tabular data loaders (REST APIs, SQLite databases, JSON feeds). |
 
 ### Reversible Effects Rule (`ctx.RegisterEffect`)
 Whenever your plugin registers event listeners, creates file hooks, or starts background workers, **you MUST track them using `ctx.RegisterEffect`**. When the plugin unloads, FryPDF unwinds these actions in reverse order (LIFO), guaranteeing zero memory leaks and zero dangling event listeners:
@@ -562,7 +563,380 @@ public class WatermarkPlusPlugin : IFryPlugin
 
 ---
 
-## 6. Packaging Your Plugin (`.fryplugin`)
+---
+
+## 6. Step-by-Step Tutorial: Building an Integrated Workspace Page & Sidebar Plugin (Full Studio View)
+
+While Section 5 demonstrated how to build a tool inside the "All Tools" grid, FryPDF also allows external plugins to integrate **full-page workspace studios and diagnostic dashboards directly into the main application shell and sidebar**—exactly like FryPDF's built-in **Diagnostic Logs**, **Font Manager**, or **PDF Reader** views!
+
+### 6.1 Workspace Page vs. Tool Plugin
+| Capability | Tool Plugin (`ToolPluginBase`) | Workspace Page Plugin (`NavigationItemDescriptor`) |
+| :--- | :--- | :--- |
+| **Shell Placement** | Card inside "All Tools" / Category grids | Dedicated clickable item in the left sidebar navigation |
+| **Sidebar Group** | Filtered under tool categories | Placed into `Overview`, `Categories`, `Library`, `Preferences`, or custom groups |
+| **Viewport Hosting** | Standard `PdfToolPageView` frame | Independent full-bleed view (`ScrollableDocument`, `FullViewport`, or `ImmersiveStudio`) |
+| **Header Bar** | Tool header with input file cards | Contextual top bar, host search bar, or custom full-width toolbar |
+| **Best Used For** | File operations (Merge, Split, Watermark, Compress) | Full studio environments (Markdown editors, CAD viewers, Analytics dashboards, Log viewers) |
+
+---
+
+### 6.2 Understanding `NavigationItemDescriptor`
+Workspace pages are registered using `ctx.RegisterNavigationItem(NavigationItemDescriptor)`:
+
+```csharp
+public sealed class NavigationItemDescriptor
+{
+    // Unique identifier for the page (e.g. "com.acme.analytics")
+    public required string Id { get; init; }
+
+    // Label displayed in the sidebar item and tooltip
+    public required string Title { get; init; }
+
+    // Sidebar group header: "Overview", "Categories", "Library", "Preferences",
+    // or any custom string (e.g. "Extensions", "Studios") which creates a new header!
+    public string Group { get; init; } = "General";
+
+    // Material Design icon name (e.g. "ChartTimelineVariantShimmer", "FormatListBulletedSquare")
+    public string IconKind { get; init; } = "ApplicationOutline";
+
+    // Optional status pill badge (e.g. "PRO", "New", "Logs", "Beta")
+    public string? BadgeText { get; init; }
+
+    // Hex color for the badge background (e.g. "#DC2626" for red, "#7C3AED" for purple)
+    public string? BadgeColorHex { get; init; }
+
+    // Numeric sorting position within the sidebar group (ascending order)
+    public int Order { get; init; } = 100;
+
+    // Viewport layout mode:
+    // - ScrollableDocument: Hosted inside a standard ScrollViewer beneath the top search bar.
+    // - FullViewport: Edge-to-edge container without outer scroll (ideal for split views & tables).
+    // - ImmersiveStudio: Fills the entire window, hides search bar, and collapses sidebar to 68px rail.
+    public NavigationDisplayMode DisplayMode { get; init; } = NavigationDisplayMode.ScrollableDocument;
+
+    // When true, hides the top global search bar so your page occupies the full vertical height
+    public bool HideTopSearchBar { get; init; } = false;
+
+    // Factory method that instantiates and returns the Avalonia UserControl view
+    public Func<IServiceProvider, object>? ViewFactory { get; init; }
+}
+```
+
+---
+
+### 6.3 Building the "Analytics Studio" Workspace Plugin
+
+Let's build **`FryPdf.Plugin.AnalyticsStudio`**, an external plugin that adds an interactive document analytics and diagnostics studio to FryPDF's sidebar.
+
+#### Step 6.3.1: Create Project File (`FryPdf.Plugin.AnalyticsStudio.csproj`)
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>13</LangVersion>
+    <AssemblyName>FryPdf.Plugin.AnalyticsStudio</AssemblyName>
+    <RootNamespace>FryPdf.Plugin.AnalyticsStudio</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Material.Icons.Avalonia" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reference host core contracts (provided by installed FryPDF at runtime) -->
+    <Reference Include="PdfEditorApp.Core">
+      <HintPath>$(MSBuildProgramFiles32)\FryPDF\PdfEditorApp.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PdfEditorApp">
+      <HintPath>$(MSBuildProgramFiles32)\FryPDF\PdfEditorApp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="**\*.axaml" />
+  </ItemGroup>
+</Project>
+```
+
+#### Step 6.3.2: Create the Plugin Class (`AnalyticsStudioPlugin.cs`)
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using PdfEditorApp.Core.Plugins;
+using PdfEditorApp.Core.Plugins.Descriptors;
+
+namespace FryPdf.Plugin.AnalyticsStudio;
+
+public class AnalyticsStudioPlugin : IFryPlugin
+{
+    public string Id => "com.acme.frypdf.analyticsstudio";
+    public string Name => "Document Analytics Studio";
+    public Version Version => new(1, 0, 0);
+
+    public IReadOnlyList<Type> RequiredServices => Array.Empty<Type>();
+    public IReadOnlyList<Type> ProvidedServices => Array.Empty<Type>();
+
+    public Task ApplyAsync(IFryPluginContext ctx, CancellationToken ct = default)
+    {
+        // 1. Register the workspace page into the host's navigation registry
+        ctx.RegisterNavigationItem(new NavigationItemDescriptor
+        {
+            Id = "AnalyticsStudio",
+            Title = "Analytics Studio",
+            Group = "Library",                         // Placed in Library section beside Help & Logs
+            IconKind = "ChartTimelineVariantShimmer",    // M3 icon
+            BadgeText = "PRO",                         // Pill badge
+            BadgeColorHex = "#7C3AED",                 // Purple accent
+            Order = 165,                               // Positioned after Licensing (160)
+            DisplayMode = NavigationDisplayMode.FullViewport, // Edge-to-edge layout
+            HideTopSearchBar = false,
+            ViewFactory = sp =>
+            {
+                var view = new Views.AnalyticsStudioView();
+                view.DataContext = new ViewModels.AnalyticsStudioViewModel(ctx, sp);
+                return view;
+            }
+        });
+
+        return Task.CompletedTask;
+    }
+}
+```
+
+#### Step 6.3.3: Create the ViewModel (`AnalyticsStudioViewModel.cs`)
+```csharp
+using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using PdfEditorApp.Core.Plugins;
+
+namespace FryPdf.Plugin.AnalyticsStudio.ViewModels;
+
+public partial class AnalyticsStudioViewModel : ObservableObject
+{
+    private readonly IFryPluginContext _ctx;
+    private readonly IServiceProvider _serviceProvider;
+
+    [ObservableProperty]
+    private string _statusMessage = "Ready to analyze documents.";
+
+    [ObservableProperty]
+    private bool _isAnalyzing;
+
+    [ObservableProperty]
+    private int _analyzedPageCount;
+
+    [ObservableProperty]
+    private int _embeddedFontCount;
+
+    [ObservableProperty]
+    private int _imageCount;
+
+    public ObservableCollection<string> Findings { get; } = new();
+
+    public AnalyticsStudioViewModel(IFryPluginContext ctx, IServiceProvider serviceProvider)
+    {
+        _ctx = ctx;
+        _serviceProvider = serviceProvider;
+        Findings.Add("Audit engine initialized. Load a PDF to begin verification.");
+    }
+
+    [RelayCommand]
+    private async Task RunAuditAsync()
+    {
+        IsAnalyzing = true;
+        StatusMessage = "Analyzing document structure and layout hierarchy...";
+
+        await Task.Delay(1000); // Offload CPU operations with Task.Run in real plugins
+
+        AnalyzedPageCount = 14;
+        EmbeddedFontCount = 6;
+        ImageCount = 22;
+
+        Findings.Clear();
+        Findings.Add("✓ PDF/A-2b compliance validated.");
+        Findings.Add("✓ All 6 embedded fonts contain complete Unicode ToUnicode CMap tables.");
+        Findings.Add("✓ Zero uncompressed image streams detected.");
+        Findings.Add("ℹ 2 vector paths exceed 4000 nodes (recommend path simplification).");
+
+        StatusMessage = "Analysis complete. 4 metrics audited.";
+        IsAnalyzing = false;
+    }
+}
+```
+
+#### Step 6.3.4: Create the Avalonia View (`AnalyticsStudioView.axaml`)
+All host Google Material Design 3 Expressive tokens, corner shapes, and dynamic brushes are automatically inherited:
+
+```xml
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:vm="clr-namespace:FryPdf.Plugin.AnalyticsStudio.ViewModels"
+             x:Class="FryPdf.Plugin.AnalyticsStudio.Views.AnalyticsStudioView"
+             x:DataType="vm:AnalyticsStudioViewModel"
+             Background="{DynamicResource M3SurfaceBrush}">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="24,20,24,20">
+
+        <!-- 1. Header Card with M3 Elevation and Action Pill -->
+        <Border Grid.Row="0"
+                Classes="m3-card-elevated"
+                Padding="24,20"
+                Margin="0,0,0,16">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- M3 Container Icon Badge -->
+                <Border Grid.Column="0"
+                        Width="48" Height="48"
+                        CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                        Background="{DynamicResource M3PrimaryContainerBrush}">
+                    <materialIcons:MaterialIcon Kind="ChartTimelineVariantShimmer"
+                                                Width="26" Height="26"
+                                                Foreground="{DynamicResource M3PrimaryBrush}" />
+                </Border>
+
+                <!-- Titles -->
+                <StackPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="Document Analytics Studio"
+                                   FontSize="20" FontWeight="Bold"
+                                   Foreground="{DynamicResource WinTextBrush}" />
+                        <Border Background="#7C3AED"
+                                CornerRadius="{StaticResource M3ShapeCornerExtraSmall}"
+                                Padding="6,2" VerticalAlignment="Center">
+                            <TextBlock Text="PRO" FontSize="10" FontWeight="Bold" Foreground="White" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="{Binding StatusMessage}"
+                               FontSize="13" Margin="0,4,0,0"
+                               Foreground="{DynamicResource WinMutedBrush}" />
+                </StackPanel>
+
+                <!-- Primary Action Pill Button -->
+                <Button Grid.Column="2"
+                        Classes="primary-btn"
+                        Command="{Binding RunAuditCommand}"
+                        IsEnabled="{Binding !IsAnalyzing}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <materialIcons:MaterialIcon Kind="PlayCircleOutline" Width="18" Height="18" />
+                        <TextBlock Text="Run Full Audit" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- 2. Metric Counters Grid -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,*" Margin="0,0,0,16">
+            <!-- Metric 1 -->
+            <Border Grid.Column="0" Classes="m3-card-elevated" Margin="0,0,8,0" Padding="18,14">
+                <StackPanel>
+                    <TextBlock Text="PAGES AUDITED" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" />
+                    <TextBlock Text="{Binding AnalyzedPageCount}" FontSize="28" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- Metric 2 -->
+            <Border Grid.Column="1" Classes="m3-card-elevated" Margin="4,0,4,0" Padding="18,14">
+                <StackPanel>
+                    <TextBlock Text="EMBEDDED FONTS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" />
+                    <TextBlock Text="{Binding EmbeddedFontCount}" FontSize="28" FontWeight="ExtraBold" Foreground="{DynamicResource M3PrimaryBrush}" Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- Metric 3 -->
+            <Border Grid.Column="2" Classes="m3-card-elevated" Margin="8,0,0,0" Padding="18,14">
+                <StackPanel>
+                    <TextBlock Text="EXTRACTED IMAGES" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinSubtleBrush}" />
+                    <TextBlock Text="{Binding ImageCount}" FontSize="28" FontWeight="ExtraBold" Foreground="{DynamicResource WinTextBrush}" Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- 3. Audit Findings List Container -->
+        <Border Grid.Row="2" Classes="m3-card-elevated" Padding="20">
+            <Grid RowDefinitions="Auto,*">
+                <TextBlock Grid.Row="0" Text="Audit Findings &amp; Observations"
+                           FontSize="15" FontWeight="SemiBold"
+                           Foreground="{DynamicResource WinTextBrush}" Margin="0,0,0,12" />
+
+                <ScrollViewer Grid.Row="1">
+                    <ItemsControl ItemsSource="{Binding Findings}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource WinHoverBrush}"
+                                        CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                        Margin="0,0,0,8" Padding="14,10">
+                                    <TextBlock Text="{Binding}" FontSize="13" Foreground="{DynamicResource WinTextBrush}" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
+```
+
+#### Step 6.3.5: Code-Behind (`AnalyticsStudioView.axaml.cs`)
+```csharp
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+
+namespace FryPdf.Plugin.AnalyticsStudio.Views;
+
+public partial class AnalyticsStudioView : UserControl
+{
+    public AnalyticsStudioView()
+    {
+        InitializeComponent();
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+}
+```
+
+#### Step 6.3.6: Plugin Manifest (`plugin.json`)
+```json
+{
+  "id": "com.acme.frypdf.analyticsstudio",
+  "name": "Document Analytics Studio",
+  "version": "1.0.0",
+  "author": "Acme Software",
+  "description": "Full-page workspace studio for deep PDF layout, font, and compliance auditing.",
+  "entryPoint": "FryPdf.Plugin.AnalyticsStudio.dll",
+  "icon": "ChartTimelineVariantShimmer"
+}
+```
+
+---
+
+### 6.4 What Happens When the User Installs It
+1. The user drags and drops `FryPdf.Plugin.AnalyticsStudio.fryplugin` into FryPDF's **Plugins & Extensions** page.
+2. FryPDF unzips it into `%LocalAppData%\FryPDF\plugins\com.acme.frypdf.analyticsstudio\`.
+3. `CollectiblePluginLoadContext` loads the assembly and calls `AnalyticsStudioPlugin.ApplyAsync(ctx)`.
+4. `ctx.RegisterNavigationItem` registers the descriptor.
+5. The sidebar **immediately updates in real-time** without restarting FryPDF:
+   - Under the `LIBRARY` section, **"Analytics Studio"** appears with the `ChartTimelineVariantShimmer` icon and the purple `PRO` badge!
+6. When the user clicks the item, `ViewFactory` instantiates `AnalyticsStudioView`, caches it for 0ms future tab-switches, and presents it in the full viewport!
+7. When the plugin is uninstalled, `INavigationRegistry.UnregisterNavigationItem` unhooks the sidebar item and cleans up automatically.
+
+---
+
+## 7. Packaging Your Plugin (`.fryplugin`)
 
 FryPDF uses `.fryplugin` distribution packages. A `.fryplugin` file is simply a standard ZIP archive with the following structure:
 
@@ -573,7 +947,7 @@ WatermarkPlus.fryplugin (ZIP file)
 └── [OtherDependency.dll]          # Any external 3rd-party dependencies (excluding host DLLs)
 ```
 
-### 6.1 Automated Packaging with MSBuild (Recommended)
+### 7.1 Automated Packaging with MSBuild (Recommended)
 Add the following snippet to the bottom of your `.csproj` file. Every time you run `dotnet build -c Release`, MSBuild will automatically package your plugin into a `.fryplugin` file ready for installation:
 
 ```xml
@@ -602,7 +976,7 @@ Add the following snippet to the bottom of your `.csproj` file. Every time you r
   </Target>
 ```
 
-### 6.2 Manual Packaging via CLI
+### 7.2 Manual Packaging via CLI
 You can also package your plugin manually using standard command-line tools:
 
 ```bash
@@ -618,7 +992,7 @@ zip -r WatermarkPlus.fryplugin plugin.json FryPdf.Plugin.WatermarkPlus.dll
 
 ---
 
-## 7. Installing and Testing Your Plugin in FryPDF
+## 8. Installing and Testing Your Plugin in FryPDF
 
 FryPDF supports 3 seamless ways to load and test your external plugin:
 
@@ -646,11 +1020,11 @@ On startup, FryPDF scans designated plugin directories and automatically loads a
 
 ---
 
-## 8. Material Design 3 (M3) Expressive Styling Mandate
+## 9. Material Design 3 (M3) Expressive Styling Mandate
 
 To maintain visual harmony with FryPDF, all external plugins must adhere to **Google Material Design 3 Expressive**:
 
-### 8.1 Shape Scale Tokens
+### 9.1 Shape Scale Tokens
 Always reference centralized M3 shape scale tokens rather than hardcoding arbitrary numbers:
 
 | Token Key | Radius | Usage |
@@ -661,7 +1035,7 @@ Always reference centralized M3 shape scale tokens rather than hardcoding arbitr
 | `{StaticResource M3ShapeCornerMedium}` | `12px` | Context menus, flyouts, tooltips, list items. |
 | `{StaticResource M3ShapeCornerSmall}` | `8px` | Badges, chips, thumbnail cards. |
 
-### 8.2 Dynamic Tonal Brushes (Dark & Light Mode)
+### 9.2 Dynamic Tonal Brushes (Dark & Light Mode)
 **NEVER** hardcode hex colors (like `#FFFFFF` or `#1E293B`) in your views. Always reference semantic `{DynamicResource ...}` keys so your plugin seamlessly responds to daylight, warm sepia, dark night, and high contrast themes:
 
 - **Primary Colors**: `M3PrimaryBrush`, `M3OnPrimaryBrush`, `M3PrimaryContainerBrush`, `M3OnPrimaryContainerBrush`
@@ -670,7 +1044,7 @@ Always reference centralized M3 shape scale tokens rather than hardcoding arbitr
 
 ---
 
-## 9. Performance & Memory Safety Mandates
+## 10. Performance & Memory Safety Mandates
 
 FryPDF is an interactive 60+ FPS studio. External plugins must comply with the following performance rules:
 
@@ -686,7 +1060,7 @@ FryPDF is an interactive 60+ FPS studio. External plugins must comply with the f
 
 ---
 
-## 10. Automated Testing of External Plugins
+## 11. Automated Testing of External Plugins
 
 You can verify your plugin's mounting and lifecycle in an xUnit test project using the same loader FryPDF uses:
 
@@ -734,7 +1108,7 @@ public class PluginLifecycleTests
 
 ---
 
-## 11. Summary & Next Steps
+## 12. Summary & Next Steps
 
 With FryPDF's modular microkernel architecture, creating professional external plugins is clean, fast, and robust:
 - Implement `IFryPlugin` (or inherit `ToolPluginBase`).

@@ -51,6 +51,21 @@
         <Style Selector="Button.nav-tab-btn.active">
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
+
+        <!-- Sidebar Compact Rail Transition & Adaptation -->
+        <Style Selector="Border#LeftSidebarBorder">
+            <Setter Property="Width" Value="230" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Width" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border#LeftSidebarBorder.compact">
+            <Setter Property="Width" Value="68" />
+        </Style>
+        <!-- Individual text visibility is controlled via bindings on each element below;
+             no blanket TextBlock suppression here. -->
     </UserControl.Styles>
 
     <Grid ColumnDefinitions="Auto,*">
@@ -59,8 +74,9 @@
              Hidden while a tool is open so the tool's own workspace (toolbar + its
              Options/Files/Pages/Info sidebar) gets the full window, matching the PDF
              Reader's full-width treatment instead of squeezing it in next to this nav. -->
-        <Border Grid.Column="0"
-                Width="230"
+        <Border x:Name="LeftSidebarBorder"
+                Grid.Column="0"
+                Classes.compact="{Binding IsSidebarCompactRail}"
                 IsVisible="{Binding !IsToolPageActive}"
                 Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
@@ -90,7 +106,9 @@
                                 </Canvas>
                             </Viewbox>
                         </Border>
-                        <StackPanel VerticalAlignment="Center" Spacing="1">
+                        <!-- Brand name hidden in compact rail; icon alone identifies the app -->
+                        <StackPanel VerticalAlignment="Center" Spacing="1"
+                                    IsVisible="{Binding !IsSidebarCompactRail}">
                             <TextBlock Text="FryPDF"
                                        FontSize="16"
                                        FontWeight="Bold"
@@ -112,12 +130,19 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:NavGroupViewModel">
                                     <StackPanel Spacing="1">
-                                        <!-- Group Header -->
+                                        <!-- Group Header — hidden in compact rail, shown as separator line instead -->
                                         <TextBlock Text="{Binding Header}"
                                                    FontSize="10"
                                                    FontWeight="Bold"
                                                    Foreground="{DynamicResource WinSubtleBrush}"
-                                                   Margin="8,10,0,4" />
+                                                   Margin="8,10,0,4"
+                                                   IsVisible="{Binding $parent[views:HomeView].((vm:HomeViewModel)DataContext).IsSidebarCompactRail, 
+                                                               Converter={x:Static BoolConverters.Not}}" />
+                                        <!-- Thin separator in compact rail replacing the group header -->
+                                        <Border Height="1"
+                                                Margin="10,6,10,2"
+                                                Background="{DynamicResource WinBorderSubtleBrush}"
+                                                IsVisible="{Binding $parent[views:HomeView].((vm:HomeViewModel)DataContext).IsSidebarCompactRail}" />
 
                                         <!-- Nav Items -->
                                         <ItemsControl ItemsSource="{Binding Items}">
@@ -126,7 +151,8 @@
                                                     <Button Classes="nav-tab-btn"
                                                             Classes.active="{Binding IsActive}"
                                                             Command="{Binding $parent[views:HomeView].((vm:HomeViewModel)DataContext).SelectNavSectionCommand}"
-                                                            CommandParameter="{Binding Id}">
+                                                            CommandParameter="{Binding Id}"
+                                                            ToolTip.Tip="{Binding Title}">
                                                         <Grid ColumnDefinitions="Auto,*,Auto">
                                                             <materialIcons:MaterialIcon Grid.Column="0"
                                                                                        Kind="{Binding IconKind}"
@@ -134,14 +160,27 @@
                                                                                        Foreground="{DynamicResource WinAccentBrush}"
                                                                                        Margin="0,0,10,0"
                                                                                        VerticalAlignment="Center" />
+                                                            <!-- Title label: hidden in compact rail;
+                                                                 the * column collapses to 0 automatically,
+                                                                 keeping the icon centred in the 68px rail. -->
                                                             <TextBlock Grid.Column="1"
                                                                        Text="{Binding Title}"
-                                                                       VerticalAlignment="Center" />
+                                                                       VerticalAlignment="Center"
+                                                                       IsVisible="{Binding $parent[views:HomeView].((vm:HomeViewModel)DataContext).IsSidebarCompactRail,
+                                                                                   Converter={StaticResource InverseBooleanConverter}}" />
+                                                            <!-- Badge: hidden in compact rail (tooltip carries the info).
+                                                                 Uses AllTrueMultiConverter registered in App.axaml. -->
                                                             <Border Grid.Column="2"
                                                                     Background="{DynamicResource WinHoverBrush}"
                                                                     CornerRadius="{StaticResource M3ShapeCornerExtraSmall}"
-                                                                    Padding="5,1"
-                                                                    IsVisible="{Binding BadgeText, Converter={StaticResource NullToBooleanConverter}}">
+                                                                    Padding="5,1">
+                                                                <Border.IsVisible>
+                                                                    <MultiBinding Converter="{StaticResource AllTrueMultiConverter}">
+                                                                        <Binding Path="BadgeText" Converter="{StaticResource NullToBooleanConverter}" />
+                                                                        <Binding Path="$parent[views:HomeView].((vm:HomeViewModel)DataContext).IsSidebarCompactRail"
+                                                                                 Converter="{StaticResource InverseBooleanConverter}" />
+                                                                    </MultiBinding>
+                                                                </Border.IsVisible>
                                                                 <TextBlock Text="{Binding BadgeText}"
                                                                            FontSize="9.5"
                                                                            FontWeight="Bold"
@@ -436,22 +475,29 @@
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                     <materialIcons:MaterialIcon Kind="WeatherSunny" Width="15" Height="15" Foreground="#F59E0B" IsVisible="{Binding IsDarkMode}" />
                                     <materialIcons:MaterialIcon Kind="WeatherNight" Width="15" Height="15" Foreground="#818CF8" IsVisible="{Binding !IsDarkMode}" />
+                                    <!-- Theme label hidden in compact rail; icon alone is sufficient -->
                                     <TextBlock Text="{Binding IsDarkMode, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Light Mode|Dark Mode'}"
                                                FontSize="11.5"
                                                FontWeight="SemiBold"
-                                               VerticalAlignment="Center" />
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding !IsSidebarCompactRail}" />
                                 </StackPanel>
-                                <materialIcons:MaterialIcon Grid.Column="2" Kind="SwapHorizontal" Width="14" Height="14" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
+                                <!-- Swap arrow hidden in compact — no room and no label to pair with -->
+                                <materialIcons:MaterialIcon Grid.Column="2" Kind="SwapHorizontal" Width="14" Height="14"
+                                                           Foreground="{DynamicResource WinSubtleBrush}"
+                                                           VerticalAlignment="Center"
+                                                           IsVisible="{Binding !IsSidebarCompactRail}" />
                             </Grid>
                         </Button>
 
-                        <!-- Version Badge -->
+                        <!-- Version Badge — collapsed in compact rail to save vertical space -->
                         <TextBlock Grid.Row="1"
                                    Text="FryPDF v1.0 · Privacy-first PDF Studio"
                                    FontSize="9.5"
                                    Foreground="{DynamicResource WinSubtleBrush}"
                                    TextWrapping="Wrap"
-                                   HorizontalAlignment="Center" />
+                                   HorizontalAlignment="Center"
+                                   IsVisible="{Binding !IsSidebarCompactRail}" />
                     </Grid>
                 </Border>
             </DockPanel>
@@ -466,7 +512,7 @@
                     BorderBrush="{DynamicResource WinBorderBrush}"
                     BorderThickness="0,0,0,1"
                     Padding="32,14"
-                    IsVisible="{Binding !IsToolPageActive}">
+                    IsVisible="{Binding IsTopSearchBarVisible}">
                 <Grid ColumnDefinitions="*,Auto">
 
                     <!-- Search Box -->
@@ -559,9 +605,17 @@
                     <views:PdfToolPageView DataContext="{Binding ActiveToolViewModel}" />
                 </Panel>
 
-                <!-- 2. Dedicated Full-Viewport Plugins & Extensions Studio (Independent Master-Detail Scroll) -->
-                <Panel IsVisible="{Binding IsPluginsWorkspaceActive}">
-                    <views:PluginsManagerPageView DataContext="{Binding PluginsManager}" />
+                <!-- 2. Dedicated Full-Viewport Workspace Container (NO outer scrollviewer, full-bleed canvas/studio) -->
+                <Panel IsVisible="{Binding IsFullViewportActive}">
+                    <!-- Dedicated Built-in Plugins & Extensions Studio -->
+                    <Panel IsVisible="{Binding IsPluginsWorkspaceActive}">
+                        <views:PluginsManagerPageView DataContext="{Binding PluginsManager}" />
+                    </Panel>
+                    <!-- Dynamic Full-Viewport Plugin Tool / Workspace -->
+                    <ContentControl Content="{Binding DynamicPageView}"
+                                    IsVisible="{Binding DynamicPageView, Converter={StaticResource NullToBooleanConverter}}"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Stretch" />
                 </Panel>
 
                 <!-- 3. Independent Page Files (Shown when standard scrollable page is active) -->

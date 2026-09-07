@@ -33,7 +33,8 @@ public class WorkspacePagesBundle : IFryPluginBundle
         new HelpGuidePagePlugin(),
         new LicensingPagePlugin(),
         new PluginsPagePlugin(),
-        new SettingsPagePlugin()
+        new SettingsPagePlugin(),
+        new DiagnosticLogsPagePlugin()  // "Diagnostic Logs" nav item in the Help/Library sidebar group
     };
 }
 
@@ -399,6 +400,37 @@ public class PluginsPagePlugin : IFryPlugin
                         sp?.GetService(typeof(Core.Plugins.Marketplace.IPluginMarketplaceService)) as Core.Plugins.Marketplace.IPluginMarketplaceService)
             }
         });
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>
+/// Registers a "Diagnostic Logs" entry in the left sidebar's Library group,
+/// sitting next to "Help &amp; Guides". Clicking it navigates to a full-viewport
+/// log viewer so the user can read, search, and copy runtime errors and warnings
+/// without opening a modal overlay.
+/// </summary>
+public class DiagnosticLogsPagePlugin : IFryPlugin
+{
+    public string Id => "frypdf.page.diagnosticlogs";
+    public string Name => "Diagnostic Logs Page";
+    public Version Version => new(1, 0, 0);
+    public IReadOnlyList<Type> RequiredServices => Array.Empty<Type>();
+
+    public Task ApplyAsync(IFryPluginContext ctx, CancellationToken ct = default)
+    {
+        ctx.RegisterNavigationItem(new NavigationItemDescriptor
+        {
+            Id = "DiagnosticLogs",
+            Title = "Diagnostic Logs",
+            Group = "Library",
+            IconKind = "FormatListBulletedSquare",
+            BadgeText = "Logs",
+            BadgeColorHex = "#DC2626",
+            Order = 155,   // between Help (150) and Licensing (160)
+            ViewFactory = _ => new Views.Dialogs.DiagnosticLogsDialog()
+        });
+
         return Task.CompletedTask;
     }
 }

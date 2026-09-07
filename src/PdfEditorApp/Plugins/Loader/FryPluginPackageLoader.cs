@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using PdfEditorApp.Core.Plugins;
 using PdfEditorApp.Core.Plugins.Manifests;
+using PdfEditorApp.Services; // FryPdfPaths — MSIX-safe writable paths
 
 namespace PdfEditorApp.Plugins.Loader;
 
@@ -40,7 +41,9 @@ public static class FryPluginPackageLoader
             throw new FileNotFoundException($"Plugin package '{packageFilePath}' not found.");
         }
 
-        var baseDirectory = targetPluginsDirectory ?? Path.Combine(AppContext.BaseDirectory, "plugins");
+        // Use FryPdfPaths so that on MSIX installs the plugins land in
+        // %LocalAppData%\FryPDF\plugins\ rather than the read-only WindowsApps dir.
+        var baseDirectory = targetPluginsDirectory ?? FryPdfPaths.PluginsDirectory;
         Directory.CreateDirectory(baseDirectory);
 
         // 1. Read manifest from ZIP before extracting to know target folder name

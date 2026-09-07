@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using PdfEditorApp.Core.Plugins;
+using PdfEditorApp.Services; // FryPdfPaths — MSIX-safe writable paths
 
 namespace PdfEditorApp.Plugins.Loader;
 
@@ -143,16 +144,30 @@ public static class PluginAssemblyLoader
 
     /// <summary>
     /// Loads an isolated assembly, instantiates any <see cref="IFryPlugin"/> implementations, and returns a package.
+    /// If the assembly lives outside the writable plugins directory (e.g. Downloads, Desktop, or a
+    /// read-only Program Files install dir), it is first staged to
+    /// <c>FryPdfPaths.PluginsDirectory\.staging\</c>. This also strips the Windows
+    /// Zone.Identifier NTFS alternate data stream (Mark of the Web) that blocks DLL loading
+    /// when a file is downloaded from the internet.
     /// </summary>
     public static PluginAssemblyPackage LoadPluginAssembly(string assemblyPath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(assemblyPath);
         if (!File.Exists(assemblyPath))
-        {
             throw new FileNotFoundException($"Plugin assembly '{assemblyPath}' not found.");
-        }
 
         var fullPath = Path.GetFullPath(assemblyPath);
+
+        // If the DLL is not already inside the writable plugins dir, copy it there first.
+        // This serves two purposes:
+        //   1. Strips the Windows Zone.Identifier (Mark of the Web) which blocks ALC loads.
+        //   2. Ensures we have write access to the directory (needed for runtimes/ unpack).
+        var pluginsRoot = FryPdfPaths.PluginsDirectory;
+        if (!fullPath.StartsWith(pluginsRoot, StringComparison.OrdinalIgnoreCase))
+        {
+            fullPath = StageToPluginsDirectory(fullPath, pluginsRoot);
+        }
+
         var alc = new CollectiblePluginLoadContext(fullPath);
         var assembly = alc.LoadFromAssemblyPath(fullPath);
 
@@ -166,9 +181,7 @@ public static class PluginAssemblyLoader
             try
             {
                 if (Activator.CreateInstance(type) is IFryPlugin instance)
-                {
                     plugins.Add(instance);
-                }
             }
             catch (Exception ex)
             {
@@ -182,6 +195,48 @@ public static class PluginAssemblyLoader
             _activePackages.Add(package);
         }
         return package;
+    }
+
+    /// <summary>
+    /// Copies a DLL and all sibling files (dependencies, runtimes/, etc.) from
+    /// <paramref name="sourceDllPath"/> into a uniquely-named staging sub-folder under
+    /// <c>FryPdfPaths.PluginsDirectory\.staging\</c>.
+    /// The copy naturally strips the Windows Zone.Identifier NTFS alternate data stream.
+    /// Returns the full path to the copied DLL.
+    /// </summary>
+    private static string StageToPluginsDirectory(string sourceDllPath, string pluginsRoot)
+    {
+        var sourceDir = Path.GetDirectoryName(sourceDllPath) ?? string.Empty;
+        var dllName = Path.GetFileNameWithoutExtension(sourceDllPath);
+        var stagingDir = Path.Combine(pluginsRoot, ".staging", $"{dllName}_{Path.GetRandomFileName().Replace(".", "")}");
+        Directory.CreateDirectory(stagingDir);
+
+        // Copy the target DLL
+        var destDll = Path.Combine(stagingDir, Path.GetFileName(sourceDllPath));
+        File.Copy(sourceDllPath, destDll, overwrite: true);
+
+        // Copy sibling files (dependencies, runtimes/, native/, etc.) if source is a real dir
+        if (!string.IsNullOrEmpty(sourceDir) && Directory.Exists(sourceDir))
+        {
+            foreach (var file in Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories))
+            {
+                if (string.Equals(file, sourceDllPath, StringComparison.OrdinalIgnoreCase))
+                    continue; // already copied
+
+                var relative = Path.GetRelativePath(sourceDir, file);
+                var destFile = Path.Combine(stagingDir, relative);
+                var destFileDir = Path.GetDirectoryName(destFile);
+                if (!string.IsNullOrEmpty(destFileDir))
+                    Directory.CreateDirectory(destFileDir);
+
+                try { File.Copy(file, destFile, overwrite: true); }
+                catch { /* non-fatal: skip unreadable companions */ }
+            }
+        }
+
+        System.Diagnostics.Debug.WriteLine(
+            $"[PluginAssemblyLoader] Staged '{Path.GetFileName(sourceDllPath)}' to '{stagingDir}' (stripped Zone.Identifier).");
+        return destDll;
     }
 
     /// <summary>

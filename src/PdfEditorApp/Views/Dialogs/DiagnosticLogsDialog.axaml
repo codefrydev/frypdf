@@ -1,0 +1,320 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:PdfEditorApp.ViewModels"
+             xmlns:svc="clr-namespace:PdfEditorApp.Services"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:converters="clr-namespace:PdfEditorApp.Converters"
+             x:Class="PdfEditorApp.Views.Dialogs.DiagnosticLogsDialog"
+             x:DataType="vm:DiagnosticLogsViewModel"
+             Background="{DynamicResource M3SurfaceBrush}">
+
+  <UserControl.Resources>
+    <converters:LogLevelToColorConverter x:Key="LogLevelToColorConverter" />
+    <converters:LogLevelToLabelConverter x:Key="LogLevelToLabelConverter" />
+  </UserControl.Resources>
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+    <Border Grid.Row="0"
+            Background="{DynamicResource M3SurfaceContainerHighBrush}"
+            Padding="28 20 24 16"
+            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+            BorderThickness="0 0 0 1">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+
+        <!-- Icon badge -->
+        <Border Grid.Column="0"
+                Width="44" Height="44"
+                CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                Background="{DynamicResource M3SecondaryContainerBrush}"
+                Margin="0 0 16 0"
+                VerticalAlignment="Center">
+          <materialIcons:MaterialIcon Kind="FormatListBulletedSquare"
+                                      Width="22" Height="22"
+                                      Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
+        </Border>
+
+        <!-- Title + stats -->
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+          <TextBlock Text="Diagnostic Logs"
+                     FontSize="20" FontWeight="SemiBold"
+                     Foreground="{DynamicResource M3OnSurfaceBrush}" />
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock FontSize="12" Foreground="{DynamicResource M3OnSurfaceVariantBrush}">
+              <Run Text="{Binding GroupCount}" /><Run Text=" categories · " />
+              <Run Text="{Binding TotalCount}" /><Run Text=" entries" />
+            </TextBlock>
+            <Border CornerRadius="9999" Background="#22EF4444" Padding="8 2"
+                    IsVisible="{Binding ErrorCount,
+                        Converter={StaticResource GreaterThanZeroToBooleanConverter}}">
+              <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#EF4444">
+                <Run Text="{Binding ErrorCount}" /><Run Text=" error groups" />
+              </TextBlock>
+            </Border>
+            <Border CornerRadius="9999" Background="#22F59E0B" Padding="8 2"
+                    IsVisible="{Binding WarningCount,
+                        Converter={StaticResource GreaterThanZeroToBooleanConverter}}">
+              <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#B45309">
+                <Run Text="{Binding WarningCount}" /><Run Text=" warning groups" />
+              </TextBlock>
+            </Border>
+          </StackPanel>
+        </StackPanel>
+
+        <!-- Expand All -->
+        <Button Grid.Column="2" Classes="m3-text-btn"
+                Content="Expand All"
+                Command="{Binding ExpandAllCommand}"
+                Margin="0 0 4 0" />
+
+        <!-- Collapse All -->
+        <Button Grid.Column="3" Classes="m3-text-btn"
+                Content="Collapse All"
+                Command="{Binding CollapseAllCommand}"
+                Margin="0 0 10 0" />
+
+        <!-- Copy All -->
+        <Button Grid.Column="4" Classes="m3-tonal-btn"
+                Content="{Binding CopyButtonLabel}"
+                Command="{Binding CopyAllCommand}"
+                Margin="0 0 10 0" />
+
+        <!-- Clear -->
+        <Button Grid.Column="5" Classes="m3-outlined-btn"
+                Content="Clear"
+                Command="{Binding ClearLogCommand}" />
+      </Grid>
+    </Border>
+
+    <!-- ── Search + level filter chips ───────────────────────────────────────── -->
+    <Border Grid.Row="1"
+            Background="{DynamicResource M3SurfaceContainerBrush}"
+            Padding="24 11 24 11"
+            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+            BorderThickness="0 0 0 1">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBox Grid.Column="0" Classes="m3-search"
+                 PlaceholderText="Search categories or messages…"
+                 Text="{Binding SearchText}"
+                 Margin="0 0 20 0" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+          <ToggleButton Classes="m3-filter-chip" Content="Debug"   IsChecked="{Binding ShowDebug}" />
+          <ToggleButton Classes="m3-filter-chip" Content="Info"    IsChecked="{Binding ShowInfo}" />
+          <ToggleButton Classes="m3-filter-chip" Content="Warning" IsChecked="{Binding ShowWarning}" />
+          <ToggleButton Classes="m3-filter-chip" Content="Error"   IsChecked="{Binding ShowError}" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- ── Grouped log list ───────────────────────────────────────────────────── -->
+    <Grid Grid.Row="2">
+
+      <!-- Empty state -->
+      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                  Spacing="14" Margin="24"
+                  IsVisible="{Binding !FilteredGroups.Count}">
+        <materialIcons:MaterialIcon Kind="CheckCircleOutline"
+                                    Width="60" Height="60"
+                                    Foreground="{DynamicResource M3OutlineVariantBrush}"
+                                    HorizontalAlignment="Center" />
+        <TextBlock Text="No log entries match your current filters."
+                   FontSize="14" Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                   HorizontalAlignment="Center" />
+        <TextBlock Text="Errors, warnings, and debug messages appear here in real-time."
+                   FontSize="12" Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                   HorizontalAlignment="Center" Opacity="0.6" />
+      </StackPanel>
+
+      <ScrollViewer VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl ItemsSource="{Binding FilteredGroups}"
+                      Margin="18 10 18 10">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:LogGroupViewModel">
+
+              <!-- ── Group card ──────────────────────────────────────────────── -->
+              <Border Margin="0 3"
+                      CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                      Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                      BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                      BorderThickness="1"
+                      ClipToBounds="True">
+                <StackPanel>
+
+                  <!-- ── Group header row (always visible) ──────────────────── -->
+                  <Button Command="{Binding ToggleExpandCommand}"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          Padding="16 12 14 12"
+                          HorizontalContentAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
+                          CornerRadius="0"
+                          Cursor="Hand">
+                    <Button.Styles>
+                      <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background"
+                                Value="{DynamicResource M3SurfaceContainerLowBrush}" />
+                      </Style>
+                    </Button.Styles>
+
+                    <Grid ColumnDefinitions="12,*,Auto,Auto,Auto,Auto,28">
+
+                      <!-- Worst-level colour dot -->
+                      <Ellipse Grid.Column="0"
+                               Width="9" Height="9"
+                               VerticalAlignment="Center"
+                               Fill="{Binding WorstLevel,
+                                   Converter={StaticResource LogLevelToColorConverter}}" />
+
+                      <!-- Category name + last message preview -->
+                      <StackPanel Grid.Column="1" Margin="10 0 14 0"
+                                  VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="{Binding Category}"
+                                   FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource M3OnSurfaceBrush}" />
+                        <TextBlock Text="{Binding LastMessage}"
+                                   FontSize="11.5"
+                                   Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                   TextTrimming="CharacterEllipsis"
+                                   MaxWidth="520"
+                                   IsVisible="{Binding !IsExpanded}" />
+                      </StackPanel>
+
+                      <!-- Count badge -->
+                      <Border Grid.Column="2"
+                              CornerRadius="9999"
+                              Background="{DynamicResource M3SurfaceContainerHighBrush}"
+                              Padding="10 3"
+                              Margin="0 0 8 0"
+                              VerticalAlignment="Center">
+                        <TextBlock FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource M3OnSurfaceVariantBrush}">
+                          <Run Text="{Binding Count}" /><Run Text=" entries" />
+                        </TextBlock>
+                      </Border>
+
+                      <!-- Worst-level label badge -->
+                      <TextBlock Grid.Column="3"
+                                 Text="{Binding WorstLevel,
+                                     Converter={StaticResource LogLevelToLabelConverter}}"
+                                 FontSize="10" FontWeight="Bold"
+                                 Foreground="{Binding WorstLevel,
+                                     Converter={StaticResource LogLevelToColorConverter}}"
+                                 VerticalAlignment="Center"
+                                 Margin="0 0 12 0" />
+
+                      <!-- Last timestamp -->
+                      <TextBlock Grid.Column="4"
+                                 Text="{Binding LastTime, StringFormat='\{0:HH:mm:ss\}'}"
+                                 FontFamily="Cascadia Code, Consolas, Courier New"
+                                 FontSize="11"
+                                 Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                 VerticalAlignment="Center"
+                                 Margin="0 0 12 0" />
+
+                      <!-- Expand/Collapse chevron -->
+                      <Panel Grid.Column="6" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="ChevronDown"
+                                                    Width="18" Height="18"
+                                                    Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                                    IsVisible="{Binding !IsExpanded}" />
+                        <materialIcons:MaterialIcon Kind="ChevronUp"
+                                                    Width="18" Height="18"
+                                                    Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                                    IsVisible="{Binding IsExpanded}" />
+                      </Panel>
+                    </Grid>
+                  </Button>
+
+                  <!-- ── Expanded entry list ─────────────────────────────────── -->
+                  <Border IsVisible="{Binding IsExpanded}"
+                          Background="{DynamicResource M3SurfaceBrush}"
+                          Padding="16 6 16 10">
+                    <ItemsControl ItemsSource="{Binding Entries}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="svc:AppLogEntry">
+                          <Border Margin="0 2"
+                                  Padding="12 7 10 7"
+                                  CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                  Background="{DynamicResource M3SurfaceContainerLowestBrush}">
+                            <Border.Styles>
+                              <Style Selector="Border:pointerover">
+                                <Setter Property="Background"
+                                        Value="{DynamicResource M3SurfaceContainerLowBrush}" />
+                              </Style>
+                            </Border.Styles>
+
+                            <Grid ColumnDefinitions="12,100,*,32">
+
+                              <!-- Level dot -->
+                              <Ellipse Grid.Column="0"
+                                       Width="7" Height="7"
+                                       VerticalAlignment="Center"
+                                       Fill="{Binding Level,
+                                           Converter={StaticResource LogLevelToColorConverter}}" />
+
+                              <!-- Timestamp -->
+                              <TextBlock Grid.Column="1"
+                                         Text="{Binding Timestamp,
+                                             StringFormat='\{0:HH:mm:ss.fff\}'}"
+                                         FontFamily="Cascadia Code, Consolas, Courier New"
+                                         FontSize="10.5"
+                                         Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                         VerticalAlignment="Center"
+                                         Margin="8 0 10 0" />
+
+                              <!-- Message -->
+                              <TextBlock Grid.Column="2"
+                                         Text="{Binding Message}"
+                                         FontSize="12.5"
+                                         TextWrapping="Wrap"
+                                         Foreground="{DynamicResource M3OnSurfaceBrush}" />
+
+                              <!-- Copy row -->
+                              <Button Grid.Column="3"
+                                      Classes="m3-icon-btn"
+                                      Width="26" Height="26"
+                                      VerticalAlignment="Top"
+                                      ToolTip.Tip="Copy this line"
+                                      Tag="{Binding}"
+                                      Click="OnCopyRowClick">
+                                <materialIcons:MaterialIcon Kind="ContentCopy"
+                                                            Width="13" Height="13"
+                                                            Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                              </Button>
+                            </Grid>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </Border>
+
+                </StackPanel>
+              </Border>
+
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Grid>
+
+    <!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+    <Border Grid.Row="3"
+            Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+            Padding="24 10 24 12"
+            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+            BorderThickness="0 1 0 0">
+      <TextBlock FontSize="12"
+                 Foreground="{DynamicResource M3OnSurfaceVariantBrush}">
+        <Run Text="{Binding FilteredGroups.Count}" />
+        <Run Text=" of " />
+        <Run Text="{Binding GroupCount}" />
+        <Run Text=" categories · " />
+        <Run Text="{Binding TotalCount}" />
+        <Run Text=" total entries · max 200 per category · live" />
+      </TextBlock>
+    </Border>
+
+  </Grid>
+</UserControl>

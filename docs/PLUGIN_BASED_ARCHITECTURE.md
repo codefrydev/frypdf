@@ -266,6 +266,33 @@ Plugins register action pills into the M3 Ribbon and property sections into `Ins
 - Pills automatically receive `CornerRadius="{StaticResource M3ShapeCornerFull}"`.
 - Cards and panels automatically inherit `M3ShapeCornerLarge` and dynamic theme brushes (`M3SurfaceContainerBrush`).
 
+### 5.4 Dynamic Workspace Pages & Sidebar Navigation (`INavigationRegistry`)
+Plugins can introduce entire full-viewport studios, landing pages, and diagnostics directly into the primary application shell and sidebar:
+
+```csharp
+ctx.RegisterNavigationItem(new NavigationItemDescriptor
+{
+    Id = "frypdf.page.diagnosticlogs",
+    Title = "Diagnostic Logs",
+    Group = "Library",                           // Grouping under Overview, Categories, Library, Preferences, or custom
+    IconKind = "FormatListBulletedSquare",       // Material Design icon
+    BadgeText = "Logs",                          // Tactile pill badge
+    BadgeColorHex = "#DC2626",                   // Badge accent color
+    Order = 155,                                 // Ordering priority
+    DisplayMode = NavigationDisplayMode.FullViewport, // ScrollableDocument, FullViewport, or ImmersiveStudio
+    ViewFactory = sp => new Views.Dialogs.DiagnosticLogsDialog()
+});
+```
+
+#### Shell Hosting Mechanics:
+1. **Dynamic Grouping**: `HomeViewModel` binds to `INavigationRegistry.RegistryChanged`, grouping descriptors by `Group` in ascending `Order` and rendering M3 tactile navigation pills in `HomeView.axaml`.
+2. **0ms Cached Navigation**: The first time a user clicks the sidebar item, `ViewFactory(sp)` instantiates the view and caches it in `_dynamicViewCache` for instantaneous 0ms tab switching.
+3. **Display Mode Adaptation**:
+   - `ScrollableDocument`: Hosted in an outer `ScrollViewer` beneath the top search bar (best for documents, settings, overview lists).
+   - `FullViewport`: Direct full-bleed hosting in `DynamicPageView` without an outer `ScrollViewer` (best for data grids, canvas editors, log trees).
+   - `ImmersiveStudio`: Hides the global search bar and collapses the navigation sidebar to a 68px compact icon rail.
+4. **Reversible Rollback**: When a plugin unloads, its registration effect cleanly removes the sidebar item, evicts the cached view, and prevents memory leaks in the `CollectiblePluginLoadContext`.
+
 ---
 
 ## 6. Bundles & Composable Application Profiles

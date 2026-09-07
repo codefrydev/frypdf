@@ -10,6 +10,7 @@ using PdfEditorApp.Core.Plugins;
 using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Core.Plugins.Marketplace;
 using PdfEditorApp.Plugins.Loader;
+using PdfEditorApp.Services;  // FryPdfPaths — writable-path resolver (MSIX-safe)
 
 
 namespace PdfEditorApp.Services.Plugins;
@@ -47,12 +48,17 @@ public class PluginMarketplaceService : IPluginMarketplaceService
     {
         _pluginHost = pluginHost;
         _overlayRegistry = overlayRegistry;
-        _installedPluginStore = installedPluginStore ?? new FileInstalledPluginStore();
+        // Use FryPdfPaths so that on MSIX installs (read-only WindowsApps dir) the
+        // plugins and data files land in %LocalAppData%\FryPDF\ instead.
         _pluginsDirectory = string.IsNullOrWhiteSpace(pluginsDirectory)
-            ? Path.Combine(AppContext.BaseDirectory, "plugins")
+            ? FryPdfPaths.PluginsDirectory
             : pluginsDirectory;
+        _installedPluginStore = installedPluginStore
+            ?? new FileInstalledPluginStore(FryPdfPaths.InstalledPluginsJsonPath);
         _registryBaseUrl = string.IsNullOrWhiteSpace(registryBaseUrl) ? DefaultRegistryBaseUrl : registryBaseUrl.TrimEnd('/');
-        _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(6) };
+        // 15 seconds: GitHub CDN round-trip on a cold Windows boot (DNS + TLS handshake)
+        // can easily exceed the old 6s limit, causing false "0 extensions" readings.
+        _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
 
         try
         {
@@ -73,15 +79,9 @@ public class PluginMarketplaceService : IPluginMarketplaceService
     {
         try
         {
+            // Primary cache is in the writable plugins directory (FryPdfPaths-resolved).
+            // No AppContext.BaseDirectory fallback — that path may be read-only on MSIX.
             var cacheFile = Path.Combine(_pluginsDirectory, "catalog_cache.json");
-            if (!File.Exists(cacheFile))
-            {
-                var baseCache = Path.Combine(AppContext.BaseDirectory, "plugins", "catalog_cache.json");
-                if (File.Exists(baseCache))
-                {
-                    cacheFile = baseCache;
-                }
-            }
 
             if (File.Exists(cacheFile))
             {
@@ -249,67 +249,81 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         }
 
         var catalogUrl = $"{_registryBaseUrl}/catalog.json";
-        try
-        {
-            using var response = await _httpClient.GetAsync(catalogUrl, ct);
-            if (response.IsSuccessStatusCode)
-            {
-                var json = await response.Content.ReadAsStringAsync(ct);
-                var items = JsonSerializer.Deserialize<List<MarketplacePluginItem>>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
 
-                if (items != null && items.Count > 0)
+        // Attempt the HTTP fetch with 1 automatic retry (2 s back-off) to handle cold-boot
+        // DNS / TLS latency on Windows that can push the round-trip above 6 s on first open.
+        const int maxAttempts = 2;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                using var response = await _httpClient.GetAsync(catalogUrl, ct);
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync(ct);
+                    var items = JsonSerializer.Deserialize<List<MarketplacePluginItem>>(json, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    if (items != null && items.Count > 0)
+                    {
+                        lock (_catalogLock)
+                        {
+                            foreach (var item in items.Where(i => i != null && !string.IsNullOrEmpty(i.Id)))
+                            {
+                                var existing = _remoteExtensions.FirstOrDefault(e => string.Equals(e?.Id, item.Id, StringComparison.OrdinalIgnoreCase));
+                                if (existing != null)
+                                    _remoteExtensions.Remove(existing);
+                                _remoteExtensions.Add(item);
+                            }
+                        }
+
+                        // Persist to local disk cache for fast/offline resilience
+                        try
+                        {
+                            string mergedJson;
+                            lock (_catalogLock)
+                            {
+                                mergedJson = JsonSerializer.Serialize(_remoteExtensions, new JsonSerializerOptions { WriteIndented = true });
+                            }
+                            // _pluginsDirectory is already FryPdfPaths-resolved (writable on MSIX)
+                            var cacheFile = Path.Combine(_pluginsDirectory, "catalog_cache.json");
+                            Directory.CreateDirectory(_pluginsDirectory);
+                            File.WriteAllText(cacheFile, mergedJson);
+                        }
+                        catch { }
+                    }
+                    break; // Successful — no retry needed
+                }
+                else
                 {
                     lock (_catalogLock)
                     {
-                        foreach (var item in items.Where(i => i != null && !string.IsNullOrEmpty(i.Id)))
-                        {
-                            var existing = _remoteExtensions.FirstOrDefault(e => string.Equals(e?.Id, item.Id, StringComparison.OrdinalIgnoreCase));
-                            if (existing != null)
-                            {
-                                _remoteExtensions.Remove(existing);
-                            }
-                            _remoteExtensions.Add(item);
-                        }
+                        if (_remoteExtensions.Count == 0)
+                            LoadDiskCatalogCache();
                     }
-
-                    // Persist to local disk cache for fast/offline resilience
-                    try
-                    {
-                        string mergedJson;
-                        lock (_catalogLock)
-                        {
-                            mergedJson = JsonSerializer.Serialize(_remoteExtensions, new JsonSerializerOptions { WriteIndented = true });
-                        }
-                        var cacheFile = Path.Combine(_pluginsDirectory, "catalog_cache.json");
-                        Directory.CreateDirectory(_pluginsDirectory);
-                        File.WriteAllText(cacheFile, mergedJson);
-                    }
-                    catch { }
+                    break; // HTTP error (e.g. 404) — retrying won't help
                 }
             }
-            else
+            catch (Exception ex) when (attempt < maxAttempts &&
+                                       ex is HttpRequestException or TaskCanceledException)
             {
+                // Transient network failure — wait 2 s then retry once
+                System.Diagnostics.Debug.WriteLine(
+                    $"[PluginMarketplaceService] Catalog fetch attempt {attempt} failed: {ex.Message}. Retrying...");
+                await Task.Delay(TimeSpan.FromSeconds(2), ct);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"[PluginMarketplaceService] Remote catalog fetch failed: {ex.Message}");
                 lock (_catalogLock)
                 {
                     if (_remoteExtensions.Count == 0)
-                    {
                         LoadDiskCatalogCache();
-                    }
                 }
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[PluginMarketplaceService] Remote catalog fetch failed: {ex.Message}");
-            lock (_catalogLock)
-            {
-                if (_remoteExtensions.Count == 0)
-                {
-                    LoadDiskCatalogCache();
-                }
+                break;
             }
         }
 

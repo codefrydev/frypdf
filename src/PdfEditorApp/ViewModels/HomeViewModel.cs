@@ -114,8 +114,18 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPluginsWorkspaceActive))]
+    [NotifyPropertyChangedFor(nameof(IsFullViewportActive))]
     [NotifyPropertyChangedFor(nameof(IsStandardScrollableContentActive))]
+    [NotifyPropertyChangedFor(nameof(IsTopSearchBarVisible))]
+    [NotifyPropertyChangedFor(nameof(IsSidebarCompactRail))]
     private bool _isToolPageActive;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsFullViewportActive))]
+    [NotifyPropertyChangedFor(nameof(IsStandardScrollableContentActive))]
+    [NotifyPropertyChangedFor(nameof(IsTopSearchBarVisible))]
+    [NotifyPropertyChangedFor(nameof(IsSidebarCompactRail))]
+    private PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor? _activeNavDescriptor;
 
     [ObservableProperty]
     private PdfToolCardViewModel? _activeToolCard;
@@ -154,7 +164,10 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     public bool IsSettingsSection => SelectedNavSection == HomeNavSection.Settings;
     public bool IsPluginsSection => SelectedNavSection == HomeNavSection.Plugins;
     public bool IsPluginsWorkspaceActive => SelectedNavSection == HomeNavSection.Plugins && !IsToolPageActive;
-    public bool IsStandardScrollableContentActive => !IsToolPageActive && !IsPluginsWorkspaceActive;
+    public bool IsFullViewportActive => !IsToolPageActive && (ActiveNavDescriptor?.DisplayMode is PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.FullViewport or PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.ImmersiveStudio || SelectedNavSection == HomeNavSection.Plugins);
+    public bool IsStandardScrollableContentActive => !IsToolPageActive && !IsFullViewportActive;
+    public bool IsTopSearchBarVisible => !IsToolPageActive && !(ActiveNavDescriptor?.HideTopSearchBar ?? false) && SelectedNavSection != HomeNavSection.Plugins;
+    public bool IsSidebarCompactRail => !IsToolPageActive && ActiveNavDescriptor?.DisplayMode == PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.ImmersiveStudio;
 
     public FontManagerViewModel FontManager { get; } = new();
     public TesseractManagerViewModel TesseractManager { get; } = new();
@@ -231,6 +244,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
         {
             _navigationRegistry.RegistryChanged += RefreshDynamicNavigationItems;
             RefreshDynamicNavigationItems();
+            ActiveNavDescriptor = _navigationRegistry.GetItem(SelectedNavSection.ToString());
         }
 
         if (_toolRegistry != null)
@@ -461,7 +475,10 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
         OnPropertyChanged(nameof(IsSettingsSection));
         OnPropertyChanged(nameof(IsPluginsSection));
         OnPropertyChanged(nameof(IsPluginsWorkspaceActive));
+        OnPropertyChanged(nameof(IsFullViewportActive));
         OnPropertyChanged(nameof(IsStandardScrollableContentActive));
+        OnPropertyChanged(nameof(IsTopSearchBarVisible));
+        OnPropertyChanged(nameof(IsSidebarCompactRail));
 
         if (value == HomeNavSection.TesseractData)
         {
@@ -682,14 +699,21 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     [RelayCommand]
     public void SelectNavSection(string sectionName)
     {
+        PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor? activeDesc = null;
+
         // Special case for Plugins: HomeView hosts a dedicated full-viewport PluginsManagerPageView
         if (string.Equals(sectionName, "Plugins", StringComparison.OrdinalIgnoreCase))
         {
             DynamicPageView = null;
+            if (_navigationRegistry != null)
+            {
+                activeDesc = _navigationRegistry.GetItem(sectionName);
+            }
         }
         else if (_navigationRegistry != null)
         {
             var desc = _navigationRegistry.GetItem(sectionName);
+            activeDesc = desc;
             if (desc?.ViewFactory != null)
             {
                 if (!_dynamicViewCache.TryGetValue(sectionName, out var cachedView))
@@ -717,6 +741,8 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
         {
             DynamicPageView = null;
         }
+
+        ActiveNavDescriptor = activeDesc;
 
         // Update active states across all flat nav items
         foreach (var item in DynamicNavigationItems)

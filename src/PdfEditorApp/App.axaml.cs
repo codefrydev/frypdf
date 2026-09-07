@@ -37,6 +37,10 @@ public partial class App : Application
     public override void Initialize()
     {
         Name = "FryPDF";
+        // Touch the singleton to install the FryPdfTraceListener at process start so that
+        // all Debug.WriteLine calls from plugin loading, path resolution, and CDN fetching
+        // are captured in the in-process diagnostic log buffer from the very first frame.
+        _ = PdfEditorApp.Services.AppLogService.Instance;
         LiveChartsCore.LiveCharts.Configure(config => LiveChartsCore.SkiaSharpView.LiveChartsSkiaSharp.UseDefaults(config));
         AvaloniaXamlLoader.Load(this);
     }
@@ -118,11 +122,19 @@ public partial class App : Application
 
             PdfEditorApp.Core.Plugins.Profiles.ProfileLoader.ApplyProfile(profile, host, availableBundles);
 
-            string[] directoriesToScan =
-            [
+            // FryPdfPaths.PluginsDirectory is MSIX-safe: on a Microsoft Store install it
+            // resolves to %LocalAppData%\FryPDF\plugins\ instead of the read-only WindowsApps dir.
+            var userLocalPlugins = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "FryPDF", "plugins");
+
+            var directoriesToScan = new System.Collections.Generic.HashSet<string>(
+                StringComparer.OrdinalIgnoreCase)
+            {
+                FryPdfPaths.PluginsDirectory,
                 System.IO.Path.Combine(AppContext.BaseDirectory, "plugins"),
-                System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FryPdf", "plugins")
-            ];
+                userLocalPlugins
+            };
 
             foreach (var dir in directoriesToScan)
             {

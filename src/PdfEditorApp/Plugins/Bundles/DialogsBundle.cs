@@ -76,6 +76,14 @@ public class CoreAppDialogsPlugin : IFryPlugin
             ViewFactory = sp => new ExportSuccessDialog()
         });
 
+        ctx.RegisterDialog(new DialogDescriptor
+        {
+            Id = "frypdf.dialog.diagnostics",
+            Title = "Diagnostic Logs",
+            ViewType = typeof(DiagnosticLogsDialog),
+            ViewFactory = sp => new DiagnosticLogsDialog()
+        });
+
         return Task.CompletedTask;
     }
 }

@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 
 namespace PdfEditorApp.Services;
@@ -72,6 +75,7 @@ public sealed class AppLogService : IAppLogService, IDisposable
     private readonly object _lock = new();
     private readonly LinkedList<AppLogEntry> _buffer = new();
     private readonly FryPdfTraceListener _listener;
+    private readonly AppLogFileWriter _fileWriter;
 
     public int Capacity { get; } = DefaultCapacity;
 
@@ -79,6 +83,11 @@ public sealed class AppLogService : IAppLogService, IDisposable
     {
         _listener = new FryPdfTraceListener(this);
         Trace.Listeners.Add(_listener);
+
+        // Path resolution is deferred to the background pump (see AppLogFileWriter) rather than
+        // resolved here, so that FryPdfPaths — which itself logs its redirect decisions — never
+        // has to call back into this constructor before the `Instance` field is assigned.
+        _fileWriter = new AppLogFileWriter(() => FryPdfPaths.LogFilePath);
     }
 
     // ── IAppLogService ──────────────────────────────────────────────────────────
@@ -128,6 +137,9 @@ public sealed class AppLogService : IAppLogService, IDisposable
             while (_buffer.Count > Capacity)
                 _buffer.RemoveFirst();
         }
+
+        // Persist to disk so the trail survives a crash/restart, not just the in-memory window.
+        _fileWriter.Enqueue(entry);
 
         // Fire-and-forget; WeakReferenceMessenger won't keep ViewModel alive
         WeakReferenceMessenger.Default.Send(new NewLogEntryMessage(entry));
@@ -209,6 +221,94 @@ public sealed class AppLogService : IAppLogService, IDisposable
     {
         Trace.Listeners.Remove(_listener);
         _listener.Dispose();
+        _fileWriter.Dispose();
+    }
+}
+
+// ─── Background file persistence ───────────────────────────────────────────────
+
+/// <summary>
+/// Persists log entries to a rolling file on disk so the diagnostic trail survives an app
+/// crash or restart (the in-memory buffer above is capped and wiped on restart). Writes happen
+/// on a dedicated background task via a bounded channel so that no caller — including
+/// UI-thread navigation/install code — ever blocks on disk I/O.
+/// </summary>
+internal sealed class AppLogFileWriter : IDisposable
+{
+    private const long MaxFileSizeBytes = 5 * 1024 * 1024; // 5 MB before rotating to .bak
+
+    private readonly Channel<string> _channel;
+    private readonly Task _pumpTask;
+
+    public AppLogFileWriter(Func<string> logFilePathProvider)
+    {
+        _channel = Channel.CreateBounded<string>(new BoundedChannelOptions(2000)
+        {
+            FullMode = BoundedChannelFullMode.DropOldest,
+            SingleReader = true,
+            SingleWriter = false,
+        });
+        _pumpTask = Task.Run(() => PumpAsync(logFilePathProvider));
+    }
+
+    /// <summary>Non-blocking; drops the oldest queued line if the channel is full rather than stalling the caller.</summary>
+    public void Enqueue(AppLogEntry entry) => _channel.Writer.TryWrite(entry.FormattedLine);
+
+    private async Task PumpAsync(Func<string> logFilePathProvider)
+    {
+        string? logFilePath;
+        try
+        {
+            logFilePath = logFilePathProvider();
+        }
+        catch
+        {
+            logFilePath = null; // No writable directory resolvable — nothing we can persist to.
+        }
+
+        await foreach (var line in _channel.Reader.ReadAllAsync())
+        {
+            if (logFilePath == null) continue;
+
+            try
+            {
+                RotateIfNeeded(logFilePath);
+                await File.AppendAllTextAsync(logFilePath, line + Environment.NewLine);
+            }
+            catch
+            {
+                // Best-effort: a locked/unwritable log file must never crash the app.
+            }
+        }
+    }
+
+    private static void RotateIfNeeded(string logFilePath)
+    {
+        var info = new FileInfo(logFilePath);
+        if (!info.Exists || info.Length < MaxFileSizeBytes) return;
+
+        try
+        {
+            File.Copy(logFilePath, logFilePath + ".bak", overwrite: true);
+            File.WriteAllText(logFilePath, string.Empty);
+        }
+        catch
+        {
+            // Non-fatal — worst case the file keeps growing past the cap.
+        }
+    }
+
+    public void Dispose()
+    {
+        _channel.Writer.TryComplete();
+        try
+        {
+            _pumpTask.Wait(TimeSpan.FromSeconds(2));
+        }
+        catch
+        {
+            // Best-effort flush on shutdown; disposal must never throw.
+        }
     }
 }
 

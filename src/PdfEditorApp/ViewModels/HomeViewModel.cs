@@ -4,6 +4,7 @@ using PdfEditorApp.Core.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -710,9 +711,13 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
     [RelayCommand]
     public void SelectNavSection(string sectionName)
     {
+        var from = ActiveNavDescriptor?.Id ?? SelectedNavSection.ToString();
+        var sw = Stopwatch.StartNew();
+
         PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor? activeDesc = null;
 
         object? targetView = null;
+        string viewOrigin = "pre-mounted";
 
         // Special case for Plugins: HomeView hosts a dedicated full-viewport PluginsManagerPageView
         if (string.Equals(sectionName, "Plugins", StringComparison.OrdinalIgnoreCase))
@@ -730,6 +735,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
             {
                 if (!_dynamicViewCache.TryGetValue(sectionName, out var cachedView))
                 {
+                    viewOrigin = "cold-factory";
                     try
                     {
                         var sp = _serviceProvider ?? (IServiceProvider)this;
@@ -738,9 +744,13 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[HomeViewModel] Failed to create plugin view for '{sectionName}': {ex}");
+                        AppLogService.Instance.LogError("Navigation", $"Failed to create plugin view for '{sectionName}'", ex);
                         cachedView = null;
                     }
+                }
+                else
+                {
+                    viewOrigin = "cache-hit";
                 }
                 targetView = cachedView;
             }
@@ -790,6 +800,9 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
                 UpdateFilteredTools();
             }
         }
+
+        AppLogService.Instance.Log(AppLogLevel.Info, "Navigation",
+            $"{from} -> {sectionName} in {sw.ElapsedMilliseconds}ms ({viewOrigin}).");
     }
 
 
@@ -801,6 +814,9 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
 
     public void OpenToolPage(PdfToolId toolId, string? initialFilePath = null)
     {
+        var from = ActiveToolCard?.Name ?? ActiveNavDescriptor?.Id ?? SelectedNavSection.ToString();
+        var sw = Stopwatch.StartNew();
+
         if (toolId == PdfToolId.BatchMailMerge)
         {
             WeakReferenceMessenger.Default.Send(new OpenBatchGenerationMessage());
@@ -845,6 +861,14 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
                     }
                 };
             }
+
+            AppLogService.Instance.Log(AppLogLevel.Info, "Navigation",
+                $"{from} -> {card.Name} in {sw.ElapsedMilliseconds}ms (new ViewModel instance).");
+        }
+        else
+        {
+            AppLogService.Instance.Log(AppLogLevel.Warning, "Navigation",
+                $"{from} -> tool '{toolId}' failed after {sw.ElapsedMilliseconds}ms: no matching tool card found.");
         }
     }
 

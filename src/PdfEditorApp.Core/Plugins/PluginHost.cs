@@ -305,6 +305,7 @@ public class PluginHost : IAsyncDisposable, IDisposable
                 }
             }
 
+            System.Diagnostics.Debug.WriteLine($"[PluginHost] Mounted plugin '{plugin.Id}' successfully.");
             PluginStateChanged?.Invoke(plugin.Id, PluginState.Active);
         }
         catch (Exception ex)
@@ -321,6 +322,9 @@ public class PluginHost : IAsyncDisposable, IDisposable
                 }
             }
 
+            // AppLogService lives in the App project, which this Core project cannot reference —
+            // Debug.WriteLine is auto-captured process-wide by AppLogService's installed TraceListener.
+            System.Diagnostics.Debug.WriteLine($"[PluginHost] Error mounting plugin '{plugin.Id}': {ex}");
             PluginStateChanged?.Invoke(plugin.Id, PluginState.Faulted);
             throw;
         }

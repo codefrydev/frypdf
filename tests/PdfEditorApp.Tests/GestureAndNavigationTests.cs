@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Avalonia.Input;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
@@ -8,6 +9,8 @@ using Xunit;
 
 namespace PdfEditorApp.Tests;
 
+// Shares AppLogService.Instance's buffer with AppLogServiceTests — same collection to avoid races.
+[Collection("AppLogService")]
 public class GestureAndNavigationTests
 {
     [Fact]
@@ -249,6 +252,98 @@ public class GestureAndNavigationTests
         home.SelectNavSectionCommand.Execute("CustomAnalyticsExtension");
         Assert.Equal(1, factoryInvocationCount);
         Assert.Same(firstView, home.DynamicPageView);
+    }
+
+    [Fact]
+    public void HomeViewModel_SelectNavSection_LogsNavigationTimingEntry()
+    {
+        var navReg = new PdfEditorApp.Services.Navigation.NavigationRegistry();
+        var home = new HomeViewModel(
+            new RecentDocumentsService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            new PdfEditorApp.Services.Tools.Core.PdfToolRegistry(),
+            navigationRegistry: navReg);
+
+        home.SelectNavSectionCommand.Execute("AllTools");
+
+        var navEntry = AppLogService.Instance.GetSnapshot().LastOrDefault(e =>
+            e.Category == "Navigation" &&
+            e.Level == AppLogLevel.Info &&
+            e.Message.Contains("-> AllTools"));
+
+        Assert.NotNull(navEntry);
+        Assert.Matches(@"in \d+ms", navEntry!.Message);
+    }
+
+    [Fact]
+    public void HomeViewModel_SelectNavSection_DistinguishesCacheHitFromColdFactory()
+    {
+        var navReg = new PdfEditorApp.Services.Navigation.NavigationRegistry();
+        navReg.RegisterNavigationItem(new PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor
+        {
+            Id = "NavTimingTestExtension",
+            Title = "Nav Timing Test Extension",
+            Group = "Extensions",
+            ViewFactory = sp => new object()
+        });
+
+        var home = new HomeViewModel(
+            new RecentDocumentsService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            new PdfEditorApp.Services.Tools.Core.PdfToolRegistry(),
+            navigationRegistry: navReg);
+
+        home.SelectNavSectionCommand.Execute("NavTimingTestExtension");
+        var firstEntry = AppLogService.Instance.GetSnapshot().LastOrDefault(e =>
+            e.Category == "Navigation" && e.Message.Contains("-> NavTimingTestExtension"));
+        Assert.NotNull(firstEntry);
+        Assert.Contains("cold-factory", firstEntry!.Message);
+
+        home.SelectNavSectionCommand.Execute("Home");
+        home.SelectNavSectionCommand.Execute("NavTimingTestExtension");
+        var secondEntry = AppLogService.Instance.GetSnapshot().LastOrDefault(e =>
+            e.Category == "Navigation" && e.Message.Contains("-> NavTimingTestExtension"));
+        Assert.NotNull(secondEntry);
+        Assert.Contains("cache-hit", secondEntry!.Message);
+    }
+
+    [Fact]
+    public void HomeViewModel_NavigatingFromPluginsToDiagnosticLogs_HidesPluginsWorkspace_AndShowsDiagnosticLogsPage()
+    {
+        var navReg = new PdfEditorApp.Services.Navigation.NavigationRegistry();
+        navReg.RegisterNavigationItem(new PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor
+        {
+            Id = "DiagnosticLogs",
+            Title = "Diagnostic Logs",
+            Group = "Library",
+            // DisplayMode defaults to ScrollableDocument, matching the real DiagnosticLogsPagePlugin.
+            ViewFactory = sp => new object()
+        });
+
+        var home = new HomeViewModel(
+            new RecentDocumentsService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            new PdfEditorApp.Services.Tools.Core.PdfToolRegistry(),
+            navigationRegistry: navReg);
+
+        home.SelectNavSectionCommand.Execute("Plugins");
+        Assert.True(home.IsPluginsWorkspaceActive);
+
+        home.SelectNavSectionCommand.Execute("DiagnosticLogs");
+
+        // Before HomeNavSection gained a DiagnosticLogs member, Enum.TryParse("DiagnosticLogs")
+        // failed here, so SelectedNavSection stayed stuck at Plugins — IsPluginsWorkspaceActive
+        // and IsFullViewportActive (both keyed off SelectedNavSection == Plugins) never cleared,
+        // so the Plugins panel never hid and neither ContentControl ever picked up the new page:
+        // navigating away from Plugins to any non-HomeNavSection page appeared to hang.
+        Assert.False(home.IsPluginsWorkspaceActive);
+        Assert.False(home.IsFullViewportActive);
+        Assert.True(home.IsStandardScrollableContentActive);
+        Assert.Null(home.DynamicFullViewportPageView);
+        Assert.NotNull(home.DynamicScrollablePageView);
     }
 
     [Fact]

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -10,7 +11,7 @@ using PdfEditorApp.Core.Plugins;
 using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Core.Plugins.Marketplace;
 using PdfEditorApp.Plugins.Loader;
-using PdfEditorApp.Services;  // FryPdfPaths — writable-path resolver (MSIX-safe)
+using PdfEditorApp.Services;  // FryPdfPaths — writable-path resolver (MSIX-safe); AppLogService — diagnostic logging
 
 
 namespace PdfEditorApp.Services.Plugins;
@@ -69,7 +70,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[PluginMarketplaceService] Init warning: {ex.Message}");
+            AppLogService.Instance.LogWarning("PluginInstall", "Marketplace service initialization warning", ex);
         }
     }
 
@@ -100,7 +101,10 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                 }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("PluginInstall", "Failed to load disk catalog cache", ex);
+        }
     }
 
     private static IFryPlugin? InstantiatePlugin(string pluginId)
@@ -133,7 +137,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[PluginMarketplaceService] Restore error for {rec.PluginId}: {ex.Message}");
+                        AppLogService.Instance.LogWarning("PluginInstall", $"Restore error for '{rec.PluginId}'", ex);
                     }
                 }
 
@@ -193,7 +197,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[PluginMarketplaceService] Error restoring external plugin {rec.PluginId}: {ex.Message}");
+                        AppLogService.Instance.LogWarning("PluginInstall", $"Error restoring external plugin '{rec.PluginId}'", ex);
                     }
                 }
             }
@@ -310,14 +314,12 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                                        ex is HttpRequestException or TaskCanceledException)
             {
                 // Transient network failure — wait 2 s then retry once
-                System.Diagnostics.Debug.WriteLine(
-                    $"[PluginMarketplaceService] Catalog fetch attempt {attempt} failed: {ex.Message}. Retrying...");
+                AppLogService.Instance.LogWarning("PluginInstall", $"Catalog fetch attempt {attempt} failed; retrying", ex);
                 await Task.Delay(TimeSpan.FromSeconds(2), ct);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(
-                    $"[PluginMarketplaceService] Remote catalog fetch failed: {ex.Message}");
+                AppLogService.Instance.LogError("PluginInstall", "Remote catalog fetch failed", ex);
                 lock (_catalogLock)
                 {
                     if (_remoteExtensions.Count == 0)
@@ -411,6 +413,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
 
     public async Task<bool> InstallPluginAsync(string pluginId, IProgress<double>? progress = null, Action<string>? statusCallback = null, CancellationToken ct = default)
     {
+        var sw = Stopwatch.StartNew();
         MarketplacePluginItem? item;
         lock (_catalogLock)
         {
@@ -485,13 +488,15 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PluginMarketplaceService] Remote package download failed: {ex.Message}");
+                    AppLogService.Instance.LogWarning("PluginInstall", $"Remote package download failed for '{item.Id}'", ex);
                 }
 
                 if (!downloaded)
                 {
                     item.Status = MarketplacePluginStatus.Available;
                     statusCallback?.Invoke($"Failed to download '{item.Name}' package from registry.");
+                    AppLogService.Instance.Log(AppLogLevel.Warning, "PluginInstall",
+                        $"Install aborted for '{item.Id}': download failed after {sw.ElapsedMilliseconds}ms.");
                     return false;
                 }
 
@@ -532,11 +537,13 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                 item.Status = MarketplacePluginStatus.Installed;
                 statusCallback?.Invoke($"'{item.Name}' installed and activated successfully!");
                 progress?.Report(1.0);
+                AppLogService.Instance.Log(AppLogLevel.Info, "PluginInstall",
+                    $"Installed '{item.Id}' ({pkgResult.AssemblyPackage.Plugins.Count} plugin(s)) via remote package in {sw.ElapsedMilliseconds}ms.");
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PluginMarketplaceService] Remote install failed: {ex.Message}");
+                AppLogService.Instance.LogError("PluginInstall", $"Install failed for '{item.Name}' after {sw.ElapsedMilliseconds}ms", ex);
                 item.Status = MarketplacePluginStatus.Available;
                 statusCallback?.Invoke($"Failed to install '{item.Name}': {ex.Message}");
                 return false;
@@ -550,7 +557,10 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                         File.Delete(tempPackagePath);
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    AppLogService.Instance.LogWarning("PluginInstall", $"Failed to delete temp package '{tempPackagePath}'", ex);
+                }
             }
         }
 
@@ -618,11 +628,14 @@ public class PluginMarketplaceService : IPluginMarketplaceService
 
         statusCallback?.Invoke($"'{item.Name}' installed and activated successfully!");
         progress?.Report(1.0);
+        AppLogService.Instance.Log(AppLogLevel.Info, "PluginInstall",
+            $"Installed '{item.Id}' via local/simulated path in {sw.ElapsedMilliseconds}ms.");
         return true;
     }
 
     public async Task<bool> UninstallPluginAsync(string pluginId, CancellationToken ct = default)
     {
+        var sw = Stopwatch.StartNew();
         MarketplacePluginItem? item;
         lock (_catalogLock)
         {
@@ -657,10 +670,12 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PluginMarketplaceService] Uninstall delete error: {ex.Message}");
+                AppLogService.Instance.LogError("PluginInstall", $"Uninstall delete error for '{pluginId}'", ex);
             }
         }
 
+        AppLogService.Instance.Log(AppLogLevel.Info, "PluginInstall",
+            $"Uninstalled '{pluginId}' in {sw.ElapsedMilliseconds}ms.");
         return true;
     }
 

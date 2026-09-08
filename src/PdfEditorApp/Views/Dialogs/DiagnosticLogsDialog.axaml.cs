@@ -18,9 +18,13 @@ public partial class DiagnosticLogsDialog : UserControl
         DataContext = _vm;
 
         // Wire clipboard via TopLevel (Avalonia 12 pattern).
-        // AttachedToVisualTree fires once the control is in the visual tree and TopLevel is available.
+        // AttachedToVisualTree fires every time this cached instance is navigated back to
+        // (HomeViewModel reuses the same instance per section), not just on first construction —
+        // so re-activate and catch up on anything logged while this page was detached (see
+        // DetachedFromVisualTree below and DiagnosticLogsViewModel.ResyncAndActivate).
         AttachedToVisualTree += (_, _) =>
         {
+            _vm.ResyncAndActivate();
             _vm.SetClipboardText = async text =>
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;

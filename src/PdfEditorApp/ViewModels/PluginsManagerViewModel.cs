@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using PdfEditorApp.Core.Plugins.Marketplace;
 using PdfEditorApp.Core.Plugins.Profiles;
 using PdfEditorApp.Plugins.Bundles;
 using PdfEditorApp.Plugins.Loader;
+using PdfEditorApp.Services;
 using PdfEditorApp.Services.Plugins;
 using PdfEditorApp.Services.Tools.Core;
 
@@ -508,6 +510,7 @@ public partial class PluginsManagerViewModel : ViewModelBase
     {
         IsBusy = true;
         StatusMessage = $"Installing extension '{pluginId}' from store...";
+        var sw = Stopwatch.StartNew();
 
         try
         {
@@ -519,17 +522,22 @@ public partial class PluginsManagerViewModel : ViewModelBase
             bool success = await _marketplaceService.InstallPluginAsync(pluginId, progress, s => StatusMessage = s);
             if (success)
             {
+                AppLogService.Instance.Log(AppLogLevel.Info, "PluginInstall",
+                    $"UI: installed '{pluginId}' in {sw.ElapsedMilliseconds}ms.");
                 ShowToastCallback?.Invoke($"Installed extension '{pluginId}' successfully!");
                 await LoadAllDataAsync();
                 SelectedTab = PluginsManagerTab.Installed;
             }
             else
             {
+                AppLogService.Instance.Log(AppLogLevel.Warning, "PluginInstall",
+                    $"UI: install failed for '{pluginId}' after {sw.ElapsedMilliseconds}ms (see PluginInstall entries above for cause).");
                 ShowToastCallback?.Invoke($"Failed to install extension '{pluginId}'");
             }
         }
         catch (Exception ex)
         {
+            AppLogService.Instance.LogError("PluginInstall", $"UI: install error for '{pluginId}' after {sw.ElapsedMilliseconds}ms", ex);
             ShowToastCallback?.Invoke($"Install error: {ex.Message}");
         }
         finally
@@ -597,6 +605,7 @@ public partial class PluginsManagerViewModel : ViewModelBase
 
         IsBusy = true;
         StatusMessage = $"Mounting '{Path.GetFileName(filePath)}'...";
+        var sw = Stopwatch.StartNew();
 
         try
         {
@@ -631,11 +640,14 @@ public partial class PluginsManagerViewModel : ViewModelBase
             PopulateInstalledPlugins();
             ApplyFilters();
 
+            AppLogService.Instance.Log(AppLogLevel.Info, "PluginInstall",
+                $"UI: installed '{displayName}' from file ({plugins.Count} plugin(s)) in {sw.ElapsedMilliseconds}ms.");
             ShowToastCallback?.Invoke($"Successfully installed and mounted '{displayName}' ({plugins.Count} plugins)!");
             SelectedTab = PluginsManagerTab.Installed;
         }
         catch (Exception ex)
         {
+            AppLogService.Instance.LogError("PluginInstall", $"UI: failed to install plugin from '{filePath}' after {sw.ElapsedMilliseconds}ms", ex);
             ShowToastCallback?.Invoke($"Failed to install plugin: {ex.Message}");
         }
         finally

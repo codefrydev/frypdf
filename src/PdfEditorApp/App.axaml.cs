@@ -71,6 +71,7 @@ public partial class App : Application
             {
                 DataContext = mainVm,
             };
+            desktop.ShutdownRequested += (_, _) => PdfEditorApp.Services.AppLogService.Instance.Dispose();
         }
 
         base.OnFrameworkInitializationCompleted();

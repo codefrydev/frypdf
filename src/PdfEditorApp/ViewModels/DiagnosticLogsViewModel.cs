@@ -51,8 +51,15 @@ public sealed partial class LogGroupViewModel : ObservableObject
     public string LastMessage  => _entries.Count > 0 ? _entries[^1].Message  : string.Empty;
     public DateTime LastTime   => _entries.Count > 0 ? _entries[^1].Timestamp : DateTime.MinValue;
 
-    /// <summary>Entries to display in the expanded detail panel (newest first).</summary>
-    public IReadOnlyList<AppLogEntry> Entries => _entries.AsReadOnly();
+    /// <summary>
+    /// Entries to display in the expanded detail panel (newest first).
+    /// Must be an independent snapshot, not a live view over <see cref="_entries"/>
+    /// (List.AsReadOnly() wraps the same mutable list by reference) — otherwise a burst of
+    /// rapid Add/TrimTo calls (e.g. ResyncAndActivate catching up on many missed entries at
+    /// once) mutates the list out from under Avalonia's ItemsControl mid-diff, crashing with
+    /// an ArgumentOutOfRangeException inside its container generator.
+    /// </summary>
+    public IReadOnlyList<AppLogEntry> Entries => _entries.ToArray();
 
     // ── Mutation ──────────────────────────────────────────────────────────────
 
@@ -106,6 +113,7 @@ public sealed partial class DiagnosticLogsViewModel : ObservableRecipient,
     private const int MaxPerGroup = 200;
 
     private readonly IAppLogService _logService;
+    private long _lastSeenSequence;
 
     // Category → group (insertion-ordered via LinkedList)
     private readonly Dictionary<string, LogGroupViewModel> _groups = new(StringComparer.OrdinalIgnoreCase);
@@ -173,6 +181,9 @@ public sealed partial class DiagnosticLogsViewModel : ObservableRecipient,
     public int WarningCount => _allGroups.Count(g => g.WorstLevel == AppLogLevel.Warning);
     public int GroupCount   => _allGroups.Count;
 
+    /// <summary>Path to the rolling on-disk copy of this log, so entries survive a crash/restart.</summary>
+    public string LogFilePath => FryPdfPaths.LogFilePath;
+
     // ── Clipboard helper (injected from code-behind) ──────────────────────────
     public Func<string, System.Threading.Tasks.Task>? SetClipboardText { get; set; }
 
@@ -188,6 +199,27 @@ public sealed partial class DiagnosticLogsViewModel : ObservableRecipient,
             AddToGroup(entry);
 
         NotifyCounts();
+    }
+
+    /// <summary>
+    /// Re-registers for live updates and catches up on any entries logged while this page
+    /// was navigated away from. The underlying view/ViewModel instance is cached and reused
+    /// per navigation section (see HomeViewModel's dynamic view cache), and <see cref="IsActive"/>
+    /// is set false on detach to unregister from the messenger — so it must be flipped back on
+    /// and the buffer re-synced every time the page is reattached, or entries logged in between
+    /// (e.g. every navigation while viewing a different page) would silently never appear.
+    /// </summary>
+    public void ResyncAndActivate()
+    {
+        foreach (var entry in _logService.GetSnapshot())
+        {
+            if (entry.Sequence > _lastSeenSequence)
+                AddToGroup(entry);
+        }
+        OnPropertyChanged(nameof(FilteredGroups));
+        NotifyCounts();
+
+        IsActive = true;
     }
 
     // ── WeakReferenceMessenger recipient ──────────────────────────────────────
@@ -250,6 +282,12 @@ public sealed partial class DiagnosticLogsViewModel : ObservableRecipient,
         foreach (var g in _allGroups) g.IsExpanded = false;
     }
 
+    [RelayCommand]
+    private void RevealLogFile()
+    {
+        FileOperationHelper.RevealInFileManager(LogFilePath, out _);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void AddToGroup(AppLogEntry entry)
@@ -265,6 +303,9 @@ public sealed partial class DiagnosticLogsViewModel : ObservableRecipient,
 
         group.Add(entry);
         group.TrimTo(MaxPerGroup);
+
+        if (entry.Sequence > _lastSeenSequence)
+            _lastSeenSequence = entry.Sequence;
     }
 
     private void NotifyCounts()

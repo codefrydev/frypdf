@@ -460,7 +460,8 @@ public enum HomeNavSection
     TesseractData,
     Help,
     Settings,
-    Plugins
+    Plugins,
+    DiagnosticLogs
 }
 
 public enum ToastPosition

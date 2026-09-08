@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using PdfEditorApp.Core.Plugins;
-using PdfEditorApp.Services; // FryPdfPaths — MSIX-safe writable paths
+using PdfEditorApp.Services; // FryPdfPaths — MSIX-safe writable paths; AppLogService — diagnostic logging
 
 namespace PdfEditorApp.Plugins.Loader;
 
@@ -122,13 +123,21 @@ public sealed class CollectiblePluginLoadContext : AssemblyLoadContext
                 Path.Combine(_pluginDirectory, $"{unmanagedDllName}.dll")
             };
 
+            AppLogService.Instance.Log(AppLogLevel.Debug, "PluginLoader",
+                $"Probing native library '{unmanagedDllName}' (rid={rid}) across {candidatePaths.Length} candidate path(s) under '{_pluginDirectory}'.");
+
             foreach (var p in candidatePaths)
             {
                 if (File.Exists(p))
                 {
+                    AppLogService.Instance.Log(AppLogLevel.Debug, "PluginLoader",
+                        $"Resolved native library '{unmanagedDllName}' to '{p}'.");
                     return LoadUnmanagedDllFromPath(p);
                 }
             }
+
+            AppLogService.Instance.Log(AppLogLevel.Debug, "PluginLoader",
+                $"Native library '{unmanagedDllName}' not found in any candidate path; falling back to default resolution.");
         }
 
         return base.LoadUnmanagedDll(unmanagedDllName);
@@ -154,8 +163,13 @@ public static class PluginAssemblyLoader
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(assemblyPath);
         if (!File.Exists(assemblyPath))
-            throw new FileNotFoundException($"Plugin assembly '{assemblyPath}' not found.");
+        {
+            var notFoundEx = new FileNotFoundException($"Plugin assembly '{assemblyPath}' not found.");
+            AppLogService.Instance.LogError("PluginLoader", "Assembly file not found", notFoundEx);
+            throw notFoundEx;
+        }
 
+        var sw = Stopwatch.StartNew();
         var fullPath = Path.GetFullPath(assemblyPath);
 
         // If the DLL is not already inside the writable plugins dir, copy it there first.
@@ -163,17 +177,41 @@ public static class PluginAssemblyLoader
         //   1. Strips the Windows Zone.Identifier (Mark of the Web) which blocks ALC loads.
         //   2. Ensures we have write access to the directory (needed for runtimes/ unpack).
         var pluginsRoot = FryPdfPaths.PluginsDirectory;
-        if (!fullPath.StartsWith(pluginsRoot, StringComparison.OrdinalIgnoreCase))
+        bool staged = !fullPath.StartsWith(pluginsRoot, StringComparison.OrdinalIgnoreCase);
+        if (staged)
         {
+            AppLogService.Instance.Log(AppLogLevel.Info, "PluginLoader",
+                $"'{fullPath}' is outside the writable plugins directory; staging to strip Windows Zone.Identifier (Mark of the Web) and ensure write access.");
             fullPath = StageToPluginsDirectory(fullPath, pluginsRoot);
         }
 
         var alc = new CollectiblePluginLoadContext(fullPath);
-        var assembly = alc.LoadFromAssemblyPath(fullPath);
+        Assembly assembly;
+        try
+        {
+            assembly = alc.LoadFromAssemblyPath(fullPath);
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogError("PluginLoader",
+                $"Failed to load assembly '{fullPath}' into an isolated load context (staged={staged})", ex);
+            throw;
+        }
 
-        var pluginTypes = assembly.GetTypes()
-            .Where(t => typeof(IFryPlugin).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface)
-            .ToList();
+        List<Type> pluginTypes;
+        try
+        {
+            pluginTypes = assembly.GetTypes()
+                .Where(t => typeof(IFryPlugin).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface)
+                .ToList();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            // ex.ToString() alone omits LoaderExceptions (the actual per-type failure reasons) —
+            // LogError's helper unwraps them so a Windows-only missing-dependency case is diagnosable.
+            AppLogService.Instance.LogError("PluginLoader", $"Failed to reflect types from '{fullPath}'", ex);
+            throw;
+        }
 
         var plugins = new List<IFryPlugin>();
         foreach (var type in pluginTypes)
@@ -185,7 +223,7 @@ public static class PluginAssemblyLoader
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PluginAssemblyLoader] Could not instantiate '{type.FullName}': {ex.Message}");
+                AppLogService.Instance.LogError("PluginLoader", $"Could not instantiate '{type.FullName}'", ex);
             }
         }
 
@@ -194,6 +232,9 @@ public static class PluginAssemblyLoader
         {
             _activePackages.Add(package);
         }
+
+        AppLogService.Instance.Log(AppLogLevel.Info, "PluginLoader",
+            $"Loaded assembly '{Path.GetFileName(fullPath)}' with {plugins.Count} plugin(s) in {sw.ElapsedMilliseconds}ms (staged={staged}).");
         return package;
     }
 
@@ -206,6 +247,7 @@ public static class PluginAssemblyLoader
     /// </summary>
     private static string StageToPluginsDirectory(string sourceDllPath, string pluginsRoot)
     {
+        var sw = Stopwatch.StartNew();
         var sourceDir = Path.GetDirectoryName(sourceDllPath) ?? string.Empty;
         var dllName = Path.GetFileNameWithoutExtension(sourceDllPath);
         var stagingDir = Path.Combine(pluginsRoot, ".staging", $"{dllName}_{Path.GetRandomFileName().Replace(".", "")}");
@@ -216,6 +258,7 @@ public static class PluginAssemblyLoader
         File.Copy(sourceDllPath, destDll, overwrite: true);
 
         // Copy sibling files (dependencies, runtimes/, native/, etc.) if source is a real dir
+        int companionCount = 0;
         if (!string.IsNullOrEmpty(sourceDir) && Directory.Exists(sourceDir))
         {
             foreach (var file in Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories))
@@ -229,13 +272,21 @@ public static class PluginAssemblyLoader
                 if (!string.IsNullOrEmpty(destFileDir))
                     Directory.CreateDirectory(destFileDir);
 
-                try { File.Copy(file, destFile, overwrite: true); }
-                catch { /* non-fatal: skip unreadable companions */ }
+                try
+                {
+                    File.Copy(file, destFile, overwrite: true);
+                    companionCount++;
+                }
+                catch (Exception ex)
+                {
+                    // non-fatal: skip unreadable companions — same behavior, now visible in diagnostics
+                    AppLogService.Instance.LogWarning("PluginLoader", $"Skipped copying companion file '{file}' during staging", ex);
+                }
             }
         }
 
-        System.Diagnostics.Debug.WriteLine(
-            $"[PluginAssemblyLoader] Staged '{Path.GetFileName(sourceDllPath)}' to '{stagingDir}' (stripped Zone.Identifier).");
+        AppLogService.Instance.Log(AppLogLevel.Info, "PluginLoader",
+            $"Staged '{Path.GetFileName(sourceDllPath)}' to '{stagingDir}' ({companionCount} companion file(s), stripped Zone.Identifier) in {sw.ElapsedMilliseconds}ms.");
         return destDll;
     }
 
@@ -272,7 +323,7 @@ public static class PluginAssemblyLoader
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PluginAssemblyLoader] Failed to unpack/load package '{pkgFile}': {ex.Message}");
+                AppLogService.Instance.LogWarning("PluginLoader", $"Failed to unpack/load package '{pkgFile}'", ex);
             }
         }
 
@@ -328,7 +379,7 @@ public static class PluginAssemblyLoader
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PluginAssemblyLoader] Failed to load plugin from subdirectory '{subDir}': {ex.Message}");
+                AppLogService.Instance.LogWarning("PluginLoader", $"Failed to load plugin from subdirectory '{subDir}'", ex);
             }
         }
 

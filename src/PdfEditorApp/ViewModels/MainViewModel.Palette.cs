@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Input.Platform;
@@ -12,6 +13,7 @@ using PdfEditorApp.Core.Models;
 using PdfEditorApp.Core.Plugins;
 using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Models;
+using PdfEditorApp.Services;
 using PdfEditorApp.Services.Tools.Core;
 
 namespace PdfEditorApp.ViewModels;
@@ -435,6 +437,7 @@ public partial class MainViewModel
 
     public async System.Threading.Tasks.Task InstallAndMountPluginPathAsync(string filePath)
     {
+        var sw = Stopwatch.StartNew();
         try
         {
             var host = App.Services?.GetService<PluginHost>();
@@ -458,6 +461,8 @@ public partial class MainViewModel
 
             if (plugins.Count == 0)
             {
+                AppLogService.Instance.Log(AppLogLevel.Warning, "PluginInstall",
+                    $"Drag/file install of '{filePath}' produced 0 IFryPlugin implementations after {sw.ElapsedMilliseconds}ms.");
                 ShowToast("No IFryPlugin implementations found in package.", ToastNotificationType.Warning, "AlertCircleOutline");
                 return;
             }
@@ -470,10 +475,13 @@ public partial class MainViewModel
 
             PopulateLoadedPlugins();
             FilterLoadedPlugins(PluginSearchQuery);
+            AppLogService.Instance.Log(AppLogLevel.Info, "PluginInstall",
+                $"Installed and mounted {plugins.Count} plugin(s) from '{displayName}' in {sw.ElapsedMilliseconds}ms.");
             ShowToast($"Successfully mounted {plugins.Count} plugin(s) from {displayName}!", ToastNotificationType.Success, "CheckCircle");
         }
         catch (Exception ex)
         {
+            AppLogService.Instance.LogError("PluginInstall", $"Failed to load plugin from '{filePath}' after {sw.ElapsedMilliseconds}ms", ex);
             ShowToast($"Failed to load plugin: {ex.Message}", ToastNotificationType.Danger, "AlertCircleOutline");
         }
     }

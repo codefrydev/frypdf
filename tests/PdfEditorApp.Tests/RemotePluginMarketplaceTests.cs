@@ -34,6 +34,8 @@ public class TestMarketplacePlugin : IFryPlugin
     public Task ApplyAsync(IFryPluginContext ctx, CancellationToken ct = default) => Task.CompletedTask;
 }
 
+// Shares AppLogService.Instance's buffer with AppLogServiceTests — same collection to avoid races.
+[Collection("AppLogService")]
 public class RemotePluginMarketplaceTests
 {
     private static IServiceProvider CreateTestServices(string? testDir = null, HttpClient? httpClient = null, string? registryBaseUrl = null)
@@ -162,6 +164,42 @@ public class RemotePluginMarketplaceTests
             Assert.True(uninstalled);
             Assert.False(marketplace.IsPluginInstalled("com.frypdf.test.marketplace"));
             Assert.False(host.IsPluginActive("com.frypdf.test.marketplace"));
+        }
+        finally
+        {
+            try { Directory.Delete(tempDir, recursive: true); } catch { }
+        }
+    }
+
+    [Fact]
+    public async Task InstallPluginAsync_CorruptPackage_LogsErrorWithFullExceptionDetail_AndReturnsFalse()
+    {
+        var tempDir = Path.Combine(AppContext.BaseDirectory, $"frypdf_corrupt_test_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            // Not a valid zip archive — triggers ZipFile.OpenRead to throw inside FryPluginPackageLoader.
+            var corruptBytes = System.Text.Encoding.UTF8.GetBytes("this is not a valid zip archive");
+            var mockHandler = new MockHttpMessageHandler(corruptBytes);
+            using var httpClient = new HttpClient(mockHandler) { Timeout = TimeSpan.FromSeconds(5) };
+
+            var sp = CreateTestServices(testDir: tempDir, httpClient: httpClient, registryBaseUrl: "https://mock.frypdf.dev/plugins");
+            var marketplace = sp.GetRequiredService<IPluginMarketplaceService>();
+
+            // Same control flow as before this change (install fails, returns false) —
+            // now the real exception detail is also visible in the diagnostic log, not just ex.Message.
+            bool installed = await marketplace.InstallPluginAsync("com.frypdf.test.marketplace");
+            Assert.False(installed);
+
+            var snapshot = AppLogService.Instance.GetSnapshot();
+            var errorEntry = snapshot.LastOrDefault(e =>
+                e.Category == "PluginInstall" &&
+                e.Level == AppLogLevel.Error &&
+                e.Message.Contains("Test Marketplace Plugin")); // logged install failure names item.Name, not item.Id
+
+            Assert.NotNull(errorEntry);
+            Assert.Contains("Exception", errorEntry!.Message);
         }
         finally
         {

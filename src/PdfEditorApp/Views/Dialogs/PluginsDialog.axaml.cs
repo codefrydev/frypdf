@@ -42,6 +42,8 @@ public partial class PluginsDialog : UserControl
                     if (path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
                         path.EndsWith(".fryplugin", StringComparison.OrdinalIgnoreCase))
                     {
+                        PdfEditorApp.Services.AppLogService.Instance.Log(PdfEditorApp.Services.AppLogLevel.Debug,
+                            "PluginInstall", $"Drag-drop install triggered for '{path}'.");
                         await vm.InstallAndMountPluginPathAsync(path);
                     }
                 }

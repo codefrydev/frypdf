@@ -1,11 +1,12 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 using PdfEditorApp.Core.Plugins;
 using PdfEditorApp.Core.Plugins.Manifests;
-using PdfEditorApp.Services; // FryPdfPaths — MSIX-safe writable paths
+using PdfEditorApp.Services; // FryPdfPaths — MSIX-safe writable paths; AppLogService — diagnostic logging
 
 namespace PdfEditorApp.Plugins.Loader;
 
@@ -38,13 +39,19 @@ public static class FryPluginPackageLoader
         ArgumentException.ThrowIfNullOrWhiteSpace(packageFilePath);
         if (!File.Exists(packageFilePath))
         {
-            throw new FileNotFoundException($"Plugin package '{packageFilePath}' not found.");
+            var notFoundEx = new FileNotFoundException($"Plugin package '{packageFilePath}' not found.");
+            AppLogService.Instance.LogError("PluginLoader", "Package file not found", notFoundEx);
+            throw notFoundEx;
         }
+
+        var sw = Stopwatch.StartNew();
 
         // Use FryPdfPaths so that on MSIX installs the plugins land in
         // %LocalAppData%\FryPDF\plugins\ rather than the read-only WindowsApps dir.
         var baseDirectory = targetPluginsDirectory ?? FryPdfPaths.PluginsDirectory;
         Directory.CreateDirectory(baseDirectory);
+        AppLogService.Instance.Log(AppLogLevel.Info, "PluginLoader",
+            $"Unpacking package '{Path.GetFileName(packageFilePath)}' into '{baseDirectory}'.");
 
         // 1. Read manifest from ZIP before extracting to know target folder name
         PluginManifest? manifest = null;
@@ -74,10 +81,14 @@ public static class FryPluginPackageLoader
             {
                 Directory.Delete(destinationFolder, recursive: true);
             }
-            catch
+            catch (Exception ex)
             {
-                // If locked, create unique timestamped folder
-                destinationFolder = Path.Combine(baseDirectory, $"{pluginId}_{DateTime.UtcNow.Ticks}");
+                // If locked (e.g. a previous version's DLL is still loaded on Windows),
+                // create a unique timestamped folder instead of failing the install outright.
+                var fallback = Path.Combine(baseDirectory, $"{pluginId}_{DateTime.UtcNow.Ticks}");
+                AppLogService.Instance.LogWarning("PluginLoader",
+                    $"Could not remove existing install directory '{destinationFolder}' (likely locked); using fallback '{fallback}'", ex);
+                destinationFolder = fallback;
             }
         }
 
@@ -105,7 +116,9 @@ public static class FryPluginPackageLoader
 
         if (string.IsNullOrWhiteSpace(entryDll) || !File.Exists(entryDll))
         {
-            throw new InvalidOperationException($"No entry DLL found in package '{packageFilePath}'.");
+            var ex = new InvalidOperationException($"No entry DLL found in package '{packageFilePath}'.");
+            AppLogService.Instance.LogError("PluginLoader", $"No entry DLL found after extracting to '{destinationFolder}'", ex);
+            throw ex;
         }
 
         // 3. Load assembly into isolated collectible ALC
@@ -124,6 +137,9 @@ public static class FryPluginPackageLoader
                 Description = "Extracted .fryplugin archive"
             };
         }
+
+        AppLogService.Instance.Log(AppLogLevel.Info, "PluginLoader",
+            $"Unpacked and loaded '{pluginId}' ({assemblyPackage.Plugins.Count} plugin(s)) to '{destinationFolder}' in {sw.ElapsedMilliseconds}ms.");
 
         return new FryPluginPackageResult
         {

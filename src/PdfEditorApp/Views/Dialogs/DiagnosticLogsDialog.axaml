@@ -305,15 +305,28 @@
             Padding="24 10 24 12"
             BorderBrush="{DynamicResource M3OutlineVariantBrush}"
             BorderThickness="0 1 0 0">
-      <TextBlock FontSize="12"
-                 Foreground="{DynamicResource M3OnSurfaceVariantBrush}">
-        <Run Text="{Binding FilteredGroups.Count}" />
-        <Run Text=" of " />
-        <Run Text="{Binding GroupCount}" />
-        <Run Text=" categories · " />
-        <Run Text="{Binding TotalCount}" />
-        <Run Text=" total entries · max 200 per category · live" />
-      </TextBlock>
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0"
+                   FontSize="12"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource M3OnSurfaceVariantBrush}">
+          <Run Text="{Binding FilteredGroups.Count}" />
+          <Run Text=" of " />
+          <Run Text="{Binding GroupCount}" />
+          <Run Text=" categories · " />
+          <Run Text="{Binding TotalCount}" />
+          <Run Text=" total entries · max 200 per category · live" />
+        </TextBlock>
+
+        <Button Grid.Column="1" Classes="m3-text-btn"
+                Command="{Binding RevealLogFileCommand}"
+                ToolTip.Tip="{Binding LogFilePath, StringFormat='Reveal log file: {0}'}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="14" Height="14" />
+            <TextBlock Text="Reveal Log File" FontSize="12" />
+          </StackPanel>
+        </Button>
+      </Grid>
     </Border>
 
   </Grid>

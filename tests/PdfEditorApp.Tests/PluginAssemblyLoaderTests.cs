@@ -1,10 +1,13 @@
 using System;
 using System.IO;
 using PdfEditorApp.Plugins.Loader;
+using PdfEditorApp.Services;
 using Xunit;
 
 namespace PdfEditorApp.Tests;
 
+// Shares AppLogService.Instance's buffer with AppLogServiceTests — same collection to avoid races.
+[Collection("AppLogService")]
 public class PluginAssemblyLoaderTests
 {
     [Fact]
@@ -12,6 +15,13 @@ public class PluginAssemblyLoaderTests
     {
         var nonExistentPath = Path.Combine(Path.GetTempPath(), $"missing_{Guid.NewGuid():N}.dll");
         Assert.Throws<FileNotFoundException>(() => PluginAssemblyLoader.LoadPluginAssembly(nonExistentPath));
+
+        // Same control flow (still throws) — now also visible in the diagnostic log.
+        var snapshot = AppLogService.Instance.GetSnapshot();
+        Assert.Contains(snapshot, e =>
+            e.Category == "PluginLoader" &&
+            e.Level == AppLogLevel.Error &&
+            e.Message.Contains(nonExistentPath));
     }
 
     [Fact]

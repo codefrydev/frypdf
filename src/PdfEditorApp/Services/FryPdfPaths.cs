@@ -21,6 +21,7 @@ public static class FryPdfPaths
     private static string? _pluginsDirectory;
     private static string? _dataDirectory;
     private static string? _profilesDirectory;
+    private static string? _logsDirectory;
     private static bool? _needsUserDataDir;
 
     /// <summary>Writable directory for user-installed external plugins.</summary>
@@ -32,9 +33,15 @@ public static class FryPdfPaths
     /// <summary>Writable directory for profile JSON files.</summary>
     public static string ProfilesDirectory => _profilesDirectory ??= ResolveWritableDir("profiles");
 
+    /// <summary>Writable directory for the rolling diagnostic log file.</summary>
+    public static string LogsDirectory => _logsDirectory ??= ResolveWritableDir("logs");
+
     /// <summary>Fully qualified path to the installed-plugins JSON manifest.</summary>
     public static string InstalledPluginsJsonPath
         => Path.Combine(DataDirectory, "installed_plugins.json");
+
+    /// <summary>Fully qualified path to the rolling diagnostic log file (see <see cref="AppLogService"/>).</summary>
+    public static string LogFilePath => Path.Combine(LogsDirectory, "frypdf.log");
 
     /// <summary>
     /// True when the app is installed in a system-protected directory where writing is denied
@@ -54,7 +61,11 @@ public static class FryPdfPaths
 
         // Fast-path: MSIX — always read-only by OS design
         if (baseDir.Contains("WindowsApps", StringComparison.OrdinalIgnoreCase))
+        {
+            AppLogService.Instance?.Log(AppLogLevel.Info, "PluginPaths",
+                $"Detected MSIX install under '{baseDir}'; user data will redirect to '{GetUserDataRoot()}'.");
             return true;
+        }
 
         // Fast-path: any sub-path of Program Files / Program Files (x86)
         // These are read-only without elevation even for admins at runtime.
@@ -66,11 +77,16 @@ public static class FryPdfPaths
             (!string.IsNullOrEmpty(programFilesX86) &&
              baseDir.StartsWith(programFilesX86, StringComparison.OrdinalIgnoreCase)))
         {
+            AppLogService.Instance?.Log(AppLogLevel.Info, "PluginPaths",
+                $"Detected Program Files install under '{baseDir}'; user data will redirect to '{GetUserDataRoot()}'.");
             return true;
         }
 
         // Slow-path: do a write probe for any other potentially restricted location
-        return !IsWritable(Path.Combine(baseDir, "plugins"));
+        var writable = IsWritable(Path.Combine(baseDir, "plugins"));
+        AppLogService.Instance?.Log(AppLogLevel.Info, "PluginPaths",
+            $"Write probe for '{baseDir}' returned writable={writable}.");
+        return !writable;
     }
 
     private static string ResolveWritableDir(string subFolder)
@@ -87,6 +103,8 @@ public static class FryPdfPaths
         // redirect to user-scoped writable directory.
         var userDir = Path.Combine(GetUserDataRoot(), subFolder);
         Directory.CreateDirectory(userDir);
+        AppLogService.Instance?.Log(AppLogLevel.Info, "PluginPaths",
+            $"Redirected '{subFolder}' directory to '{userDir}'.");
         return userDir;
     }
 
@@ -130,7 +148,15 @@ public static class FryPdfPaths
             File.Delete(probe);
             return true;
         }
-        catch (UnauthorizedAccessException) { return false; }
-        catch (IOException) { return false; }
+        catch (UnauthorizedAccessException ex)
+        {
+            AppLogService.Instance?.LogWarning("PluginPaths", $"Write probe denied for '{dir}'", ex);
+            return false;
+        }
+        catch (IOException ex)
+        {
+            AppLogService.Instance?.LogWarning("PluginPaths", $"Write probe failed for '{dir}'", ex);
+            return false;
+        }
     }
 }

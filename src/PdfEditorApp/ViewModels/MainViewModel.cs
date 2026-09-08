@@ -1241,9 +1241,19 @@ public partial class MainViewModel : ViewModelBase
 
     // --- HOME / EDITOR / VIEWER NAVIGATION ---
 
+    /// <summary>Name of the currently visible top-level shell page, for navigation-timing logs.</summary>
+    private string CurrentVisiblePageName() =>
+        IsEditorVisible ? "Editor" :
+        IsPdfViewerVisible ? "PdfViewer" :
+        IsFryPdfViewerVisible ? "FryPdfViewer" :
+        "Home";
+
     /// <summary>Switches to the editor and loads the requested template.</summary>
     public void OpenEditorWithTemplate(string? templateName)
     {
+        var from = CurrentVisiblePageName();
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
         IsHomePageVisible = false;
         IsPdfViewerVisible = false;
         IsEditorVisible = true;
@@ -1254,6 +1264,9 @@ public partial class MainViewModel : ViewModelBase
 
         LoadFromDocumentModel(model);
         ShowToast($"Created new document from {templateName ?? "Blank"} template", "FilePlusOutline");
+
+        AppLogService.Instance.Log(AppLogLevel.Info, "Navigation",
+            $"{from} -> Editor in {sw.ElapsedMilliseconds}ms (template={templateName ?? "Blank"}).");
     }
 
     /// <summary>Switches to the editor and loads a project from a file path.</summary>
@@ -1265,6 +1278,9 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>Asynchronously switches to the editor and loads a project from a file path.</summary>
     public async Task OpenEditorWithFileAsync(string path)
     {
+        var from = CurrentVisiblePageName();
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
         // Navigate to the (still-empty) editor shell immediately so the user sees the app
         // respond right away, then populate it — mirrors OpenInViewerAsync's approach.
         IsHomePageVisible = false;
@@ -1289,6 +1305,8 @@ public partial class MainViewModel : ViewModelBase
                 });
                 Home.RefreshRecent();
                 ShowToast($"Opened: {Path.GetFileName(path)}", "FolderOpenOutline");
+                AppLogService.Instance.Log(AppLogLevel.Info, "Navigation",
+                    $"{from} -> Editor in {sw.ElapsedMilliseconds}ms (file={Path.GetFileName(path)}).");
             }
             else
             {
@@ -1296,6 +1314,8 @@ public partial class MainViewModel : ViewModelBase
                 IsEditorVisible = false;
                 IsHomePageVisible = true;
                 ShowToast("Could not open file: unrecognized or corrupted document.", "AlertCircleOutline");
+                AppLogService.Instance.Log(AppLogLevel.Warning, "Navigation",
+                    $"{from} -> Editor aborted after {sw.ElapsedMilliseconds}ms: unrecognized document '{Path.GetFileName(path)}'.");
             }
         }
         catch (Exception ex)
@@ -1304,6 +1324,8 @@ public partial class MainViewModel : ViewModelBase
             IsEditorVisible = false;
             IsHomePageVisible = true;
             ShowToast($"Could not open file: {ex.Message}", "AlertCircleOutline");
+            AppLogService.Instance.LogWarning("Navigation",
+                $"{from} -> Editor failed after {sw.ElapsedMilliseconds}ms opening '{Path.GetFileName(path)}'", ex);
         }
     }
 
@@ -1363,6 +1385,8 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>Asynchronously opens a PDF document in the viewer.</summary>
     public async Task OpenInViewerAsync(string path)
     {
+        var from = CurrentVisiblePageName();
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         try
         {
             // Immediately transition to PDF Viewer with zero delay
@@ -1383,16 +1407,22 @@ public partial class MainViewModel : ViewModelBase
                 LastOpened = DateTime.UtcNow
             });
             Home.RefreshRecent();
+            AppLogService.Instance.Log(AppLogLevel.Info, "Navigation",
+                $"{from} -> PdfViewer in {sw.ElapsedMilliseconds}ms (file={Path.GetFileName(path)}).");
         }
         catch (Exception ex)
         {
             ShowToast($"Could not open in Viewer: {ex.Message}", "AlertCircleOutline");
+            AppLogService.Instance.LogWarning("Navigation",
+                $"{from} -> PdfViewer failed after {sw.ElapsedMilliseconds}ms opening '{Path.GetFileName(path)}'", ex);
         }
     }
 
     /// <summary>Asynchronously opens a .frypdf document in the interactive presentation reader.</summary>
     public async Task OpenInFryPdfViewerAsync(string path)
     {
+        var from = CurrentVisiblePageName();
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         try
         {
             DocumentTitle = Path.GetFileName(path);
@@ -1412,10 +1442,14 @@ public partial class MainViewModel : ViewModelBase
                 LastOpened = DateTime.UtcNow
             });
             Home.RefreshRecent();
+            AppLogService.Instance.Log(AppLogLevel.Info, "Navigation",
+                $"{from} -> FryPdfViewer in {sw.ElapsedMilliseconds}ms (file={Path.GetFileName(path)}).");
         }
         catch (Exception ex)
         {
             ShowToast($"Could not open in Interactive Viewer: {ex.Message}", "AlertCircleOutline");
+            AppLogService.Instance.LogWarning("Navigation",
+                $"{from} -> FryPdfViewer failed after {sw.ElapsedMilliseconds}ms opening '{Path.GetFileName(path)}'", ex);
         }
     }
 

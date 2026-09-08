@@ -1,10 +1,15 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using PdfEditorApp.Services;
 using Xunit;
 
 namespace PdfEditorApp.Tests;
 
+// These tests read/clear the AppLogService.Instance singleton's shared buffer, so they must
+// never run concurrently with other tests that do the same (see the other classes tagged below).
+[Collection("AppLogService")]
 public class AppLogServiceTests
 {
     [Fact]
@@ -78,6 +83,26 @@ public class AppLogServiceTests
     }
 
     [Fact]
+    public void LogError_ReflectionTypeLoadException_UnwrapsLoaderExceptions()
+    {
+        // ex.ToString() alone omits LoaderExceptions — the actual per-type failure reasons —
+        // which is exactly what a Windows-only missing-dependency plugin load needs surfaced.
+        var loaderFailure = new InvalidOperationException("Simulated-Loader-Failure-Marker-12345");
+        var rtle = new System.Reflection.ReflectionTypeLoadException(
+            new Type?[] { null },
+            new Exception?[] { loaderFailure },
+            "Some types failed to load.");
+
+        AppLogService.Instance.LogError("TestCategory", "Reflection failed", rtle);
+
+        var snapshot = AppLogService.Instance.GetSnapshot();
+        Assert.Contains(snapshot, e =>
+            e.Category == "TestCategory" &&
+            e.Level == AppLogLevel.Error &&
+            e.Message.Contains("Simulated-Loader-Failure-Marker-12345"));
+    }
+
+    [Fact]
     public void AppLogService_LogAndClear_MaintainsBufferAndState()
     {
         var service = AppLogService.Instance;
@@ -97,5 +122,30 @@ public class AppLogServiceTests
         service.Clear();
         var cleared = service.GetSnapshot();
         Assert.Empty(cleared);
+    }
+
+    [Fact]
+    public async Task Log_PersistsToRollingFileOnDisk()
+    {
+        // File writes happen on a background task (see AppLogFileWriter) so the UI thread
+        // never blocks — poll briefly rather than asserting immediately after Log().
+        var marker = $"FileWriterTestMarker-{Guid.NewGuid():N}";
+        AppLogService.Instance.Log(AppLogLevel.Info, "TestCategory", marker);
+
+        var logFilePath = FryPdfPaths.LogFilePath;
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        string content = string.Empty;
+        while (DateTime.UtcNow < deadline)
+        {
+            if (File.Exists(logFilePath))
+            {
+                try { content = await File.ReadAllTextAsync(logFilePath); }
+                catch (IOException) { /* file mid-write; retry */ }
+                if (content.Contains(marker)) break;
+            }
+            await Task.Delay(100);
+        }
+
+        Assert.Contains(marker, content);
     }
 }

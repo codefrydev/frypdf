@@ -277,7 +277,7 @@ public class AdvancedTextControl : Control
         // Draw Background and Border
         if (BackgroundBrush != null || (BorderBrush != null && BorderThickness > 0))
         {
-            var bgPen = (BorderBrush != null && BorderThickness > 0) ? new Pen(BorderBrush, BorderThickness) : null;
+            var bgPen = GetCachedPen(ref _borderPen, BorderBrush, BorderThickness, BorderBrush != null && BorderThickness > 0);
             var rect = new RoundedRect(new Rect(0, 0, w, h), CornerRadius);
             context.DrawRectangle(BackgroundBrush, bgPen, rect);
         }
@@ -305,7 +305,7 @@ public class AdvancedTextControl : Control
                 IsBold ? FontWeight.Bold : FontWeight.Normal);
 
             var fillBrush = TextBrush ?? Brushes.Black;
-            Pen? strokePen = (HasStroke && StrokeWidth > 0 && StrokeBrush != null) ? new Pen(StrokeBrush, StrokeWidth) : null;
+            Pen? strokePen = GetCachedPen(ref _strokePen, StrokeBrush, StrokeWidth, HasStroke && StrokeWidth > 0 && StrokeBrush != null);
             IBrush? shadowBrush = (HasShadow && ShadowBrush != null) ? ShadowBrush : null;
 
             if (ShapeMode == TextShapeMode.Normal)
@@ -327,15 +327,66 @@ public class AdvancedTextControl : Control
         }
     }
 
-    private void RenderNormalText(
-        DrawingContext context,
-        Typeface typeface,
-        IBrush fillBrush,
-        Pen? strokePen,
-        IBrush? shadowBrush,
-        double w,
-        double h)
+    /// <summary>
+    /// Everything <see cref="TextLayoutEngine.CalculateNormalLayout"/> reads. Two renders with
+    /// an equal key produce an identical layout.
+    /// </summary>
+    private readonly record struct NormalLayoutKey(
+        string? Text, string? FontFamilyName, double FontSize, bool IsBold, bool IsItalic,
+        double Width, double LineHeight, double CharacterSpacing, double WordSpacing,
+        double ParagraphSpacing, TextAlignmentMode Alignment,
+        TextVerticalAlignment VerticalAlignment, double Height, bool TextWrap, double Padding);
+
+    private NormalLayoutKey _cachedNormalLayoutKey;
+    private NormalLayoutResult? _cachedNormalLayout;
+
+    private Pen? _borderPen;
+    private Pen? _strokePen;
+
+    /// <summary>
+    /// Returns a <see cref="Pen"/> for <paramref name="brush"/>/<paramref name="thickness"/>,
+    /// reusing the cached instance while those inputs are unchanged. Render runs on every
+    /// frame, so allocating a fresh Pen each time is pure churn.
+    /// </summary>
+    private static Pen? GetCachedPen(ref Pen? cached, IBrush? brush, double thickness, bool wanted)
     {
+        if (!wanted || brush == null)
+        {
+            cached = null;
+            return null;
+        }
+
+        if (cached == null ||
+            !ReferenceEquals(cached.Brush, brush) ||
+            Math.Abs(cached.Thickness - thickness) > double.Epsilon)
+        {
+            cached = new Pen(brush, thickness);
+        }
+
+        return cached;
+    }
+
+    /// <summary>
+    /// Returns the wrapped-line layout for the current property values, recomputing only when
+    /// one of those values actually changed.
+    /// </summary>
+    /// <remarks>
+    /// 53 properties are registered with <c>AffectsRender</c>, and the layout walks every glyph,
+    /// so recomputing it inside <c>Render</c> made dragging or recolouring a text element pay
+    /// for a full re-measure on every frame.
+    /// </remarks>
+    private NormalLayoutResult GetNormalLayout(double w, double h)
+    {
+        var key = new NormalLayoutKey(
+            Text, FontFamilyName, FontSize, IsBold, IsItalic, w, LineHeight,
+            CharacterSpacing, WordSpacing, ParagraphSpacing, Alignment,
+            TextVerticalAlignment, h, TextWrap, Padding);
+
+        if (_cachedNormalLayout != null && _cachedNormalLayoutKey == key)
+        {
+            return _cachedNormalLayout;
+        }
+
         var layout = TextLayoutEngine.CalculateNormalLayout(
             Text,
             FontFamilyName,
@@ -354,20 +405,66 @@ public class AdvancedTextControl : Control
             Padding
         );
 
-        int docIndex = 0;
-        string docText = Text ?? "";
+        _cachedNormalLayoutKey = key;
+        _cachedNormalLayout = layout;
+        _cachedLineOffsets = ComputeLineOffsets(layout, Text ?? string.Empty);
+        return layout;
+    }
 
-        foreach (var line in layout.Lines)
+    private int[] _cachedLineOffsets = Array.Empty<int>();
+
+    /// <summary>
+    /// Maps each laid-out line back to its start index in the source text.
+    /// </summary>
+    /// <remarks>
+    /// Render used to recover this with a <see cref="string.IndexOf(string, int, StringComparison)"/>
+    /// over the document text inside the per-line loop, on every frame. The mapping only
+    /// depends on the layout, so it is computed once alongside it.
+    /// </remarks>
+    private static int[] ComputeLineOffsets(NormalLayoutResult layout, string docText)
+    {
+        var offsets = new int[layout.Lines.Count];
+        int docIndex = 0;
+
+        for (int i = 0; i < layout.Lines.Count; i++)
         {
-            if (string.IsNullOrEmpty(line.Text))
+            var lineText = layout.Lines[i].Text;
+            if (string.IsNullOrEmpty(lineText))
             {
+                offsets[i] = docIndex;
                 docIndex++;
                 continue;
             }
 
-            int lineOffset = docText.IndexOf(line.Text, Math.Min(docIndex, docText.Length), StringComparison.Ordinal);
+            int lineOffset = docText.IndexOf(lineText, Math.Min(docIndex, docText.Length), StringComparison.Ordinal);
             if (lineOffset < 0) lineOffset = docIndex;
-            docIndex = lineOffset + line.Text.Length;
+
+            offsets[i] = lineOffset;
+            docIndex = lineOffset + lineText.Length;
+        }
+
+        return offsets;
+    }
+
+    private void RenderNormalText(
+        DrawingContext context,
+        Typeface typeface,
+        IBrush fillBrush,
+        Pen? strokePen,
+        IBrush? shadowBrush,
+        double w,
+        double h)
+    {
+        var layout = GetNormalLayout(w, h);
+
+        var lineOffsets = _cachedLineOffsets;
+
+        for (int lineIndex = 0; lineIndex < layout.Lines.Count; lineIndex++)
+        {
+            var line = layout.Lines[lineIndex];
+            if (string.IsNullOrEmpty(line.Text)) continue;
+
+            int lineOffset = lineIndex < lineOffsets.Length ? lineOffsets[lineIndex] : 0;
 
             // Draw Shadow
             if (HasShadow && shadowBrush != null)

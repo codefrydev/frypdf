@@ -475,12 +475,29 @@ public static class RichTextHelper
     /// <summary>
     /// Merges adjacent spans with identical typographic attributes into single unified spans.
     /// </summary>
+    /// <summary>
+    /// Merges runs of adjacent spans that share the same formatting.
+    /// </summary>
+    /// <remarks>
+    /// Accumulates each run in a StringBuilder rather than with <c>+=</c>, which reallocated
+    /// an ever-growing string per span — quadratic in characters for a long uniformly styled
+    /// run. The same defect existed in <c>PdfLayoutAnalyzer.NormalizeSpans</c>.
+    /// </remarks>
     public static List<PdfTextSpan> NormalizeSpans(List<PdfTextSpan> spans)
     {
         if (spans.Count <= 1) return spans;
 
         var merged = new List<PdfTextSpan>(spans.Count);
         PdfTextSpan? current = null;
+        var runText = new StringBuilder();
+
+        void FlushRun()
+        {
+            if (current == null) return;
+            current.Text = runText.ToString();
+            merged.Add(current);
+            runText.Clear();
+        }
 
         foreach (var s in spans)
         {
@@ -489,24 +506,23 @@ public static class RichTextHelper
             if (current == null)
             {
                 current = s.Clone();
+                runText.Append(s.Text);
                 continue;
             }
 
             if (CanMergeSpans(current, s))
             {
-                current.Text += s.Text;
+                runText.Append(s.Text);
             }
             else
             {
-                merged.Add(current);
+                FlushRun();
                 current = s.Clone();
+                runText.Append(s.Text);
             }
         }
 
-        if (current != null)
-        {
-            merged.Add(current);
-        }
+        FlushRun();
 
         return merged;
     }

@@ -27,7 +27,7 @@ namespace PdfEditorApp.ViewModels;
 /// ViewModel for the Google Docs, Canva, and Adobe Acrobat inspired Home / Tools Dashboard.
 /// Provides a comprehensive PDF Tools Studio (all 32 tools), expandable template gallery, and recent document management.
 /// </summary>
-public partial class HomeViewModel : ViewModelBase, IServiceProvider
+public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposable
 {
     private readonly IRecentDocumentsService _recentService;
     private readonly ITemplateService _templateService;
@@ -237,10 +237,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
         if (_themeService != null)
         {
             IsDarkMode = _themeService.IsDarkMode;
-            _themeService.ThemeChanged += (mode) =>
-            {
-                IsDarkMode = _themeService.IsDarkMode;
-            };
+            _themeService.ThemeChanged += OnThemeServiceThemeChanged;
         }
 
         if (ToolRunner != null)
@@ -248,7 +245,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider
             ToolRunner.BackRequested += BackToTools;
         }
 
-        HelpGuide.ToolLaunchRequested += (id) => OpenToolPage(id);
+        HelpGuide.ToolLaunchRequested += OnHelpGuideToolLaunchRequested;
 
         if (_navigationRegistry != null)
         {
@@ -1976,5 +1973,32 @@ limitations under the License.
         if (serviceType == typeof(PdfEditorApp.Core.Plugins.Descriptors.INavigationRegistry) && _navigationRegistry != null) return _navigationRegistry;
         return _serviceProvider?.GetService(serviceType) ?? App.Services?.GetService(serviceType);
     }
-}
 
+    private void OnThemeServiceThemeChanged(AppThemeMode mode) => IsDarkMode = _themeService!.IsDarkMode;
+
+    private void OnHelpGuideToolLaunchRequested(PdfToolId id) => OpenToolPage(id);
+
+    private bool _isDisposed;
+
+    /// <summary>
+    /// Detaches from the DI singletons this view model subscribed to.
+    /// </summary>
+    /// <remarks>
+    /// The registries and IThemeService are singletons, so each subscription rooted this view
+    /// model permanently. This class already unsubscribes ActiveToolViewModel correctly
+    /// elsewhere — these were simply missed.
+    /// </remarks>
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        if (_themeService != null) _themeService.ThemeChanged -= OnThemeServiceThemeChanged;
+        if (ToolRunner != null) ToolRunner.BackRequested -= BackToTools;
+        HelpGuide.ToolLaunchRequested -= OnHelpGuideToolLaunchRequested;
+        if (_navigationRegistry != null) _navigationRegistry.RegistryChanged -= RefreshDynamicNavigationItems;
+        if (_toolRegistry != null) _toolRegistry.RegistryChanged -= InitializeTools;
+
+        GC.SuppressFinalize(this);
+    }
+}

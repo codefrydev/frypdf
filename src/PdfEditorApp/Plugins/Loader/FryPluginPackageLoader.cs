@@ -74,7 +74,22 @@ public static class FryPluginPackageLoader
             ? manifest.Id
             : Path.GetFileNameWithoutExtension(packageFilePath);
 
-        var destinationFolder = Path.Combine(baseDirectory, pluginId);
+        // The id comes from the plugin.json inside the archive, i.e. from an untrusted
+        // source. Unvalidated it reaches Path.Combine below — which returns a rooted second
+        // argument verbatim and does not collapse ".." — and the resulting directory is then
+        // recursively deleted and extracted into.
+        string destinationFolder;
+        try
+        {
+            destinationFolder = PluginIdValidator.ResolveInstallDirectory(
+                baseDirectory, pluginId, $"package '{Path.GetFileName(packageFilePath)}'");
+        }
+        catch (ArgumentException ex)
+        {
+            AppLogService.Instance.LogError("PluginLoader", "Rejected plugin package with an unsafe id", ex);
+            throw;
+        }
+
         if (Directory.Exists(destinationFolder))
         {
             try
@@ -85,7 +100,8 @@ public static class FryPluginPackageLoader
             {
                 // If locked (e.g. a previous version's DLL is still loaded on Windows),
                 // create a unique timestamped folder instead of failing the install outright.
-                var fallback = Path.Combine(baseDirectory, $"{pluginId}_{DateTime.UtcNow.Ticks}");
+                var fallback = PluginIdValidator.ResolveInstallDirectory(
+                    baseDirectory, $"{pluginId}_{DateTime.UtcNow.Ticks}", "locked-install fallback");
                 AppLogService.Instance.LogWarning("PluginLoader",
                     $"Could not remove existing install directory '{destinationFolder}' (likely locked); using fallback '{fallback}'", ex);
                 destinationFolder = fallback;
@@ -94,6 +110,17 @@ public static class FryPluginPackageLoader
 
         Directory.CreateDirectory(destinationFolder);
         ZipFile.ExtractToDirectory(packageFilePath, destinationFolder, overwriteFiles: true);
+
+        // Belt and braces: ExtractToDirectory validates entry paths, but assert the entry
+        // assembly resolved below is genuinely inside the install directory.
+        static void AssertInside(string candidate, string root, string what)
+        {
+            if (!PluginIdValidator.IsInside(candidate, root))
+            {
+                throw new InvalidOperationException(
+                    $"{what} '{candidate}' resolved outside the plugin install directory '{root}'.");
+            }
+        }
 
         // 2. Identify entry assembly DLL
         string? entryDll = null;
@@ -112,6 +139,11 @@ public static class FryPluginPackageLoader
             var allDlls = Directory.GetFiles(destinationFolder, "*.dll", SearchOption.AllDirectories);
             entryDll = allDlls.FirstOrDefault(d => string.Equals(Path.GetFileNameWithoutExtension(d), pluginId, StringComparison.OrdinalIgnoreCase))
                        ?? allDlls.FirstOrDefault();
+        }
+
+        if (!string.IsNullOrWhiteSpace(entryDll))
+        {
+            AssertInside(entryDll, destinationFolder, "Entry assembly");
         }
 
         if (string.IsNullOrWhiteSpace(entryDll) || !File.Exists(entryDll))

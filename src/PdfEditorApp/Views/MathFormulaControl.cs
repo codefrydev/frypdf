@@ -87,17 +87,49 @@ public class MathFormulaControl : Control
     private static readonly Typeface _italicTypeface = new("Times New Roman, Cambria Math, Latin Modern Math, serif", FontStyle.Italic, FontWeight.Normal);
     private static readonly Typeface _boldTypeface = new("Times New Roman, Cambria Math, Latin Modern Math, serif", FontStyle.Normal, FontWeight.Bold);
 
+    private string? _cachedFormula;
+    private double _cachedFontSize;
+    private MathLayoutEngine.MathAstNode? _cachedRoot;
+
+    /// <summary>
+    /// Tokenizes, parses and measures the formula, reusing the result while the formula and
+    /// font size are unchanged.
+    /// </summary>
+    /// <remarks>
+    /// MeasureOverride and Render each did this work independently, so every layout pass
+    /// re-tokenized and re-parsed the same expression twice — and Render runs again on every
+    /// frame that touches an AffectsRender property.
+    /// </remarks>
+    private MathLayoutEngine.MathAstNode? GetMeasuredRoot()
+    {
+        string f = string.IsNullOrWhiteSpace(Formula) ? "f(x)" : Formula;
+
+        if (_cachedRoot != null &&
+            string.Equals(_cachedFormula, f, StringComparison.Ordinal) &&
+            Math.Abs(_cachedFontSize - FontSize) < double.Epsilon)
+        {
+            return _cachedRoot;
+        }
+
+        var tokens = MathLayoutEngine.Tokenize(f);
+        var parser = new MathLayoutEngine.MathParser(tokens);
+        var root = parser.ParseExpression();
+
+        var measureCtx = new MathLayoutEngine.LayoutContext(FontSize, "#000000", MathDisplayStyle.DisplayBlock);
+        root.Measure(measureCtx);
+
+        _cachedFormula = f;
+        _cachedFontSize = FontSize;
+        _cachedRoot = root;
+        return root;
+    }
+
     protected override Size MeasureOverride(Size availableSize)
     {
         try
         {
-            string f = string.IsNullOrWhiteSpace(Formula) ? "f(x)" : Formula;
-            var tokens = MathLayoutEngine.Tokenize(f);
-            var parser = new MathLayoutEngine.MathParser(tokens);
-            var root = parser.ParseExpression();
-
-            var ctx = new MathLayoutEngine.LayoutContext(FontSize, "#000000", MathDisplayStyle.DisplayBlock);
-            root.Measure(ctx);
+            var root = GetMeasuredRoot();
+            if (root == null) return new Size(120, 30);
 
             double w = root.Width;
             double h = root.Height;
@@ -127,10 +159,8 @@ public class MathFormulaControl : Control
 
         try
         {
-            string f = string.IsNullOrWhiteSpace(Formula) ? "f(x)" : Formula;
-            var tokens = MathLayoutEngine.Tokenize(f);
-            var parser = new MathLayoutEngine.MathParser(tokens);
-            var root = parser.ParseExpression();
+            var root = GetMeasuredRoot();
+            if (root == null) return;
 
             var ctx = new MathLayoutEngine.LayoutContext(FontSize, "#000000", MathDisplayStyle.DisplayBlock);
             root.Measure(ctx);

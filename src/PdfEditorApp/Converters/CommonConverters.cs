@@ -102,22 +102,34 @@ public class BooleanToBrushConverter : IValueConverter
 {
     public static readonly BooleanToBrushConverter Instance = new();
 
+    private static readonly IBrush DefaultTrueBrush = BrushCache.Get("#0F6CBD", Brushes.Transparent);
+    private static readonly IBrush DefaultFalseBrush = BrushCache.Get("#E2E8F0", Brushes.Transparent);
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (IBrush True, IBrush False)> PairCache = new(StringComparer.Ordinal);
+
+    /// <summary>Splits and resolves a 'trueHex|falseHex' converter parameter once.</summary>
+    private static (IBrush True, IBrush False) ParsePairCached(string parameter)
+        => PairCache.GetOrAdd(parameter, static p =>
+        {
+            var parts = p.Split('|');
+            return (
+                BrushCache.Get(parts.Length > 0 ? parts[0] : null, DefaultTrueBrush),
+                BrushCache.Get(parts.Length > 1 ? parts[1] : null, DefaultFalseBrush));
+        });
+
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         bool isTrue = value is true;
+
+        // Bound per page thumbnail, so this re-split and re-parsed the same
+        // '#0F6CBD|#CBD5E1' parameter for every page on every selection change.
         if (parameter is string paramStr)
         {
-            var parts = paramStr.Split('|');
-            string trueHex = parts.Length > 0 ? parts[0] : "#0F6CBD";
-            string falseHex = parts.Length > 1 ? parts[1] : "#E2E8F0";
-
-            string selectedHex = isTrue ? trueHex : falseHex;
-            if (Color.TryParse(selectedHex, out var col))
-            {
-                return new SolidColorBrush(col);
-            }
+            var (trueBrush, falseBrush) = ParsePairCached(paramStr);
+            return isTrue ? trueBrush : falseBrush;
         }
-        return isTrue ? new SolidColorBrush(Color.Parse("#0F6CBD")) : new SolidColorBrush(Color.Parse("#E2E8F0"));
+
+        return isTrue ? DefaultTrueBrush : DefaultFalseBrush;
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

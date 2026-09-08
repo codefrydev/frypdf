@@ -93,7 +93,32 @@ public class TesseractOcrEngine : IOcrEngine
                 return new OcrResult { Success = false, ErrorMessage = "Failed to launch Tesseract process." };
             }
 
-            process.WaitForExit(30000);
+            // ct was threaded all the way down here and then never observed: cancelling an OCR
+            // job left the caller blocked for up to 30 seconds per page and the tesseract
+            // process running. Poll so cancellation kills the child process promptly.
+            const int totalTimeoutMs = 30_000;
+            const int pollMs = 100;
+            int waited = 0;
+
+            while (!process.WaitForExit(pollMs))
+            {
+                if (ct.IsCancellationRequested)
+                {
+                    try { process.Kill(entireProcessTree: true); } catch { /* already gone */ }
+                    ct.ThrowIfCancellationRequested();
+                }
+
+                waited += pollMs;
+                if (waited >= totalTimeoutMs)
+                {
+                    try { process.Kill(entireProcessTree: true); } catch { /* already gone */ }
+                    return new OcrResult
+                    {
+                        Success = false,
+                        ErrorMessage = $"Tesseract timed out after {totalTimeoutMs / 1000} seconds."
+                    };
+                }
+            }
 
             if (!File.Exists(tsvPath))
             {
@@ -102,6 +127,10 @@ public class TesseractOcrEngine : IOcrEngine
             }
 
             return ParseTsvOutput(tsvPath, imageBytes);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

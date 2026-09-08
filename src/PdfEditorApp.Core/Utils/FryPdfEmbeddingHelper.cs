@@ -73,9 +73,14 @@ public static class FryPdfEmbeddingHelper
 
             return result;
         }
-        catch
+        catch (Exception ex)
         {
-            // If serialization fails, return unmodified PDF bytes
+            // Returning the unmodified PDF is the right fallback — a valid PDF without the
+            // round-trip payload beats no PDF at all — but it must not be silent. Previously
+            // the user only discovered the loss when re-importing produced a flat document.
+            System.Diagnostics.Debug.WriteLine(
+                $"[FryPdfEmbeddingHelper] Could not embed the lossless model; the exported PDF " +
+                $"will not round-trip back into an editable document: {ex}");
             return pdfBytes;
         }
     }

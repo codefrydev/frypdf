@@ -117,10 +117,20 @@ public static class PdfDocumentSanitizer
                         string replacement = $"({producer})";
                         if (replacement.Length <= origSpanLen)
                         {
-                            string filler = "%".PadRight(origSpanLen - replacement.Length, ' ');
-                            string fullPatch = replacement + filler;
+                            // string.PadRight never truncates: "%".PadRight(0) returns "%",
+                            // so an exact-length replacement used to emit origSpanLen + 1
+                            // bytes and Array.Copy overwrote the token after the closing ')'.
+                            int fillerLen = origSpanLen - replacement.Length;
+                            string fullPatch = fillerLen > 0
+                                ? replacement + "%".PadRight(fillerLen, ' ')
+                                : replacement;
+
                             byte[] patchBytes = Encoding.ASCII.GetBytes(fullPatch);
-                            Array.Copy(patchBytes, 0, bytes, openParen, patchBytes.Length);
+                            if (patchBytes.Length == origSpanLen &&
+                                openParen + patchBytes.Length <= bytes.Length)
+                            {
+                                Array.Copy(patchBytes, 0, bytes, openParen, patchBytes.Length);
+                            }
                         }
                     }
                 }

@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using Avalonia.Media;
 
@@ -7,123 +7,83 @@ namespace PdfEditorApp.Services;
 
 public static class FontHelper
 {
-    private static readonly HashSet<string> KnownFontFamilies = new(StringComparer.OrdinalIgnoreCase)
-    {
-        // --- Core Bundled Fonts ---
-        "Roboto",
-        "Inter",
-        "Open Sans",
-        "Montserrat",
-        "Source Sans 3",
-        "Playfair Display",
-        "Lora",
-        "Merriweather",
-        "Cinzel",
-        "Fira Code",
-        "Roboto Mono",
-        "Comic Neue",
-        "Pacifico",
-        "Dancing Script",
-        "Caveat",
-        "Great Vibes",
-        "Lobster",
-        "Bebas Neue",
-        "Oswald",
-        "Orbitron",
+    /// <summary>
+    /// Memoized results of <see cref="CreateFontFamily"/>, keyed by the requested family name.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="CreateFontFamily"/> is called from <c>Render</c>, from value converters, and
+    /// once per character by the text layout engine. Each uncached call performed a
+    /// <see cref="File.Exists(string)"/> disk stat and allocated a new
+    /// <see cref="FontFamily"/>, so laying out a 2000-character text block issued ~2000
+    /// filesystem syscalls per frame.
+    /// </remarks>
+    private static readonly ConcurrentDictionary<string, FontFamily> FontFamilyCache = new(StringComparer.Ordinal);
 
-        // --- On-Demand Web Fonts ---
-        "Lato",
-        "Poppins",
-        "Raleway",
-        "Nunito",
-        "Ubuntu",
-        "Noto Sans",
-        "Noto Serif",
-        "PT Serif",
-        "Crimson Text",
-        "Libre Baskerville",
-        "Libre Franklin",
-        "Josefin Sans",
-        "Titillium Web",
-        "Exo 2",
-        "Cabin",
+    /// <summary>Resolved once: the per-user font cache directory.</summary>
+    private static readonly string UserFontDirectory = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FryPDF", "Fonts");
 
-        // --- Indian Scripts (Noto) ---
-        "Noto Sans Devanagari",
-        "Noto Sans Tamil",
-        "Noto Sans Telugu",
-        "Noto Sans Arabic",
-        "Noto Sans Gujarati",
-        "Noto Sans Kannada",
-        "Noto Sans Bengali",
-        "Noto Sans Malayalam",
-        "Noto Sans Sinhala",
-        "Tiro Devanagari Hindi",
+    /// <summary>
+    /// Raised when the set of resolvable fonts changes. Downstream caches keyed on a font
+    /// family name (glyph typefaces, glyph advances) must drop their entries in response.
+    /// </summary>
+    /// <remarks>
+    /// Both subscriber and publisher are static and live for the process, so this holds no
+    /// object alive that would otherwise be collected.
+    /// </remarks>
+    public static event Action? FontsChanged;
 
-        // --- CJK ---
-        "Noto Sans SC",           // Simplified Chinese
-        "Noto Sans TC",           // Traditional Chinese
-        "Noto Sans JP",           // Japanese (Hiragana + Katakana + CJK)
-        "Noto Serif JP",          // Japanese Serif
-        "Noto Sans KR",           // Korean (full Hangul)
-        "Nanum Gothic",           // Korean (additional)
-
-        // --- Southeast Asian ---
-        "Noto Sans Thai",         // Thai
-        "Sarabun",                // Thai (modern)
-        "Noto Sans Myanmar",      // Burmese
-        "Noto Sans Khmer",        // Cambodian
-        "Noto Sans Lao",          // Laotian
-        "Be Vietnam Pro",         // Vietnamese (extended Latin)
-
-        // --- Middle Eastern / RTL ---
-        "Noto Sans Hebrew",       // Hebrew / Yiddish
-        "Heebo",                  // Hebrew (modern)
-        "Vazirmatn",              // Persian / Farsi
-        "Noto Nastaliq Urdu",     // Urdu (Nastaliq calligraphic style)
-
-        // --- Eurasian ---
-        "Noto Sans Georgian",     // Georgian
-        "Noto Sans Armenian",     // Armenian
-        "Noto Sans Ethiopic",     // Ethiopic (Amharic, Tigrinya)
-        "Golos Text",             // Cyrillic / Russian
-        "Russo One",              // Cyrillic display
-        "GFS Neohellenic",        // Greek
-    };
-
+    /// <summary>
+    /// Invalidates the cached <see cref="FontFamily"/> for <paramref name="fontName"/>.
+    /// Call this after installing or importing a font so the next resolution re-probes disk.
+    /// </summary>
     public static void RegisterFontFamily(string fontName)
     {
         if (!string.IsNullOrWhiteSpace(fontName))
         {
-            lock (KnownFontFamilies)
-            {
-                KnownFontFamilies.Add(fontName);
-            }
+            FontFamilyCache.TryRemove(fontName, out _);
+            FontsChanged?.Invoke();
         }
     }
 
+    /// <summary>
+    /// Drops every cached <see cref="FontFamily"/>. Call this after a bulk font-library change
+    /// (a font pack install, or clearing the user font cache).
+    /// </summary>
+    public static void InvalidateFontFamilyCache()
+    {
+        FontFamilyCache.Clear();
+        FontsChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// Resolves a font family name to an Avalonia <see cref="FontFamily"/>, memoized.
+    /// </summary>
+    /// <remarks>
+    /// Fonts only appear at runtime through the font manager, which calls
+    /// <see cref="RegisterFontFamily"/> / <see cref="InvalidateFontFamilyCache"/>, so caching
+    /// here is safe and removes the per-call disk probe from every render and layout pass.
+    /// </remarks>
     public static FontFamily CreateFontFamily(string? fontName)
     {
         if (string.IsNullOrWhiteSpace(fontName))
             return FontFamily.Default;
 
-        // Check if there's a cached font file in the user cache directory
-        string userDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FryPDF", "Fonts");
-        string cleanName = fontName.Replace(" ", "");
-        string ttfPath = Path.Combine(userDir, $"{cleanName}.ttf");
-
-        if (File.Exists(ttfPath))
+        return FontFamilyCache.GetOrAdd(fontName, static name =>
         {
-            try
-            {
-                var uri = new Uri(ttfPath);
-                return new FontFamily($"file://{userDir}#{fontName}, avares://PdfEditorApp/Assets/Fonts#{fontName}, {fontName}");
-            }
-            catch { }
-        }
+            // Prefer a font file already downloaded into the user cache directory.
+            string cleanName = name.Replace(" ", "");
+            string ttfPath = Path.Combine(UserFontDirectory, $"{cleanName}.ttf");
 
-        // Standard embedded asset resolution with system font fallback
-        return new FontFamily($"avares://PdfEditorApp/Assets/Fonts#{fontName}, {fontName}");
+            if (File.Exists(ttfPath))
+            {
+                return new FontFamily(
+                    $"file://{UserFontDirectory}#{name}, avares://PdfEditorApp/Assets/Fonts#{name}, {name}");
+            }
+
+            // Standard embedded asset resolution with system font fallback
+            return new FontFamily($"avares://PdfEditorApp/Assets/Fonts#{name}, {name}");
+        });
     }
 
     /// <summary>

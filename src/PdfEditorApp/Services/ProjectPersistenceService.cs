@@ -97,7 +97,13 @@ public class ProjectPersistenceService : IProjectPersistenceService
                     isPdf = true;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // An I/O error here is not the same as "this is not a PDF", but it used to be
+                // treated as such and the file was routed down the wrong import path.
+                AppLogService.Instance.LogWarning("ProjectOpen",
+                    $"Could not read the file header of '{filePath}'; treating it as a non-PDF project file", ex);
+            }
         }
 
         if (isPdf)

@@ -37,15 +37,44 @@ public sealed partial class LogGroupViewModel : ObservableObject
 
     public int Count => _entries.Count;
 
-    public AppLogLevel WorstLevel
+    private AppLogLevel? _worstLevel;
+
+    /// <summary>
+    /// The most severe level present in this group.
+    /// </summary>
+    /// <remarks>
+    /// Memoized. This is read six times per group during a single FilteredGroups evaluation
+    /// (four filter predicates plus two sort keys) and again by ErrorCount/WarningCount, and
+    /// each read used to run up to three full scans of up to 200 entries.
+    /// </remarks>
+    public AppLogLevel WorstLevel => _worstLevel ??= ComputeWorstLevel();
+
+    private AppLogLevel ComputeWorstLevel()
     {
-        get
+        var worst = AppLogLevel.Debug;
+        foreach (var entry in _entries)
         {
-            if (_entries.Any(e => e.Level == AppLogLevel.Error))   return AppLogLevel.Error;
-            if (_entries.Any(e => e.Level == AppLogLevel.Warning)) return AppLogLevel.Warning;
-            if (_entries.Any(e => e.Level == AppLogLevel.Info))    return AppLogLevel.Info;
-            return AppLogLevel.Debug;
+            // Single pass, and Error is the ceiling so we can stop as soon as we see one.
+            if (entry.Level == AppLogLevel.Error) return AppLogLevel.Error;
+            if (entry.Level > worst) worst = entry.Level;
         }
+        return worst;
+    }
+
+    /// <summary>
+    /// True when any entry's message contains <paramref name="term"/>.
+    /// </summary>
+    /// <remarks>
+    /// The search path used to go through the <see cref="Entries"/> property, which returns a
+    /// defensive copy — so filtering allocated a fresh array per group on every keystroke.
+    /// </remarks>
+    public bool ContainsMessage(string term)
+    {
+        foreach (var entry in _entries)
+        {
+            if (entry.Message.Contains(term, StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        return false;
     }
 
     public string LastMessage  => _entries.Count > 0 ? _entries[^1].Message  : string.Empty;
@@ -87,6 +116,7 @@ public sealed partial class LogGroupViewModel : ObservableObject
 
     private void Refresh()
     {
+        _worstLevel = null;
         OnPropertyChanged(nameof(Count));
         OnPropertyChanged(nameof(WorstLevel));
         OnPropertyChanged(nameof(LastMessage));
@@ -166,7 +196,7 @@ public sealed partial class DiagnosticLogsViewModel : ObservableRecipient,
                 var term = SearchText.Trim();
                 query = query.Where(g =>
                     g.Category.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-                    g.Entries.Any(e => e.Message.Contains(term, StringComparison.OrdinalIgnoreCase)));
+                    g.ContainsMessage(term));
             }
 
             // Sort: errors first, then warnings, then by entry count descending
@@ -224,11 +254,34 @@ public sealed partial class DiagnosticLogsViewModel : ObservableRecipient,
 
     // ── WeakReferenceMessenger recipient ──────────────────────────────────────
 
+    private bool _groupsRefreshQueued;
+
     public void Receive(NewLogEntryMessage message)
     {
         Dispatcher.UIThread.Post(() =>
         {
             AddToGroup(message.Entry);
+            QueueGroupsRefresh();
+        }, DispatcherPriority.Background);
+    }
+
+    /// <summary>
+    /// Coalesces FilteredGroups notifications so a burst of log lines rebuilds the list once.
+    /// </summary>
+    /// <remarks>
+    /// FilteredGroups allocates a fresh ObservableCollection on every read, so each
+    /// notification tears down and regenerates every container in the log ItemsControl.
+    /// Raising it per entry meant a plugin-load burst rebuilt the whole list dozens of times
+    /// in a row. Everything here runs on the UI thread, so the flag needs no synchronization.
+    /// </remarks>
+    private void QueueGroupsRefresh()
+    {
+        if (_groupsRefreshQueued) return;
+        _groupsRefreshQueued = true;
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            _groupsRefreshQueued = false;
             OnPropertyChanged(nameof(FilteredGroups));
             NotifyCounts();
         }, DispatcherPriority.Background);

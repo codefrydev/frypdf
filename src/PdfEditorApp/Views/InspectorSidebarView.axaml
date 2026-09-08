@@ -406,7 +406,7 @@
                                         </Button>
                                         <Button Classes="m3-preset-chip" Margin="0,0,4,4" Command="{Binding ApplyTypographyPresetCommand}" CommandParameter="shadowheading" ToolTip.Tip="Soft Drop Shadow Elevation">
                                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <materialIcons:MaterialIcon Kind="LayersOutline" Width="12" Height="12" Foreground="#64748B" />
+                                                <materialIcons:MaterialIcon Kind="LayersOutline" Width="12" Height="12" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
                                                 <TextBlock Text="Shadow" />
                                             </StackPanel>
                                         </Button>

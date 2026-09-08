@@ -12,6 +12,14 @@ namespace PdfEditorApp.Core.Plugins.Marketplace;
 public interface IPluginMarketplaceService
 {
     /// <summary>
+    /// Restores and activates previously installed plugins. Idempotent, and safe to await
+    /// after the shell window exists. Implementations must not do this work in their
+    /// constructor: activating a plugin registers UI contributions that marshal to the
+    /// dispatcher, so blocking on it during construction can deadlock startup.
+    /// </summary>
+    Task InitializeAsync(CancellationToken ct = default);
+
+    /// <summary>
     /// Retrieves all available extensions from the marketplace catalog.
     /// </summary>
     Task<IReadOnlyList<MarketplacePluginItem>> GetCatalogAsync(CancellationToken ct = default);

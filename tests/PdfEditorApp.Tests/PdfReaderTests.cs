@@ -11,6 +11,9 @@ using Xunit;
 
 namespace PdfEditorApp.Tests;
 
+// Writes the shared reading-theme settings file (SetReadingThemeCommand persists to disk),
+// so it must not run alongside ThemeServiceTests/UiSettingsTests, which read it back.
+[Collection("ThemeServiceCollection")]
 public class PdfReaderTests
 {
     private readonly IPdfExportService _exportService = new PdfExportService();

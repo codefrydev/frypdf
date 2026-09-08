@@ -156,6 +156,11 @@ public class PdfOptimizationService : IPdfOptimizationService
 
         using var doc = PdfFileHelper.OpenDocumentSafely(inputPath, PdfDocumentOpenMode.Modify);
 
+        // Streams that could not be compressed. Previously every such failure was swallowed,
+        // so "already at optimal compression" could be produced by a bug rather than by a
+        // genuinely optimal file.
+        int skippedStreams = 0;
+
         doc.Options.CompressContentStreams = options.CompressStreams;
         doc.Options.UseFlateDecoderForJpegImages = PdfUseFlateDecoderForJpegImages.Never;
         doc.Options.NoCompression = !options.CompressStreams;
@@ -190,7 +195,15 @@ public class PdfOptimizationService : IPdfOptimizationService
                     var contentRef = page.Contents.Elements[c];
                     if (contentRef is PdfDictionary cDict && cDict.Stream != null)
                     {
-                        try { cDict.Stream.Zip(); } catch { }
+                        // A stream that will not compress is normal (already-Flate content),
+                        // but it must not be counted as a successful compression.
+                        try { cDict.Stream.Zip(); }
+                        catch (Exception ex)
+                        {
+                            skippedStreams++;
+                            AppLogService.Instance.LogWarning("PdfOptimize",
+                                $"Could not compress a content stream on page {i + 1}", ex);
+                        }
                     }
                 }
             }
@@ -221,10 +234,22 @@ public class PdfOptimizationService : IPdfOptimizationService
                             dict.Stream.Zip();
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        skippedStreams++;
+                        AppLogService.Instance.LogWarning("PdfOptimize",
+                            "Could not compress an object stream", ex);
+                    }
                 }
             }
             progress?.Report(50.0 + (idx / (double)allObjects.Length * 30.0));
+        }
+
+        if (skippedStreams > 0)
+        {
+            AppLogService.Instance.Log(AppLogLevel.Warning, "PdfOptimize",
+                $"{skippedStreams} stream(s) could not be compressed; the reported size reduction " +
+                "is lower than this document should allow.");
         }
 
         using var ms = new MemoryStream();

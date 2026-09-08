@@ -1,4 +1,6 @@
 using System;
+using Avalonia.Media.Immutable;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -65,6 +67,24 @@ public class PdfTextOverlayControl : Control
     private static readonly IPen MarqueeBorderPen = new Pen(new SolidColorBrush(Color.FromArgb(200, 15, 108, 189)), 1.5, DashStyle.Dash);
     private static readonly IBrush HandleFillBrush = new SolidColorBrush(Colors.White);
     private static readonly IPen HandleBorderPen = new Pen(new SolidColorBrush(Color.FromArgb(220, 15, 108, 189)), 1.0);
+
+    // The "targeted OCR running" badge is fixed text on a fixed background, but Render built a
+    // brush, a Typeface and a FormattedText for it on every frame.
+    private static readonly IBrush OcrBadgeBrush = new ImmutableSolidColorBrush(Color.FromArgb(230, 15, 108, 189));
+
+    private static readonly FormattedText OcrBadgeText = new(
+        "⚡ OCR...",
+        System.Globalization.CultureInfo.InvariantCulture,
+        FlowDirection.LeftToRight,
+        new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold),
+        10.5,
+        Brushes.White);
+
+    // Cursors are IDisposable wrappers over a native handle. OnPointerMoved allocated a fresh
+    // one on every mouse move — including when the cursor type had not changed — so these are
+    // created once, like the brushes above.
+    private static readonly Cursor CrossCursor = new(StandardCursorType.Cross);
+    private static readonly Cursor IbeamCursor = new(StandardCursorType.Ibeam);
 
     static PdfTextOverlayControl()
     {
@@ -186,18 +206,18 @@ public class PdfTextOverlayControl : Control
             bool isAreaMode = (vm != null && vm.SelectionMode == PdfViewerSelectionMode.Area) || e.KeyModifiers.HasFlag(KeyModifiers.Alt);
             if (isAreaMode)
             {
-                Cursor = new Cursor(StandardCursorType.Cross);
+                Cursor = CrossCursor;
             }
             else
             {
                 bool isOverText = page.Words != null && page.Words.Any(w => w.Bounds.Contains(unscaledPos));
                 if (isOverText)
                 {
-                    Cursor = new Cursor(StandardCursorType.Ibeam);
+                    Cursor = IbeamCursor;
                 }
                 else if (page.Words == null || page.Words.Count == 0)
                 {
-                    Cursor = new Cursor(StandardCursorType.Cross);
+                    Cursor = CrossCursor;
                 }
                 else
                 {
@@ -500,10 +520,8 @@ public class PdfTextOverlayControl : Control
                     {
                         // Draw "⚡ OCR..." badge
                         var badgeRect = new Rect(scaledRect.Left + 4, Math.Max(0, scaledRect.Top - 22), 65, 18);
-                        context.FillRectangle(new SolidColorBrush(Color.FromArgb(230, 15, 108, 189)), badgeRect, 4.0f);
-                        var typeface = new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold);
-                        var formattedText = new FormattedText("⚡ OCR...", System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 10.5, Brushes.White);
-                        context.DrawText(formattedText, new Point(badgeRect.Left + 6, badgeRect.Top + 2));
+                        context.FillRectangle(OcrBadgeBrush, badgeRect, 4.0f);
+                        context.DrawText(OcrBadgeText, new Point(badgeRect.Left + 6, badgeRect.Top + 2));
                     }
                 }
                 else
@@ -515,18 +533,26 @@ public class PdfTextOverlayControl : Control
         }
     }
 
+    private static readonly IBrush DefaultHighlightBrush =
+        new ImmutableSolidColorBrush(Color.FromArgb(98, 254, 240, 138)); // Default yellow
+
+    private static readonly ConcurrentDictionary<string, IBrush> HighlightBrushes = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Returns the translucent highlight brush for an annotation colour.
+    /// </summary>
+    /// <remarks>
+    /// Called once per annotation on every render; annotation colours come from a small fixed
+    /// palette, so they are resolved once and shared.
+    /// </remarks>
     private static IBrush CreateHighlightBrush(string colorHex)
     {
-        try
-        {
-            if (Color.TryParse(colorHex, out var parsed))
-            {
-                return new SolidColorBrush(Color.FromArgb(98, parsed.R, parsed.G, parsed.B));
-            }
-        }
-        catch { }
+        if (string.IsNullOrWhiteSpace(colorHex)) return DefaultHighlightBrush;
 
-        return new SolidColorBrush(Color.FromArgb(98, 254, 240, 138)); // Default yellow
+        return HighlightBrushes.GetOrAdd(colorHex, static hex =>
+            Color.TryParse(hex, out var parsed)
+                ? new ImmutableSolidColorBrush(Color.FromArgb(98, parsed.R, parsed.G, parsed.B))
+                : DefaultHighlightBrush);
     }
 
     private ContextMenu CreateSelectionContextMenu()

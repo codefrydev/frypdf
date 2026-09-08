@@ -143,16 +143,31 @@ public partial class PageViewModel : ViewModelBase
         MultiSelectionChanged?.Invoke();
     }
 
+    /// <summary>
+    /// Replaces the current selection with <paramref name="elements"/>.
+    /// </summary>
+    /// <remarks>
+    /// Called from the marquee drag handler on every pointer move (~60 times a second), so it
+    /// short-circuits when the selection has not actually changed, and only writes
+    /// <c>IsSelected</c> on elements whose state differs — each write raises PropertyChanged,
+    /// and it used to fire for every element on the page on every frame of the drag.
+    /// </remarks>
     public void SelectElements(IEnumerable<ElementViewModelBase> elements)
     {
         var targetSet = new HashSet<ElementViewModelBase>(elements);
+
+        if (targetSet.Count == SelectedElements.Count && SelectedElements.All(targetSet.Contains))
+        {
+            return;
+        }
+
         SelectedElements.Clear();
 
         foreach (var el in Elements)
         {
             bool isSel = targetSet.Contains(el);
-            el.IsSelected = isSel;
-            if (!isSel) el.IsInEditMode = false;
+            if (el.IsSelected != isSel) el.IsSelected = isSel;
+            if (!isSel && el.IsInEditMode) el.IsInEditMode = false;
             if (isSel) SelectedElements.Add(el);
         }
 
@@ -183,10 +198,21 @@ public partial class PageViewModel : ViewModelBase
             return;
         }
 
-        double minX = SelectedElements.Min(e => e.X);
-        double minY = SelectedElements.Min(e => e.Y);
-        double maxX = SelectedElements.Max(e => e.X + Math.Max(1, e.Width));
-        double maxY = SelectedElements.Max(e => e.Y + Math.Max(1, e.Height));
+        // One pass instead of four separate LINQ enumerations. This runs on every pointer
+        // move while dragging or resizing a selection.
+        double minX = double.MaxValue, minY = double.MaxValue;
+        double maxX = double.MinValue, maxY = double.MinValue;
+
+        foreach (var el in SelectedElements)
+        {
+            if (el.X < minX) minX = el.X;
+            if (el.Y < minY) minY = el.Y;
+
+            double right = el.X + Math.Max(1, el.Width);
+            double bottom = el.Y + Math.Max(1, el.Height);
+            if (right > maxX) maxX = right;
+            if (bottom > maxY) maxY = bottom;
+        }
 
         SelectionBoundingBox = new Rect(minX, minY, Math.Max(1, maxX - minX), Math.Max(1, maxY - minY));
     }

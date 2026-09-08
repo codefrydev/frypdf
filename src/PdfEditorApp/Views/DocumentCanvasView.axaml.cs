@@ -102,6 +102,7 @@ public partial class DocumentCanvasView : UserControl
     private void CommitPendingZoom(CancellationToken token)
     {
         if (token.IsCancellationRequested) return;
+        _zoomThrottleCts?.Dispose();
         _zoomThrottleCts = null;
         var targetOffset = _pendingCanvasOffset;
         if (ViewModel != null) ViewModel.ZoomLevel = _pendingZoomLevel;
@@ -124,6 +125,7 @@ public partial class DocumentCanvasView : UserControl
     {
         if (_zoomThrottleCts == null) return;
         _zoomThrottleCts.Cancel();
+        _zoomThrottleCts?.Dispose();
         _zoomThrottleCts = null;
         var targetOffset = _pendingCanvasOffset;
         if (ViewModel != null) ViewModel.ZoomLevel = _pendingZoomLevel;
@@ -156,7 +158,7 @@ public partial class DocumentCanvasView : UserControl
         AddHandler(KeyDownEvent, OnCanvasKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnCanvasKeyUp, RoutingStrategies.Tunnel);
 
-        InspectorViewModel.OnActiveTextFormattingApplied = textVm =>
+        _activeTextFormattingHandler = textVm =>
         {
             if (ActiveInPlaceTextBox != null && ActiveInPlaceTextBox.DataContext == textVm)
             {
@@ -166,7 +168,16 @@ public partial class DocumentCanvasView : UserControl
                 ActiveInPlaceTextBox.Focus();
             }
         };
+
+        InspectorViewModel.OnActiveTextFormattingApplied = _activeTextFormattingHandler;
     }
+
+    /// <summary>
+    /// The closure this view installed into the static
+    /// <see cref="InspectorViewModel.OnActiveTextFormattingApplied"/> hook, kept so that
+    /// detaching can clear it without stomping a newer view's handler.
+    /// </summary>
+    private readonly Action<TextElementViewModel> _activeTextFormattingHandler;
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -174,13 +185,37 @@ public partial class DocumentCanvasView : UserControl
 
         if (CanvasScrollViewer != null)
         {
-            CanvasScrollViewer.PropertyChanged += (s, ev) =>
-            {
-                if (ev.Property == ScrollViewer.OffsetProperty || ev.Property == ScrollViewer.ViewportProperty)
-                {
-                    UpdateViewportOnPlacementService();
-                }
-            };
+            // -= before += : this runs again on every re-attach, and ScrollViewer.PropertyChanged
+            // fires continuously while scrolling — duplicated handlers multiplied the cost of
+            // UpdateViewportOnPlacementService on every scroll tick.
+            CanvasScrollViewer.PropertyChanged -= OnCanvasScrollViewerPropertyChanged;
+            CanvasScrollViewer.PropertyChanged += OnCanvasScrollViewerPropertyChanged;
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        if (CanvasScrollViewer != null)
+        {
+            CanvasScrollViewer.PropertyChanged -= OnCanvasScrollViewerPropertyChanged;
+        }
+
+        // This view is rooted in a static field (InspectorViewModel.OnActiveTextFormattingApplied),
+        // so release it when the editor is navigated away from rather than pinning the whole
+        // visual tree — and MainViewModel through it — for the rest of the process.
+        if (ReferenceEquals(InspectorViewModel.OnActiveTextFormattingApplied, _activeTextFormattingHandler))
+        {
+            InspectorViewModel.OnActiveTextFormattingApplied = null;
+        }
+
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void OnCanvasScrollViewerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == ScrollViewer.OffsetProperty || e.Property == ScrollViewer.ViewportProperty)
+        {
+            UpdateViewportOnPlacementService();
         }
     }
 
@@ -675,86 +710,137 @@ public partial class DocumentCanvasView : UserControl
         }
     }
 
+    /// <summary>
+    /// Wires the in-place editing TextBox created by the canvas DataTemplates.
+    /// </summary>
+    /// <remarks>
+    /// This fires again every time a container is recycled, the page changes, or edit mode is
+    /// toggled — and it is wired from three separate DataTemplates. The handlers were
+    /// anonymous lambdas, which can never be removed, so every re-attach added five more.
+    /// Since TextBox.PropertyChanged fires for *every* property, after K attachments a single
+    /// keystroke ran UpdateSelectionFromTextBox K times. Named handlers plus "-= before +="
+    /// keep exactly one subscription no matter how often this runs.
+    /// </remarks>
     private void OnInPlaceTextBoxAttached(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        if (sender is TextBox textBox)
+        if (sender is not TextBox textBox) return;
+
+        SubscribeInPlaceTextBox(textBox);
+
+        if (textBox.IsVisible)
         {
-            textBox.GotFocus += (s, args) =>
-            {
-                ActiveInPlaceTextBox = textBox;
-                UpdateSelectionFromTextBox(textBox);
-                if (textBox.DataContext is ElementViewModelBase el)
-                {
-                    _initialEditContents[el.Id] = textBox.Text ?? "";
-                }
-            };
-
-            textBox.LostFocus += (s, args) =>
-            {
-                if (textBox.DataContext is TextElementViewModel textVm && textVm.IsInEditMode)
-                {
-                    // User is still in edit mode (e.g. interacting with HUD, Ribbon, or Sidebar).
-                    // Keep ActiveInPlaceTextBox assigned so inline formatting commands continue working!
-                    return;
-                }
-
-                if (ActiveInPlaceTextBox == textBox)
-                {
-                    ActiveInPlaceTextBox = null;
-                }
-            };
-
-            textBox.PropertyChanged += (s, args) =>
-            {
-                if (args.Property == Visual.IsVisibleProperty && textBox.IsVisible)
-                {
-                    ActiveInPlaceTextBox = textBox;
-                    if (textBox.DataContext is ElementViewModelBase el)
-                    {
-                        _initialEditContents[el.Id] = textBox.Text ?? "";
-                    }
-
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                    {
-                        textBox.Focus();
-                        textBox.CaretIndex = textBox.Text?.Length ?? 0;
-                        textBox.SelectAll();
-                        UpdateSelectionFromTextBox(textBox);
-                    }, Avalonia.Threading.DispatcherPriority.Input);
-                }
-                else if (args.Property == TextBox.SelectionStartProperty || args.Property == TextBox.SelectionEndProperty || args.Property == TextBox.TextProperty)
-                {
-                    UpdateSelectionFromTextBox(textBox);
-                }
-            };
-
-            textBox.PointerReleased += (s, args) =>
-            {
-                UpdateSelectionFromTextBox(textBox);
-            };
-
-            textBox.KeyUp += (s, args) =>
-            {
-                UpdateSelectionFromTextBox(textBox);
-            };
-
-            if (textBox.IsVisible)
-            {
-                ActiveInPlaceTextBox = textBox;
-                if (textBox.DataContext is ElementViewModelBase el)
-                {
-                    _initialEditContents[el.Id] = textBox.Text ?? "";
-                }
-
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                {
-                    textBox.Focus();
-                    textBox.CaretIndex = textBox.Text?.Length ?? 0;
-                    textBox.SelectAll();
-                    UpdateSelectionFromTextBox(textBox);
-                }, Avalonia.Threading.DispatcherPriority.Input);
-            }
+            BeginInPlaceEditing(textBox);
         }
+    }
+
+    private void SubscribeInPlaceTextBox(TextBox textBox)
+    {
+        textBox.GotFocus -= OnInPlaceTextBoxGotFocus;
+        textBox.GotFocus += OnInPlaceTextBoxGotFocus;
+
+        textBox.LostFocus -= OnInPlaceTextBoxLostFocus;
+        textBox.LostFocus += OnInPlaceTextBoxLostFocus;
+
+        textBox.PropertyChanged -= OnInPlaceTextBoxPropertyChanged;
+        textBox.PropertyChanged += OnInPlaceTextBoxPropertyChanged;
+
+        textBox.PointerReleased -= OnInPlaceTextBoxPointerReleased;
+        textBox.PointerReleased += OnInPlaceTextBoxPointerReleased;
+
+        textBox.KeyUp -= OnInPlaceTextBoxKeyUp;
+        textBox.KeyUp += OnInPlaceTextBoxKeyUp;
+
+        textBox.DetachedFromVisualTree -= OnInPlaceTextBoxDetached;
+        textBox.DetachedFromVisualTree += OnInPlaceTextBoxDetached;
+    }
+
+    /// <summary>
+    /// Releases the handlers wired by <see cref="SubscribeInPlaceTextBox"/> once the TextBox
+    /// leaves the visual tree.
+    /// </summary>
+    private void OnInPlaceTextBoxDetached(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is not TextBox textBox) return;
+
+        textBox.GotFocus -= OnInPlaceTextBoxGotFocus;
+        textBox.LostFocus -= OnInPlaceTextBoxLostFocus;
+        textBox.PropertyChanged -= OnInPlaceTextBoxPropertyChanged;
+        textBox.PointerReleased -= OnInPlaceTextBoxPointerReleased;
+        textBox.KeyUp -= OnInPlaceTextBoxKeyUp;
+        textBox.DetachedFromVisualTree -= OnInPlaceTextBoxDetached;
+    }
+
+    /// <summary>Focuses the TextBox and selects its text, recording the pre-edit contents.</summary>
+    private void BeginInPlaceEditing(TextBox textBox)
+    {
+        ActiveInPlaceTextBox = textBox;
+        if (textBox.DataContext is ElementViewModelBase el)
+        {
+            _initialEditContents[el.Id] = textBox.Text ?? "";
+        }
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            textBox.Focus();
+            textBox.CaretIndex = textBox.Text?.Length ?? 0;
+            textBox.SelectAll();
+            UpdateSelectionFromTextBox(textBox);
+        }, Avalonia.Threading.DispatcherPriority.Input);
+    }
+
+    private void OnInPlaceTextBoxGotFocus(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not TextBox textBox) return;
+
+        ActiveInPlaceTextBox = textBox;
+        UpdateSelectionFromTextBox(textBox);
+        if (textBox.DataContext is ElementViewModelBase el)
+        {
+            _initialEditContents[el.Id] = textBox.Text ?? "";
+        }
+    }
+
+    private void OnInPlaceTextBoxLostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not TextBox textBox) return;
+
+        if (textBox.DataContext is TextElementViewModel textVm && textVm.IsInEditMode)
+        {
+            // User is still in edit mode (e.g. interacting with HUD, Ribbon, or Sidebar).
+            // Keep ActiveInPlaceTextBox assigned so inline formatting commands continue working!
+            return;
+        }
+
+        if (ActiveInPlaceTextBox == textBox)
+        {
+            ActiveInPlaceTextBox = null;
+        }
+    }
+
+    private void OnInPlaceTextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (sender is not TextBox textBox) return;
+
+        if (e.Property == Visual.IsVisibleProperty && textBox.IsVisible)
+        {
+            BeginInPlaceEditing(textBox);
+        }
+        else if (e.Property == TextBox.SelectionStartProperty ||
+                 e.Property == TextBox.SelectionEndProperty ||
+                 e.Property == TextBox.TextProperty)
+        {
+            UpdateSelectionFromTextBox(textBox);
+        }
+    }
+
+    private void OnInPlaceTextBoxPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (sender is TextBox textBox) UpdateSelectionFromTextBox(textBox);
+    }
+
+    private void OnInPlaceTextBoxKeyUp(object? sender, KeyEventArgs e)
+    {
+        if (sender is TextBox textBox) UpdateSelectionFromTextBox(textBox);
     }
 
     private void OnTextElementDoubleTapped(object? sender, TappedEventArgs e)

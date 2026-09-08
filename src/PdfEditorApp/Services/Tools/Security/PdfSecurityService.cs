@@ -1,6 +1,7 @@
 using PdfEditorApp.Services.Tools.Organize;
 using PdfEditorApp.Services.Tools.Core;
 using System;
+using PdfEditorApp.Services; // AppLogService
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -257,11 +258,17 @@ public class PdfSecurityService : IPdfSecurityService
                     int commaIdx = options.SignatureImageDataUri.IndexOf(',');
                     string b64 = commaIdx >= 0 ? options.SignatureImageDataUri.Substring(commaIdx + 1) : options.SignatureImageDataUri;
                     byte[] imgBytes = Convert.FromBase64String(b64);
-                    using var ms = new MemoryStream(imgBytes);
-                    var xImg = XImage.FromStream(() => new MemoryStream(imgBytes));
+
+                    // The MemoryStream that used to sit here was never read from; XImage takes
+                    // a factory and opens its own. The XImage itself was the thing that leaked.
+                    using var xImg = XImage.FromStream(() => new MemoryStream(imgBytes));
                     gfx.DrawImage(xImg, x + 8, y + 6, w - 16, h - 26);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    AppLogService.Instance.LogWarning("PdfSign",
+                        "Could not draw the supplied signature image; falling back to no image", ex);
+                }
             }
             else
             {

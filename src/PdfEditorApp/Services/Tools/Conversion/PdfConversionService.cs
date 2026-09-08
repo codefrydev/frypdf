@@ -67,7 +67,8 @@ public class PdfConversionService : IPdfConversionService
             using var pdf = UglyToad.PdfPig.PdfDocument.Open(options.InputFilePath);
             int totalPages = pdf.NumberOfPages;
 
-            using var wordDoc = WordprocessingDocument.Create(outPath, WordprocessingDocumentType.Document);
+            using var atomicWrite = new AtomicFileWrite(outPath);
+            using var wordDoc = WordprocessingDocument.Create(atomicWrite.TempPath, WordprocessingDocumentType.Document);
             var mainPart = wordDoc.AddMainDocumentPart();
             mainPart.Document = new DocumentFormat.OpenXml.Wordprocessing.Document();
             var body = mainPart.Document.AppendChild(new Body());
@@ -101,6 +102,10 @@ public class PdfConversionService : IPdfConversionService
             }
 
             mainPart.Document.Save();
+
+            // Close the package so everything is flushed, then swap the completed file in.
+            wordDoc.Dispose();
+            atomicWrite.Commit();
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
@@ -138,7 +143,8 @@ public class PdfConversionService : IPdfConversionService
             using var pdf = UglyToad.PdfPig.PdfDocument.Open(options.InputFilePath);
             int totalPages = pdf.NumberOfPages;
 
-            using var spreadsheetDoc = SpreadsheetDocument.Create(outPath, SpreadsheetDocumentType.Workbook);
+            using var atomicWrite = new AtomicFileWrite(outPath);
+            using var spreadsheetDoc = SpreadsheetDocument.Create(atomicWrite.TempPath, SpreadsheetDocumentType.Workbook);
             var workbookPart = spreadsheetDoc.AddWorkbookPart();
             workbookPart.Workbook = new DocumentFormat.OpenXml.Spreadsheet.Workbook();
             var sheets = workbookPart.Workbook.AppendChild(new Sheets());
@@ -204,6 +210,9 @@ public class PdfConversionService : IPdfConversionService
             }
 
             workbookPart.Workbook.Save();
+
+            spreadsheetDoc.Dispose();
+            atomicWrite.Commit();
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
@@ -241,7 +250,8 @@ public class PdfConversionService : IPdfConversionService
             using var pdf = UglyToad.PdfPig.PdfDocument.Open(options.InputFilePath);
             int totalPages = pdf.NumberOfPages;
 
-            using var presentationDoc = PresentationDocument.Create(outPath, PresentationDocumentType.Presentation);
+            using var atomicWrite = new AtomicFileWrite(outPath);
+            using var presentationDoc = PresentationDocument.Create(atomicWrite.TempPath, PresentationDocumentType.Presentation);
             var presentationPart = presentationDoc.AddPresentationPart();
             presentationPart.Presentation = new Presentation();
             var slideIdList = presentationPart.Presentation.AppendChild(new SlideIdList());
@@ -298,6 +308,9 @@ public class PdfConversionService : IPdfConversionService
             }
 
             presentationPart.Presentation.Save();
+
+            presentationDoc.Dispose();
+            atomicWrite.Commit();
             progress?.Report(100.0);
 
             long outBytes = File.Exists(outPath) ? new FileInfo(outPath).Length : 0;
@@ -852,28 +865,181 @@ public class PdfConversionService : IPdfConversionService
         }, ct);
     }
 
+    /// <summary>
+    /// Builds an output file under a temporary name and swaps it into place only on success.
+    /// </summary>
+    /// <remarks>
+    /// The OOXML writers stream incrementally into whatever path they are handed, so creating
+    /// them directly at the user's destination meant a cancellation or a mid-loop throw left a
+    /// truncated .docx/.xlsx/.pptx where the user's existing file used to be.
+    /// </remarks>
+    private sealed class AtomicFileWrite : IDisposable
+    {
+        private readonly string _finalPath;
+        private bool _committed;
+
+        public string TempPath { get; }
+
+        public AtomicFileWrite(string finalPath)
+        {
+            _finalPath = finalPath;
+
+            var directory = Path.GetDirectoryName(Path.GetFullPath(finalPath));
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            TempPath = finalPath + $".{Guid.NewGuid():N}.tmp";
+        }
+
+        /// <summary>Moves the completed temp file onto the destination.</summary>
+        public void Commit()
+        {
+            if (File.Exists(_finalPath))
+            {
+                File.Replace(TempPath, _finalPath, destinationBackupFileName: null);
+            }
+            else
+            {
+                File.Move(TempPath, _finalPath);
+            }
+
+            _committed = true;
+        }
+
+        public void Dispose()
+        {
+            if (_committed) return;
+
+            try
+            {
+                if (File.Exists(TempPath)) File.Delete(TempPath);
+            }
+            catch
+            {
+                // best effort — a leftover .tmp is preferable to masking the real failure
+            }
+        }
+    }
+
+    /// <summary>Hard ceiling on a fetched HTML document (16 MB).</summary>
+    private const long MaxRemoteHtmlBytes = 16L * 1024 * 1024;
+
+    /// <summary>Shared client, so repeated conversions do not each open a new connection pool.</summary>
+    private static readonly System.Net.Http.HttpClient HtmlFetchClient =
+        new() { Timeout = TimeSpan.FromSeconds(20) };
+
+    /// <summary>
+    /// True when <paramref name="url"/> is an absolute http/https URL that does not target the
+    /// loopback interface, a link-local address, or a private network range.
+    /// </summary>
+    /// <remarks>
+    /// The previous check was <c>StartsWith("http")</c>, which accepted
+    /// <c>http://169.254.169.254/…</c> (cloud instance metadata) and any internal host — a
+    /// server-side request forgery vector driven straight from a user-supplied string.
+    /// </remarks>
+    internal static bool IsFetchableHtmlUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return false;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
+
+        if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) return false;
+        if (uri.IsLoopback) return false;
+
+        if (System.Net.IPAddress.TryParse(uri.Host, out var ip))
+        {
+            if (System.Net.IPAddress.IsLoopback(ip)) return false;
+
+            var octets = ip.GetAddressBytes();
+            if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+            {
+                // 10/8, 172.16/12, 192.168/16, 169.254/16 (link-local, incl. cloud metadata).
+                if (octets[0] == 10) return false;
+                if (octets[0] == 172 && octets[1] >= 16 && octets[1] <= 31) return false;
+                if (octets[0] == 192 && octets[1] == 168) return false;
+                if (octets[0] == 169 && octets[1] == 254) return false;
+            }
+            else if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+            {
+                if (ip.IsIPv6LinkLocal || ip.IsIPv6SiteLocal) return false;
+                // Unique local addresses (fc00::/7).
+                if ((octets[0] & 0xFE) == 0xFC) return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static async Task<string> FetchHtmlAsync(string url, CancellationToken ct)
+    {
+        using var response = await HtmlFetchClient.GetAsync(
+            url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, ct);
+        response.EnsureSuccessStatusCode();
+
+        if (response.Content.Headers.ContentLength is long declared && declared > MaxRemoteHtmlBytes)
+        {
+            throw new InvalidOperationException(
+                $"Remote document is {declared} bytes, above the {MaxRemoteHtmlBytes} byte limit.");
+        }
+
+        await using var stream = await response.Content.ReadAsStreamAsync(ct);
+        using var limited = new MemoryStream();
+
+        var buffer = new byte[8192];
+        int read;
+        long total = 0;
+        while ((read = await stream.ReadAsync(buffer, ct)) > 0)
+        {
+            total += read;
+            if (total > MaxRemoteHtmlBytes)
+            {
+                throw new InvalidOperationException(
+                    $"Remote document exceeded the {MaxRemoteHtmlBytes} byte download limit.");
+            }
+
+            await limited.WriteAsync(buffer.AsMemory(0, read), ct);
+        }
+
+        return System.Text.Encoding.UTF8.GetString(limited.ToArray());
+    }
+
     public async Task<ToolExecutionResult> ConvertHtmlToPdfAsync(HtmlToPdfOptions options, IProgress<double>? progress = null, CancellationToken ct = default)
     {
+        string? fetchedHtml = null;
+        if (options.IsUrl)
+        {
+            if (!IsFetchableHtmlUrl(options.HtmlContentOrUrl))
+            {
+                return new ToolExecutionResult
+                {
+                    Success = false,
+                    ErrorMessage = "Only absolute public http(s) URLs can be fetched. " +
+                                   "Loopback, link-local and private-network addresses are refused."
+                };
+            }
+
+            try
+            {
+                // Awaited here rather than blocked on inside Task.Run below.
+                fetchedHtml = await FetchHtmlAsync(options.HtmlContentOrUrl, ct);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                return new ToolExecutionResult { Success = false, ErrorMessage = $"Failed to load URL: {ex.Message}" };
+            }
+        }
+
         return await Task.Run(() =>
         {
-            string htmlContent = options.HtmlContentOrUrl;
-            if (options.IsUrl && options.HtmlContentOrUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                try
-                {
-                    using var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(20) };
-                    htmlContent = client.GetStringAsync(options.HtmlContentOrUrl, ct).GetAwaiter().GetResult();
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    return new ToolExecutionResult { Success = false, ErrorMessage = $"Failed to load URL: {ex.Message}" };
-                }
-            }
-            else if (File.Exists(options.HtmlContentOrUrl))
+            // A URL was already fetched (and validated) above; otherwise treat the input as
+            // either a local file path or literal HTML.
+            string htmlContent = fetchedHtml ?? options.HtmlContentOrUrl;
+            if (fetchedHtml == null && File.Exists(options.HtmlContentOrUrl))
             {
                 htmlContent = File.ReadAllText(options.HtmlContentOrUrl);
             }
@@ -997,8 +1163,15 @@ public class PdfConversionService : IPdfConversionService
                     string trimmed = line.Trim();
                     if (string.IsNullOrWhiteSpace(trimmed)) continue;
 
-                    // Heading heuristics
-                    if (trimmed.Length < 60 && (trimmed.StartsWith("Chapter") || trimmed.StartsWith("Section") || trimmed.All(c => !char.IsLetter(c) || char.IsUpper(c))))
+                    // Heading heuristics. The all-caps test requires at least one letter:
+                    // All() is vacuously true for a line with no letters at all, so numeric and
+                    // punctuation-only lines such as "1,234.56" or "— 12 —" were emitted as
+                    // headings.
+                    bool isAllCapsLine = trimmed.Any(char.IsLetter) &&
+                                         trimmed.All(c => !char.IsLetter(c) || char.IsUpper(c));
+
+                    if (trimmed.Length < 60 &&
+                        (trimmed.StartsWith("Chapter") || trimmed.StartsWith("Section") || isAllCapsLine))
                     {
                         sb.AppendLine($"## {trimmed}");
                         sb.AppendLine();

@@ -862,7 +862,7 @@
                                                 <!-- Fallback when loading / empty -->
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
                                                             IsVisible="{Binding Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
-                                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
+                                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="{DynamicResource WinSubtleBrush}" />
                                                     <TextBlock Text="{Binding PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                                                 </StackPanel>
                                             </Panel>
@@ -926,7 +926,7 @@
 
                                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
                                                 IsVisible="{Binding SelectedPage.Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
-                                        <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
+                                        <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="{DynamicResource WinSubtleBrush}" />
                                         <TextBlock Text="{Binding SelectedPage.PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                                     </StackPanel>
                                 </Panel>
@@ -988,7 +988,7 @@
                                                 <!-- Fallback when loading / empty -->
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
                                                             IsVisible="{Binding SelectedSpread.LeftPage.Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
-                                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
+                                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="{DynamicResource WinSubtleBrush}" />
                                                     <TextBlock Text="{Binding SelectedSpread.LeftPage.PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                                                 </StackPanel>
                                             </Panel>
@@ -1033,7 +1033,7 @@
                                                 <!-- Fallback when loading / empty -->
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
                                                             IsVisible="{Binding SelectedSpread.RightPage.Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
-                                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="#CBD5E1" />
+                                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="{DynamicResource WinSubtleBrush}" />
                                                     <TextBlock Text="{Binding SelectedSpread.RightPage.PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                                                 </StackPanel>
                                             </Panel>

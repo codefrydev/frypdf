@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -25,22 +26,46 @@ public partial class FryPdfViewerView : UserControl
             };
         }
 
-        DataContextChanged += (s, e) =>
+        _scrollViewer = scrollViewer;
+
+        DataContextChanged += OnViewerDataContextChanged;
+    }
+
+    private ScrollViewer? _scrollViewer;
+    private FryPdfViewerViewModel? _subscribedViewModel;
+
+    /// <summary>
+    /// Re-points the view model subscription when the DataContext changes.
+    /// </summary>
+    /// <remarks>
+    /// This used to add a *new* PropertyChanged lambda on every DataContext change without
+    /// removing the previous one. The view model is long-lived (created once by MainViewModel),
+    /// so the handlers accumulated on it, each capturing this view — the views were never
+    /// collected and FitToViewport ran once per past subscription on every toggle.
+    /// </remarks>
+    private void OnViewerDataContextChanged(object? sender, EventArgs e)
+    {
+        if (_subscribedViewModel != null)
         {
-            if (DataContext is FryPdfViewerViewModel vm)
-            {
-                vm.PropertyChanged += (sender, args) =>
-                {
-                    if (args.PropertyName == nameof(FryPdfViewerViewModel.IsPresentationMode))
-                    {
-                        if (vm.IsPresentationMode && scrollViewer != null)
-                        {
-                            vm.FitToViewport(scrollViewer.Bounds.Width, scrollViewer.Bounds.Height);
-                        }
-                    }
-                };
-            }
-        };
+            _subscribedViewModel.PropertyChanged -= OnViewerViewModelPropertyChanged;
+            _subscribedViewModel = null;
+        }
+
+        if (DataContext is FryPdfViewerViewModel vm)
+        {
+            vm.PropertyChanged += OnViewerViewModelPropertyChanged;
+            _subscribedViewModel = vm;
+        }
+    }
+
+    private void OnViewerViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(FryPdfViewerViewModel.IsPresentationMode)) return;
+
+        if (sender is FryPdfViewerViewModel vm && vm.IsPresentationMode && _scrollViewer != null)
+        {
+            vm.FitToViewport(_scrollViewer.Bounds.Width, _scrollViewer.Bounds.Height);
+        }
     }
 
     private void InitializeComponent()

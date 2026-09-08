@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using PdfEditorApp.Core.Plugins;
 using PdfEditorApp.Core.Plugins.Descriptors;
+using PdfEditorApp.Core.Plugins.Manifests;
 using PdfEditorApp.Core.Plugins.Marketplace;
 using PdfEditorApp.Plugins.Loader;
 using PdfEditorApp.Services;  // FryPdfPaths — writable-path resolver (MSIX-safe); AppLogService — diagnostic logging
@@ -20,7 +21,7 @@ namespace PdfEditorApp.Services.Plugins;
 /// Service providing access to the curated FryPDF Plugin Store and Marketplace.
 /// Features real, functional extension packages with persistent history and 1-click mounting into the isolated plugin kernel.
 /// </summary>
-public class PluginMarketplaceService : IPluginMarketplaceService
+public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
 {
     public const string DefaultRegistryBaseUrl = "https://raw.githubusercontent.com/codefrydev/PDFCreator-resources/refs/heads/main/plugins";
 
@@ -31,6 +32,9 @@ public class PluginMarketplaceService : IPluginMarketplaceService
     private readonly string _registryBaseUrl;
     private readonly HttpClient _httpClient;
     private readonly HashSet<string> _installedMarketplaceIds = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Hard ceiling on a downloaded .fryplugin archive (64 MB).</summary>
+    private const long MaxPackageBytes = 64L * 1024 * 1024;
     private readonly List<MarketplacePluginItem> _remoteExtensions = new();
     private readonly object _catalogLock = new();
 
@@ -59,6 +63,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         _registryBaseUrl = string.IsNullOrWhiteSpace(registryBaseUrl) ? DefaultRegistryBaseUrl : registryBaseUrl.TrimEnd('/');
         // 15 seconds: GitHub CDN round-trip on a cold Windows boot (DNS + TLS handshake)
         // can easily exceed the old 6s limit, causing false "0 extensions" readings.
+        _ownsHttpClient = httpClient == null;
         _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
 
         try
@@ -66,11 +71,44 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             Directory.CreateDirectory(_pluginsDirectory);
             LoadDiskCatalogCache();
             ScanInstalledMarketplacePlugins();
-            RestorePersistedPlugins();
         }
         catch (Exception ex)
         {
             AppLogService.Instance.LogWarning("PluginInstall", "Marketplace service initialization warning", ex);
+        }
+    }
+
+    private readonly SemaphoreSlim _initLock = new(1, 1);
+    private bool _initialized;
+
+    /// <summary>
+    /// Restores and activates previously installed plugins. Idempotent.
+    /// </summary>
+    /// <remarks>
+    /// This used to run from the constructor, blocking on <c>EnablePluginAsync</c> with
+    /// <c>GetAwaiter().GetResult()</c>. Because this is a DI singleton it was typically first
+    /// resolved on the UI thread during startup, and enabling a plugin registers overlays and
+    /// ribbon items that post back to the dispatcher — a self-deadlock. Call it after the main
+    /// window exists and await it.
+    /// </remarks>
+    public async Task InitializeAsync(CancellationToken ct = default)
+    {
+        if (_initialized) return;
+
+        await _initLock.WaitAsync(ct);
+        try
+        {
+            if (_initialized) return;
+            await RestorePersistedPluginsAsync(ct);
+            _initialized = true;
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("PluginInstall", "Marketplace plugin restore warning", ex);
+        }
+        finally
+        {
+            _initLock.Release();
         }
     }
 
@@ -112,7 +150,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         return null;
     }
 
-    private void RestorePersistedPlugins()
+    private async Task RestorePersistedPluginsAsync(CancellationToken ct = default)
     {
         if (_pluginHost == null) return;
 
@@ -133,7 +171,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                 {
                     try
                     {
-                        _pluginHost.EnablePluginAsync(rec.PluginId).GetAwaiter().GetResult();
+                        await _pluginHost.EnablePluginAsync(rec.PluginId, ct);
                     }
                     catch (Exception ex)
                     {
@@ -141,7 +179,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                     }
                 }
 
-                _installedMarketplaceIds.Add(rec.PluginId);
+                lock (_catalogLock) { _installedMarketplaceIds.Add(rec.PluginId); }
 
                 if (rec.WasOverlayOpen)
                 {
@@ -181,11 +219,11 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                                 {
                                     if (!_pluginHost.IsPluginActive(p.Id))
                                     {
-                                        _pluginHost.EnablePluginAsync(p.Id).GetAwaiter().GetResult();
+                                        await _pluginHost.EnablePluginAsync(p.Id, ct);
                                     }
                                 }
 
-                                _installedMarketplaceIds.Add(rec.PluginId);
+                                lock (_catalogLock) { _installedMarketplaceIds.Add(rec.PluginId); }
 
                                 if (rec.WasOverlayOpen)
                                 {
@@ -206,13 +244,17 @@ public class PluginMarketplaceService : IPluginMarketplaceService
 
     private void ScanInstalledMarketplacePlugins()
     {
-        _installedMarketplaceIds.Clear();
+        // Build into a local set and swap it in under one lock, so a concurrent
+        // IsPluginInstalled never observes a half-cleared collection. Mutating the shared
+        // HashSet in place while UI plugin cards read it is undefined behavior, not just
+        // a stale answer.
+        var rebuilt = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var rec in _installedPluginStore.GetAll())
         {
             if (rec != null && rec.IsEnabled && !string.IsNullOrEmpty(rec.PluginId))
             {
-                _installedMarketplaceIds.Add(rec.PluginId);
+                rebuilt.Add(rec.PluginId);
             }
         }
 
@@ -222,7 +264,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             {
                 if (item != null && !string.IsNullOrEmpty(item.Id) && _pluginHost.IsPluginActive(item.Id))
                 {
-                    _installedMarketplaceIds.Add(item.Id);
+                    rebuilt.Add(item.Id);
                 }
             }
 
@@ -236,9 +278,15 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             {
                 if (_pluginHost.IsPluginActive(item.Id))
                 {
-                    _installedMarketplaceIds.Add(item.Id);
+                    rebuilt.Add(item.Id);
                 }
             }
+        }
+
+        lock (_catalogLock)
+        {
+            _installedMarketplaceIds.Clear();
+            foreach (var id in rebuilt) _installedMarketplaceIds.Add(id);
         }
     }
 
@@ -311,6 +359,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                 }
             }
             catch (Exception ex) when (attempt < maxAttempts &&
+                                       !ct.IsCancellationRequested &&
                                        ex is HttpRequestException or TaskCanceledException)
             {
                 // Transient network failure — wait 2 s then retry once
@@ -445,6 +494,17 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             };
         }
 
+        // The id comes from remote catalog JSON and is used below to build the temp package
+        // path, the install directory, and the uninstall directory that gets recursively deleted.
+        if (!PluginIdValidator.IsValid(item.Id))
+        {
+            AppLogService.Instance.Log(AppLogLevel.Warning, "PluginInstall",
+                $"Refused to install '{item.Id}': the catalog id is not a safe path segment.");
+            statusCallback?.Invoke($"Refused to install '{item.Name}': unsafe plugin id.");
+            item.Status = MarketplacePluginStatus.Available;
+            return false;
+        }
+
         item.Status = MarketplacePluginStatus.Installing;
         statusCallback?.Invoke($"Connecting to FryPDF Marketplace registry for '{item.Name}'...");
         progress?.Report(0.1);
@@ -459,6 +519,15 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             Directory.CreateDirectory(tempDir);
             var tempPackagePath = Path.Combine(tempDir, $"{item.Id}.fryplugin");
 
+            if (!IsAllowedDownloadUrl(item.DownloadUrl))
+            {
+                AppLogService.Instance.Log(AppLogLevel.Warning, "PluginInstall",
+                    $"Refused to download '{item.Id}': '{item.DownloadUrl}' is not on the registry host.");
+                statusCallback?.Invoke($"Refused to download '{item.Name}': untrusted download URL.");
+                item.Status = MarketplacePluginStatus.Available;
+                return false;
+            }
+
             try
             {
                 bool downloaded = false;
@@ -468,7 +537,15 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                     {
                         if (response.IsSuccessStatusCode)
                         {
-                            var contentLength = response.Content.Headers.ContentLength ?? 1;
+                            // Content-Length of 0 is not null, so "?? 1" did not guard it and the
+                            // progress division produced Infinity.
+                            long declaredLength = response.Content.Headers.ContentLength ?? 0;
+                            if (declaredLength > MaxPackageBytes)
+                            {
+                                throw new InvalidOperationException(
+                                    $"Package is {declaredLength} bytes, above the {MaxPackageBytes} byte limit.");
+                            }
+
                             await using var stream = await response.Content.ReadAsStreamAsync(ct);
                             await using var fileStream = File.Create(tempPackagePath);
 
@@ -478,9 +555,19 @@ public class PluginMarketplaceService : IPluginMarketplaceService
 
                             while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, ct)) > 0)
                             {
-                                await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), ct);
                                 totalBytesRead += bytesRead;
-                                progress?.Report(0.2 + 0.5 * ((double)totalBytesRead / contentLength));
+                                if (totalBytesRead > MaxPackageBytes)
+                                {
+                                    // A server that under-declares Content-Length must not be able
+                                    // to stream unbounded data into the plugins directory.
+                                    throw new InvalidOperationException(
+                                        $"Package exceeded the {MaxPackageBytes} byte download limit.");
+                                }
+
+                                await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), ct);
+
+                                if (declaredLength > 0)
+                                    progress?.Report(0.2 + 0.5 * ((double)totalBytesRead / declaredLength));
                             }
                             downloaded = true;
                         }
@@ -500,7 +587,29 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                     return false;
                 }
 
-                statusCallback?.Invoke("Unpacking package archive and verifying manifest...");
+                if (!string.IsNullOrWhiteSpace(item.Sha256))
+                {
+                    statusCallback?.Invoke("Verifying package SHA-256...");
+                    var actual = await ComputeSha256Async(tempPackagePath, ct);
+                    if (!string.Equals(actual, item.Sha256.Trim(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        AppLogService.Instance.Log(AppLogLevel.Error, "PluginInstall",
+                            $"SHA-256 mismatch for '{item.Id}': catalog declared {item.Sha256}, download was {actual}. Install aborted.");
+                        statusCallback?.Invoke($"'{item.Name}' failed integrity verification and was not installed.");
+                        item.Status = MarketplacePluginStatus.Available;
+                        return false;
+                    }
+                }
+                else
+                {
+                    // Say what is actually true. The catalog carries no digest for this entry,
+                    // so unpacking below will load and execute unverified code.
+                    AppLogService.Instance.Log(AppLogLevel.Warning, "PluginInstall",
+                        $"Catalog entry '{item.Id}' carries no sha256; installing without integrity verification.");
+                    statusCallback?.Invoke("No checksum published for this package — installing unverified.");
+                }
+
+                statusCallback?.Invoke("Unpacking package archive...");
                 progress?.Report(0.75);
 
                 var pkgResult = FryPluginPackageLoader.UnpackAndLoad(tempPackagePath, _pluginsDirectory);
@@ -523,7 +632,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
                     overlayReg?.ShowOverlay(item.Id);
                 }
 
-                _installedMarketplaceIds.Add(item.Id);
+                lock (_catalogLock) { _installedMarketplaceIds.Add(item.Id); }
                 _installedPluginStore.AddOrUpdate(new InstalledPluginRecord
                 {
                     PluginId = item.Id,
@@ -571,7 +680,8 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         progress?.Report(0.35);
         await Task.Delay(150, ct);
 
-        statusCallback?.Invoke("Verifying package SHA-256 manifest and digital signatures...");
+        // Local/built-in components ship with the app; there is no download to verify.
+        statusCallback?.Invoke("Preparing built-in extension components...");
         progress?.Report(0.65);
         await Task.Delay(100, ct);
 
@@ -580,16 +690,20 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         Directory.CreateDirectory(targetDir);
 
         var manifestPath = Path.Combine(targetDir, "plugin.json");
-        var manifestContent = $@"{{
-  ""id"": ""{item.Id}"",
-  ""name"": ""{item.Name}"",
-  ""version"": ""{item.Version}"",
-  ""category"": ""{item.Category}"",
-  ""description"": ""{item.Description}"",
-  ""author"": ""{item.Publisher}"",
-  ""entryPoint"": ""{item.Id}.dll"",
-  ""license"": ""{item.License}""
-}}";
+        // Serialize rather than interpolate: a catalog Name or Description containing a quote
+        // or a backslash previously produced malformed (or attacker-shaped) JSON.
+        var manifestContent = JsonSerializer.Serialize(
+            new PluginManifest
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Version = item.Version,
+                Description = item.Description,
+                Author = item.Publisher,
+                EntryPoint = $"{item.Id}.dll",
+                Icon = item.IconKind
+            },
+            new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(manifestPath, manifestContent, ct);
 
         statusCallback?.Invoke("Mounting extension into isolated plugin kernel...");
@@ -613,7 +727,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             overlayReg?.ShowOverlay(item.Id);
         }
 
-        _installedMarketplaceIds.Add(item.Id);
+        lock (_catalogLock) { _installedMarketplaceIds.Add(item.Id); }
         _installedPluginStore.AddOrUpdate(new InstalledPluginRecord
         {
             PluginId = item.Id,
@@ -647,7 +761,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             item.Status = MarketplacePluginStatus.Available;
         }
 
-        _installedMarketplaceIds.Remove(pluginId);
+        lock (_catalogLock) { _installedMarketplaceIds.Remove(pluginId); }
         _installedPluginStore.Remove(pluginId);
 
         if (_pluginHost != null)
@@ -689,7 +803,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
         if (_pluginHost != null && _pluginHost.IsPluginActive(pluginId))
             return true;
 
-        return _installedMarketplaceIds.Contains(pluginId);
+        lock (_catalogLock) { return _installedMarketplaceIds.Contains(pluginId); }
     }
 
     public async Task<IReadOnlyList<MarketplacePluginItem>> CheckForUpdatesAsync(CancellationToken ct = default)
@@ -702,18 +816,103 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             var installed = _installedPluginStore.Get(remoteItem.Id);
             if (installed != null)
             {
-                if (Version.TryParse(remoteItem.Version, out var remoteVer) &&
-                    Version.TryParse(installed.Version, out var localVer))
+                if (IsNewerVersion(remoteItem.Version, installed.Version))
                 {
-                    if (remoteVer > localVer)
-                    {
-                        remoteItem.Status = MarketplacePluginStatus.UpdateAvailable;
-                        updateAvailable.Add(remoteItem);
-                    }
+                    remoteItem.Status = MarketplacePluginStatus.UpdateAvailable;
+                    updateAvailable.Add(remoteItem);
                 }
             }
         }
 
         return updateAvailable;
+    }
+
+    /// <summary>
+    /// True when <paramref name="downloadUrl"/> is an absolute HTTPS URL on the same host as
+    /// the configured registry.
+    /// </summary>
+    /// <remarks>
+    /// The URL arrives from catalog JSON. Without this check a compromised or mirrored catalog
+    /// could point the installer — which downloads and then executes code — at any host.
+    /// </remarks>
+    internal bool IsAllowedDownloadUrl(string? downloadUrl)
+    {
+        if (string.IsNullOrWhiteSpace(downloadUrl)) return false;
+        if (!Uri.TryCreate(downloadUrl, UriKind.Absolute, out var uri)) return false;
+        if (!Uri.TryCreate(_registryBaseUrl, UriKind.Absolute, out var registryUri)) return false;
+
+        // Plaintext HTTP would let a network attacker swap the package for their own.
+        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return string.Equals(uri.Host, registryUri.Host, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Computes the lowercase hex SHA-256 of a file.</summary>
+    private static async Task<string> ComputeSha256Async(string filePath, CancellationToken ct)
+    {
+        await using var stream = File.OpenRead(filePath);
+        using var sha = System.Security.Cryptography.SHA256.Create();
+        var hash = await sha.ComputeHashAsync(stream, ct);
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Compares two version strings, tolerating semver pre-release and build metadata
+    /// ("1.2.0-beta", "1.2.0+build.5") which <see cref="Version.TryParse(string, out Version)"/>
+    /// rejects outright — previously any such plugin silently never reported an update.
+    /// </summary>
+    internal static bool IsNewerVersion(string? candidate, string? installed)
+    {
+        var candidateCore = ParseVersionCore(candidate);
+        var installedCore = ParseVersionCore(installed);
+        if (candidateCore == null || installedCore == null) return false;
+
+        int coreComparison = candidateCore.CompareTo(installedCore);
+        if (coreComparison != 0) return coreComparison > 0;
+
+        // Same numeric core: a release supersedes a pre-release of the same version.
+        bool candidatePre = HasPreRelease(candidate);
+        bool installedPre = HasPreRelease(installed);
+        return installedPre && !candidatePre;
+    }
+
+    private static bool HasPreRelease(string? version)
+        => !string.IsNullOrWhiteSpace(version) && version.Contains('-');
+
+    private static Version? ParseVersionCore(string? version)
+    {
+        if (string.IsNullOrWhiteSpace(version)) return null;
+
+        var core = version.Trim();
+        int cut = core.IndexOfAny(new[] { '-', '+' });
+        if (cut >= 0) core = core[..cut];
+
+        return Version.TryParse(core, out var parsed) ? parsed : null;
+    }
+
+    private readonly bool _ownsHttpClient;
+    private bool _isDisposed;
+
+    /// <summary>
+    /// Disposes the <see cref="HttpClient"/> this service created for itself.
+    /// </summary>
+    /// <remarks>
+    /// The class owned an HttpClient but did not implement IDisposable, so its handler was
+    /// never released. An injected client belongs to the caller and is left alone.
+    /// </remarks>
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        if (_ownsHttpClient)
+        {
+            _httpClient.Dispose();
+        }
+
+        _initLock.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

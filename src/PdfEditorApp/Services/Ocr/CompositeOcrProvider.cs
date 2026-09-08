@@ -18,8 +18,17 @@ public interface ICompositeOcrProvider : IOcrEngine
 
 public class CompositeOcrProvider : ICompositeOcrProvider
 {
-    private static CompositeOcrProvider? _instance;
-    public static CompositeOcrProvider Default => _instance ??= new CompositeOcrProvider();
+    /// <summary>
+    /// Process-wide OCR provider.
+    /// </summary>
+    /// <remarks>
+    /// "??=" is not atomic, so two threads racing here each built a full provider — a
+    /// TesseractModelService plus three engines apiece — and one was silently discarded.
+    /// </remarks>
+    private static readonly Lazy<CompositeOcrProvider> LazyDefault =
+        new(() => new CompositeOcrProvider(), LazyThreadSafetyMode.ExecutionAndPublication);
+
+    public static CompositeOcrProvider Default => LazyDefault.Value;
 
     private readonly List<IOcrEngine> _engines = new();
     private readonly ITesseractModelService _modelService;

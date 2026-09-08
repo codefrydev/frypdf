@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -70,30 +71,103 @@ public static class TextLayoutEngine
         return factor * fontSize;
     }
 
+    /// <summary>
+    /// Cached <see cref="IGlyphTypeface"/> per (family, weight, style). Resolving one is
+    /// comparatively expensive and the result never changes for a given key.
+    /// </summary>
+    private static readonly ConcurrentDictionary<(string Family, bool Bold, bool Italic), GlyphTypeface?>
+        GlyphTypefaceCache = new();
+
+    /// <summary>
+    /// Cached glyph advances in em units (i.e. per 1pt of font size), so one entry serves
+    /// every font size.
+    /// </summary>
+    private static readonly ConcurrentDictionary<(string Family, bool Bold, bool Italic, char Glyph), double>
+        GlyphAdvanceCache = new();
+
+    static TextLayoutEngine()
+    {
+        // A newly installed font changes what a family name resolves to, so these caches —
+        // which are keyed on family name — must not outlive that change.
+        FontHelper.FontsChanged += InvalidateFontCaches;
+    }
+
+    /// <summary>
+    /// Drops the cached typefaces and glyph advances. Called automatically when the font
+    /// library changes.
+    /// </summary>
+    public static void InvalidateFontCaches()
+    {
+        GlyphTypefaceCache.Clear();
+        GlyphAdvanceCache.Clear();
+    }
+
+    private static GlyphTypeface? GetGlyphTypeface(string fontFamily, bool isBold, bool isItalic)
+    {
+        return GlyphTypefaceCache.GetOrAdd((fontFamily ?? string.Empty, isBold, isItalic), static key =>
+        {
+            try
+            {
+                var typeface = new Typeface(
+                    FontHelper.CreateFontFamily(key.Family),
+                    key.Italic ? FontStyle.Italic : FontStyle.Normal,
+                    key.Bold ? FontWeight.Bold : FontWeight.Normal);
+
+                return typeface.GlyphTypeface;
+            }
+            catch
+            {
+                // No font manager (headless/CLI) or the family cannot be resolved.
+                // Callers fall back to the proportional estimator.
+                return null;
+            }
+        });
+    }
+
+    /// <summary>
+    /// Advance width of <paramref name="c"/> in em units for the given face.
+    /// </summary>
+    private static double GetGlyphAdvanceEm(char c, string fontFamily, bool isBold, bool isItalic)
+    {
+        return GlyphAdvanceCache.GetOrAdd((fontFamily ?? string.Empty, isBold, isItalic, c), static key =>
+        {
+            try
+            {
+                var glyphTypeface = GetGlyphTypeface(key.Family, key.Bold, key.Italic);
+                if (glyphTypeface != null &&
+                    glyphTypeface.CharacterToGlyphMap.TryGetGlyph(key.Glyph, out ushort glyphIndex) &&
+                    glyphTypeface.TryGetHorizontalGlyphAdvance(glyphIndex, out ushort advance))
+                {
+                    double designEm = glyphTypeface.Metrics.DesignEmHeight;
+                    if (designEm > 0 && advance > 0)
+                    {
+                        return advance / designEm;
+                    }
+                }
+            }
+            catch
+            {
+                // fall through to the estimator
+            }
+
+            // EstimateCharWidth returns factor * fontSize, so a size of 1 yields the em factor.
+            return EstimateCharWidth(key.Glyph, 1.0, key.Bold);
+        });
+    }
+
+    /// <summary>
+    /// Width of a single glyph at <paramref name="fontSize"/>.
+    /// </summary>
+    /// <remarks>
+    /// This used to build a <see cref="FontFamily"/>, a <see cref="Typeface"/> and a full
+    /// <see cref="FormattedText"/> (which runs text shaping) for a one-character string on
+    /// every call — and callers invoke it once per character, from inside <c>Render</c>.
+    /// Glyph advances are now looked up from a cached <see cref="IGlyphTypeface"/> instead.
+    /// </remarks>
     public static double MeasureGlyphWidth(char c, string fontFamily, double fontSize, bool isBold, bool isItalic)
     {
-        try
-        {
-            var avaloniaFamily = FontHelper.CreateFontFamily(fontFamily);
-            var typeface = new Typeface(
-                avaloniaFamily,
-                isItalic ? FontStyle.Italic : FontStyle.Normal,
-                isBold ? FontWeight.Bold : FontWeight.Normal);
-
-            var ft = new FormattedText(
-                c.ToString(),
-                CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight,
-                typeface,
-                fontSize,
-                Brushes.Black);
-
-            return Math.Max(fontSize * 0.2, ft.WidthIncludingTrailingWhitespace);
-        }
-        catch
-        {
-            return Math.Max(fontSize * 0.2, EstimateCharWidth(c, fontSize, isBold));
-        }
+        double advanceEm = GetGlyphAdvanceEm(c, fontFamily, isBold, isItalic);
+        return Math.Max(fontSize * 0.2, advanceEm * fontSize);
     }
 
     public static double[] MeasureAllGlyphWidths(string text, string fontFamily, double fontSize, bool isBold, bool isItalic, double charSpacing)
@@ -159,11 +233,40 @@ public static class TextLayoutEngine
             var currentLine = new StringBuilder();
             double currentLineWidth = 0;
 
+            // Loop-invariant: hoisted out of the per-word loop.
+            double spaceWidth = MeasureGlyphWidth(' ', fontFamily, fontSize, isBold, isItalic) + charSpacing + wordSpacing;
+
             for (int i = 0; i < words.Length; i++)
             {
                 var word = words[i];
                 double wordWidth = MeasureStringWidth(word, fontFamily, fontSize, isBold, isItalic, charSpacing, 0);
-                double spaceWidth = (MeasureGlyphWidth(' ', fontFamily, fontSize, isBold, isItalic) + charSpacing + wordSpacing);
+
+                if (wordWidth > usableWidth && word.Length > 1)
+                {
+                    // A word wider than the line has no break opportunity, so it used to be
+                    // emitted whole and silently overflow the element. Break it at the
+                    // character level instead.
+                    if (currentLine.Length > 0)
+                    {
+                        computedLines.Add((currentLine.ToString(), currentLineWidth, false));
+                        currentLine.Clear();
+                        currentLineWidth = 0;
+                    }
+
+                    foreach (var chunk in BreakLongWord(word, fontFamily, fontSize, isBold, isItalic, charSpacing, usableWidth))
+                    {
+                        if (currentLine.Length > 0)
+                        {
+                            computedLines.Add((currentLine.ToString(), currentLineWidth, false));
+                            currentLine.Clear();
+                        }
+
+                        currentLine.Append(chunk.Text);
+                        currentLineWidth = chunk.Width;
+                    }
+
+                    continue;
+                }
 
                 if (currentLine.Length == 0)
                 {
@@ -245,6 +348,38 @@ public static class TextLayoutEngine
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Splits a word that is wider than the available width into character-level chunks that
+    /// each fit. Always yields at least one character per chunk so it cannot loop forever.
+    /// </summary>
+    private static IEnumerable<(string Text, double Width)> BreakLongWord(
+        string word, string fontFamily, double fontSize, bool isBold, bool isItalic,
+        double charSpacing, double usableWidth)
+    {
+        var chunk = new StringBuilder();
+        double chunkWidth = 0;
+
+        foreach (char c in word)
+        {
+            double glyphWidth = MeasureGlyphWidth(c, fontFamily, fontSize, isBold, isItalic) + charSpacing;
+
+            if (chunk.Length > 0 && chunkWidth + glyphWidth > usableWidth)
+            {
+                yield return (chunk.ToString(), chunkWidth);
+                chunk.Clear();
+                chunkWidth = 0;
+            }
+
+            chunk.Append(c);
+            chunkWidth += glyphWidth;
+        }
+
+        if (chunk.Length > 0)
+        {
+            yield return (chunk.ToString(), chunkWidth);
+        }
     }
 
     public static double MeasureStringWidth(string text, string fontFamily, double fontSize, bool isBold, bool isItalic, double charSpacing, double wordSpacing)

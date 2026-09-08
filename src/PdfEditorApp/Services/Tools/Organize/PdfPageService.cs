@@ -243,6 +243,21 @@ public class PdfPageService : IPdfPageService
             }
 
             progress?.Report(100.0);
+
+            if (createdFiles.Count == 0)
+            {
+                // Producing nothing is a failure, not a zero-file success. This is what an
+                // out-of-range, reversed ("10-3") or malformed range expression yields.
+                return new ToolExecutionResult
+                {
+                    Success = false,
+                    OriginalSizeBytes = origBytes,
+                    ErrorMessage = options.Mode == SplitExtractMode.SplitByPageRanges
+                        ? $"No pages matched the range '{options.RangeExpression}'. Use ranges like '1-3, 5' within 1-{totalPages}."
+                        : "No output files were produced."
+                };
+            }
+
             return new ToolExecutionResult
             {
                 Success = true,
@@ -266,7 +281,7 @@ public class PdfPageService : IPdfPageService
             using var doc = PdfFileHelper.OpenDocumentSafely(options.InputFilePath, PdfDocumentOpenMode.Modify);
             int totalPages = doc.PageCount;
 
-            var targetIndices = GetFilteredPageIndices(options.TargetFilter, options.CustomRange, totalPages);
+            var targetIndices = GetTargetPageIndices(options.TargetFilter, options.CustomRange, totalPages);
 
             for (int i = 0; i < totalPages; i++)
             {
@@ -379,12 +394,16 @@ public class PdfPageService : IPdfPageService
 
             var order = options.PageOrder.Count > 0 ? options.PageOrder : Enumerable.Range(0, totalPages).ToList();
 
+            // PagesToDelete is a List, so Contains is a linear scan — inside the per-page loop
+            // that is O(pages x deletions). Every other page set in this file is a HashSet.
+            var pagesToDelete = new HashSet<int>(options.PagesToDelete);
+
             int step = 0;
             foreach (int pIndex in order)
             {
                 ct.ThrowIfCancellationRequested();
                 if (pIndex < 0 || pIndex >= totalPages) continue;
-                if (options.PagesToDelete.Contains(pIndex)) continue;
+                if (pagesToDelete.Contains(pIndex)) continue;
 
                 var page = inputDoc.Pages[pIndex];
                 var addedPage = outputDoc.AddPage(page);
@@ -525,6 +544,11 @@ public class PdfPageService : IPdfPageService
 
             var targetIndices = GetTargetPageIndices(options.TargetPages, options.CustomRange, totalPages);
             var baseColor = ParseColor(options.ColorHex);
+
+            // Shared across all pages; disposed once the whole document has been stamped.
+            XImage? watermarkImage = null;
+            try
+            {
             byte alpha = (byte)(Math.Clamp(options.Opacity, 0.01, 1.0) * 255);
             var watermarkColor = XColor.FromArgb(alpha, baseColor.R, baseColor.G, baseColor.B);
             var font = new XFont(string.IsNullOrWhiteSpace(options.FontFamily) ? "Helvetica" : options.FontFamily, Math.Max(8, options.FontSize), XFontStyle.Bold);
@@ -585,10 +609,14 @@ public class PdfPageService : IPdfPageService
                         {
                             try
                             {
-                                using var img = XImage.FromFile(options.ImagePath);
-                                double imgW = Math.Min(300, img.PixelWidth);
-                                double imgH = imgW * (img.PixelHeight / (double)img.PixelWidth);
-                                gfx.DrawImage(img, -imgW / 2.0, -imgH / 2.0, imgW, imgH);
+                                // Decoded once and reused for every page. Loading it inside the
+                                // page loop also made PdfSharp embed one copy of the image per
+                                // page in the output document.
+                                watermarkImage ??= XImage.FromFile(options.ImagePath);
+
+                                double imgW = Math.Min(300, watermarkImage.PixelWidth);
+                                double imgH = imgW * (watermarkImage.PixelHeight / (double)watermarkImage.PixelWidth);
+                                gfx.DrawImage(watermarkImage, -imgW / 2.0, -imgH / 2.0, imgW, imgH);
                             }
                             catch
                             {
@@ -630,6 +658,11 @@ public class PdfPageService : IPdfPageService
                 OutputSizeBytes = outBytes,
                 Message = $"Applied watermark to {stampedCount} pages."
             };
+            }
+            finally
+            {
+                watermarkImage?.Dispose();
+            }
         }, ct);
     }
 
@@ -662,27 +695,6 @@ public class PdfPageService : IPdfPageService
             case PageTargetSelection.CustomRange:
                 var parsed = ParseSingleRangeList(customRange, totalPages);
                 foreach (int p in parsed) result.Add(p);
-                break;
-        }
-        return result;
-    }
-
-    private static HashSet<int> GetFilteredPageIndices(PageFilterTarget filter, string customRange, int totalPages)
-    {
-        var result = new HashSet<int>();
-        switch (filter)
-        {
-            case PageFilterTarget.All:
-                for (int i = 0; i < totalPages; i++) result.Add(i);
-                break;
-            case PageFilterTarget.OddPages:
-                for (int i = 0; i < totalPages; i += 2) result.Add(i);
-                break;
-            case PageFilterTarget.EvenPages:
-                for (int i = 1; i < totalPages; i += 2) result.Add(i);
-                break;
-            default:
-                for (int i = 0; i < totalPages; i++) result.Add(i);
                 break;
         }
         return result;

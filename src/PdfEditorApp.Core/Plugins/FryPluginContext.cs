@@ -632,20 +632,29 @@ public class FryPluginContext : IFryPluginContext
         public override void RegisterService<TService>(TService implementation)
         {
             _parent.RegisterService(implementation);
-            _pluginScope.RegisterEffect(() =>
-            {
-                // Remove from parent services dictionary
-                _parent._services.TryRemove(typeof(TService), out _);
-            });
+            _pluginScope.RegisterEffect(() => RemoveOwnService(typeof(TService), implementation!));
         }
 
         public override void RegisterService(Type serviceType, object implementation)
         {
             _parent.RegisterService(serviceType, implementation);
-            _pluginScope.RegisterEffect(() =>
+            _pluginScope.RegisterEffect(() => RemoveOwnService(serviceType, implementation));
+        }
+
+        /// <summary>
+        /// Removes a service registration only if it is still the one this plugin registered.
+        /// </summary>
+        /// <remarks>
+        /// Teardown used to remove by type key alone, so if plugin B registered the same
+        /// service type after plugin A, unloading A deleted B's live registration.
+        /// </remarks>
+        private void RemoveOwnService(Type serviceType, object implementation)
+        {
+            if (_parent._services.TryGetValue(serviceType, out var current) &&
+                ReferenceEquals(current, implementation))
             {
-                _parent._services.TryRemove(serviceType, out _);
-            });
+                _parent._services.TryRemove(new KeyValuePair<Type, object>(serviceType, current));
+            }
         }
 
         public override TService GetService<TService>() => _parent.GetService<TService>();

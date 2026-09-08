@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
@@ -87,6 +88,58 @@ public class CanvasRulerControl : Control
             PageDimensionProperty);
     }
 
+    private Pen? _borderPen;
+    private Pen? _tickPen;
+    private Pen? _majorTickPen;
+
+    private readonly Dictionary<(string Text, double Size), FormattedText> _labelCache = new();
+    private IBrush? _labelCacheBrush;
+
+    /// <summary>
+    /// Returns a 1px pen for <paramref name="brush"/>, rebuilding only when the theme-resolved
+    /// brush instance actually changes.
+    /// </summary>
+    private static Pen GetCachedPen(ref Pen? cached, IBrush? brush)
+    {
+        if (cached == null || !ReferenceEquals(cached.Brush, brush))
+        {
+            cached = new Pen(brush, 1);
+        }
+
+        return cached;
+    }
+
+    /// <summary>
+    /// Returns the laid-out text for a tick label.
+    /// </summary>
+    /// <remarks>
+    /// The same handful of labels are drawn every frame, and both rulers re-render on every
+    /// pointer move, so building a FormattedText per major tick per frame was pure churn.
+    /// The cache is dropped whenever the theme changes the label brush.
+    /// </remarks>
+    private FormattedText GetCachedLabel(string label, IBrush? labelBrush, double fontSize = 8.5)
+    {
+        if (!ReferenceEquals(_labelCacheBrush, labelBrush))
+        {
+            _labelCache.Clear();
+            _labelCacheBrush = labelBrush;
+        }
+
+        var key = (label, fontSize);
+        if (_labelCache.TryGetValue(key, out var cached)) return cached;
+
+        var text = new FormattedText(
+            label,
+            CultureInfo.InvariantCulture,
+            FlowDirection.LeftToRight,
+            s_typeface,
+            fontSize,
+            labelBrush);
+
+        _labelCache[key] = text;
+        return text;
+    }
+
     public override void Render(DrawingContext context)
     {
         base.Render(context);
@@ -99,11 +152,14 @@ public class CanvasRulerControl : Control
         // Resolve Dynamic Theme Brushes
         var bgBrush = (this.TryFindResource("WinInputBgBrush", out var bgObj) && bgObj is IBrush b1) ? b1 : s_defBgBrush;
         var borderBrush = (this.TryFindResource("WinBorderBrush", out var bdrObj) && bdrObj is IBrush b2) ? b2 : s_defBorderPen.Brush;
-        var borderPen = new Pen(borderBrush, 1);
         var tickBrush = (this.TryFindResource("WinSubtleBrush", out var tObj) && tObj is IBrush b3) ? b3 : s_defTickPen.Brush;
-        var tickPen = new Pen(tickBrush, 1);
         var majorTickBrush = (this.TryFindResource("WinMutedBrush", out var mtObj) && mtObj is IBrush b4) ? b4 : s_defMajorTickPen.Brush;
-        var majorTickPen = new Pen(majorTickBrush, 1);
+
+        // Both rulers re-render on every pointer move (CursorPosition is in AffectsRender),
+        // so the theme-resolved pens are reused until the underlying brush actually changes.
+        var borderPen = GetCachedPen(ref _borderPen, borderBrush);
+        var tickPen = GetCachedPen(ref _tickPen, tickBrush);
+        var majorTickPen = GetCachedPen(ref _majorTickPen, majorTickBrush);
         var pageShadeBrush = (this.TryFindResource("WinPanelBrush", out var psObj) && psObj is IBrush b5) ? b5 : s_defPageShadeBrush;
         var labelBrush = majorTickBrush ?? s_defLabelBrush;
 
@@ -148,16 +204,7 @@ public class CanvasRulerControl : Control
                         _ => $"{pt:0}"
                     };
 
-                    var formattedText = new FormattedText(
-                        label,
-                        CultureInfo.InvariantCulture,
-                        FlowDirection.LeftToRight,
-                        s_typeface,
-                        8.5,
-                        labelBrush
-                    );
-
-                    context.DrawText(formattedText, new Point(x + 2, 2));
+                    context.DrawText(GetCachedLabel(label, labelBrush), new Point(x + 2, 2));
                 }
             }
 
@@ -209,16 +256,7 @@ public class CanvasRulerControl : Control
                         _ => $"{pt:0}"
                     };
 
-                    var formattedText = new FormattedText(
-                        label,
-                        CultureInfo.InvariantCulture,
-                        FlowDirection.LeftToRight,
-                        s_typeface,
-                        8.0,
-                        labelBrush
-                    );
-
-                    context.DrawText(formattedText, new Point(2, y + 2));
+                    context.DrawText(GetCachedLabel(label, labelBrush, fontSize: 8.0), new Point(2, y + 2));
                 }
             }
 

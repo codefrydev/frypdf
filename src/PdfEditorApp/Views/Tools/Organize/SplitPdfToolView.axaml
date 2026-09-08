@@ -136,9 +136,9 @@
                                                     <Border Grid.Row="1" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5" Margin="0,0,0,4">
                                                         <StackPanel Spacing="3" VerticalAlignment="Center">
                                                             <Border Height="2.5" Background="#DC2626" CornerRadius="1" Margin="0,0,16,0" Opacity="0.8" />
-                                                            <Border Height="2" Background="#CBD5E1" CornerRadius="1" Margin="0,0,4,0" />
-                                                            <Border Height="2" Background="#E2E8F0" CornerRadius="1" Margin="0,0,10,0" />
-                                                            <Border Height="2" Background="#CBD5E1" CornerRadius="1" Margin="0,0,2,0" />
+                                                            <Border Height="2" Background="{DynamicResource WinBorderBrush}" CornerRadius="1" Margin="0,0,4,0" />
+                                                            <Border Height="2" Background="{DynamicResource WinHoverBrush}" CornerRadius="1" Margin="0,0,10,0" />
+                                                            <Border Height="2" Background="{DynamicResource WinBorderBrush}" CornerRadius="1" Margin="0,0,2,0" />
                                                         </StackPanel>
                                                     </Border>
 

@@ -120,8 +120,18 @@ public class FileInstalledPluginStore : IInstalledPluginStore
         }
     }
 
+    /// <summary>
+    /// Serializes the registry through a temporary file and swaps it into place.
+    /// </summary>
+    /// <remarks>
+    /// This used to write straight over installed_plugins.json. A failure partway through
+    /// left a truncated registry — losing the record of every installed plugin — while
+    /// AddOrUpdate/Remove still reported success. The write is now atomic, and a failure
+    /// leaves the previous registry intact.
+    /// </remarks>
     private void SaveInternal()
     {
+        string? tempPath = null;
         try
         {
             var dir = Path.GetDirectoryName(_filePath);
@@ -132,11 +142,34 @@ public class FileInstalledPluginStore : IInstalledPluginStore
 
             var list = _records.Values.OrderByDescending(r => r.InstalledAt).ToList();
             var json = JsonSerializer.Serialize(list, JsonOptions);
-            File.WriteAllText(_filePath, json);
+
+            tempPath = _filePath + $".{Guid.NewGuid():N}.tmp";
+            File.WriteAllText(tempPath, json);
+
+            if (File.Exists(_filePath))
+            {
+                File.Replace(tempPath, _filePath, destinationBackupFileName: null);
+            }
+            else
+            {
+                File.Move(tempPath, _filePath);
+            }
+
+            tempPath = null;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[FileInstalledPluginStore] Save error: {ex.Message}");
+            // Debug.WriteLine is captured process-wide by AppLogService's trace listener, which
+            // this Core project cannot reference directly.
+            System.Diagnostics.Debug.WriteLine(
+                $"[FileInstalledPluginStore] Failed to persist '{_filePath}'; the previous registry is unchanged: {ex}");
+        }
+        finally
+        {
+            if (tempPath != null)
+            {
+                try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { /* best effort */ }
+            }
         }
     }
 }

@@ -62,13 +62,15 @@ public class FontManagerTests
         // Clean any existing files first
         await _fontService.DeletePackageAsync(hebrewPack);
 
+        // Progress<T> posts its callbacks to the captured SynchronizationContext, so they can
+        // still be pending when the assert below runs. A direct IProgress<T> reports inline.
         var progressReported = false;
-        var progress = new Progress<double>(p => { if (p > 0) progressReported = true; });
+        var progress = new InlineProgress(p => { if (p > 0) Volatile.Write(ref progressReported, true); });
 
         var success = await _fontService.DownloadPackageAsync(hebrewPack, progress);
 
         Assert.True(success, "Hebrew font package should download successfully from GitHub repository");
-        Assert.True(progressReported, "Progress should be reported during download");
+        Assert.True(Volatile.Read(ref progressReported), "Progress should be reported during download");
         Assert.True(_fontService.IsPackageInstalled(hebrewPack), "Package should be marked as installed");
 
         // Cleanup after test
@@ -163,5 +165,16 @@ public class FontManagerTests
         Assert.Equal(HomeNavSection.FontPackages, home.SelectedNavSection);
         Assert.True(home.IsFontPackagesSection);
         Assert.NotNull(home.FontManager);
+    }
+
+    /// <summary>
+    /// An <see cref="IProgress{T}"/> that invokes its callback synchronously on the reporting
+    /// thread, so a test can assert on it immediately after awaiting the operation.
+    /// </summary>
+    private sealed class InlineProgress : IProgress<double>
+    {
+        private readonly Action<double> _onReport;
+        public InlineProgress(Action<double> onReport) => _onReport = onReport;
+        public void Report(double value) => _onReport(value);
     }
 }

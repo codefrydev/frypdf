@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Threading;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,6 +34,34 @@ public class FontPackageService : IFontPackageService
     private readonly List<FontPackageInfo> _catalog;
 
     public event Action? FontLibraryChanged;
+
+    /// <summary>
+    /// Raises <see cref="FontLibraryChanged"/> on the UI thread and drops the font-family memo.
+    /// </summary>
+    /// <remarks>
+    /// Two of the raise sites run inside <see cref="Task.Run(Action)"/>, i.e. definitively off
+    /// the UI thread, and the subscriber (FontManagerViewModel) clears and repopulates an
+    /// ObservableCollection that is bound to the UI. Mutating a bound collection off-thread
+    /// throws or corrupts item containers.
+    /// </remarks>
+    private void RaiseFontLibraryChanged()
+    {
+        // A newly installed or deleted font changes what CreateFontFamily resolves.
+        FontHelper.InvalidateFontFamilyCache();
+
+        var handler = FontLibraryChanged;
+        if (handler == null) return;
+
+        // With no Avalonia application there is no dispatcher loop, and Post would silently
+        // drop the callback instead of throwing.
+        if (Dispatcher.UIThread.CheckAccess() || Avalonia.Application.Current == null)
+        {
+            handler();
+            return;
+        }
+
+        Dispatcher.UIThread.Post(() => handler());
+    }
 
     public FontPackageService()
     {
@@ -141,13 +170,14 @@ public class FontPackageService : IFontPackageService
 
                 File.Move(tempPath, targetPath);
 
-                // Register with QuestPDF dynamically
-                try
+                // Register with QuestPDF dynamically. A failure here used to be swallowed
+                // *after* the file had been moved into place, so IsPackageInstalled reported
+                // the pack as installed while QuestPDF could not actually use it.
+                if (!QuestPdfFontRegistry.TryRegisterFile(targetPath))
                 {
-                    using var regStream = File.OpenRead(targetPath);
-                    QuestPDF.Drawing.FontManager.RegisterFont(regStream);
+                    statusCallback?.Invoke(
+                        $"{file.FileName} downloaded, but could not be registered for PDF export.");
                 }
-                catch { }
 
                 completedFiles++;
             }
@@ -165,7 +195,7 @@ public class FontPackageService : IFontPackageService
 
         progress?.Report(1.0);
         statusCallback?.Invoke("Installed successfully!");
-        FontLibraryChanged?.Invoke();
+        RaiseFontLibraryChanged();
         return true;
     }
 
@@ -184,7 +214,7 @@ public class FontPackageService : IFontPackageService
                     }
                 }
 
-                FontLibraryChanged?.Invoke();
+                RaiseFontLibraryChanged();
                 return true;
             }
             catch
@@ -222,7 +252,7 @@ public class FontPackageService : IFontPackageService
                 {
                     try { File.Delete(file); } catch { }
                 }
-                FontLibraryChanged?.Invoke();
+                RaiseFontLibraryChanged();
             }
             catch { }
         });
@@ -247,10 +277,10 @@ public class FontPackageService : IFontPackageService
 
                 using (var stream = File.OpenRead(destPath))
                 {
-                    QuestPDF.Drawing.FontManager.RegisterFont(stream);
+                    QuestPdfFontRegistry.Register(stream);
                 }
 
-                FontLibraryChanged?.Invoke();
+                RaiseFontLibraryChanged();
                 return true;
             }
             catch
@@ -335,7 +365,7 @@ public class FontPackageService : IFontPackageService
                 try
                 {
                     using var stream = File.OpenRead(fontPath);
-                    QuestPDF.Drawing.FontManager.RegisterFont(stream);
+                    QuestPdfFontRegistry.Register(stream);
                 }
                 catch { }
             }

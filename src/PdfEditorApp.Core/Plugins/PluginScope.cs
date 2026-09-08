@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace PdfEditorApp.Core.Plugins;
 
@@ -10,7 +11,10 @@ namespace PdfEditorApp.Core.Plugins;
 public sealed class PluginScope : IDisposable
 {
     private readonly object _lock = new();
-    private readonly Stack<Action> _disposers = new();
+
+    // A List (unwound in reverse) rather than a Stack, so that a token returned by
+    // RegisterEffect can remove its own effect without disturbing the others' LIFO order.
+    private readonly List<Action> _disposers = new();
     private bool _isDisposed;
 
     /// <summary>
@@ -36,10 +40,10 @@ public sealed class PluginScope : IDisposable
         lock (_lock)
         {
             ObjectDisposedException.ThrowIf(_isDisposed, this);
-            _disposers.Push(onDispose);
+            _disposers.Add(onDispose);
         }
 
-        return new ScopeEffectToken(onDispose);
+        return new ScopeEffectToken(this, onDispose);
     }
 
     /// <summary>
@@ -64,10 +68,11 @@ public sealed class PluginScope : IDisposable
             _isDisposed = true;
 
             actionsToRun = new List<Action>(_disposers);
+            actionsToRun.Reverse();
             _disposers.Clear();
         }
 
-        // Execute in LIFO order (Stack enumeration is top-to-bottom, which is LIFO)
+        // Execute in LIFO order (most recently registered effect unwinds first)
         List<Exception>? exceptions = null;
         foreach (var action in actionsToRun)
         {
@@ -88,19 +93,50 @@ public sealed class PluginScope : IDisposable
         }
     }
 
+    /// <summary>
+    /// Removes <paramref name="onDispose"/> from this scope without running it.
+    /// </summary>
+    /// <returns>True when the effect was still registered.</returns>
+    private bool TryRemoveEffect(Action onDispose)
+    {
+        lock (_lock)
+        {
+            if (_isDisposed) return false;
+            return _disposers.Remove(onDispose);
+        }
+    }
+
+    /// <summary>
+    /// Handle returned by <see cref="RegisterEffect"/>. Disposing it unwinds that one effect
+    /// immediately and unregisters it from the scope.
+    /// </summary>
+    /// <remarks>
+    /// This used to only null out its own field, so it neither removed the action from the
+    /// scope nor ran it — every scoped RegisterTool / RegisterCommand / RegisterOverlay handle
+    /// was silently inert, and the registration survived until the whole plugin unmounted.
+    /// </remarks>
     private sealed class ScopeEffectToken : IDisposable
     {
+        private readonly PluginScope _scope;
         private Action? _action;
 
-        public ScopeEffectToken(Action action)
+        public ScopeEffectToken(PluginScope scope, Action action)
         {
+            _scope = scope;
             _action = action;
         }
 
         public void Dispose()
         {
-            // Note: The main scope disposal will safely no-op or run whatever is registered.
-            _action = null;
+            var action = Interlocked.Exchange(ref _action, null);
+            if (action == null) return;
+
+            // Only run it if it was still registered; if the scope already unwound it,
+            // running it again could double-unregister.
+            if (_scope.TryRemoveEffect(action))
+            {
+                action();
+            }
         }
     }
 }

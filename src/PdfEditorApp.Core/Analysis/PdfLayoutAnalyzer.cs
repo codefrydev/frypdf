@@ -77,11 +77,25 @@ public static class PdfLayoutAnalyzer
     /// <param name="page">The PDF page to analyze.</param>
     /// <param name="pageHeight">Page height in PDF points (for coordinate flip).</param>
     /// <param name="columnGapMultiplier">Multiplier to widen column gap threshold (1.5 for landscape/ID cards).</param>
-    public static List<ExtractedPdfParagraph> AnalyzeAndGroupPageText(Page page, double pageHeight, double columnGapMultiplier = 1.0)
+    /// <summary>
+    /// Groups a page's text into paragraphs.
+    /// </summary>
+    /// <param name="preExtractedWords">
+    /// Words already extracted by the caller, if any. PdfPig re-runs its whole word-extraction
+    /// pass on each <c>GetWords()</c> call, and the deconstruction engine already needs the
+    /// word list — passing it in avoids doing that work twice per page.
+    /// </param>
+    public static List<ExtractedPdfParagraph> AnalyzeAndGroupPageText(
+        Page page,
+        double pageHeight,
+        double columnGapMultiplier = 1.0,
+        IReadOnlyList<Word>? preExtractedWords = null)
     {
-        var rawWords = page.GetWords()
-            .Where(w => !string.IsNullOrWhiteSpace(w.Text))
-            .ToList();
+        var rawWords = preExtractedWords as List<Word>
+            ?? preExtractedWords?.ToList()
+            ?? page.GetWords()
+                .Where(w => !string.IsNullOrWhiteSpace(w.Text))
+                .ToList();
 
         if (rawWords.Count == 0)
         {
@@ -179,6 +193,9 @@ public static class PdfLayoutAnalyzer
         // For Rotate270 text each glyph is a single character stacked bottom-to-top,
         // so we use a narrow X-band threshold to bucket same-column glyphs together.
         var colBuckets = new List<List<Word>>();
+
+        // Left/right extent of each bucket, maintained as words are added.
+        var colExtents = new List<(double Left, double Right)>();
         var sortedByX = words.OrderBy(w => w.BoundingBox.Left).ToList();
 
         foreach (var word in sortedByX)
@@ -188,27 +205,35 @@ public static class PdfLayoutAnalyzer
             double wordMidX = (wordLeft + wordRight) / 2.0;
 
             List<Word>? matchingCol = null;
+            int matchingIndex = -1;
             double bestDist = double.MaxValue;
 
-            foreach (var col in colBuckets)
+            for (int ci = 0; ci < colBuckets.Count; ci++)
             {
-                double colMidX = (col.Min(w => w.BoundingBox.Left) + col.Max(w => w.BoundingBox.Right)) / 2.0;
+                // The bucket's extent is tracked incrementally. Recomputing Min/Max over the
+                // whole bucket for every word made this O(words x buckets x bucketSize).
+                var extent = colExtents[ci];
+                double colMidX = (extent.Left + extent.Right) / 2.0;
                 double dist = Math.Abs(wordMidX - colMidX);
                 // Use a tight 12pt X-band tolerance so left/right card text is never merged
                 if (dist <= 12.0 && dist < bestDist)
                 {
                     bestDist = dist;
-                    matchingCol = col;
+                    matchingCol = colBuckets[ci];
+                    matchingIndex = ci;
                 }
             }
 
             if (matchingCol != null)
             {
                 matchingCol.Add(word);
+                var extent = colExtents[matchingIndex];
+                colExtents[matchingIndex] = (Math.Min(extent.Left, wordLeft), Math.Max(extent.Right, wordRight));
             }
             else
             {
                 colBuckets.Add(new List<Word> { word });
+                colExtents.Add((wordLeft, wordRight));
             }
         }
 
@@ -456,17 +481,23 @@ public static class PdfLayoutAnalyzer
 
             var currentSegment = new List<Word>();
 
+            // Rightmost edge of the current segment, tracked incrementally rather than
+            // re-scanned with Max() for every word (which made segmentation O(k^2) per line).
+            double segmentRight = double.MinValue;
+
             foreach (var word in orderedWords)
             {
+                // GetWordEffectiveBounds re-reads word.Letters, so call it once per word.
+                var wordBounds = GetWordEffectiveBounds(word);
+
                 if (currentSegment.Count == 0)
                 {
                     currentSegment.Add(word);
+                    segmentRight = wordBounds.Right;
                     continue;
                 }
 
-                double prevRight = currentSegment.Max(w => GetWordEffectiveBounds(w).Right);
-                double gap = GetWordEffectiveBounds(word).Left - prevRight;
-                var wordBounds = GetWordEffectiveBounds(word);
+                double gap = wordBounds.Left - segmentRight;
                 double wordHeight = Math.Max(6.0, wordBounds.Height);
 
                 // Column / element gap threshold: in typography, gaps > 25pt or > 1.1x font size represent separate columns/badges.
@@ -480,10 +511,12 @@ public static class PdfLayoutAnalyzer
                     if (line != null) resultLines.Add(line);
 
                     currentSegment = new List<Word> { word };
+                    segmentRight = wordBounds.Right;
                 }
                 else
                 {
                     currentSegment.Add(word);
+                    if (wordBounds.Right > segmentRight) segmentRight = wordBounds.Right;
                 }
             }
 
@@ -508,11 +541,29 @@ public static class PdfLayoutAnalyzer
         var ordered = words.OrderBy(w => GetWordEffectiveBounds(w).Left).ToList();
         var sb = new StringBuilder();
 
-        double minLeft = ordered.Min(w => GetWordEffectiveBounds(w).Left);
-        double maxRight = ordered.Max(w => GetWordEffectiveBounds(w).Right);
-        double maxTop = ordered.Max(w => GetWordEffectiveBounds(w).Top);
-        double minBottom = ordered.Min(w => GetWordEffectiveBounds(w).Bottom);
-        double avgBaseline = ordered.Average(w => GetWordEffectiveBounds(w).BaselineY);
+        // Bounds are computed once per word into a parallel array. This used to be six
+        // separate passes, each re-invoking GetWordEffectiveBounds for every word (which
+        // itself re-reads word.Letters), plus two or three more per word inside the loop below.
+        var bounds = new (double Left, double Right, double Top, double Bottom, double BaselineY, double Height)[ordered.Count];
+        for (int b = 0; b < ordered.Count; b++)
+        {
+            bounds[b] = GetWordEffectiveBounds(ordered[b]);
+        }
+
+        double minLeft = double.MaxValue, maxRight = double.MinValue;
+        double maxTop = double.MinValue, minBottom = double.MaxValue;
+        double baselineSum = 0;
+
+        foreach (var wb in bounds)
+        {
+            if (wb.Left < minLeft) minLeft = wb.Left;
+            if (wb.Right > maxRight) maxRight = wb.Right;
+            if (wb.Top > maxTop) maxTop = wb.Top;
+            if (wb.Bottom < minBottom) minBottom = wb.Bottom;
+            baselineSum += wb.BaselineY;
+        }
+
+        double avgBaseline = bounds.Length > 0 ? baselineSum / bounds.Length : 0;
 
         for (int i = 0; i < ordered.Count; i++)
         {
@@ -520,7 +571,7 @@ public static class PdfLayoutAnalyzer
             {
                 var prev = ordered[i - 1];
                 var cur = ordered[i];
-                double gap = GetWordEffectiveBounds(cur).Left - GetWordEffectiveBounds(prev).Right;
+                double gap = bounds[i].Left - bounds[i - 1].Right;
                 double ptSize = cur.Letters.FirstOrDefault()?.PointSize ?? 10.0;
                 double spaceThreshold = Math.Max(1.6, ptSize * 0.18);
 
@@ -897,12 +948,31 @@ public static class PdfLayoutAnalyzer
         };
     }
 
+    /// <summary>
+    /// Merges runs of adjacent spans that share the same formatting.
+    /// </summary>
+    /// <remarks>
+    /// One span is produced per word, so a uniformly styled paragraph merges into a single
+    /// span. Accumulating that with <c>current.Text += s.Text</c> reallocated an
+    /// ever-growing string per word — quadratic in characters, so a 4 000-word paragraph did
+    /// 4 000 copies of a string approaching the full paragraph length. A StringBuilder
+    /// accumulates the run and is flushed only when the formatting actually changes.
+    /// </remarks>
     private static List<PdfTextSpan> NormalizeSpans(List<PdfTextSpan> spans)
     {
         if (spans.Count <= 1) return spans;
 
         var merged = new List<PdfTextSpan>(spans.Count);
         PdfTextSpan? current = null;
+        var runText = new StringBuilder();
+
+        void FlushRun()
+        {
+            if (current == null) return;
+            current.Text = runText.ToString();
+            merged.Add(current);
+            runText.Clear();
+        }
 
         foreach (var s in spans)
         {
@@ -911,6 +981,7 @@ public static class PdfLayoutAnalyzer
             if (current == null)
             {
                 current = s.Clone();
+                runText.Append(s.Text);
                 continue;
             }
 
@@ -920,19 +991,17 @@ public static class PdfLayoutAnalyzer
                 current.IsItalic == s.IsItalic &&
                 string.Equals(current.TextColorHex, s.TextColorHex, StringComparison.OrdinalIgnoreCase))
             {
-                current.Text += s.Text;
+                runText.Append(s.Text);
             }
             else
             {
-                merged.Add(current);
+                FlushRun();
                 current = s.Clone();
+                runText.Append(s.Text);
             }
         }
 
-        if (current != null)
-        {
-            merged.Add(current);
-        }
+        FlushRun();
 
         return merged;
     }
@@ -976,7 +1045,10 @@ public static class PdfLayoutAnalyzer
             !fn.Contains("kannada") && !fn.Contains("bengali") && !fn.Contains("malayalam"))
             return "Noto Sans";
         if (fn.Contains("notoserif")) return "Noto Serif";
-        if (fn.Contains("mono") || fn.Contains("courier")) return "Fira Code";
+        // Monotype is a foundry name, not a monospace signal: "MonotypeCorsiva" is a script
+        // face and used to be rendered monospaced by this rule.
+        if (fn.Contains("corsiva")) return "Dancing Script";
+        if (fn.Contains("courier") || (fn.Contains("mono") && !fn.Contains("monotype"))) return "Fira Code";
         if (fn.Contains("raleway")) return "Raleway";
         if (fn.Contains("nunito")) return "Nunito";
         if (fn.Contains("ubuntu")) return "Ubuntu";
@@ -1004,8 +1076,10 @@ public static class PdfLayoutAnalyzer
         if (fn.Contains("alfaslab") || fn.Contains("alfa slab")) return "Montserrat";
 
         // --- Indian Scripts → mapped to Noto variants we have on disk ---
+        // "aakar" is deliberately absent here: it is a Gujarati face, and listing it in this
+        // (earlier) rule made the Gujarati branch below unreachable for it.
         if (fn.Contains("nirmala") || fn.Contains("mangal") || fn.Contains("devanagari") ||
-            fn.Contains("kruti") || fn.Contains("shree") || fn.Contains("aakar") ||
+            fn.Contains("kruti") || fn.Contains("shree") ||
             fn.Contains("lohit") || fn.Contains("samyak") || fn.Contains("tiro") ||
             fn.Contains("hindi") || fn.Contains("marathi") || fn.Contains("sanskrit"))
             return "Noto Sans Devanagari";
@@ -1026,8 +1100,19 @@ public static class PdfLayoutAnalyzer
         if (fn.Contains("oriya") || fn.Contains("odia") || fn.Contains("kalinga"))
             return "Noto Sans";
 
-        // --- Arabic / Urdu / Farsi ---
-        if (fn.Contains("arabic") || fn.Contains("urdu") || fn.Contains("farsi") ||
+        // --- Persian / Farsi and Urdu ---
+        // These must be tested before the general Arabic rule below. That rule also matched
+        // "urdu" and "farsi", so the dedicated Vazirmatn and Noto Nastaliq Urdu branches
+        // further down were unreachable and both scripts rendered with the generic Arabic face.
+        if (fn.Contains("persian") || fn.Contains("farsi") || fn.Contains("vazir") ||
+            fn.Contains("iran") || fn.Contains("yekan") || fn.Contains("nazanin"))
+            return "Vazirmatn";
+
+        if (fn.Contains("urdu") || fn.Contains("nastaliq") || fn.Contains("noori") || fn.Contains("nafees"))
+            return "Noto Nastaliq Urdu";
+
+        // --- Arabic ---
+        if (fn.Contains("arabic") ||
             fn.Contains("naskh") || fn.Contains("scheherazade") || fn.Contains("amiri") ||
             fn.Contains("traditional arabic") || fn.Contains("simplified arabic"))
             return "Noto Sans Arabic";
@@ -1092,15 +1177,6 @@ public static class PdfLayoutAnalyzer
         // --- Armenian ---
         if (fn.Contains("armenian") || fn.Contains("mshtakan") || fn.Contains("euphemia"))
             return "Noto Sans Armenian";
-
-        // --- Persian / Farsi ---
-        if (fn.Contains("persian") || fn.Contains("farsi") || fn.Contains("vazir") ||
-            fn.Contains("iran") || fn.Contains("yekan") || fn.Contains("nazanin"))
-            return "Vazirmatn";
-
-        // --- Urdu (Nastaliq) ---
-        if (fn.Contains("urdu") || fn.Contains("nastaliq") || fn.Contains("noori") || fn.Contains("nafees"))
-            return "Noto Nastaliq Urdu";
 
         // --- Myanmar ---
         if (fn.Contains("myanmar") || fn.Contains("burmese") || fn.Contains("zawgyi") || fn.Contains("mon"))

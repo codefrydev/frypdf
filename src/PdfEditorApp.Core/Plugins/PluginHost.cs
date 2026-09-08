@@ -113,20 +113,46 @@ public class PluginHost : IAsyncDisposable, IDisposable
     public void RegisterPlugin(IFryPlugin plugin)
     {
         ArgumentNullException.ThrowIfNull(plugin);
+
+        PluginScope? scopeToUnwind = null;
+
         lock (_lock)
         {
             if (_entries.TryGetValue(plugin.Id, out var existing))
             {
                 if (ReferenceEquals(existing.Plugin, plugin)) return;
 
-                // Replace previous registration with the new plugin instance
+                // Unwind the outgoing instance. Replacing the entry outright dropped the
+                // reference to its live Scope while leaving the old instance in _activePlugins,
+                // so the replaced plugin's effects could never be unwound.
+                scopeToUnwind = existing.Scope;
+                existing.Scope = null;
+
+                var activeIdx = _activePlugins.FindIndex(p => ReferenceEquals(p.Plugin, existing.Plugin));
+                if (activeIdx >= 0)
+                {
+                    _activePlugins.RemoveAt(activeIdx);
+                }
+
                 _registeredPlugins.Remove(existing.Plugin);
-                _registeredPlugins.Add(plugin);
-                _entries[plugin.Id] = new PluginEntry(plugin);
-                return;
             }
+
             _registeredPlugins.Add(plugin);
             _entries[plugin.Id] = new PluginEntry(plugin);
+        }
+
+        if (scopeToUnwind != null)
+        {
+            // Outside the lock: unwinding runs arbitrary plugin cleanup code.
+            try
+            {
+                scopeToUnwind.Dispose();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"[PluginHost] Error unwinding replaced plugin '{plugin.Id}': {ex.Message}");
+            }
         }
     }
 
@@ -182,8 +208,24 @@ public class PluginHost : IAsyncDisposable, IDisposable
             foreach (var plugin in activatable)
             {
                 ct.ThrowIfCancellationRequested();
-                await MountPluginCoreAsync(plugin, ct);
-                pending.Remove(plugin);
+                try
+                {
+                    await MountPluginCoreAsync(plugin, ct);
+                }
+                catch (Exception ex)
+                {
+                    // MountPluginCoreAsync has already marked this plugin Faulted and torn down
+                    // its scope. Rethrowing here aborted the whole loop, so one bad plugin left
+                    // earlier plugins mounted, later ones never loaded, and _isRunning false.
+                    System.Diagnostics.Debug.WriteLine(
+                        $"[PluginHost] Skipping faulted plugin '{plugin.Id}' during startup: {ex.Message}");
+                }
+                finally
+                {
+                    // Must happen even on failure, otherwise the outer loop re-selects the same
+                    // plugin forever.
+                    pending.Remove(plugin);
+                }
             }
         }
 

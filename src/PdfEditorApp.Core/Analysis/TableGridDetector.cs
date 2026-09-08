@@ -60,9 +60,11 @@ public static class TableGridDetector
             // Vertical line segment: height >= 20, width <= 4
             else if (b.Height >= 20.0 && b.Width <= 4.0)
             {
+                // Canvas Y grows downward, so pageHeight - b.Top is the visual TOP.
+                // These were previously stored into the opposite tuple slots.
                 double canvasTop = pageHeight - b.Top;
                 double canvasBottom = pageHeight - b.Bottom;
-                vLines.Add((b.Left, canvasTop, canvasBottom, i));
+                vLines.Add((b.Left, canvasBottom, canvasTop, i));
             }
         }
 
@@ -127,12 +129,35 @@ public static class TableGridDetector
 
             if (tableParas.Count < 4) continue; // Need at least 4 text items to be a valid multi-cell table
 
-            // Detect column divisions from text X positions
-            var distinctColXs = tableParas
-                .Select(p => Math.Round(p.CanvasX, -1)) // Round to nearest 10pt
+            // Detect column divisions. Prefer the actual vertical ruling lines that span
+            // this table; fall back to clustering text X positions when the table is
+            // drawn with horizontal rules only.
+            var tableVLines = vLines
+                .Where(v => v.X >= tableLeftX - 5 && v.X <= tableRightX + 5 &&
+                            v.Top <= tableBottomY + 5 && v.Bottom >= tableTopY - 5)
+                .Select(v => SnapToGrid(v.X))
                 .Distinct()
                 .OrderBy(x => x)
                 .ToList();
+
+            List<double> distinctColXs;
+            if (tableVLines.Count >= 3)
+            {
+                // Ruling lines mark cell boundaries; a column starts just right of each
+                // line except the trailing table edge.
+                distinctColXs = tableVLines.Take(tableVLines.Count - 1).ToList();
+            }
+            else
+            {
+                // Math.Round(value, digits) throws for a negative digit count — C# has no
+                // "round to nearest 10" overload — so this previously threw for every real
+                // table candidate and table detection silently never produced a result.
+                distinctColXs = tableParas
+                    .Select(p => SnapToGrid(p.CanvasX))
+                    .Distinct()
+                    .OrderBy(x => x)
+                    .ToList();
+            }
 
             if (distinctColXs.Count < 2) continue; // Must have at least 2 columns
 
@@ -149,48 +174,60 @@ public static class TableGridDetector
             var headers = new List<string>();
             var rows = new List<List<string>>();
 
-            // Populate header row (Row 0)
-            double row0Top = distinctRowYs[0];
-            double row0Bottom = distinctRowYs[1];
-
+            // Sort by X once and precompute the column bands once. Previously each of the
+            // rows x cols cells re-scanned and re-sorted every paragraph in the table,
+            // which is O(R * C * P * log P).
+            var parasByX = tableParas.OrderBy(p => p.CanvasX).ToList();
+            var colBounds = new (double Left, double Right)[colCount];
             for (int c = 0; c < colCount; c++)
             {
-                double colLeft = distinctColXs[c] - 15;
-                double colRight = (c + 1 < colCount) ? distinctColXs[c + 1] - 5 : tableRightX + 5;
-
-                var cellParas = tableParas.Where(p =>
-                    p.CanvasY >= row0Top - 5 && p.CanvasY <= row0Bottom + 5 &&
-                    p.CanvasX >= colLeft && p.CanvasX < colRight)
-                    .OrderBy(p => p.CanvasX)
-                    .ToList();
-
-                string headerText = string.Join(" ", cellParas.Select(p => p.Text.Trim()));
-                headers.Add(string.IsNullOrWhiteSpace(headerText) ? $"Col {c + 1}" : headerText);
+                colBounds[c] = (
+                    distinctColXs[c] - 15,
+                    (c + 1 < colCount) ? distinctColXs[c + 1] - 5 : tableRightX + 5);
             }
 
-            // Populate body rows (Row 1..N)
-            for (int r = 1; r < rowCount; r++)
+            for (int r = 0; r < rowCount; r++)
             {
                 double rTop = distinctRowYs[r];
                 double rBottom = distinctRowYs[r + 1];
-                var rowData = new List<string>();
 
+                // One pass per row instead of one per cell; parasByX is already X-sorted,
+                // so each band stays in the same order the per-cell OrderBy produced.
+                var rowParas = new List<ExtractedPdfParagraph>();
+                foreach (var para in parasByX)
+                {
+                    if (para.CanvasY >= rTop - 5 && para.CanvasY <= rBottom + 5)
+                        rowParas.Add(para);
+                }
+
+                var rowData = new List<string>(colCount);
                 for (int c = 0; c < colCount; c++)
                 {
-                    double colLeft = distinctColXs[c] - 15;
-                    double colRight = (c + 1 < colCount) ? distinctColXs[c + 1] - 5 : tableRightX + 5;
+                    var (colLeft, colRight) = colBounds[c];
 
-                    var cellParas = tableParas.Where(p =>
-                        p.CanvasY >= rTop - 5 && p.CanvasY <= rBottom + 5 &&
-                        p.CanvasX >= colLeft && p.CanvasX < colRight)
-                        .OrderBy(p => p.CanvasX)
-                        .ToList();
+                    var cellParas = new List<ExtractedPdfParagraph>();
+                    foreach (var para in rowParas)
+                    {
+                        if (para.CanvasX >= colLeft && para.CanvasX < colRight)
+                            cellParas.Add(para);
+                    }
 
                     string cellText = string.Join(" ", cellParas.Select(p => p.Text.Trim()));
                     rowData.Add(cellText);
                 }
 
-                rows.Add(rowData);
+                if (r == 0)
+                {
+                    // Row 0 is the header row.
+                    for (int c = 0; c < colCount; c++)
+                    {
+                        headers.Add(string.IsNullOrWhiteSpace(rowData[c]) ? $"Col {c + 1}" : rowData[c]);
+                    }
+                }
+                else
+                {
+                    rows.Add(rowData);
+                }
             }
 
             if (headers.Count > 0 && rows.Count > 0)
@@ -224,4 +261,15 @@ public static class TableGridDetector
 
         return results;
     }
+
+    /// <summary>
+    /// Snaps a canvas coordinate to the nearest 10pt so that column positions which differ
+    /// only by sub-point rendering jitter collapse to one boundary.
+    /// </summary>
+    /// <remarks>
+    /// Note this deliberately does not use <c>Math.Round(value, -1)</c>: the
+    /// <see cref="Math.Round(double, int)"/> overload throws
+    /// <see cref="ArgumentOutOfRangeException"/> for a negative digit count.
+    /// </remarks>
+    private static double SnapToGrid(double value) => Math.Round(value / 10.0) * 10.0;
 }

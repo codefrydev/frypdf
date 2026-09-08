@@ -287,12 +287,23 @@ public partial class InteractiveChartViewModel : ElementViewModelBase
             item.AnimationProgress = 0.0;
         }
 
-        _animationTimer = new DispatcherTimer
+        // One timer for the lifetime of the view model, reused across replays. Building a new
+        // DispatcherTimer with a new Tick closure per call left the previous timer's handler
+        // attached and its object dropped, and the old closure's stop condition wrote through
+        // the _animationTimer *field* rather than its own timer — so a replay started
+        // mid-animation had the stale tick stop the newly created timer.
+        _animationTimer ??= CreateAnimationTimer();
+        _animationTimer.Start();
+    }
+
+    private DispatcherTimer CreateAnimationTimer()
+    {
+        var timer = new DispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(16) // ~60 FPS
         };
 
-        _animationTimer.Tick += (s, e) =>
+        timer.Tick += (_, _) =>
         {
             _animationStep++;
             double t = (double)_animationStep / TotalAnimationSteps;
@@ -308,7 +319,8 @@ public partial class InteractiveChartViewModel : ElementViewModelBase
 
             if (_animationStep >= TotalAnimationSteps)
             {
-                _animationTimer.Stop();
+                // Stops the timer this handler belongs to, not whatever the field points at.
+                timer.Stop();
                 AnimationProgress = 1.0;
                 foreach (var item in Items)
                 {
@@ -317,7 +329,14 @@ public partial class InteractiveChartViewModel : ElementViewModelBase
             }
         };
 
-        _animationTimer.Start();
+        return timer;
+    }
+
+    /// <summary>Stops the replay animation and releases its timer.</summary>
+    public void StopAnimation()
+    {
+        _animationTimer?.Stop();
+        _animationTimer = null;
     }
 
     /// <summary>

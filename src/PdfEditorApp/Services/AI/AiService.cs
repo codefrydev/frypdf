@@ -21,7 +21,7 @@ namespace PdfEditorApp.Services.AI;
 /// <summary>
 /// Core implementation of IAiService leveraging Microsoft.Extensions.AI, OllamaSharp, and OpenAI SDK.
 /// </summary>
-public class AiService : IAiService
+public class AiService : IAiService, IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly IAiProviderRegistry _providerRegistry;
@@ -30,6 +30,7 @@ public class AiService : IAiService
 
     public AiService(HttpClient? httpClient = null, IAiProviderRegistry? providerRegistry = null)
     {
+        _ownsHttpClient = httpClient == null;
         _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
         _providerRegistry = providerRegistry ?? new AiProviderRegistry();
         if (_httpClient.DefaultRequestHeaders.UserAgent.Count == 0)
@@ -539,9 +540,7 @@ public class AiService : IAiService
 
                 if (!string.IsNullOrWhiteSpace(settings.OllamaApiKey))
                 {
-                    var httpClient = new HttpClient { BaseAddress = new Uri(endpoint), Timeout = TimeSpan.FromSeconds(60) };
-                    httpClient.DefaultRequestHeaders.Authorization =
-                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", settings.OllamaApiKey.Trim());
+                    var httpClient = OllamaHttpClientFactory.GetOrCreate(endpoint, settings.OllamaApiKey.Trim());
                     return new OllamaApiClient(httpClient, model);
                 }
 
@@ -691,5 +690,28 @@ public class AiService : IAiService
 
         [JsonPropertyName("context_length")]
         public long? ContextLength { get; set; }
+    }
+
+    private readonly bool _ownsHttpClient;
+    private bool _isDisposed;
+
+    /// <summary>
+    /// Disposes the <see cref="HttpClient"/> this service created for itself.
+    /// </summary>
+    /// <remarks>
+    /// The class owned an HttpClient but did not implement IDisposable, so its handler was
+    /// never released. An injected client belongs to the caller and is left alone.
+    /// </remarks>
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        if (_ownsHttpClient)
+        {
+            _httpClient.Dispose();
+        }
+
+        GC.SuppressFinalize(this);
     }
 }

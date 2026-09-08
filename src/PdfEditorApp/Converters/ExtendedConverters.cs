@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -1004,9 +1005,23 @@ public class StringPrefixSuffixConverter : IValueConverter
 /// Converts Enum values to human-friendly description strings with space separated words.
 /// e.g. TextAlignmentMode.Center -> "Center", PdfPageSize.A4Portrait -> "A4 Portrait".
 /// </summary>
-public class EnumToDescriptionConverter : IValueConverter
+public partial class EnumToDescriptionConverter : IValueConverter
 {
     public static readonly EnumToDescriptionConverter Instance = new();
+
+    /// <summary>Matches an interior capital, for splitting "A4Portrait" into "A4 Portrait".</summary>
+    [GeneratedRegex(@"(\B[A-Z])")]
+    private static partial Regex InteriorCapitalRegex();
+
+    /// <summary>
+    /// Resolved display names, keyed by enum value.
+    /// </summary>
+    /// <remarks>
+    /// An enum value's display name never changes, but this converter ran reflection
+    /// (GetField + GetCustomAttribute) plus an uncompiled Regex.Replace on every single
+    /// binding evaluation.
+    /// </remarks>
+    private static readonly ConcurrentDictionary<object, string> DisplayNames = new();
 
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
@@ -1015,16 +1030,19 @@ public class EnumToDescriptionConverter : IValueConverter
         Type type = value.GetType();
         if (!type.IsEnum) return value.ToString();
 
-        string name = value.ToString()!;
-        var field = type.GetField(name);
-        if (field != null)
+        return DisplayNames.GetOrAdd(value, static v =>
         {
-            var attr = field.GetCustomAttribute<DescriptionAttribute>();
-            if (attr != null) return attr.Description;
-        }
+            string name = v.ToString()!;
+            var field = v.GetType().GetField(name);
+            if (field != null)
+            {
+                var attr = field.GetCustomAttribute<DescriptionAttribute>();
+                if (attr != null) return attr.Description;
+            }
 
-        // Split CamelCase words into spaced words: "A4Portrait" -> "A4 Portrait"
-        return Regex.Replace(name, "(\\B[A-Z])", " $1");
+            // Split CamelCase words into spaced words: "A4Portrait" -> "A4 Portrait"
+            return InteriorCapitalRegex().Replace(name, " $1");
+        });
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

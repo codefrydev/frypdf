@@ -38,6 +38,13 @@ public sealed class MarketplacePluginItem
     public bool IsVerified { get; init; } = true;
     public bool IsOfficial { get; init; } = false;
     public string DownloadUrl { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Lowercase hex SHA-256 of the .fryplugin archive at <see cref="DownloadUrl"/>.
+    /// When present the installer verifies the download against it before unpacking and
+    /// executing any plugin code. Empty means the catalog entry is unverifiable.
+    /// </summary>
+    public string Sha256 { get; init; } = string.Empty;
     public IReadOnlyList<string> Highlights { get; init; } = Array.Empty<string>();
     public IReadOnlyList<string> ContributedFeatures { get; init; } = Array.Empty<string>();
     public IReadOnlyList<string> Dependencies { get; init; } = Array.Empty<string>();

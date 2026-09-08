@@ -36,6 +36,25 @@ public partial class QrCodeElementViewModel : ElementViewModelBase
     [ObservableProperty]
     private Bitmap? _qrBitmap;
 
+    private Bitmap? _previousQrBitmap;
+
+    /// <summary>
+    /// Disposes the outgoing bitmap whenever a new QR code is rasterized.
+    /// </summary>
+    /// <remarks>
+    /// Avalonia's <see cref="Bitmap"/> wraps native Skia memory the GC does not account for,
+    /// and <see cref="RefreshQrBitmap"/> runs on five different property changes — including
+    /// <c>Content</c>, which is bound to a TextBox, so this fired on every keystroke.
+    /// </remarks>
+    partial void OnQrBitmapChanged(Bitmap? value)
+    {
+        if (_previousQrBitmap != null && _previousQrBitmap != value)
+        {
+            _previousQrBitmap.Dispose();
+        }
+        _previousQrBitmap = value;
+    }
+
     partial void OnContentChanged(string value) => RefreshQrBitmap();
     partial void OnDarkColorHexChanged(string value) => RefreshQrBitmap();
     partial void OnLightColorHexChanged(string value) => RefreshQrBitmap();

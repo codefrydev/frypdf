@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -179,7 +180,8 @@ public class DataMatrix
         result = 0;
         if (string.IsNullOrWhiteSpace(raw)) return false;
 
-        string sanitized = Regex.Replace(raw.Trim(), @"[$,€£¥₹\s]", "");
+        // Char filter rather than a regex: this runs once per parsed cell.
+        string sanitized = StripCurrencyAndSpace(raw);
         if (sanitized.EndsWith("%"))
         {
             sanitized = sanitized.TrimEnd('%');
@@ -202,5 +204,19 @@ public class DataMatrix
             clone.Rows.Add(new List<string>(r));
         }
         return clone;
+    }
+
+    /// <summary>Removes currency symbols, thousands separators and whitespace.</summary>
+    private static string StripCurrencyAndSpace(string raw)
+    {
+        var sb = new StringBuilder(raw.Length);
+        foreach (char c in raw)
+        {
+            if (char.IsWhiteSpace(c)) continue;
+            if (c is '$' or ',' or '\u20AC' or '\u00A3' or '\u00A5' or '\u20B9') continue;
+            sb.Append(c);
+        }
+
+        return sb.ToString();
     }
 }

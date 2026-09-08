@@ -6,6 +6,8 @@ using System.Text;
 using PdfSharpCore.Pdf;
 using PdfSharpCore.Pdf.IO;
 using UglyToad.PdfPig.Writer;
+using PdfEditorApp.Core.Utils;
+using PdfEditorApp.Services; // AppLogService — diagnostic logging
 
 namespace PdfEditorApp.Services.Tools.Core;
 
@@ -51,10 +53,47 @@ public static class PdfFileHelper
         string? producer = "codefrydev.in")
     {
         SetFryPdfMetadata(doc, title, author, subject, keywords, creator, producer);
-        doc.Save(filePath);
-        PatchProducerInFile(filePath, producer ?? "codefrydev.in");
+
+        // Write through a temp file and swap it in atomically. Previously the document was
+        // saved directly to filePath and *then* rewritten in place to patch a ~20-byte
+        // /Producer string; a failure partway through that rewrite (disk full, AV lock,
+        // cancellation) left a truncated PDF at the exact path just reported as saved.
+        var directory = Path.GetDirectoryName(Path.GetFullPath(filePath));
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        string tempPath = filePath + $".{Guid.NewGuid():N}.tmp";
+        try
+        {
+            doc.Save(tempPath);
+            PatchProducerInFile(tempPath, producer ?? "codefrydev.in");
+
+            if (File.Exists(filePath))
+            {
+                File.Replace(tempPath, filePath, destinationBackupFileName: null);
+            }
+            else
+            {
+                File.Move(tempPath, filePath);
+            }
+        }
+        catch
+        {
+            try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { /* best effort */ }
+            throw;
+        }
     }
 
+    /// <summary>
+    /// Rewrites the /Producer string inside an already-written PDF.
+    /// </summary>
+    /// <remarks>
+    /// Failures are logged and swallowed deliberately: the producer string is cosmetic, and
+    /// callers reach this only via <see cref="SaveDocumentWithFryPdfMetadata"/>, which writes
+    /// to a temp file — so a failure here cannot corrupt the caller's destination file.
+    /// </remarks>
     public static void PatchProducerInFile(string filePath, string producer = "codefrydev.in")
     {
         if (!File.Exists(filePath)) return;
@@ -67,54 +106,34 @@ public static class PdfFileHelper
                 File.WriteAllBytes(filePath, updated);
             }
         }
-        catch { }
-    }
-
-    public static byte[] PatchProducerInBytes(byte[] bytes, string producer = "codefrydev.in")
-    {
-        if (bytes == null || bytes.Length < 20) return bytes ?? Array.Empty<byte>();
-
-        try
+        catch (Exception ex)
         {
-            string text = Encoding.ASCII.GetString(bytes);
-            if (text.Contains("/Encrypt"))
-            {
-                // Never binary patch encrypted PDF streams
-                return bytes;
-            }
-
-            int searchIdx = 0;
-            while ((searchIdx = text.IndexOf("/Producer", searchIdx, StringComparison.Ordinal)) >= 0)
-            {
-                int openParen = text.IndexOf('(', searchIdx);
-                if (openParen > searchIdx && openParen < searchIdx + 25)
-                {
-                    int closeParen = text.IndexOf(')', openParen);
-                    if (closeParen > openParen)
-                    {
-                        int origSpanLen = closeParen - openParen + 1;
-                        string replacement = $"({producer})";
-                        if (replacement.Length <= origSpanLen)
-                        {
-                            string filler = "%".PadRight(origSpanLen - replacement.Length, ' ');
-                            string fullPatch = replacement + filler;
-                            byte[] patchBytes = Encoding.ASCII.GetBytes(fullPatch);
-                            Array.Copy(patchBytes, 0, bytes, openParen, patchBytes.Length);
-                        }
-                    }
-                }
-                searchIdx += 9;
-            }
+            AppLogService.Instance.LogWarning("PdfSave",
+                $"Could not patch /Producer in '{filePath}'; the PDF itself is unaffected", ex);
         }
-        catch { }
-
-        return bytes;
     }
+
+    /// <summary>
+    /// Rewrites the /Producer string inside a PDF byte buffer.
+    /// </summary>
+    /// <remarks>
+    /// Delegates to <see cref="PdfDocumentSanitizer"/>. This was a verbatim copy of that
+    /// implementation, so the same defect had to be fixed twice.
+    /// </remarks>
+    public static byte[] PatchProducerInBytes(byte[] bytes, string producer = "codefrydev.in")
+        => PdfDocumentSanitizer.PatchProducerInBytes(bytes, producer);
 
     public static PdfSharpCore.Pdf.PdfDocument OpenDocumentSafely(string filePath, PdfDocumentOpenMode mode = PdfDocumentOpenMode.Import, string? password = null)
     {
         if (!File.Exists(filePath))
             throw new FileNotFoundException($"File not found: {filePath}");
+
+        // Four-stage salvage ladder. Each stage used to discard its exception, so when all
+        // four failed the user was shown stage four's error — almost never the real cause.
+        // Every stage is now logged, and the buffer each stage allocated is released when
+        // that stage fails (on success PdfSharpCore keeps reading from the stream, so it is
+        // deliberately left open and owned by the returned document).
+        string fileName = Path.GetFileName(filePath);
 
         // 1. Direct open attempt
         try
@@ -124,48 +143,63 @@ public static class PdfFileHelper
             else
                 return PdfReader.Open(filePath, password, mode);
         }
+        catch (Exception directEx)
+        {
+            AppLogService.Instance.LogWarning("PdfOpen",
+                $"Stage 1 (direct open) failed for '{fileName}'; sanitizing and retrying", directEx);
+        }
+
+        // 2. Read bytes and sanitize trailing garbage or whitespace
+        byte[] sanitized = SanitizePdfBytes(File.ReadAllBytes(filePath));
+
+        var sanitizedStream = new MemoryStream(sanitized);
+        try
+        {
+            return string.IsNullOrEmpty(password)
+                ? PdfReader.Open(sanitizedStream, mode)
+                : PdfReader.Open(sanitizedStream, password, mode);
+        }
+        catch (Exception sanitizeEx)
+        {
+            sanitizedStream.Dispose();
+            AppLogService.Instance.LogWarning("PdfOpen",
+                $"Stage 2 (sanitized bytes) failed for '{fileName}'; rebuilding with PdfPig", sanitizeEx);
+        }
+
+        // 3. Reconstruct using the PdfPig builder (handles modern cross-reference streams
+        //    and non-standard xrefs)
+        MemoryStream? rebuiltStream = null;
+        try
+        {
+            byte[] rebuilt = ReconstructCleanPdfWithPdfPig(filePath);
+            if (rebuilt.Length > 0)
+            {
+                rebuiltStream = new MemoryStream(rebuilt);
+                return string.IsNullOrEmpty(password)
+                    ? PdfReader.Open(rebuiltStream, mode)
+                    : PdfReader.Open(rebuiltStream, password, mode);
+            }
+        }
+        catch (Exception rebuildEx)
+        {
+            rebuiltStream?.Dispose();
+            AppLogService.Instance.LogWarning("PdfOpen",
+                $"Stage 3 (PdfPig rebuild) failed for '{fileName}'; synthesizing a trailer", rebuildEx);
+        }
+
+        // 4. Synthesize a trailer. This stage's exception is the one that reaches the caller,
+        //    as before — but stages 1-3 are now in the diagnostic log alongside it.
+        var repairedStream = new MemoryStream(SalvageAndRepairPdfBytes(sanitized));
+        try
+        {
+            return string.IsNullOrEmpty(password)
+                ? PdfReader.Open(repairedStream, mode)
+                : PdfReader.Open(repairedStream, password, mode);
+        }
         catch
         {
-            // 2. Read bytes and sanitize trailing garbage or whitespace
-            byte[] rawBytes = File.ReadAllBytes(filePath);
-            byte[] sanitized = SanitizePdfBytes(rawBytes);
-
-            try
-            {
-                var ms = new MemoryStream(sanitized);
-                if (string.IsNullOrEmpty(password))
-                    return PdfReader.Open(ms, mode);
-                else
-                    return PdfReader.Open(ms, password, mode);
-            }
-            catch
-            {
-                // 3. Fallback: Reconstruct using pure C# PdfPig builder (handles modern cross-reference streams and non-standard xrefs)
-                try
-                {
-                    byte[] rebuilt = ReconstructCleanPdfWithPdfPig(filePath);
-                    if (rebuilt.Length > 0)
-                    {
-                        var msRebuilt = new MemoryStream(rebuilt);
-                        if (string.IsNullOrEmpty(password))
-                            return PdfReader.Open(msRebuilt, mode);
-                        else
-                            return PdfReader.Open(msRebuilt, password, mode);
-                    }
-                }
-                catch
-                {
-                    // Continue to next fallback
-                }
-
-                // 4. Fallback: synthesize trailer
-                byte[] repaired = SalvageAndRepairPdfBytes(sanitized);
-                var ms = new MemoryStream(repaired);
-                if (string.IsNullOrEmpty(password))
-                    return PdfReader.Open(ms, mode);
-                else
-                    return PdfReader.Open(ms, password, mode);
-            }
+            repairedStream.Dispose();
+            throw;
         }
     }
 
@@ -214,82 +248,25 @@ public static class PdfFileHelper
         }
     }
 
+    /// <summary>
+    /// Rebuilds a clean PDF by re-emitting every page through PdfPig's document builder.
+    /// </summary>
     public static byte[] ReconstructCleanPdfWithPdfPig(string filePath)
-    {
-        var builder = new PdfDocumentBuilder();
-        using (var pigDoc = UglyToad.PdfPig.PdfDocument.Open(filePath))
-        {
-            for (int i = 1; i <= pigDoc.NumberOfPages; i++)
-            {
-                builder.AddPage(pigDoc, i);
-            }
-        }
-        return builder.Build();
-    }
-
+        => PdfDocumentSanitizer.ReconstructCleanPdfWithPdfPig(filePath);
+    /// <summary>
+    /// Trims trailing garbage after the last %%EOF, or appends a terminator when none exists.
+    /// </summary>
     public static byte[] SanitizePdfBytes(byte[] rawBytes)
-    {
-        if (rawBytes == null || rawBytes.Length < 10) return rawBytes ?? Array.Empty<byte>();
-
-        // Look for the last %%EOF token in the file
-        string rawText = Encoding.ASCII.GetString(rawBytes, Math.Max(0, rawBytes.Length - 8192), Math.Min(rawBytes.Length, 8192));
-        int eofIdx = rawText.LastIndexOf("%%EOF", StringComparison.OrdinalIgnoreCase);
-
-        if (eofIdx >= 0)
-        {
-            int startOffset = Math.Max(0, rawBytes.Length - 8192);
-            int eofAbsoluteEnd = startOffset + eofIdx + 5;
-
-            if (eofAbsoluteEnd < rawBytes.Length)
-            {
-                var trimmed = new byte[eofAbsoluteEnd + 2];
-                Array.Copy(rawBytes, 0, trimmed, 0, eofAbsoluteEnd);
-                trimmed[eofAbsoluteEnd] = (byte)'\r';
-                trimmed[eofAbsoluteEnd + 1] = (byte)'\n';
-                return trimmed;
-            }
-        }
-        else
-        {
-            // Missing %%EOF, append standard trailer terminator
-            using var ms = new MemoryStream();
-            ms.Write(rawBytes, 0, rawBytes.Length);
-            byte[] terminator = Encoding.ASCII.GetBytes("\r\n%%EOF\r\n");
-            ms.Write(terminator, 0, terminator.Length);
-            return ms.ToArray();
-        }
-
-        return rawBytes;
-    }
-
+        => PdfDocumentSanitizer.SanitizePdfBytes(rawBytes);
+    /// <summary>
+    /// Synthesizes a trailer for a PDF whose own trailer is missing.
+    /// </summary>
+    /// <remarks>
+    /// The copy that lived here was missing the null/length guard the Core implementation has,
+    /// so it threw a NullReferenceException on a null buffer instead of returning safely.
+    /// </remarks>
     public static byte[] SalvageAndRepairPdfBytes(byte[] rawBytes)
-    {
-        string fullText = Encoding.ASCII.GetString(rawBytes);
-        int rootIdx = fullText.IndexOf("/Root", StringComparison.OrdinalIgnoreCase);
-        if (rootIdx >= 0 && !fullText.Contains("trailer"))
-        {
-            int spaceIdx = fullText.IndexOf(" ", rootIdx + 5);
-            string rootRef = "1 0 R";
-            if (spaceIdx > 0 && spaceIdx + 10 < fullText.Length)
-            {
-                string snippet = fullText.Substring(rootIdx + 5, Math.Min(20, fullText.Length - (rootIdx + 5))).Trim();
-                var parts = snippet.Split(new[] { ' ', '\r', '\n', '/' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length >= 3 && parts[2] == "R")
-                {
-                    rootRef = $"{parts[0]} {parts[1]} R";
-                }
-            }
-
-            using var ms = new MemoryStream();
-            ms.Write(rawBytes, 0, rawBytes.Length);
-            string synthTrailer = $"\r\ntrailer\r\n<<\r\n/Root {rootRef}\r\n>>\r\nstartxref\r\n0\r\n%%EOF\r\n";
-            byte[] tBytes = Encoding.ASCII.GetBytes(synthTrailer);
-            ms.Write(tBytes, 0, tBytes.Length);
-            return ms.ToArray();
-        }
-        return rawBytes;
-    }
-
+        => PdfDocumentSanitizer.SalvageAndRepairPdfBytes(rawBytes);
     /// <summary>
     /// Checks whether an existing file is currently locked or cannot be opened for writing by the current process.
     /// Returns false if the file does not exist.

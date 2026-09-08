@@ -308,7 +308,7 @@ public class RotateToolOptions
     public string InputFilePath { get; set; } = string.Empty;
     public string OutputFilePath { get; set; } = string.Empty;
     public int RotationDegrees { get; set; } = 90; // 90, 180, 270
-    public PageFilterTarget TargetFilter { get; set; } = PageFilterTarget.All;
+    public PageTargetSelection TargetFilter { get; set; } = PageTargetSelection.AllPages;
     public string CustomRange { get; set; } = "";
 }
 

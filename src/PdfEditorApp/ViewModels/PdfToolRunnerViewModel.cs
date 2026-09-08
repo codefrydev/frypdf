@@ -83,7 +83,7 @@ public partial class PdfToolRunnerViewModel : ViewModelBase
 
     // Rotate
     [ObservableProperty] private int _rotateDegrees = 90;
-    [ObservableProperty] private PageFilterTarget _rotateFilter = PageFilterTarget.All;
+    [ObservableProperty] private PageTargetSelection _rotateFilter = PageTargetSelection.AllPages;
 
     // Security & Unlock
     [ObservableProperty] private string _userPassword = string.Empty;

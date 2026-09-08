@@ -102,7 +102,10 @@ public partial class PdfLivePreviewViewModel : ObservableObject
 
         // Debounced so rapid zooming doesn't trigger a render per tick (matches the
         // PDF Reader's own zoom-debounce behavior).
+        // Cancel *and* dispose the outgoing source; replacing it without disposing
+        // leaks its registrations and internal timer handle on every zoom tick.
         _zoomRenderCts?.Cancel();
+        _zoomRenderCts?.Dispose();
         var cts = new CancellationTokenSource();
         _zoomRenderCts = cts;
         _ = RerenderCurrentPageAfterZoomDebounceAsync(cts.Token);
@@ -151,6 +154,7 @@ public partial class PdfLivePreviewViewModel : ObservableObject
     public async Task LoadDocumentAsync(string? filePath)
     {
         _loadCts?.Cancel();
+        _loadCts?.Dispose();
         var cts = new CancellationTokenSource();
         _loadCts = cts;
 
@@ -232,6 +236,7 @@ public partial class PdfLivePreviewViewModel : ObservableObject
     public void LoadTextContent(string text, string title = "Extracted_Text.txt")
     {
         _loadCts?.Cancel();
+        _loadCts?.Dispose();
         Pages.Clear();
         SelectedPage = null;
         TotalPages = 1;

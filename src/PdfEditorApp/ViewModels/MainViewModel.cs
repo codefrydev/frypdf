@@ -35,7 +35,7 @@ using PdfEditorApp.ViewModels.ElementViewModels;
 
 namespace PdfEditorApp.ViewModels;
 
-public partial class MainViewModel : ViewModelBase
+public partial class MainViewModel : ViewModelBase, IDisposable
 {
     private readonly IPdfExportService _exportService;
     private readonly ITemplateService _templateService;
@@ -840,7 +840,7 @@ public partial class MainViewModel : ViewModelBase
 
         if (_overlayRegistry != null)
         {
-            _overlayRegistry.ActiveOverlaysChanged += () => OnPropertyChanged(nameof(ActiveOverlays));
+            _overlayRegistry.ActiveOverlaysChanged += OnActiveOverlaysChanged;
         }
 
         if (_statusBarRegistry != null)
@@ -862,24 +862,13 @@ public partial class MainViewModel : ViewModelBase
             ToastPosition = s.ToastPosition;
             ToastStyleVariant = s.ToastStyleVariant;
             ToastShowCloseButton = s.ToastShowCloseButton;
-            _uiSettingsService.SettingsChanged += (newSettings) =>
-            {
-                ToastPosition = newSettings.ToastPosition;
-                ToastStyleVariant = newSettings.ToastStyleVariant;
-                ToastShowCloseButton = newSettings.ToastShowCloseButton;
-                RefreshToastVisuals();
-            };
+            _uiSettingsService.SettingsChanged += OnUiSettingsChanged;
         }
 
         if (_themeService != null)
         {
             IsDarkMode = _themeService.IsDarkMode;
-            _themeService.ThemeChanged += (mode) =>
-            {
-                IsDarkMode = _themeService.IsDarkMode;
-                if (Home != null) Home.IsDarkMode = IsDarkMode;
-                RefreshToastVisuals();
-            };
+            _themeService.ThemeChanged += OnThemeServiceThemeChanged;
         }
 
         var effectiveWorkflowEngine = workflowEngine ?? (pdfOperationsService?.WorkflowEngine) ?? new PdfWorkflowEngine();
@@ -1607,6 +1596,7 @@ public partial class MainViewModel : ViewModelBase
     public void ShowToast(string message, ToastNotificationType type, string? iconKind = null, int? customDurationMs = null)
     {
         _toastCts?.Cancel();
+        _toastCts?.Dispose();
         _toastCts = new CancellationTokenSource();
         var token = _toastCts.Token;
 
@@ -2307,5 +2297,54 @@ public partial class MainViewModel : ViewModelBase
         {
             Home.PromptDelete(target);
         }
+    }
+
+    private void OnActiveOverlaysChanged() => OnPropertyChanged(nameof(ActiveOverlays));
+
+    private void OnUiSettingsChanged(UiSettingsModel newSettings)
+    {
+        ToastPosition = newSettings.ToastPosition;
+        ToastStyleVariant = newSettings.ToastStyleVariant;
+        ToastShowCloseButton = newSettings.ToastShowCloseButton;
+        RefreshToastVisuals();
+    }
+
+    private void OnThemeServiceThemeChanged(AppThemeMode mode)
+    {
+        IsDarkMode = _themeService!.IsDarkMode;
+        if (Home != null) Home.IsDarkMode = IsDarkMode;
+        RefreshToastVisuals();
+    }
+
+    private bool _isDisposed;
+
+    /// <summary>
+    /// Detaches from the long-lived registries and services this view model subscribed to.
+    /// </summary>
+    /// <remarks>
+    /// The registries and IThemeService/IUiSettingsService are DI singletons, so every
+    /// subscription rooted this view model — and its whole object graph — for the process
+    /// lifetime. The handlers were anonymous lambdas and so could not be removed at all.
+    /// </remarks>
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        _ribbonRegistry.RegistryChanged -= RefreshPluginRibbonActions;
+
+        if (_overlayRegistry != null) _overlayRegistry.ActiveOverlaysChanged -= OnActiveOverlaysChanged;
+        if (_statusBarRegistry != null) _statusBarRegistry.RegistryChanged -= RefreshStatusBarWidgets;
+        if (_sidebarRegistry != null) _sidebarRegistry.RegistryChanged -= RefreshSidebarTabs;
+        if (_uiSettingsService != null) _uiSettingsService.SettingsChanged -= OnUiSettingsChanged;
+        if (_themeService != null) _themeService.ThemeChanged -= OnThemeServiceThemeChanged;
+
+        _toastCts?.Cancel();
+        _toastCts?.Dispose();
+        _toastCts = null;
+
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+
+        GC.SuppressFinalize(this);
     }
 }

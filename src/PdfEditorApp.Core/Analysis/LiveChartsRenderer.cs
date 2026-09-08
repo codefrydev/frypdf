@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 using LiveChartsCore;
@@ -20,21 +21,22 @@ namespace PdfEditorApp.Core.Analysis;
 /// </summary>
 public static class LiveChartsRenderer
 {
-    private static bool _isConfigured;
-    private static readonly object _configLock = new();
-
-    public static void EnsureConfigured()
+    /// <summary>
+    /// One-shot global LiveCharts configuration.
+    /// </summary>
+    /// <remarks>
+    /// Previously a double-checked lock over a non-volatile bool: the lock-free fast path could
+    /// observe _isConfigured == true before LiveCharts.Configure's writes were visible, letting
+    /// a chart render against half-initialised global configuration. Lazy gives the same
+    /// run-once semantics with the correct memory barriers.
+    /// </remarks>
+    private static readonly Lazy<bool> ConfiguredOnce = new(() =>
     {
-        if (_isConfigured) return;
-        lock (_configLock)
-        {
-            if (!_isConfigured)
-            {
-                LiveCharts.Configure(config => LiveChartsSkiaSharp.UseDefaults(config));
-                _isConfigured = true;
-            }
-        }
-    }
+        LiveCharts.Configure(config => LiveChartsSkiaSharp.UseDefaults(config));
+        return true;
+    }, LazyThreadSafetyMode.ExecutionAndPublication);
+
+    public static void EnsureConfigured() => _ = ConfiguredOnce.Value;
 
     public static IReadOnlyList<string> GetPaletteHexColors(ChartPalette palette)
     {

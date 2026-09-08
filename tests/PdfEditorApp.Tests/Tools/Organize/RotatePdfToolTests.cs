@@ -34,7 +34,7 @@ public class RotatePdfToolTests : IClassFixture<ToolTestFixture>
         Assert.NotNull(vm);
         Assert.Equal(PdfToolId.RotatePdf, vm.Tool.Id);
         Assert.Equal(90, vm.RotationDegrees);
-        Assert.Equal(PageFilterTarget.All, vm.TargetFilter);
+        Assert.Equal(PageTargetSelection.AllPages, vm.TargetFilter);
     }
 
     [Fact]

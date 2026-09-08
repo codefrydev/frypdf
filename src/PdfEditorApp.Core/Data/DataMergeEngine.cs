@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -292,6 +293,10 @@ public class DataMergeEngine : IDataMergeEngine
 
         if (caseInsensitive)
         {
+            // Hoisted: this used to be recomputed for every key of every record, so a merge
+            // over N rows x F fields x K columns ran it N*F*K*2 times.
+            string normalizedTarget = NormalizeFieldName(fieldName);
+
             foreach (var kvp in record)
             {
                 if (string.Equals(kvp.Key, fieldName, StringComparison.OrdinalIgnoreCase))
@@ -300,7 +305,7 @@ public class DataMergeEngine : IDataMergeEngine
                 }
 
                 // Also check normalized name (stripping underscores, spaces, dashes)
-                if (NormalizeFieldName(kvp.Key) == NormalizeFieldName(fieldName))
+                if (NormalizeFieldName(kvp.Key) == normalizedTarget)
                 {
                     return kvp.Value;
                 }
@@ -310,9 +315,26 @@ public class DataMergeEngine : IDataMergeEngine
         return null;
     }
 
+    /// <summary>
+    /// Lowercases a field name and strips whitespace, underscores, dashes and dots.
+    /// </summary>
+    /// <remarks>
+    /// A direct char filter rather than <c>Regex.Replace</c> with an inline pattern: this sits
+    /// on the per-field, per-row merge path, where a regex cache lookup plus two string
+    /// allocations per call dominated.
+    /// </remarks>
     private static string NormalizeFieldName(string name)
     {
-        return Regex.Replace(name.Trim().ToLowerInvariant(), @"[\s_\-\.]", "");
+        if (string.IsNullOrEmpty(name)) return string.Empty;
+
+        var sb = new StringBuilder(name.Length);
+        foreach (char c in name)
+        {
+            if (char.IsWhiteSpace(c) || c == '_' || c == '-' || c == '.') continue;
+            sb.Append(char.ToLowerInvariant(c));
+        }
+
+        return sb.ToString();
     }
 
     private static string FormatValue(string rawValue, string format)

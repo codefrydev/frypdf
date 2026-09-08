@@ -14,7 +14,7 @@ public partial class RotatePdfToolViewModel : PdfToolViewModelBase
     private int _rotationDegrees = 90;
 
     [ObservableProperty]
-    private PageFilterTarget _targetFilter = PageFilterTarget.All;
+    private PageTargetSelection _targetFilter = PageTargetSelection.AllPages;
 
     [ObservableProperty]
     private string _customRange = string.Empty;

@@ -92,14 +92,14 @@ public class PdfDocumentExporter : IDocumentExporter
 
     public Task<byte[]> ExportAsync(PdfDocumentModel document, DocumentExportOptions options, CancellationToken ct = default)
     {
-        if (_exportService != null)
-        {
-            return Task.FromResult(_exportService.GeneratePdfBytes(document));
-        }
+        ct.ThrowIfCancellationRequested();
 
-        // Fallback directly to PdfExportService
-        var fallback = new PdfExportService();
-        return Task.FromResult(fallback.GeneratePdfBytes(document));
+        // ExportToBytesAsync offloads the QuestPDF compile and awaits the plugin waterfall
+        // properly. The synchronous GeneratePdfBytes used here before ran the entire export
+        // on the caller's thread — before Task.FromResult was even constructed — so awaiting
+        // it from a [RelayCommand] froze the UI for the whole export and ignored ct.
+        var service = _exportService ?? new PdfExportService();
+        return service.ExportToBytesAsync(document, null, ct);
     }
 }
 
@@ -167,6 +167,7 @@ public class MarkdownDocumentExporter : IDocumentExporter
             pageNum++;
         }
 
+        ct.ThrowIfCancellationRequested();
         return Task.FromResult(Encoding.UTF8.GetBytes(sb.ToString()));
     }
 }
@@ -198,6 +199,7 @@ public class PlainTextDocumentExporter : IDocumentExporter
             sb.AppendLine();
         }
 
+        ct.ThrowIfCancellationRequested();
         return Task.FromResult(Encoding.UTF8.GetBytes(sb.ToString()));
     }
 }
@@ -251,6 +253,7 @@ public class HtmlDocumentExporter : IDocumentExporter
         sb.AppendLine("</body>");
         sb.AppendLine("</html>");
 
+        ct.ThrowIfCancellationRequested();
         return Task.FromResult(Encoding.UTF8.GetBytes(sb.ToString()));
     }
 }
@@ -288,6 +291,7 @@ public class SvgVectorExporter : IDocumentExporter
         }
 
         sb.AppendLine("</svg>");
+        ct.ThrowIfCancellationRequested();
         return Task.FromResult(Encoding.UTF8.GetBytes(sb.ToString()));
     }
 }

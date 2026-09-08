@@ -49,7 +49,7 @@ public class PdfExportService : IPdfExportService
                         try
                         {
                             using var stream = File.OpenRead(fontFile);
-                            QuestPDF.Drawing.FontManager.RegisterFont(stream);
+                            QuestPdfFontRegistry.Register(stream);
                         }
                         catch { }
                     }
@@ -75,7 +75,7 @@ public class PdfExportService : IPdfExportService
                         try
                         {
                             using var stream = File.OpenRead(ttf);
-                            QuestPDF.Drawing.FontManager.RegisterFont(stream);
+                            QuestPdfFontRegistry.Register(stream);
                         }
                         catch { }
                     }
@@ -91,20 +91,51 @@ public class PdfExportService : IPdfExportService
         return GeneratePdfBytes(model, null);
     }
 
+    /// <summary>
+    /// Synchronous export. Prefer <see cref="ExportToBytesAsync"/> on any UI-thread path.
+    /// </summary>
+    /// <remarks>
+    /// The plugin waterfall is dispatched through <see cref="Task.Run(Func{Task})"/> before
+    /// being waited on. Blocking on it directly deadlocked the app whenever a plugin's
+    /// middleware posted back to the Avalonia dispatcher, because the continuation could
+    /// never run on the thread already blocked here.
+    /// </remarks>
     public byte[] GeneratePdfBytes(PdfDocumentModel model, IProgress<double>? progress)
     {
         var context = new PdfExportPipelineContext(model, progress);
 
         if (_pluginContext != null)
         {
-            _pluginContext.ExecuteWaterfallAsync("document:export", context, () =>
+            var pluginContext = _pluginContext;
+            Task.Run(() => pluginContext.ExecuteWaterfallAsync("document:export", context, () =>
             {
                 context.ResultPdfBytes = CompileModelToBytes(context.Document, context.Progress);
                 return Task.CompletedTask;
-            }).GetAwaiter().GetResult();
+            })).GetAwaiter().GetResult();
 
-            return context.ResultPdfBytes ?? CompileModelToBytes(model, progress);
+            return ResolvePipelineResult(context, model, progress);
         }
+
+        return CompileModelToBytes(model, progress);
+    }
+
+    /// <summary>
+    /// Returns the bytes the export pipeline produced, recompiling only if middleware
+    /// short-circuited without producing any.
+    /// </summary>
+    private static byte[] ResolvePipelineResult(
+        PdfExportPipelineContext context, PdfDocumentModel model, IProgress<double>? progress)
+    {
+        if (context.ResultPdfBytes != null)
+        {
+            return context.ResultPdfBytes;
+        }
+
+        // Middleware suppressed the terminal step without supplying a document. Recompiling
+        // silently discards that decision and does all the work twice, so say so.
+        AppLogService.Instance.Log(AppLogLevel.Warning, "PdfExport",
+            "The 'document:export' pipeline completed without producing bytes; recompiling the " +
+            "document directly. A plugin short-circuited the pipeline without setting ResultPdfBytes.");
 
         return CompileModelToBytes(model, progress);
     }
@@ -137,7 +168,7 @@ public class PdfExportService : IPdfExportService
                 return Task.CompletedTask;
             });
 
-            return context.ResultPdfBytes ?? CompileModelToBytes(model, progress);
+            return ResolvePipelineResult(context, model, progress);
         }
 
         return await Task.Run(() => CompileModelToBytes(model, progress), ct);
@@ -669,9 +700,10 @@ internal class QuestPdfDocumentWrapper : IDocument
                 return;
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Fallback to title block
+            AppLogService.Instance.LogWarning("PdfExport",
+                $"Chart '{chartEl.Title}' could not be rendered; exporting a title block instead", ex);
         }
 
         container.Border(1).BorderColor(chartEl.BorderColorHex).Background(chartEl.BackgroundColorHex).Padding(8).Column(chartCol =>
@@ -680,8 +712,18 @@ internal class QuestPdfDocumentWrapper : IDocument
         });
     }
 
+    /// <summary>
+    /// Draws an image element, falling back to a labelled placeholder box.
+    /// </summary>
+    /// <remarks>
+    /// Each source attempt used to swallow its exception outright, so a logo that failed to
+    /// decode silently became a grey box in every exported PDF with no error anywhere. The
+    /// fallback behaviour is unchanged — the failures are now recorded.
+    /// </remarks>
     private void ComposeImage(IContainer container, PdfImageElement imgEl)
     {
+        string label = imgEl.AltText ?? imgEl.ImagePath ?? "image";
+
         if (imgEl.ImageData != null && imgEl.ImageData.Length > 0)
         {
             try
@@ -689,7 +731,11 @@ internal class QuestPdfDocumentWrapper : IDocument
                 container.Image(imgEl.ImageData).FitArea();
                 return;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLogService.Instance.LogWarning("PdfExport",
+                    $"Embedded image bytes for '{label}' could not be drawn", ex);
+            }
         }
 
         if (!string.IsNullOrEmpty(imgEl.Base64Data))
@@ -700,7 +746,11 @@ internal class QuestPdfDocumentWrapper : IDocument
                 container.Image(bytes).FitArea();
                 return;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLogService.Instance.LogWarning("PdfExport",
+                    $"Base64 image data for '{label}' could not be decoded", ex);
+            }
         }
 
         if (!string.IsNullOrEmpty(imgEl.ImagePath) && File.Exists(imgEl.ImagePath))
@@ -717,8 +767,15 @@ internal class QuestPdfDocumentWrapper : IDocument
                 container.Image(imgEl.ImagePath).FitArea();
                 return;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLogService.Instance.LogWarning("PdfExport",
+                    $"Image file '{imgEl.ImagePath}' could not be drawn", ex);
+            }
         }
+
+        AppLogService.Instance.Log(AppLogLevel.Warning, "PdfExport",
+            $"No usable image source for '{label}'; exporting a placeholder box instead.");
 
         container.Border(1).BorderColor(imgEl.BorderColorHex).Background("#F3F2F1").AlignCenter().AlignMiddle()
             .Text(imgEl.AltText ?? "Image").FontSize(10).FontColor(Colors.Grey.Medium);

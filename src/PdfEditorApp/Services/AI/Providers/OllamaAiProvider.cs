@@ -1,4 +1,5 @@
 using System;
+using PdfEditorApp.Services.AI;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -44,9 +45,7 @@ public class OllamaAiProvider : IAiProvider
 
         if (!string.IsNullOrWhiteSpace(settings.OllamaApiKey))
         {
-            var httpClient = new HttpClient { BaseAddress = new Uri(endpoint), Timeout = TimeSpan.FromSeconds(60) };
-            httpClient.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", settings.OllamaApiKey.Trim());
+            var httpClient = OllamaHttpClientFactory.GetOrCreate(endpoint, settings.OllamaApiKey.Trim());
             return new OllamaApiClient(httpClient, model);
         }
 

@@ -137,6 +137,9 @@ public static class PdfImageExtractor
     /// <summary>
     /// Decodes raw PDF image samples into a clean, standardized PNG byte array using SkiaSharp with unsafe pointer optimizations.
     /// </summary>
+    /// <summary>Packed row width in bytes for a 1-bit-per-pixel image.</summary>
+    private static int MonoRowStride(int width) => (width + 7) / 8;
+
     public static byte[]? ExtractImageBytes(IPdfImage img, ILogger? logger = null)
     {
         // 1. Try native PNG extraction from PdfPig
@@ -204,70 +207,21 @@ public static class PdfImageExtractor
             {
                 var rawPixels = pixelMem.ToArray();
 
-                // Case A: 24-bit RGB (3 bytes per pixel)
-                if (rawPixels.Length >= w * h * 3)
-                {
-                    using var bitmap = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque);
-                    unsafe
-                    {
-                        byte* dstPtr = (byte*)bitmap.GetPixels().ToPointer();
-                        fixed (byte* srcPtr = rawPixels)
-                        {
-                            int pixelCount = w * h;
-                            byte* src = srcPtr;
-                            byte* dst = dstPtr;
-                            for (int i = 0; i < pixelCount; i++)
-                            {
-                                dst[0] = src[0]; // R
-                                dst[1] = src[1]; // G
-                                dst[2] = src[2]; // B
-                                dst[3] = 255;    // A
-                                src += 3;
-                                dst += 4;
-                            }
-                        }
-                    }
+                // All size maths is done in long. "w * h * 3" is int arithmetic and overflows
+                // to a negative number for a large scan (30000x30000 exceeds int.MaxValue), at
+                // which point "rawPixels.Length >= negative" is always true and the unsafe
+                // loops below read hundreds of megabytes past the end of the buffer.
+                long totalPixels = (long)w * h;
+                bool Fits(int bytesPerPixel) => rawPixels.LongLength >= totalPixels * bytesPerPixel;
 
-                    using var image = SKImage.FromBitmap(bitmap);
-                    using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
-                    if (encoded != null && encoded.Size > 0)
-                    {
-                        return encoded.ToArray();
-                    }
-                }
-                // Case B: 8-bit Grayscale (1 byte per pixel)
-                else if (rawPixels.Length >= w * h)
-                {
-                    using var bitmap = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque);
-                    unsafe
-                    {
-                        byte* dstPtr = (byte*)bitmap.GetPixels().ToPointer();
-                        fixed (byte* srcPtr = rawPixels)
-                        {
-                            int pixelCount = w * h;
-                            byte* src = srcPtr;
-                            byte* dst = dstPtr;
-                            for (int i = 0; i < pixelCount; i++)
-                            {
-                                byte g = *src++;
-                                dst[0] = g;
-                                dst[1] = g;
-                                dst[2] = g;
-                                dst[3] = 255;
-                                dst += 4;
-                            }
-                        }
-                    }
+                // Dispatch on the declared component count rather than on buffer length alone.
+                // A 4-byte-per-pixel CMYK buffer also satisfies ">= w*h*3", so ordering RGB
+                // first made the CMYK branch unreachable and decoded every CMYK image as RGB
+                // with a one-byte-per-pixel drift.
+                int components = img.ColorSpaceDetails?.NumberOfColorComponents ?? 0;
 
-                    using var image = SKImage.FromBitmap(bitmap);
-                    using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
-                    if (encoded != null && encoded.Size > 0)
-                    {
-                        return encoded.ToArray();
-                    }
-                }
-                // Case C: 32-bit CMYK (4 bytes per pixel)
-                else if (rawPixels.Length >= w * h * 4)
+                // Case A: 32-bit CMYK (4 bytes per pixel)
+                if (components == 4 && Fits(4))
                 {
                     using var bitmap = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque);
                     unsafe
@@ -298,8 +252,8 @@ public static class PdfImageExtractor
                         return encoded.ToArray();
                     }
                 }
-                // Case D: 1-bit Monochrome (e.g. stamps, fax/signatures)
-                else if (img.BitsPerComponent == 1)
+                // Case C: 8-bit Grayscale (1 byte per pixel)
+                else if (Fits(1))
                 {
                     using var bitmap = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque);
                     unsafe
@@ -307,11 +261,78 @@ public static class PdfImageExtractor
                         byte* dstPtr = (byte*)bitmap.GetPixels().ToPointer();
                         fixed (byte* srcPtr = rawPixels)
                         {
-                            int rowStride = (w + 7) / 8;
+                            int pixelCount = w * h;
+                            byte* src = srcPtr;
+                            byte* dst = dstPtr;
+                            for (int i = 0; i < pixelCount; i++)
+                            {
+                                byte g = *src++;
+                                dst[0] = g;
+                                dst[1] = g;
+                                dst[2] = g;
+                                dst[3] = 255;
+                                dst += 4;
+                            }
+                        }
+                    }
+
+                    using var image = SKImage.FromBitmap(bitmap);
+                    using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
+                    if (encoded != null && encoded.Size > 0)
+                    {
+                        return encoded.ToArray();
+                    }
+                }
+                // Case B: 24-bit RGB (3 bytes per pixel)
+                else if (components != 4 && Fits(3))
+                {
+                    using var bitmap = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque);
+                    unsafe
+                    {
+                        byte* dstPtr = (byte*)bitmap.GetPixels().ToPointer();
+                        fixed (byte* srcPtr = rawPixels)
+                        {
+                            int pixelCount = w * h;
+                            byte* src = srcPtr;
+                            byte* dst = dstPtr;
+                            for (int i = 0; i < pixelCount; i++)
+                            {
+                                dst[0] = src[0]; // R
+                                dst[1] = src[1]; // G
+                                dst[2] = src[2]; // B
+                                dst[3] = 255;    // A
+                                src += 3;
+                                dst += 4;
+                            }
+                        }
+                    }
+
+                    using var image = SKImage.FromBitmap(bitmap);
+                    using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
+                    if (encoded != null && encoded.Size > 0)
+                    {
+                        return encoded.ToArray();
+                    }
+                }
+                // Case D: 1-bit Monochrome (e.g. stamps, fax/signatures)
+                else if (img.BitsPerComponent == 1 && MonoRowStride(w) * (long)h <= rawPixels.LongLength)
+                {
+                    // The length guard is essential: this branch is only reached when the
+                    // buffer is smaller than w*h, and it indexes h full rows. A truncated
+                    // monochrome stream previously read past the end of the pinned array.
+                    using var bitmap = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque);
+                    unsafe
+                    {
+                        byte* dstPtr = (byte*)bitmap.GetPixels().ToPointer();
+                        // SKBitmap may pad rows, so the destination stride is RowBytes, not w*4.
+                        int dstRowBytes = bitmap.RowBytes;
+                        fixed (byte* srcPtr = rawPixels)
+                        {
+                            int rowStride = MonoRowStride(w);
                             for (int y = 0; y < h; y++)
                             {
-                                byte* rowSrc = srcPtr + (y * rowStride);
-                                byte* rowDst = dstPtr + (y * w * 4);
+                                byte* rowSrc = srcPtr + ((long)y * rowStride);
+                                byte* rowDst = dstPtr + ((long)y * dstRowBytes);
                                 for (int x = 0; x < w; x++)
                                 {
                                     int byteIdx = x >> 3;

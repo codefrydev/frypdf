@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Concurrent;
+using Avalonia.Threading;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -167,7 +169,43 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
     {
         OperationsService = operationsService;
         Tool = tool;
-        SelectedFiles.CollectionChanged += (_, _) => { _ = Preview.LoadDocumentAsync(PrimaryInputFile); };
+        SelectedFiles.CollectionChanged += (_, _) => QueuePreviewReload();
+    }
+
+    private bool _previewReloadQueued;
+
+    /// <summary>
+    /// Reloads the preview once per batch of file-selection changes.
+    /// </summary>
+    /// <remarks>
+    /// The handler used to start a full async PDF load per CollectionChanged event, and the
+    /// add path is Clear() followed by one Add() per file — so picking 20 files launched 21
+    /// overlapping LoadDocumentAsync calls, all but the last of them wasted.
+    /// </remarks>
+    private void QueuePreviewReload()
+    {
+        if (_previewReloadQueued) return;
+        _previewReloadQueued = true;
+        _ = ReloadPreviewAsync();
+    }
+
+    private async Task ReloadPreviewAsync()
+    {
+        // Yield once so the whole burst of CollectionChanged events (Clear followed by one
+        // Add per file) collapses into a single load against the final selection. Yield
+        // rather than a dispatcher post so this still runs under a plain task scheduler.
+        await Task.Yield();
+        _previewReloadQueued = false;
+
+        try
+        {
+            await Preview.LoadDocumentAsync(PrimaryInputFile);
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("PdfTool",
+                $"Could not load a preview for '{PrimaryInputFile}'", ex);
+        }
     }
 
     [RelayCommand]
@@ -242,18 +280,22 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
         OnPropertyChanged(nameof(TotalSummaryText));
     }
 
+    /// <summary>
+    /// Rebuilds the selected-file preview list.
+    /// </summary>
+    /// <remarks>
+    /// Stays synchronous — callers and tests rely on the page counts being populated on
+    /// return. The cost that mattered was that this is re-run on every file added, and
+    /// <c>InspectPageCountSafely</c> re-opens each PDF from disk every time; adding 20 files
+    /// re-opened the first file 20 times. Counts are now memoized per file identity.
+    /// </remarks>
     public void SyncPreviewItems()
     {
         SelectedFilePreviewItems.Clear();
         for (int i = 0; i < SelectedFiles.Count; i++)
         {
             string path = SelectedFiles[i];
-            int pageCount = 1;
-            if (File.Exists(path))
-            {
-                pageCount = PdfFileHelper.InspectPageCountSafely(path);
-            }
-            var item = PdfFilePreviewItem.CreateFromFile(path, i + 1, pageCount);
+            var item = PdfFilePreviewItem.CreateFromFile(path, i + 1, GetCachedPageCount(path));
             SelectedFilePreviewItems.Add(item);
         }
 
@@ -785,4 +827,27 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
     }
 
     protected abstract Task<ToolExecutionResult> ExecuteCoreAsync(IProgress<double> progress, CancellationToken ct);
+
+    /// <summary>
+    /// Page counts keyed on file identity (path + last write time + length), so a file that
+    /// changes on disk is re-inspected but a repeated sync is free.
+    /// </summary>
+    private static readonly ConcurrentDictionary<(string Path, long Ticks, long Length), int> PageCountCache = new();
+
+    private static int GetCachedPageCount(string path)
+    {
+        if (!File.Exists(path)) return 1;
+
+        try
+        {
+            var info = new FileInfo(path);
+            var key = (path, info.LastWriteTimeUtc.Ticks, info.Length);
+            return PageCountCache.GetOrAdd(key, static k => PdfFileHelper.InspectPageCountSafely(k.Path));
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("PdfTool", $"Could not read the page count of '{path}'", ex);
+            return 1;
+        }
+    }
 }

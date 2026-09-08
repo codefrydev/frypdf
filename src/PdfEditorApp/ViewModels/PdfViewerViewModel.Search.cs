@@ -39,13 +39,16 @@ public partial class PdfViewerViewModel
         if (SearchWholeWord)
         {
             var regexOptions = SearchMatchCase ? RegexOptions.None : RegexOptions.IgnoreCase;
-            string pattern = $@"\b{Regex.Escape(q)}\b";
+
+            // Built once per search rather than re-resolved from the static Regex cache for
+            // every page of the document.
+            var wholeWordRegex = new Regex($@"\b{Regex.Escape(q)}\b", regexOptions);
 
             foreach (var page in Pages)
             {
                 if (string.IsNullOrEmpty(page.ExtractedText)) continue;
 
-                var matches = Regex.Matches(page.ExtractedText, pattern, regexOptions);
+                var matches = wholeWordRegex.Matches(page.ExtractedText);
                 foreach (Match m in matches)
                 {
                     int snippetStart = Math.Max(0, m.Index - 25);

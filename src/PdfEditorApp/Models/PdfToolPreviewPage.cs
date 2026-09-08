@@ -30,5 +30,29 @@ public partial class PdfToolPreviewPage : ObservableObject
     [ObservableProperty]
     private float _renderedScale;
 
+    /// <summary>
+    /// Disposes the bitmap being replaced. Avalonia's <see cref="Bitmap"/> holds native Skia
+    /// memory that the GC does not account for, and the live preview assigns a fresh bitmap on
+    /// every zoom re-render — at 4x scale that is tens of MB per discarded page.
+    /// </summary>
+    /// <remarks>
+    /// Guarded against the two properties holding the same instance, which happens while a
+    /// full-resolution render is still pending and the thumbnail stands in for it.
+    /// </remarks>
+    partial void OnBitmapChanging(Bitmap? oldValue, Bitmap? newValue)
+        => DisposeIfUnreferenced(oldValue, newValue, ThumbnailBitmap);
+
+    partial void OnThumbnailBitmapChanging(Bitmap? oldValue, Bitmap? newValue)
+        => DisposeIfUnreferenced(oldValue, newValue, Bitmap);
+
+    private static void DisposeIfUnreferenced(Bitmap? oldValue, Bitmap? newValue, Bitmap? stillReferenced)
+    {
+        if (oldValue == null) return;
+        if (ReferenceEquals(oldValue, newValue)) return;
+        if (ReferenceEquals(oldValue, stillReferenced)) return;
+
+        oldValue.Dispose();
+    }
+
     public string PageLabel => $"Page {PageNumber}";
 }

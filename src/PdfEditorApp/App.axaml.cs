@@ -9,9 +9,11 @@ using PdfEditorApp.ViewModels.Tools.Security;
 using PdfEditorApp.ViewModels.Tools.Conversion;
 using PdfEditorApp.ViewModels.Tools.Intelligence;
 using System;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using PdfEditorApp.Core.Plugins;
 using PdfEditorApp.Core.Plugins.Descriptors;
@@ -71,10 +73,65 @@ public partial class App : Application
             {
                 DataContext = mainVm,
             };
-            desktop.ShutdownRequested += (_, _) => PdfEditorApp.Services.AppLogService.Instance.Dispose();
+            desktop.ShutdownRequested += (_, _) => ShutdownServices();
+
+            // Restore previously installed plugins once the window exists. This must not run
+            // during construction of the marketplace singleton: activating a plugin registers
+            // overlays and ribbon items that post to the dispatcher, so blocking on it from
+            // the UI thread deadlocks startup.
+            // InvokeAsync rather than Post: Post takes an Action, so an async lambda there
+            // would be async void.
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                try
+                {
+                    var marketplace = Services.GetService<PdfEditorApp.Core.Plugins.Marketplace.IPluginMarketplaceService>();
+                    if (marketplace != null)
+                    {
+                        await marketplace.InitializeAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppLogService.Instance.LogWarning("App", "Deferred plugin restore failed", ex);
+                }
+            }, DispatcherPriority.Background);
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    /// <summary>
+    /// Tears down application services on shutdown.
+    /// </summary>
+    /// <remarks>
+    /// Previously only AppLogService was disposed, so the ServiceProvider — and with it the
+    /// PluginHost singleton — was never disposed, meaning no plugin ever received its stop
+    /// callback and anything a plugin flushed on stop was lost.
+    /// </remarks>
+    private static void ShutdownServices()
+    {
+        try
+        {
+            if (Services is IAsyncDisposable asyncDisposable)
+            {
+                // PluginHost implements IAsyncDisposable; taking that path avoids its
+                // blocking Dispose, which waits on StopAsync from the UI thread.
+                asyncDisposable.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            }
+            else if (Services is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("App", "Error disposing application services on shutdown", ex);
+        }
+        finally
+        {
+            AppLogService.Instance.Dispose();
+        }
     }
 
     private static void InitializePluginSystem()
@@ -137,26 +194,54 @@ public partial class App : Application
                 userLocalPlugins
             };
 
+            // Each directory and each plugin is isolated: a throw while scanning the first
+            // directory used to skip every remaining directory *and* host.StartAsync(),
+            // leaving the app with no plugins at all and no visible error.
             foreach (var dir in directoriesToScan)
             {
-                if (System.IO.Directory.Exists(dir))
+                if (!System.IO.Directory.Exists(dir)) continue;
+
+                try
                 {
                     var externalPackages = PdfEditorApp.Plugins.Loader.PluginAssemblyLoader.DiscoverAndLoadDirectory(dir);
                     foreach (var pkg in externalPackages)
                     {
                         foreach (var plugin in pkg.Plugins)
                         {
-                            host.RegisterPlugin(plugin);
+                            try
+                            {
+                                host.RegisterPlugin(plugin);
+                            }
+                            catch (Exception ex)
+                            {
+                                AppLogService.Instance.LogWarning("App",
+                                    $"Could not register plugin '{plugin.Id}' from '{dir}'", ex);
+                            }
                         }
                     }
                 }
+                catch (Exception ex)
+                {
+                    AppLogService.Instance.LogWarning("App", $"Could not scan plugin directory '{dir}'", ex);
+                }
             }
 
-            host.StartAsync().GetAwaiter().GetResult();
+            try
+            {
+                // Plugin bundles must be mounted before MainWindow is constructed, so this
+                // has to complete synchronously. Dispatching through Task.Run first means no
+                // continuation is captured back to the dispatcher — which has not started
+                // its loop yet, so a captured continuation would deadlock.
+                Task.Run(() => host.StartAsync()).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                AppLogService.Instance.LogError("App", "Plugin host failed to start", ex);
+            }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] Plugin system initialization warning: {ex.Message}");
+            AppLogService.Instance.LogError("App", "Plugin system initialization failed", ex);
         }
     }
 

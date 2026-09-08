@@ -284,7 +284,7 @@ public class PdfToolsServiceTests
                 InputFilePath = inputPath,
                 OutputFilePath = outPath,
                 RotationDegrees = 90,
-                TargetFilter = PageFilterTarget.All
+                TargetFilter = PageTargetSelection.AllPages
             };
             var result = await svc.RotatePdfAsync(opts);
             Assert.True(result.Success, result.ErrorMessage);

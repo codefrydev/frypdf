@@ -189,7 +189,7 @@ public static class PdfDeconstructionEngine
             {
                 bool isLandscape = pageWidth > pageHeight;
                 double colGapMultiplier = isLandscape ? options.ColumnGapMultiplierLandscape : options.ColumnGapMultiplierPortrait;
-                paragraphs = PdfLayoutAnalyzer.AnalyzeAndGroupPageText(page, pageHeight, colGapMultiplier);
+                paragraphs = PdfLayoutAnalyzer.AnalyzeAndGroupPageText(page, pageHeight, colGapMultiplier, words);
             }
             catch (Exception ex)
             {

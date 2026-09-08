@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using PdfEditorApp.Core.Plugins;
+using PdfEditorApp.Core.Plugins.Manifests;
 using PdfEditorApp.Services; // FryPdfPaths — MSIX-safe writable paths; AppLogService — diagnostic logging
 
 namespace PdfEditorApp.Plugins.Loader;
@@ -36,11 +37,17 @@ public sealed class PluginAssemblyPackage : IDisposable
         if (_isDisposed) return;
         _isDisposed = true;
 
+        // Drop the static root first, otherwise the package (and through it the ALC)
+        // stays reachable and the context can never actually be collected.
+        PluginAssemblyLoader.Forget(this);
+
         if (_context.IsCollectible)
         {
+            // Unload is cooperative: the runtime collects the context once nothing
+            // references it. Deliberately no GC.Collect() here — directory discovery
+            // disposes one package per non-plugin DLL, and forcing a blocking
+            // gen-2 collection per DLL made startup pathological.
             _context.Unload();
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
         }
     }
 }
@@ -53,7 +60,7 @@ public sealed class CollectiblePluginLoadContext : AssemblyLoadContext
     private readonly AssemblyDependencyResolver _resolver;
     private readonly string _pluginDirectory;
 
-    public CollectiblePluginLoadContext(string pluginPath, bool isCollectible = false)
+    public CollectiblePluginLoadContext(string pluginPath, bool isCollectible = true)
         : base(name: Path.GetFileNameWithoutExtension(pluginPath), isCollectible: isCollectible)
     {
         _resolver = new AssemblyDependencyResolver(pluginPath);
@@ -149,7 +156,53 @@ public sealed class CollectiblePluginLoadContext : AssemblyLoadContext
 /// </summary>
 public static class PluginAssemblyLoader
 {
+    /// <summary>Safety valve on how many companion files a single staging pass will copy.</summary>
+    private const int MaxStagedCompanions = 2000;
+
     private static readonly List<PluginAssemblyPackage> _activePackages = new();
+
+    /// <summary>Packages currently held open by this loader.</summary>
+    public static IReadOnlyList<PluginAssemblyPackage> ActivePackages
+    {
+        get { lock (_activePackages) { return _activePackages.ToArray(); } }
+    }
+
+    /// <summary>
+    /// Removes a package from the active list. Called by <see cref="PluginAssemblyPackage.Dispose"/>
+    /// so a disposed package does not stay rooted in a static field.
+    /// </summary>
+    internal static void Forget(PluginAssemblyPackage package)
+    {
+        lock (_activePackages)
+        {
+            _activePackages.Remove(package);
+        }
+    }
+
+    /// <summary>
+    /// Disposes every loaded package, unloading their assembly load contexts.
+    /// </summary>
+    public static void UnloadAll()
+    {
+        PluginAssemblyPackage[] snapshot;
+        lock (_activePackages)
+        {
+            snapshot = _activePackages.ToArray();
+        }
+
+        foreach (var package in snapshot)
+        {
+            try
+            {
+                package.Dispose();
+            }
+            catch (Exception ex)
+            {
+                AppLogService.Instance.LogWarning("PluginLoader",
+                    $"Failed to unload '{Path.GetFileName(package.AssemblyPath)}'", ex);
+            }
+        }
+    }
 
     /// <summary>
     /// Loads an isolated assembly, instantiates any <see cref="IFryPlugin"/> implementations, and returns a package.
@@ -177,7 +230,9 @@ public static class PluginAssemblyLoader
         //   1. Strips the Windows Zone.Identifier (Mark of the Web) which blocks ALC loads.
         //   2. Ensures we have write access to the directory (needed for runtimes/ unpack).
         var pluginsRoot = FryPdfPaths.PluginsDirectory;
-        bool staged = !fullPath.StartsWith(pluginsRoot, StringComparison.OrdinalIgnoreCase);
+        // Separator-aware: a bare StartsWith treats "<pluginsRoot>Evil/x.dll" as inside
+        // the plugins directory.
+        bool staged = !PluginIdValidator.IsInside(fullPath, pluginsRoot);
         if (staged)
         {
             AppLogService.Instance.Log(AppLogLevel.Info, "PluginLoader",
@@ -185,7 +240,7 @@ public static class PluginAssemblyLoader
             fullPath = StageToPluginsDirectory(fullPath, pluginsRoot);
         }
 
-        var alc = new CollectiblePluginLoadContext(fullPath);
+        var alc = new CollectiblePluginLoadContext(fullPath, isCollectible: true);
         Assembly assembly;
         try
         {
@@ -250,21 +305,51 @@ public static class PluginAssemblyLoader
         var sw = Stopwatch.StartNew();
         var sourceDir = Path.GetDirectoryName(sourceDllPath) ?? string.Empty;
         var dllName = Path.GetFileNameWithoutExtension(sourceDllPath);
-        var stagingDir = Path.Combine(pluginsRoot, ".staging", $"{dllName}_{Path.GetRandomFileName().Replace(".", "")}");
+        var stagingRoot = Path.Combine(pluginsRoot, ".staging");
+        PruneStagingDirectory(stagingRoot);
+
+        var stagingDir = Path.Combine(stagingRoot, $"{dllName}_{Path.GetRandomFileName().Replace(".", "")}");
         Directory.CreateDirectory(stagingDir);
 
         // Copy the target DLL
         var destDll = Path.Combine(stagingDir, Path.GetFileName(sourceDllPath));
         File.Copy(sourceDllPath, destDll, overwrite: true);
 
-        // Copy sibling files (dependencies, runtimes/, native/, etc.) if source is a real dir
+        // Copy companions. A DLL sitting loose in ~/Downloads or on the Desktop shares its
+        // folder with everything else there, so only a folder that looks like a dedicated
+        // plugin folder is copied wholesale — otherwise this recursively copied the user's
+        // entire Downloads tree into the staging directory.
         int companionCount = 0;
         if (!string.IsNullOrEmpty(sourceDir) && Directory.Exists(sourceDir))
         {
-            foreach (var file in Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories))
+            // Only a folder carrying a plugin.json is treated as a dedicated plugin folder.
+            // A .deps.json is not a good enough signal — every .NET output folder has one,
+            // including the app's own bin directory.
+            bool dedicatedPluginFolder = File.Exists(Path.Combine(sourceDir, "plugin.json"));
+
+            IEnumerable<string> companions = dedicatedPluginFolder
+                ? Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories)
+                : EnumerateOwnCompanions(sourceDir, dllName);
+
+            foreach (var file in companions)
             {
                 if (string.Equals(file, sourceDllPath, StringComparison.OrdinalIgnoreCase))
                     continue; // already copied
+
+                // The plugins directory can live *inside* the source directory (it does for a
+                // dev build, where it is <baseDir>/plugins). Copying it would recurse the
+                // staging folder into itself until the path length blows up.
+                if (PluginIdValidator.IsInside(file, pluginsRoot))
+                    continue;
+
+                if (companionCount >= MaxStagedCompanions)
+                {
+                    AppLogService.Instance.LogWarning("PluginLoader",
+                        $"Stopped staging companions for '{dllName}' at {MaxStagedCompanions} files; " +
+                        $"'{sourceDir}' holds more files than a plugin folder should.",
+                        null);
+                    break;
+                }
 
                 var relative = Path.GetRelativePath(sourceDir, file);
                 var destFile = Path.Combine(stagingDir, relative);
@@ -283,11 +368,76 @@ public static class PluginAssemblyLoader
                     AppLogService.Instance.LogWarning("PluginLoader", $"Skipped copying companion file '{file}' during staging", ex);
                 }
             }
+
+            if (!dedicatedPluginFolder)
+            {
+                AppLogService.Instance.Log(AppLogLevel.Debug, "PluginLoader",
+                    $"'{sourceDir}' has no plugin.json, so it is not treated as a dedicated plugin " +
+                    "folder; staged only the assembly's own companion files.");
+            }
         }
 
         AppLogService.Instance.Log(AppLogLevel.Info, "PluginLoader",
             $"Staged '{Path.GetFileName(sourceDllPath)}' to '{stagingDir}' ({companionCount} companion file(s), stripped Zone.Identifier) in {sw.ElapsedMilliseconds}ms.");
         return destDll;
+    }
+
+    /// <summary>
+    /// Yields the files that belong to <paramref name="dllName"/> itself: its debug symbols,
+    /// its deps/runtimeconfig manifests, and any <c>runtimes/</c> native payload beside it.
+    /// </summary>
+    private static IEnumerable<string> EnumerateOwnCompanions(string sourceDir, string dllName)
+    {
+        foreach (var suffix in new[] { ".pdb", ".deps.json", ".runtimeconfig.json", ".xml" })
+        {
+            var candidate = Path.Combine(sourceDir, dllName + suffix);
+            if (File.Exists(candidate)) yield return candidate;
+        }
+
+        // Top-level managed siblings only — a bare plugin DLL usually ships its dependencies
+        // beside it. Deliberately not recursive: that is what copied whole Downloads trees.
+        foreach (var sibling in Directory.EnumerateFiles(sourceDir, "*.dll", SearchOption.TopDirectoryOnly))
+            yield return sibling;
+
+        var runtimesDir = Path.Combine(sourceDir, "runtimes");
+        if (Directory.Exists(runtimesDir))
+        {
+            foreach (var file in Directory.EnumerateFiles(runtimesDir, "*", SearchOption.AllDirectories))
+                yield return file;
+        }
+    }
+
+    /// <summary>
+    /// Deletes staging folders left behind by previous sessions. Each load previously created
+    /// a new uniquely-named folder and nothing ever removed them, so .staging grew without
+    /// bound. Folders still locked by a loaded assembly simply fail to delete and are skipped.
+    /// </summary>
+    private static void PruneStagingDirectory(string stagingRoot)
+    {
+        if (!Directory.Exists(stagingRoot)) return;
+
+        var cutoff = DateTime.UtcNow - TimeSpan.FromDays(1);
+        int removed = 0;
+
+        foreach (var dir in Directory.EnumerateDirectories(stagingRoot))
+        {
+            try
+            {
+                if (Directory.GetLastWriteTimeUtc(dir) > cutoff) continue;
+                Directory.Delete(dir, recursive: true);
+                removed++;
+            }
+            catch
+            {
+                // Still in use (the DLL is loaded and locked) or not ours to delete — skip it.
+            }
+        }
+
+        if (removed > 0)
+        {
+            AppLogService.Instance.Log(AppLogLevel.Debug, "PluginLoader",
+                $"Pruned {removed} stale staging folder(s) from '{stagingRoot}'.");
+        }
     }
 
     /// <summary>
@@ -403,9 +553,12 @@ public static class PluginAssemblyLoader
                     package.Dispose();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Skip non-.NET or incompatible assemblies
+                // Skip non-.NET or incompatible assemblies — but say so. Every other catch
+                // in this file logs; this one silently dropped plugins that failed to load.
+                AppLogService.Instance.LogWarning("PluginLoader",
+                    $"Skipped '{Path.GetFileName(dll)}': not a loadable plugin assembly", ex);
             }
         }
 

@@ -223,6 +223,7 @@ public partial class ChartElementViewModel : ElementViewModelBase
     private void RequestChartUpdate()
     {
         _chartUpdateDebounceCts?.Cancel();
+        _chartUpdateDebounceCts?.Dispose();
         _chartUpdateDebounceCts = new CancellationTokenSource();
         var token = _chartUpdateDebounceCts.Token;
 

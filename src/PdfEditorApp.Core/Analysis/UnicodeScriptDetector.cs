@@ -31,8 +31,23 @@ public static class UnicodeScriptDetector
 
         for (int i = 0; i < text.Length;)
         {
-            int codepoint = char.ConvertToUtf32(text, i);
-            i += char.IsSurrogatePair(text, i) ? 2 : 1;
+            int codepoint;
+            if (char.IsSurrogatePair(text, i))
+            {
+                codepoint = char.ConvertToUtf32(text, i);
+                i += 2;
+            }
+            else
+            {
+                char unit = text[i];
+                i += 1;
+                // A lone/unpaired surrogate is common in mangled PDF text and would throw
+                // out of ConvertToUtf32. It carries no script information, so skip it —
+                // previously the throw unwound all the way to the page-level catch in
+                // PdfDeconstructionEngine and discarded every text element on the page.
+                if (char.IsSurrogate(unit)) continue;
+                codepoint = unit;
+            }
 
             // Skip whitespace and common punctuation
             if (codepoint <= 0x0040) continue;
@@ -98,9 +113,24 @@ public static class UnicodeScriptDetector
     /// </summary>
     public static bool ContainsCjk(string text)
     {
-        foreach (char c in text)
+        // Enumerate by code point, not by UTF-16 unit: a char can never exceed 0xFFFF,
+        // so testing a widened char against the CJK Extension B range was unreachable.
+        for (int i = 0; i < text.Length;)
         {
-            int cp = c;
+            int cp;
+            if (char.IsSurrogatePair(text, i))
+            {
+                cp = char.ConvertToUtf32(text, i);
+                i += 2;
+            }
+            else
+            {
+                char unit = text[i];
+                i += 1;
+                if (char.IsSurrogate(unit)) continue;
+                cp = unit;
+            }
+
             if ((cp >= 0x4E00 && cp <= 0x9FFF) ||   // CJK Unified Ideographs
                 (cp >= 0x3400 && cp <= 0x4DBF) ||   // CJK Extension A
                 (cp >= 0x20000 && cp <= 0x2A6DF) ||  // CJK Extension B (surrogate pair range)

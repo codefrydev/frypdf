@@ -185,22 +185,36 @@ public sealed class OverlayRegistry : IOverlayRegistry
         }
     }
 
+    /// <summary>
+    /// Runs <paramref name="action"/> on the UI thread, or inline if already on it.
+    /// </summary>
+    /// <remarks>
+    /// The actions passed here mutate <c>ActiveOverlays</c> — an ObservableCollection bound to
+    /// the shell — and set Content on live views. The marshal used to be gated on the
+    /// application lifetime being desktop and otherwise fell through to an inline call, so a
+    /// background plugin install could mutate the bound collection off-thread. The only
+    /// legitimate reason to run inline is that no dispatcher loop exists at all (headless
+    /// tests), which is what the catch below covers.
+    /// </remarks>
+    /// <summary>
+    /// True when an Avalonia application exists, i.e. there is a dispatcher loop that will
+    /// actually pump a posted action. In a unit-test host there is no application, and
+    /// Dispatcher.UIThread.Post succeeds silently without ever running the callback.
+    /// </summary>
+    private static bool HasDispatcherLoop => Avalonia.Application.Current != null;
+
     private static void RunOnUIThread(Action action)
     {
-        if (Dispatcher.UIThread.CheckAccess())
+        if (Dispatcher.UIThread.CheckAccess() || !HasDispatcherLoop)
         {
             action();
             return;
         }
 
-        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
-        {
-            Dispatcher.UIThread.Post(action);
-        }
-        else
-        {
-            action();
-        }
+        // Previously gated on the lifetime being IClassicDesktopStyleApplicationLifetime and
+        // otherwise fell through to an inline call, so a background plugin install under any
+        // other lifetime mutated the bound ActiveOverlays collection off-thread.
+        Dispatcher.UIThread.Post(action);
     }
 
     public void ToggleOverlay(string overlayId)

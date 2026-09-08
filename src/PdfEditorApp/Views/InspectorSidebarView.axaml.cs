@@ -24,21 +24,62 @@ public partial class InspectorSidebarView : UserControl
         InitializeComponent();
     }
 
+    /// <summary>
+    /// Wires the inspector's text editor.
+    /// </summary>
+    /// <remarks>
+    /// Named handlers with "-= before +=" so that re-attaching the TextBox (container
+    /// recycling, selection changes) cannot accumulate subscriptions. The anonymous lambdas
+    /// used here before could never be removed, and TextBox.PropertyChanged fires for every
+    /// property — so each keystroke ran UpdateSidebarSelection once per past attachment.
+    /// </remarks>
     private void OnSidebarTextBoxAttached(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        if (sender is TextBox textBox)
-        {
-            textBox.PropertyChanged += (s, args) =>
-            {
-                if (args.Property == TextBox.SelectionStartProperty || args.Property == TextBox.SelectionEndProperty || args.Property == TextBox.TextProperty)
-                {
-                    UpdateSidebarSelection(textBox);
-                }
-            };
+        if (sender is not TextBox textBox) return;
 
-            textBox.PointerReleased += (s, args) => UpdateSidebarSelection(textBox);
-            textBox.KeyUp += (s, args) => UpdateSidebarSelection(textBox);
+        textBox.PropertyChanged -= OnSidebarTextBoxPropertyChanged;
+        textBox.PropertyChanged += OnSidebarTextBoxPropertyChanged;
+
+        textBox.PointerReleased -= OnSidebarTextBoxPointerReleased;
+        textBox.PointerReleased += OnSidebarTextBoxPointerReleased;
+
+        textBox.KeyUp -= OnSidebarTextBoxKeyUp;
+        textBox.KeyUp += OnSidebarTextBoxKeyUp;
+
+        textBox.DetachedFromVisualTree -= OnSidebarTextBoxDetached;
+        textBox.DetachedFromVisualTree += OnSidebarTextBoxDetached;
+    }
+
+    private void OnSidebarTextBoxDetached(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is not TextBox textBox) return;
+
+        textBox.PropertyChanged -= OnSidebarTextBoxPropertyChanged;
+        textBox.PointerReleased -= OnSidebarTextBoxPointerReleased;
+        textBox.KeyUp -= OnSidebarTextBoxKeyUp;
+        textBox.DetachedFromVisualTree -= OnSidebarTextBoxDetached;
+    }
+
+    private void OnSidebarTextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (sender is not TextBox textBox) return;
+
+        if (e.Property == TextBox.SelectionStartProperty ||
+            e.Property == TextBox.SelectionEndProperty ||
+            e.Property == TextBox.TextProperty)
+        {
+            UpdateSidebarSelection(textBox);
         }
+    }
+
+    private void OnSidebarTextBoxPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (sender is TextBox textBox) UpdateSidebarSelection(textBox);
+    }
+
+    private void OnSidebarTextBoxKeyUp(object? sender, KeyEventArgs e)
+    {
+        if (sender is TextBox textBox) UpdateSidebarSelection(textBox);
     }
 
     private void OnTextEditorResizeGripPointerPressed(object? sender, PointerPressedEventArgs e)

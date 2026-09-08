@@ -312,7 +312,11 @@ public class PdfOcrService : IPdfOcrService
                     ms.Seek(0, SeekOrigin.Begin);
 
                     var page = pdfDoc.AddPage();
-                    var xImage = XImage.FromStream(() => new MemoryStream(ms.ToArray()));
+
+                    // XImage pins the decoded JPEG. Created once per page inside this loop and
+                    // never disposed, a 300-page scan held every one of them until GC.
+                    byte[] pageJpeg = ms.ToArray();
+                    using var xImage = XImage.FromStream(() => new MemoryStream(pageJpeg));
 
                     using var gfx = XGraphics.FromPdfPage(page);
                     double maxW = page.Width.Point - 40;

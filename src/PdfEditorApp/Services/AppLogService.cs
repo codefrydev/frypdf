@@ -70,7 +70,9 @@ public sealed class AppLogService : IAppLogService, IDisposable
 {
     public static readonly AppLogService Instance = new();
 
-    private const int DefaultCapacity = 500;
+    // Sized so a burst of framework chatter cannot evict the entries that matter. A single
+    // Inspector rebuild alone used to emit ~180 binding errors; at 500 that flushed the window.
+    private const int DefaultCapacity = 3000;
 
     private readonly object _lock = new();
     private readonly LinkedList<AppLogEntry> _buffer = new();

@@ -9,6 +9,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
+using Avalonia.Threading;
+using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -773,7 +775,13 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
 
             if (section == HomeNavSection.NewDocument)
             {
-                IsTemplateGalleryExpanded = true;
+                // Deliberately does NOT expand the gallery here. Setting
+                // IsTemplateGalleryExpanded = true switched the view from ~15 featured
+                // templates to all of them at the exact moment of the transition, so the
+                // navigation paid for the largest possible layout. The user can expand it.
+                //
+                // Thumbnail rasterization is driven by NewDocumentPageView, which owns the
+                // attached render host it requires.
             }
 
             // Automatically set tool category filter according to selected section
@@ -798,8 +806,47 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
             }
         }
 
-        AppLogService.Instance.Log(AppLogLevel.Info, "Navigation",
-            $"{from} -> {sectionName} in {sw.ElapsedMilliseconds}ms ({viewOrigin}).");
+        LogNavigationWhenVisible(from, sectionName, sw, viewOrigin);
+    }
+
+    /// <summary>Navigations slower than this are logged as a Warning so they surface in the UI.</summary>
+    private const int SlowNavigationMs = 250;
+
+
+    /// <summary>
+    /// Logs a navigation once the newly-visible page has actually been laid out and rendered.
+    /// </summary>
+    /// <remarks>
+    /// Reporting <c>sw.ElapsedMilliseconds</c> at the end of the navigation method measured only
+    /// the view-model work — property sets and PropertyChanged. Avalonia lays out and renders the
+    /// newly-visible page on later dispatcher frames, so a page that took seconds to appear was
+    /// logged as "4ms (pre-mounted)". Posting at <see cref="DispatcherPriority.Background"/>
+    /// defers this until after that frame's layout and render, so the elapsed time covers the
+    /// whole click-to-pixels path. Both phases are reported so the split is visible.
+    /// </remarks>
+    private static void LogNavigationWhenVisible(string from, string to, Stopwatch sw, string viewOrigin)
+    {
+        long viewModelMs = sw.ElapsedMilliseconds;
+
+        void Report()
+        {
+            sw.Stop();
+            long totalMs = sw.ElapsedMilliseconds;
+            AppLogService.Instance.LogDuration(
+                "Navigation",
+                $"{from} -> {to} in {totalMs}ms (vm={viewModelMs}ms render={totalMs - viewModelMs}ms, {viewOrigin}).",
+                totalMs,
+                SlowNavigationMs);
+        }
+
+        // No dispatcher loop in headless/unit-test hosts: Post would silently never run.
+        if (Application.Current == null)
+        {
+            Report();
+            return;
+        }
+
+        Dispatcher.UIThread.Post(Report, DispatcherPriority.Background);
     }
 
 
@@ -859,8 +906,10 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
                 };
             }
 
-            AppLogService.Instance.Log(AppLogLevel.Info, "Navigation",
-                $"{from} -> {card.Name} in {sw.ElapsedMilliseconds}ms (new ViewModel instance).");
+            // Same blind spot as SelectNavSection: the tool's View is resolved through
+            // ViewLocator and laid out after this method returns, so the elapsed time here
+            // covers ViewModel construction only.
+            LogNavigationWhenVisible(from, card.Name, sw, "new ViewModel instance");
         }
         else
         {

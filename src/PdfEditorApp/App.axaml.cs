@@ -75,6 +75,11 @@ public partial class App : Application
             };
             desktop.ShutdownRequested += (_, _) => ShutdownServices();
 
+            // Reports any stall on the UI thread, whatever its cause. The per-operation
+            // stopwatches elsewhere all stop before Avalonia's layout/render pass, so this is
+            // the only thing that can see a freeze that happens during rendering.
+            _uiThreadWatchdog = new UiThreadWatchdog();
+
             // Restore previously installed plugins once the window exists. This must not run
             // during construction of the marketplace singleton: activating a plugin registers
             // overlays and ribbon items that post to the dispatcher, so blocking on it from
@@ -109,8 +114,13 @@ public partial class App : Application
     /// PluginHost singleton — was never disposed, meaning no plugin ever received its stop
     /// callback and anything a plugin flushed on stop was lost.
     /// </remarks>
+    private static UiThreadWatchdog? _uiThreadWatchdog;
+
     private static void ShutdownServices()
     {
+        _uiThreadWatchdog?.Dispose();
+        _uiThreadWatchdog = null;
+
         try
         {
             if (Services is IAsyncDisposable asyncDisposable)

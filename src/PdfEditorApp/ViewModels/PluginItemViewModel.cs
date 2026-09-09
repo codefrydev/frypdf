@@ -13,6 +13,20 @@ public partial class PluginItemViewModel : ViewModelBase
 {
     private bool _isToggling;
 
+    /// <summary>
+    /// True while this card is the selected one.
+    /// </summary>
+    /// <remarks>
+    /// The card previously computed this in XAML via
+    /// <c>ConverterParameter="{Binding}"</c>. ConverterParameter is a plain object and Avalonia
+    /// does not evaluate a nested binding there, so the converter received a
+    /// <c>Avalonia.Data.Binding</c> instance and the comparison was always false — selection
+    /// highlighting could never turn on, and all ~96 ancestor-walk bindings re-evaluated on
+    /// every selection change for no effect.
+    /// </remarks>
+    [ObservableProperty]
+    private bool _isSelected;
+
     [ObservableProperty]
     private string _id = string.Empty;
 

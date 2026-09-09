@@ -187,6 +187,12 @@ public partial class PluginsManagerViewModel : ViewModelBase
 
     partial void OnSelectedInstalledPluginChanged(PluginItemViewModel? value)
     {
+        foreach (var item in FilteredInstalledPlugins)
+        {
+            bool isSelected = ReferenceEquals(item, value);
+            if (item.IsSelected != isSelected) item.IsSelected = isSelected;
+        }
+
         if (value != null && SelectedTab == PluginsManagerTab.Installed)
         {
             UpdateDetailFromInstalled(value);
@@ -229,7 +235,19 @@ public partial class PluginsManagerViewModel : ViewModelBase
 
         try
         {
+            // The installed list is entirely local, so publish it before touching the network.
+            // ApplyFilters is what populates the bound collections and the detail pane, and it
+            // used to sit *after* the catalog fetch — so opening the page while that call was
+            // outstanding showed empty lists and an empty detail pane, for up to 32 seconds
+            // (15s timeout + 2s retry delay + 15s).
             PopulateInstalledPlugins();
+            ApplyFilters();
+
+            if (SelectedDetail == null && FilteredInstalledPlugins.Count > 0)
+            {
+                SelectedInstalledPlugin = FilteredInstalledPlugins[0];
+            }
+
             await _marketplaceService.FetchRemoteCatalogAsync();
             var catalog = await _marketplaceService.GetCatalogAsync();
             lock (_dataLock)
@@ -238,13 +256,9 @@ public partial class PluginsManagerViewModel : ViewModelBase
                 _allMarketplace.AddRange(catalog);
             }
 
+            // Re-filter now that the marketplace half has arrived.
             ApplyFilters();
             OnPropertyChanged(nameof(MarketplaceCount));
-
-            if (SelectedDetail == null && FilteredInstalledPlugins.Count > 0)
-            {
-                SelectedInstalledPlugin = FilteredInstalledPlugins[0];
-            }
         }
         catch (Exception ex)
         {

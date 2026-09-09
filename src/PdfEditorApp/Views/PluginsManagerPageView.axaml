@@ -320,10 +320,19 @@
                                            Margin="4,4,0,8" />
 
                                 <ItemsControl ItemsSource="{Binding FilteredInstalledPlugins}">
+                                    <!-- Virtualized: this app registers everything as a plugin, so the
+                                         installed list is ~96 cards. A plain ItemsControl inside a
+                                         ScrollViewer uses a non-virtualizing StackPanel and measured
+                                         every one of them in a single layout pass. -->
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <VirtualizingStackPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="vm:PluginItemViewModel">
                                             <Border Classes="plugin-card"
-                                                    Classes.selected="{Binding $parent[UserControl].((vm:PluginsManagerViewModel)DataContext).SelectedInstalledPlugin, Converter={StaticResource EqualityConverter}, ConverterParameter={Binding}}"
+                                                    Classes.selected="{Binding IsSelected}"
                                                     PointerPressed="OnInstalledCardPointerPressed">
                                                 <Grid ColumnDefinitions="Auto,*,Auto">
                                                     <!-- Category-Colored Icon Container -->
@@ -429,6 +438,15 @@
                                 </Grid>
 
                                 <ItemsControl ItemsSource="{Binding FilteredMarketplacePlugins}">
+                                    <!-- Virtualized: this app registers everything as a plugin, so the
+                                         installed list is ~96 cards. A plain ItemsControl inside a
+                                         ScrollViewer uses a non-virtualizing StackPanel and measured
+                                         every one of them in a single layout pass. -->
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <VirtualizingStackPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="marketplace:MarketplacePluginItem">
                                             <Border Classes="plugin-card"

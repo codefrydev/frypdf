@@ -41,6 +41,36 @@ External plugins compile against the following host contracts (provided by the i
 - **`CommunityToolkit.Mvvm`**: Standard MVVM source generators (`[ObservableProperty]`, `[RelayCommand]`).
 - **`Avalonia`** (12.x): Cross-platform UI controls and styling.
 
+### Contract Versioning (ABI)
+Keep every host reference at `<Private>false</Private>` — **never bundle a host assembly into your
+package**. Host assemblies are resolved from the running application, not from your plugin folder.
+Shipping your own `PdfEditorApp.Core.dll` gives `IFryPlugin` two distinct type identities, and the
+host will discover zero plugins in your package without reporting an error.
+
+`PdfEditorApp.Core` carries a **stable `AssemblyVersion` (`1.0.0.0`) that is deliberately
+independent of the application's release version**. It is bumped only on a breaking contract
+change, so a plugin compiled today keeps loading after FryPDF ships new releases. The DLL's
+*file* version still tracks the release it shipped in — use that to identify a build, and the
+assembly version to reason about the contract. Nothing in your project should pin the contract
+version.
+
+Version drift is not fatal: the host resolves **its own** assemblies by simple name, ignoring the
+version your plugin recorded at compile time. That matters most for `PdfEditorApp.dll`, whose
+version legitimately moves with every release — a plugin compiled against `PdfEditorApp 1.0.0.0`
+still binds to a host shipping `0.0.6.0`.
+
+Released builds are published `--self-contained`, and in that configuration the runtime's own
+binder refuses a request for a **higher** version than the app ships, reporting it as
+
+```
+Could not load file or assembly 'PdfEditorApp.Core, Version=X'. The system cannot find the file specified.
+```
+
+even though the DLL is present next to the executable. FryPDF no longer routes host assemblies
+through that binder, so this should not occur. If it does, check **Diagnostic Logs**: an
+`Unresolved dependency` line names what the host actually has loaded under that name, where it
+was loaded from, and whether the DLL is on disk.
+
 ---
 
 ## 3. The Anatomy of an External Plugin
@@ -185,7 +215,7 @@ Create a new directory named `FryPdf.Plugin.WatermarkPlus` and add `FryPdf.Plugi
     </Reference>
   </ItemGroup>
 
-  <!-- Option B: Alternatively reference via NuGet SDK package -->
+  <!-- Option B: NuGet SDK package — NOT YET PUBLISHED. Use Option A above. -->
   <!--
   <ItemGroup>
     <PackageReference Include="FryPdf.PluginSdk" Version="1.0.0" PrivateAssets="all" />

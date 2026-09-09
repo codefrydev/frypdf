@@ -18,7 +18,15 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
-    <ProjectReference Include="..\PdfEditorApp.Core\PdfEditorApp.Core.csproj" />
+    <!--
+      A command-line -p:AssemblyVersion (as passed by .github/workflows/release.yml) is a global
+      property and would otherwise beat PdfEditorApp.Core's own PropertyGroup, rewriting the plugin
+      ABI identity on every release. Stripping it here lets Core keep the stable AssemblyVersion it
+      declares for itself, while Version / FileVersion / InformationalVersion still flow through so
+      the shipped file keeps reporting the release it came from.
+    -->
+    <ProjectReference Include="..\PdfEditorApp.Core\PdfEditorApp.Core.csproj"
+                      GlobalPropertiesToRemove="AssemblyVersion" />
   </ItemGroup>
 
   <ItemGroup>

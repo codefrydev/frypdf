@@ -21,7 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\PdfEditorApp.Core\PdfEditorApp.Core.csproj" />
+    <!-- Must match PdfEditorApp.csproj, otherwise Core would build twice under two property sets. -->
+    <ProjectReference Include="..\..\src\PdfEditorApp.Core\PdfEditorApp.Core.csproj"
+                      GlobalPropertiesToRemove="AssemblyVersion" />
     <ProjectReference Include="..\..\src\PdfEditorApp\PdfEditorApp.csproj" />
   </ItemGroup>
 </Project>

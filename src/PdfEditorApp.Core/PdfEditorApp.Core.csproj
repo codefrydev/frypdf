@@ -7,6 +7,17 @@
     <AssemblyName>PdfEditorApp.Core</AssemblyName>
     <RootNamespace>PdfEditorApp.Core</RootNamespace>
     <Version Condition="'$(Version)' == ''">1.0.0</Version>
+    <!--
+      Plugin ABI version. This assembly is the plugin contract: external plugins compile against it
+      and never ship it, so its identity must NOT move with the application's release version —
+      otherwise every release hands already-published plugins a contract they did not compile
+      against. Bump this ONLY on a breaking contract change.
+      PdfEditorApp.csproj strips the AssemblyVersion global property from its ProjectReference so
+      a command-line -p:AssemblyVersion (as used by .github/workflows/release.yml) cannot override
+      the value below. FileVersion / InformationalVersion still flow through, so the shipped file
+      keeps reporting the release it came from.
+    -->
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <Company>Code Fry Dev</Company>
     <Copyright>Copyright © 2026 Code Fry Dev</Copyright>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

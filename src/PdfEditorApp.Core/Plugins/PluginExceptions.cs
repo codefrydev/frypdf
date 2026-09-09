@@ -34,3 +34,28 @@ public class PluginCircularDependencyException : PluginException
 {
     public PluginCircularDependencyException(string message) : base(message) { }
 }
+
+/// <summary>
+/// Thrown when a plugin was compiled against a version of a host assembly that this build of the
+/// application does not provide. The runtime reports this as a bare
+/// <see cref="System.IO.FileNotFoundException"/> ("cannot find the file specified") even when the
+/// assembly is present on disk, so it is translated into this type to keep the cause actionable.
+/// </summary>
+public class PluginAbiMismatchException : PluginException
+{
+    public string AssemblyName { get; }
+    public Version? RequestedVersion { get; }
+    public Version? HostVersion { get; }
+
+    public PluginAbiMismatchException(
+        string assemblyName, Version? requestedVersion, Version? hostVersion, Exception innerException)
+        : base($"This plugin was built against {assemblyName} " +
+               $"{requestedVersion?.ToString() ?? "an unknown version"} but this build of FryPDF provides " +
+               $"{hostVersion?.ToString() ?? "no matching version"}. Rebuild the plugin against the installed application.",
+               innerException)
+    {
+        AssemblyName = assemblyName;
+        RequestedVersion = requestedVersion;
+        HostVersion = hostVersion;
+    }
+}

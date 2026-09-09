@@ -57,6 +57,15 @@ public sealed class PluginAssemblyPackage : IDisposable
 /// </summary>
 public sealed class CollectiblePluginLoadContext : AssemblyLoadContext
 {
+    /// <summary>
+    /// Assemblies the host owns. Plugins compile against these but never ship them
+    /// (<c>Private=false</c> / <c>ExcludeAssets=runtime</c>), so they MUST resolve to the copy the
+    /// host already has loaded — otherwise <see cref="IFryPlugin"/> would have two distinct type
+    /// identities and no plugin would ever be discovered.
+    /// </summary>
+    private static readonly HashSet<string> HostContractAssemblies =
+        new(StringComparer.OrdinalIgnoreCase) { "PdfEditorApp", "PdfEditorApp.Core" };
+
     private readonly AssemblyDependencyResolver _resolver;
     private readonly string _pluginDirectory;
 
@@ -69,6 +78,26 @@ public sealed class CollectiblePluginLoadContext : AssemblyLoadContext
 
     protected override Assembly? Load(AssemblyName assemblyName)
     {
+        // Stage 1 — host contracts, matched on simple name only.
+        // A plugin records whatever AssemblyVersion the host had when it was compiled, and the
+        // default binder refuses to substitute a *lower* version (reported, confusingly, as
+        // "cannot find the file specified" even though the DLL sits next to the exe). Binding by
+        // simple name keeps plugins loadable across host version drift, and running before the
+        // directory probe below guarantees a single contract identity even if a plugin wrongly
+        // bundles its own copy.
+        if (assemblyName.Name != null && HostContractAssemblies.Contains(assemblyName.Name))
+        {
+            var host = ResolveFromDefaultContext(assemblyName.Name);
+            if (host != null)
+            {
+                AppLogService.Instance.Log(AppLogLevel.Debug, "PluginLoader",
+                    $"Redirected host contract '{assemblyName.Name}' (plugin requested v{assemblyName.Version?.ToString() ?? "?"}) " +
+                    $"to the host's loaded v{host.GetName().Version?.ToString() ?? "?"}.");
+                return host;
+            }
+        }
+
+        // Stage 2 — plugin-private dependencies win over anything the host happens to carry.
         string? assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
         if (assemblyPath != null && File.Exists(assemblyPath))
         {
@@ -96,7 +125,48 @@ public sealed class CollectiblePluginLoadContext : AssemblyLoadContext
             catch { }
         }
 
+        // Stage 3 — host-provided third-party dependencies (Avalonia, CommunityToolkit.Mvvm,
+        // Material.Icons.Avalonia, Microsoft.Extensions.*). Plugins reference these with
+        // PrivateAssets="all" and never ship them, so they hit the same version-drift wall as the
+        // host contracts above. Returning null here would hand the request to the strict default
+        // binder; a simple-name match keeps the plugin loadable.
+        if (assemblyName.Name != null)
+        {
+            var shared = ResolveFromDefaultContext(assemblyName.Name);
+            if (shared != null)
+            {
+                AppLogService.Instance.Log(AppLogLevel.Debug, "PluginLoader",
+                    $"Resolved host-provided dependency '{assemblyName.Name}' (plugin requested v{assemblyName.Version?.ToString() ?? "?"}) " +
+                    $"to the host's loaded v{shared.GetName().Version?.ToString() ?? "?"}.");
+                return shared;
+            }
+        }
+
         return null;
+    }
+
+    /// <summary>
+    /// Finds an assembly in the default (host) load context by simple name, deliberately ignoring
+    /// version, culture and public key token.
+    /// </summary>
+    private static Assembly? ResolveFromDefaultContext(string simpleName)
+    {
+        foreach (var loaded in Default.Assemblies)
+        {
+            if (string.Equals(loaded.GetName().Name, simpleName, StringComparison.OrdinalIgnoreCase))
+                return loaded;
+        }
+
+        // Not loaded yet — ask the default context to bind it by simple name alone, so the
+        // version the plugin was compiled against never enters the decision.
+        try
+        {
+            return Default.LoadFromAssemblyName(new AssemblyName(simpleName));
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or FileLoadException or BadImageFormatException)
+        {
+            return null;
+        }
     }
 
     protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
@@ -265,6 +335,22 @@ public static class PluginAssemblyLoader
             // ex.ToString() alone omits LoaderExceptions (the actual per-type failure reasons) —
             // LogError's helper unwraps them so a Windows-only missing-dependency case is diagnosable.
             AppLogService.Instance.LogError("PluginLoader", $"Failed to reflect types from '{fullPath}'", ex);
+
+            // "The system cannot find the file specified" for a host assembly is misleading — the
+            // DLL ships next to the executable. Dump what the host actually has so the cause is
+            // readable from the log instead of requiring a repro.
+            LogHostResolutionState(ex);
+
+            // A version-drift failure reaches us as a bare FileNotFoundException naming an
+            // assembly the host actually has, just at a different version. Say so, rather than
+            // letting "cannot find the file specified" imply a missing file.
+            var mismatch = DetectAbiMismatch(ex);
+            if (mismatch != null)
+            {
+                AppLogService.Instance.Log(AppLogLevel.Error, "PluginLoader", mismatch.Message);
+                throw mismatch;
+            }
+
             throw;
         }
 
@@ -291,6 +377,90 @@ public static class PluginAssemblyLoader
         AppLogService.Instance.Log(AppLogLevel.Info, "PluginLoader",
             $"Loaded assembly '{Path.GetFileName(fullPath)}' with {plugins.Count} plugin(s) in {sw.ElapsedMilliseconds}ms (staged={staged}).");
         return package;
+    }
+
+    /// <summary>
+    /// Records, for every dependency the plugin could not bind, what the host has under that name
+    /// and whether the DLL exists on disk next to the executable. A "cannot find the file
+    /// specified" for a host assembly is otherwise unfalsifiable from a log alone: it looks like a
+    /// missing file whether the file is missing, present but unbindable, or present at a version
+    /// the binder rejected.
+    /// </summary>
+    private static void LogHostResolutionState(ReflectionTypeLoadException ex)
+    {
+        foreach (var loaderEx in ex.LoaderExceptions)
+        {
+            if (loaderEx is not FileNotFoundException { FileName: { Length: > 0 } fileName })
+                continue;
+
+            string? simpleName = null;
+            try { simpleName = new AssemblyName(fileName).Name; }
+            catch (Exception parseEx) when (parseEx is ArgumentException or FileLoadException) { }
+            simpleName ??= fileName;
+
+            var loaded = AssemblyLoadContext.Default.Assemblies
+                .FirstOrDefault(a => string.Equals(a.GetName().Name, simpleName, StringComparison.OrdinalIgnoreCase));
+
+            string onDisk;
+            try
+            {
+                var candidate = Path.Combine(AppContext.BaseDirectory, $"{simpleName}.dll");
+                onDisk = File.Exists(candidate) ? candidate : $"absent from '{AppContext.BaseDirectory}'";
+            }
+            catch (Exception pathEx) when (pathEx is ArgumentException or PathTooLongException)
+            {
+                onDisk = "unknown";
+            }
+
+            AppLogService.Instance.Log(AppLogLevel.Error, "PluginLoader",
+                $"Unresolved dependency '{fileName}'. Host has " +
+                (loaded == null
+                    ? "NOTHING loaded under that name"
+                    : $"v{loaded.GetName().Version?.ToString() ?? "?"} loaded from '{(string.IsNullOrEmpty(loaded.Location) ? "<bundled>" : loaded.Location)}'") +
+                $"; on disk: {onDisk}.");
+        }
+    }
+
+    /// <summary>
+    /// Inspects <see cref="ReflectionTypeLoadException.LoaderExceptions"/> for a dependency the
+    /// host does provide, but under a different version — the runtime reports that as a plain
+    /// "cannot find the file specified", which sends people looking for a missing DLL that is
+    /// actually sitting next to the executable.
+    /// </summary>
+    /// <returns>A describing exception, or <c>null</c> when the failure is something else.</returns>
+    private static PluginAbiMismatchException? DetectAbiMismatch(ReflectionTypeLoadException ex)
+    {
+        foreach (var loaderEx in ex.LoaderExceptions)
+        {
+            if (loaderEx is not FileNotFoundException { FileName: { Length: > 0 } fileName })
+                continue;
+
+            AssemblyName requested;
+            try
+            {
+                requested = new AssemblyName(fileName);
+            }
+            catch (Exception parseEx) when (parseEx is ArgumentException or FileLoadException)
+            {
+                continue;
+            }
+
+            if (requested.Name is null)
+                continue;
+
+            // Only a name the host itself carries indicates version drift; anything else really is
+            // a dependency the plugin forgot to ship.
+            var hostVersion = AssemblyLoadContext.Default.Assemblies
+                .FirstOrDefault(a => string.Equals(a.GetName().Name, requested.Name, StringComparison.OrdinalIgnoreCase))
+                ?.GetName().Version;
+
+            if (hostVersion != null && hostVersion != requested.Version)
+            {
+                return new PluginAbiMismatchException(requested.Name, requested.Version, hostVersion, ex);
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

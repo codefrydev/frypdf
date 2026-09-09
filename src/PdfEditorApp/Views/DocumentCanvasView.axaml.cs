@@ -21,6 +21,11 @@ public partial class DocumentCanvasView : UserControl
     private bool _isMarqueeSelecting;
     private Point _marqueeStartPoint;
     private DateTime _lastMarqueeSelectionUpdate = DateTime.MinValue;
+
+    private DateTime _lastCursorPositionUpdate = DateTime.MinValue;
+
+    /// <summary>One frame at 60 FPS; see the ruler note in OnCanvasPointerMoved.</summary>
+    private const double CursorUpdateIntervalMs = 16;
     private string? _activeResizeHandle;
     private Point _lastPointerPosition;
     private ElementViewModelBase? _draggedElement;
@@ -982,10 +987,29 @@ public partial class DocumentCanvasView : UserControl
 
         if (PageElementsCanvas != null && ViewModel != null)
         {
-            var pPos = e.GetPosition(PageElementsCanvas);
-            double z = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
-            ViewModel.CursorCanvasX = Math.Max(0, pPos.X / z);
-            ViewModel.CursorCanvasY = Math.Max(0, pPos.Y / z);
+            // CursorCanvasX/Y drive CanvasRulerControl.CursorPosition, which is in that
+            // control's AffectsRender set — so each write re-renders *both* rulers, and each
+            // ruler render walks a tick loop. This fired on every raw pointer move, even when
+            // nothing was being dragged, and a trackpad reports far faster than the 60 FPS the
+            // frame budget in section 6 of the performance mandate allows for. Coalesced to one
+            // update per frame, matching the marquee throttle below.
+            var now = DateTime.UtcNow;
+            if ((now - _lastCursorPositionUpdate).TotalMilliseconds >= CursorUpdateIntervalMs)
+            {
+                _lastCursorPositionUpdate = now;
+
+                var pPos = e.GetPosition(PageElementsCanvas);
+                double z = ViewModel.ZoomLevel > 0 ? ViewModel.ZoomLevel : 1.0;
+
+                // Rounded to a tenth of a point: the rulers cannot show more precision than
+                // that, and an unchanged value skips the property write entirely, so hovering
+                // almost-still costs no renders at all.
+                double cursorX = Math.Round(Math.Max(0, pPos.X / z), 1);
+                double cursorY = Math.Round(Math.Max(0, pPos.Y / z), 1);
+
+                if (ViewModel.CursorCanvasX != cursorX) ViewModel.CursorCanvasX = cursorX;
+                if (ViewModel.CursorCanvasY != cursorY) ViewModel.CursorCanvasY = cursorY;
+            }
         }
 
         if (_isMarqueeSelecting && PageElementsCanvas != null && ViewModel?.CurrentPage != null)
@@ -1236,6 +1260,16 @@ public partial class DocumentCanvasView : UserControl
         _isPanning = false;
     }
 
+    /// <summary>
+    /// Pan cursor for space-drag, created once.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Cursor"/> is an IDisposable wrapper over a native handle. This was allocated
+    /// fresh on every space-bar press and never disposed, leaking a handle per press — the same
+    /// bug already fixed in <c>Views/Controls/PdfTextOverlayControl</c>.
+    /// </remarks>
+    private static readonly Cursor HandCursor = new(StandardCursorType.Hand);
+
     private void OnCanvasKeyUp(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.Space)
@@ -1289,7 +1323,7 @@ public partial class DocumentCanvasView : UserControl
         if (e.Key == Key.Space && !_isSpacePressed)
         {
             _isSpacePressed = true;
-            Cursor = new Cursor(StandardCursorType.Hand);
+            Cursor = HandCursor;
             return;
         }
 

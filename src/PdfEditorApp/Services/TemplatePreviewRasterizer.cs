@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
@@ -47,50 +48,57 @@ public static class TemplatePreviewRasterizer
         int height = bitmap.PixelSize.Height;
         if (width < 2 || height < 2) return true;
 
-        int stride = width * 4;
-        int byteCount = stride * height;
-        var buffer = new byte[byteCount];
+        // One row at a time from a pooled buffer, rather than the whole surface.
+        //
+        // This used to allocate `new byte[width * 4 * height]` and pin it — about 700 KB for a
+        // 352x498 preview — to read 256 pixels, once per template. Anything from 85 KB up lands
+        // on the Large Object Heap, and pinning it there blocks compaction, so rasterizing a
+        // gallery of templates fragmented the LOH and drove exactly the long blocking
+        // collections that section 5 of .agents/rules/performance_and_zero_lag_mandate.md
+        // exists to prevent. A single row is ~1.4 KB and comes from ArrayPool.
+        int rowBytes = width * 4;
+        var row = ArrayPool<byte>.Shared.Rent(rowBytes);
 
         // Pinned rather than `fixed`: this project does not enable unsafe blocks.
-        var handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+        var handle = GCHandle.Alloc(row, GCHandleType.Pinned);
         try
         {
-            bitmap.CopyPixels(new PixelRect(0, 0, width, height), handle.AddrOfPinnedObject(), byteCount, stride);
+            uint first = 0;
+            bool haveFirst = false;
+
+            for (int sy = 0; sy < samplesPerAxis; sy++)
+            {
+                int y = (int)((sy + 0.5) / samplesPerAxis * height);
+                if (y >= height) y = height - 1;
+
+                bitmap.CopyPixels(new PixelRect(0, y, width, 1), handle.AddrOfPinnedObject(), rowBytes, rowBytes);
+
+                for (int sx = 0; sx < samplesPerAxis; sx++)
+                {
+                    int x = (int)((sx + 0.5) / samplesPerAxis * width);
+                    if (x >= width) x = width - 1;
+
+                    uint pixel = BitConverter.ToUInt32(row, x * 4);
+
+                    if (!haveFirst)
+                    {
+                        first = pixel;
+                        haveFirst = true;
+                    }
+                    else if (pixel != first)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
         finally
         {
             handle.Free();
+            ArrayPool<byte>.Shared.Return(row);
         }
-
-        uint first = 0;
-        bool haveFirst = false;
-
-        for (int sy = 0; sy < samplesPerAxis; sy++)
-        {
-            int y = (int)((sy + 0.5) / samplesPerAxis * height);
-            if (y >= height) y = height - 1;
-
-            for (int sx = 0; sx < samplesPerAxis; sx++)
-            {
-                int x = (int)((sx + 0.5) / samplesPerAxis * width);
-                if (x >= width) x = width - 1;
-
-                int offset = (y * stride) + (x * 4);
-                uint pixel = BitConverter.ToUInt32(buffer, offset);
-
-                if (!haveFirst)
-                {
-                    first = pixel;
-                    haveFirst = true;
-                }
-                else if (pixel != first)
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     /// <summary>

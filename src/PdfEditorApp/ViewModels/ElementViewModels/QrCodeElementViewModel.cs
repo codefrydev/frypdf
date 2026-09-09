@@ -55,11 +55,19 @@ public partial class QrCodeElementViewModel : ElementViewModelBase
         _previousQrBitmap = value;
     }
 
-    partial void OnContentChanged(string value) => RefreshQrBitmap();
-    partial void OnDarkColorHexChanged(string value) => RefreshQrBitmap();
-    partial void OnLightColorHexChanged(string value) => RefreshQrBitmap();
-    partial void OnEccLevelChanged(QrCodeEccLevel value) => RefreshQrBitmap();
-    partial void OnDrawQuietZonesChanged(bool value) => RefreshQrBitmap();
+    /// <summary>Coalesces QR regeneration; see <see cref="RefreshQrBitmap"/>.</summary>
+    private readonly UiDebouncer _qrDebouncer;
+
+    // Content is bound to a TextBox and the colour hexes to pickers, so these fired on every
+    // keystroke and every picker tick — each one re-encoding the QR, re-encoding a PNG and
+    // allocating a fresh native Skia bitmap. ToModel() does not read QrPngBytes (export
+    // regenerates from the model), so the only thing these feed is the live canvas preview,
+    // which is safe to coalesce.
+    partial void OnContentChanged(string value) => _qrDebouncer.Request();
+    partial void OnDarkColorHexChanged(string value) => _qrDebouncer.Request();
+    partial void OnLightColorHexChanged(string value) => _qrDebouncer.Request();
+    partial void OnEccLevelChanged(QrCodeEccLevel value) => _qrDebouncer.Request();
+    partial void OnDrawQuietZonesChanged(bool value) => _qrDebouncer.Request();
 
     public void RefreshQrBitmap()
     {
@@ -139,10 +147,18 @@ public partial class QrCodeElementViewModel : ElementViewModelBase
 
     public QrCodeElementViewModel()
     {
+        _qrDebouncer = new UiDebouncer(QrDebounceMs, RefreshQrBitmap);
+
         Width = 140;
         Height = 160;
+
+        // Direct, not debounced: an element must have a preview the moment it is created, and
+        // the debounced path needs a running dispatcher which headless hosts do not have.
         RefreshQrBitmap();
     }
+
+    /// <summary>Quiet period before the QR preview is regenerated.</summary>
+    private const int QrDebounceMs = 180;
 
     public override PdfElementBase ToModel()
     {

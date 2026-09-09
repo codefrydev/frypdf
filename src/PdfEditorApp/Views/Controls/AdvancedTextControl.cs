@@ -298,11 +298,9 @@ public class AdvancedTextControl : Control
 
         try
         {
-            var avaloniaFamily = FontHelper.CreateFontFamily(FontFamilyName);
-            var typeface = new Typeface(
-                avaloniaFamily,
-                IsItalic ? FontStyle.Italic : FontStyle.Normal,
-                IsBold ? FontWeight.Bold : FontWeight.Normal);
+            // Memoized: this ran on every render pass, and each element renders twice (page
+            // canvas plus thumbnail rail) across 53 render-affecting properties.
+            var typeface = FontHelper.CreateTypeface(FontFamilyName, IsBold, IsItalic);
 
             var fillBrush = TextBrush ?? Brushes.Black;
             Pen? strokePen = GetCachedPen(ref _strokePen, StrokeBrush, StrokeWidth, HasStroke && StrokeWidth > 0 && StrokeBrush != null);

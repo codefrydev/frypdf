@@ -136,9 +136,23 @@ public class CanvasRulerControl : Control
             fontSize,
             labelBrush);
 
+        // Bounded: label text is derived from the zoom level and unit, so a long zoom session
+        // mints an unbounded number of distinct strings ("10", "12.5", "1250", ...) that were
+        // never evicted. Only the labels for the current zoom are ever hit, so dropping the
+        // whole cache on overflow costs one frame of re-shaping and keeps Gen2 flat.
+        if (_labelCache.Count >= MaxCachedLabels)
+        {
+            _labelCache.Clear();
+        }
+
         _labelCache[key] = text;
         return text;
     }
+
+    /// <summary>
+    /// Cap on distinct cached tick labels. A ruler shows well under this at any one zoom.
+    /// </summary>
+    private const int MaxCachedLabels = 256;
 
     public override void Render(DrawingContext context)
     {

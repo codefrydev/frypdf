@@ -12,7 +12,7 @@ namespace PdfEditorApp.Services.Overlays;
 /// <summary>
 /// Thread-safe registry and lifecycle manager for floating plugins targeting the 'shell.overlay' slot.
 /// </summary>
-public sealed class OverlayRegistry : IOverlayRegistry
+public sealed class OverlayRegistry : IOverlayRegistry, IDisposable
 {
     private readonly ConcurrentDictionary<string, OverlayDescriptor> _descriptors = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, OverlayInstanceViewModel> _activeInstances = new(StringComparer.OrdinalIgnoreCase);
@@ -43,7 +43,14 @@ public sealed class OverlayRegistry : IOverlayRegistry
 
                 RunOnUIThread(() =>
                 {
+                    // Re-registration (plugin hot-reload) replaces the live view. Without this the
+                    // outgoing view model was dropped on the floor still holding its resources.
+                    var outgoing = existingInstance.Content;
                     existingInstance.Content = newContent;
+                    if (!ReferenceEquals(outgoing, newContent))
+                    {
+                        OverlayInstanceViewModel.DisposeContent(outgoing);
+                    }
                 });
             }
             catch (Exception ex)
@@ -65,10 +72,30 @@ public sealed class OverlayRegistry : IOverlayRegistry
         if (_descriptors.TryRemove(overlayId, out _))
         {
             HideOverlay(overlayId);
+            DisposeInstance(overlayId);
             RegistryChanged?.Invoke();
             return true;
         }
         return false;
+    }
+
+    /// <summary>
+    /// Removes a cached instance from <see cref="_activeInstances"/> and disposes it.
+    /// </summary>
+    /// <remarks>
+    /// Only called when the overlay goes away for good — the plugin is unregistered, or the
+    /// app is shutting down. Merely hiding an overlay keeps the instance cached; see
+    /// <see cref="HideOverlay"/>.
+    /// </remarks>
+    private void DisposeInstance(string overlayId)
+    {
+        var desc = GetOverlay(overlayId);
+        var targetId = desc?.Id ?? overlayId;
+
+        if (_activeInstances.TryRemove(targetId, out var instance))
+        {
+            RunOnUIThread(instance.Dispose);
+        }
     }
 
     public OverlayDescriptor? GetOverlay(string overlayId)
@@ -169,12 +196,30 @@ public sealed class OverlayRegistry : IOverlayRegistry
         }
     }
 
+    /// <summary>
+    /// Hides an overlay, keeping its instance cached for an instant re-open.
+    /// </summary>
+    /// <remarks>
+    /// This used to remove the instance from <see cref="_activeInstances"/> without disposing
+    /// it. <see cref="ShowOverlay"/> then no longer found it and fell through to
+    /// <c>desc.ViewFactory</c>, building a brand new view and view model — so every
+    /// hide/show cycle permanently leaked one plugin instance, and the orphan could not even
+    /// be collected because its own running DispatcherTimer rooted it. For the music player
+    /// that meant an extra native audio engine, an extra open playback device and an extra
+    /// pair of UI-thread timers per toggle, which is why audio degraded the longer the app ran.
+    ///
+    /// Keeping the instance cached fixes the leak and satisfies the view-caching rule in
+    /// .agents/rules/performance_and_zero_lag_mandate.md section 2. Instances are torn down in
+    /// <see cref="DisposeInstance"/> when the overlay is unregistered or the registry is
+    /// disposed. <see cref="IsOverlayVisible"/> already keys off <c>IsVisible</c> rather than
+    /// dictionary membership, so toggle semantics are unchanged.
+    /// </remarks>
     public void HideOverlay(string overlayId)
     {
         var desc = GetOverlay(overlayId);
         var targetId = desc?.Id ?? overlayId;
 
-        if (_activeInstances.TryRemove(targetId, out var instance))
+        if (_activeInstances.TryGetValue(targetId, out var instance))
         {
             RunOnUIThread(() =>
             {
@@ -234,6 +279,22 @@ public sealed class OverlayRegistry : IOverlayRegistry
         var desc = GetOverlay(overlayId);
         var targetId = desc?.Id ?? overlayId;
         return _activeInstances.TryGetValue(targetId, out var inst) && inst.IsVisible;
+    }
+
+    /// <summary>
+    /// Tears down every cached overlay instance, releasing plugin-held resources on shutdown.
+    /// </summary>
+    public void Dispose()
+    {
+        foreach (var id in _activeInstances.Keys.ToList())
+        {
+            if (_activeInstances.TryRemove(id, out var instance))
+            {
+                instance.Dispose();
+            }
+        }
+
+        _activeInstances.Clear();
     }
 
     private sealed class UnregisterDisposable : IDisposable

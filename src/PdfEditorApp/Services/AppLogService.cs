@@ -326,23 +326,55 @@ internal sealed class FryPdfTraceListener : TraceListener
     private readonly AppLogService _service;
     private readonly StringBuilder _lineBuffer = new();
 
+    /// <summary>Guards <see cref="_lineBuffer"/>; see <see cref="IsThreadSafe"/>.</summary>
+    private readonly object _bufferLock = new();
+
     public FryPdfTraceListener(AppLogService service) : base("FryPDF")
     {
         _service = service;
     }
 
+    /// <summary>
+    /// Declares that this listener synchronizes itself, so <see cref="Trace"/> does not take
+    /// its process-wide lock around every write.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="TraceListener.IsThreadSafe"/> defaults to <c>false</c>, and
+    /// <c>Trace.UseGlobalLock</c> defaults to <c>true</c> — so every <c>Debug.WriteLine</c>
+    /// anywhere in the process serialized on one global lock, and a thread that logged blocked
+    /// behind whatever the UI thread was doing inside <see cref="AppLogService.Append"/>
+    /// (which takes its own lock, allocates, and dispatches a messenger message inline).
+    ///
+    /// That is a priority-inversion trap for plugins: this process hosts plugin code on
+    /// real-time threads — the music player runs SoundFlow's audio callback, a CLR-attached
+    /// thread with a hard deadline — and a single trace call from such a thread could stall it
+    /// behind UI-thread log traffic. Owning the synchronization here keeps the critical section
+    /// to just the line buffer.
+    /// </remarks>
+    public override bool IsThreadSafe => true;
+
     public override void Write(string? message)
     {
-        if (message != null)
+        if (message == null) return;
+
+        lock (_bufferLock)
+        {
             _lineBuffer.Append(message);
+        }
     }
 
     public override void WriteLine(string? message)
     {
-        _lineBuffer.Append(message);
-        var line = _lineBuffer.ToString();
-        _lineBuffer.Clear();
+        string line;
+        lock (_bufferLock)
+        {
+            _lineBuffer.Append(message);
+            line = _lineBuffer.ToString();
+            _lineBuffer.Clear();
+        }
 
+        // Outside the buffer lock: Append does real work (bounded buffer, file-writer enqueue,
+        // messenger dispatch) and must not hold up another thread's Write.
         if (!string.IsNullOrWhiteSpace(line))
             _service.Append(line);
     }

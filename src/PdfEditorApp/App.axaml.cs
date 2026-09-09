@@ -306,6 +306,11 @@ public partial class App : Application
         services.AddSingleton<PdfEditorApp.Services.Overlays.OverlayRegistry>();
         services.AddSingleton<PdfEditorApp.Core.Plugins.Descriptors.IOverlayRegistry>(sp => sp.GetRequiredService<PdfEditorApp.Services.Overlays.OverlayRegistry>());
         services.AddSingleton<PdfEditorApp.Core.Plugins.Settings.IPluginSettingsStore, PdfEditorApp.Core.Plugins.Settings.FilePluginSettingsStore>();
+
+        // Lets a plugin declare work with a hard deadline (e.g. an audio callback) so the host
+        // can tune GC latency while it runs. Resolved by plugins through the IServiceProvider
+        // handed to their view factories.
+        services.AddSingleton<PdfEditorApp.Core.Plugins.Realtime.IRealtimeWorkCoordinator, RealtimeWorkCoordinator>();
         services.AddSingleton<PdfEditorApp.Core.Plugins.Marketplace.IInstalledPluginStore, PdfEditorApp.Core.Plugins.Marketplace.FileInstalledPluginStore>();
 
 

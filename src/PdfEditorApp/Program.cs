@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Logging;
 using System;
+using System.Threading;
 using PdfEditorApp.Plugins.Cli;
 
 namespace PdfEditorApp;
@@ -18,7 +19,38 @@ sealed class Program
             return HeadlessCliRunner.RunCliAsync(args).GetAwaiter().GetResult();
         }
 
+        ConfigureThreadPool();
+
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    }
+
+    /// <summary>
+    /// Raises the thread-pool floor so a burst of offloaded work does not queue behind the
+    /// pool's thread-injection rate.
+    /// </summary>
+    /// <remarks>
+    /// The app offloads aggressively — around 77 <c>Task.Run</c> call sites — and several
+    /// service methods still block a pooled thread on sync-over-async I/O (OCR, PDF
+    /// linearization). Past <see cref="Environment.ProcessorCount"/> the pool only injects
+    /// roughly one thread every 500ms, so an interaction that fans out several work items
+    /// while others sit blocked leaves the rest waiting on injection rather than on CPU.
+    ///
+    /// That delay is not only a UI-responsiveness problem here: plugins run in-process and may
+    /// schedule their own non-real-time work (metadata scans, decode read-ahead) on the same
+    /// pool, and starving that work is what turns into an audible gap for an audio plugin.
+    /// The floor is a lower bound, not a reservation — idle threads still retire.
+    /// </remarks>
+    private static void ConfigureThreadPool()
+    {
+        ThreadPool.GetMinThreads(out int currentWorker, out int currentCompletionPort);
+
+        int desiredWorker = Math.Max(currentWorker, Environment.ProcessorCount * 2);
+
+        if (desiredWorker > currentWorker)
+        {
+            // Failure here is non-fatal: the pool simply keeps its default injection behaviour.
+            ThreadPool.SetMinThreads(desiredWorker, currentCompletionPort);
+        }
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.

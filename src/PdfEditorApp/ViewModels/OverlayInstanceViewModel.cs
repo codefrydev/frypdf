@@ -9,7 +9,7 @@ namespace PdfEditorApp.ViewModels;
 /// ViewModel representing an active, floating, draggable overlay instance in the 'shell.overlay' slot.
 /// Supports 60+ FPS dragging, minimizing to a pill, and clean dismissal.
 /// </summary>
-public partial class OverlayInstanceViewModel : ObservableObject
+public partial class OverlayInstanceViewModel : ObservableObject, IDisposable
 {
     private readonly Action<OverlayInstanceViewModel>? _onClose;
 
@@ -131,5 +131,70 @@ public partial class OverlayInstanceViewModel : ObservableObject
             if (o.ZIndex > max) max = o.ZIndex;
         }
         ZIndex = max + 1;
+    }
+
+    /// <summary>
+    /// Tears down the hosted plugin view and its view model.
+    /// </summary>
+    /// <remarks>
+    /// Nothing used to dispose an overlay instance, so a plugin holding unmanaged or
+    /// long-lived resources kept them for the life of the process. The music player is the
+    /// worst case: each instance owns a native audio engine, an open playback device, and
+    /// DispatcherTimers that root the view model, so an undisposed instance leaks an audio
+    /// callback thread that keeps competing for CPU and disk.
+    ///
+    /// The plugin's resources hang off the view's DataContext, not the view, so both are
+    /// checked — a plugin may make either one disposable.
+    /// </remarks>
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        DisposeContent(Content);
+        Content = null;
+    }
+
+    private bool _isDisposed;
+
+    /// <summary>
+    /// Disposes a hosted content object and, when it is a control, its view model.
+    /// </summary>
+    internal static void DisposeContent(object? content)
+    {
+        if (content == null) return;
+
+        // The view model owns the plugin's resources, so tear it down before the view that
+        // binds to it.
+        if (content is Avalonia.StyledElement element)
+        {
+            if (element.DataContext is IDisposable disposableVm)
+            {
+                TryDispose(disposableVm);
+            }
+
+            element.DataContext = null;
+        }
+
+        if (content is IDisposable disposableContent)
+        {
+            TryDispose(disposableContent);
+        }
+    }
+
+    /// <summary>
+    /// Disposes third-party plugin code, which must not be able to abort host teardown.
+    /// </summary>
+    private static void TryDispose(IDisposable target)
+    {
+        try
+        {
+            target.Dispose();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                $"[OverlayInstance] Dispose threw for {target.GetType().FullName}: {ex.Message}");
+        }
     }
 }

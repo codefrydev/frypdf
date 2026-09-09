@@ -87,6 +87,41 @@ public static class FontHelper
     }
 
     /// <summary>
+    /// Cached <see cref="Typeface"/> per (family, bold, italic), memoized like
+    /// <see cref="CreateFontFamily"/>.
+    /// </summary>
+    /// <remarks>
+    /// Custom text controls built one of these inside <c>Render</c>, so it was reconstructed on
+    /// every render pass of every text element — and the canvas renders each element twice,
+    /// once on the page and once in the thumbnail rail. Keyed the same way as
+    /// <c>TextLayoutEngine.GlyphTypefaceCache</c> and invalidated by the same
+    /// <see cref="FontsChanged"/> signal.
+    /// </remarks>
+    private static readonly ConcurrentDictionary<(string Family, bool Bold, bool Italic), Typeface>
+        TypefaceCache = new();
+
+    static FontHelper()
+    {
+        // A newly installed font changes what a family name resolves to, so a typeface cached
+        // against that name must not outlive the change.
+        FontsChanged += () => TypefaceCache.Clear();
+    }
+
+    /// <summary>
+    /// Resolves a font family name plus weight/style to an Avalonia <see cref="Typeface"/>,
+    /// memoized. See <see cref="TypefaceCache"/>.
+    /// </summary>
+    public static Typeface CreateTypeface(string? fontName, bool isBold, bool isItalic)
+    {
+        var key = (fontName ?? string.Empty, isBold, isItalic);
+
+        return TypefaceCache.GetOrAdd(key, static k => new Typeface(
+            CreateFontFamily(k.Family),
+            k.Italic ? FontStyle.Italic : FontStyle.Normal,
+            k.Bold ? FontWeight.Bold : FontWeight.Normal));
+    }
+
+    /// <summary>
     /// Returns a safe fallback font family when the requested family cannot be resolved.
     /// </summary>
     public static string GetSafeFallback(string? requestedFamily)

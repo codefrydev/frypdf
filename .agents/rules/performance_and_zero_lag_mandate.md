@@ -65,9 +65,60 @@ Whenever you write or modify code in FryPDF, you **MUST ALWAYS THINK IN TERMS OF
 
 ---
 
-## 7. Verification
+## 7. Real-Time Plugin Work (Audio & Deadline Threads)
+Sections 1-6 are all about UI responsiveness and frame rate. They are not sufficient, because
+**FryPDF loads plugins into its own process**, and a plugin may own a thread with a hard
+deadline that the host knows nothing about.
+
+The motivating case: the Music Player plugin plays audio through SoundFlow, whose playback
+callback is a reverse P/Invoke from miniaudio's real-time thread **executing managed code**.
+That makes it a CLR-attached thread — so it is suspended by every garbage collection, it can
+block on any lock the UI thread also takes, and it competes for the same disk. A UI-thread stall
+of one second against ~30ms of audio buffer is not a dropped frame; it is a guaranteed, audible
+dropout.
+
+### Rules for plugin authors
+- **Never do I/O or decoding on a deadline thread.** Prefer a background-buffered data source
+  (SoundFlow: `ChunkedDataProvider` or `AssetDataProvider`, never `StreamDataProvider`) so the
+  callback never touches a `FileStream`.
+- **Buffer for at least 200ms.** Never accept a backend's low-latency default when latency does
+  not matter. Music playback is not synchronized to anything — trade latency for resilience.
+- **Never allocate per callback.** Every allocation raises the collection rate that suspends
+  your own thread.
+- **Never take a lock a deadline thread also takes** from the UI thread, and never hold one
+  across expensive work. .NET locks do not inherit priority, so this inverts.
+- **`Dispatcher.UIThread.Post`, never `Invoke`**, from a deadline thread. `Invoke` blocks on the
+  UI thread, which is the thing most likely to be stalled.
+- **Declare the work** via `IRealtimeWorkCoordinator.BeginRealtimeWork(...)` (resolved from the
+  `IServiceProvider` passed to your view factory), and dispose the handle when the work stops.
+  The host raises the GC to `SustainedLowLatency` while any declaration is outstanding. This is
+  a mitigation, not a licence to skip the rules above: it suppresses blocking gen-2 collections
+  but not gen-0/1.
+
+### Rules for all plugin authors, real-time or not
+- **Set `DispatcherPriority` explicitly on every timer.** The parameterless `DispatcherTimer`
+  constructor is `Background` — *below* `Input` — so host interaction starves it. Decoration
+  belongs at or below `Background`; never animate at `Render`, which outranks the host's own
+  input processing.
+- **Implement `IDisposable`.** The host disposes an overlay's content and its `DataContext` when
+  the overlay is unregistered. Release native handles, audio devices and timers there — a
+  running `DispatcherTimer` roots your view model and prevents collection.
+
+### Rules for the host
+- Any code path a plugin's deadline thread can reach must be non-blocking. Concretely: keep
+  `TraceListener.IsThreadSafe` true so `Debug.WriteLine` does not serialize process-wide, and
+  keep the plugin settings store off the synchronous-write path.
+- Treat editor allocation churn as an audio-quality issue, not only a frame-rate issue.
+
+---
+
+## 8. Verification
 - Run navigation and gesture performance tests:
   ```bash
   dotnet test --filter "FullyQualifiedName~GestureAndNavigationTests"
   ```
 - Verify zero warnings (`TreatWarningsAsErrors=true`).
+- Check the diagnostic log for `UiStall` entries. `UiThreadWatchdog` reports at two tiers:
+  Warning at 300ms (a visible freeze) and Debug at 50ms (already an audible dropout for a
+  real-time plugin). Each entry carries the gen-0/1/2 collection delta, which separates a
+  GC-driven stall from long synchronous work or lock contention.

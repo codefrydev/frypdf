@@ -189,6 +189,27 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
             }
             else
             {
+                // The startup directory scan (App.InitializePluginSystem) already discovers,
+                // loads and mounts everything under the plugins directory. Reloading here
+                // pulled a second copy of the assembly into a fresh collectible ALC and
+                // registered a second plugin instance — so an external plugin was mounted
+                // twice per launch, and anything it owned existed twice. For the music player
+                // that meant two native audio engines and two open playback devices competing
+                // for the same output. The IsEnabled branch above already guards on plugin
+                // state; this branch did not.
+                if (_pluginHost.GetPluginState(rec.PluginId) != PluginState.Unloaded)
+                {
+                    lock (_catalogLock) { _installedMarketplaceIds.Add(rec.PluginId); }
+
+                    if (rec.WasOverlayOpen)
+                    {
+                        var alreadyLoadedOverlayReg = _overlayRegistry ?? _pluginHost.Context.GetService<IOverlayRegistry>();
+                        alreadyLoadedOverlayReg?.ShowOverlay(rec.PluginId);
+                    }
+
+                    continue;
+                }
+
                 // Try restoring external downloaded plugin from plugins/{pluginId}/
                 var pluginDir = Path.Combine(_pluginsDirectory, rec.PluginId);
                 if (Directory.Exists(pluginDir))

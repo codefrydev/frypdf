@@ -1,7 +1,9 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Core.Models;
@@ -62,17 +64,44 @@ public partial class SvgElementViewModel : ElementViewModelBase, IDisposable
     public override ElementKind Kind => ElementKind.Svg;
     public override string DisplayName => !string.IsNullOrEmpty(PresetName) ? $"SVG ({PresetName})" : (!string.IsNullOrEmpty(FilePath) ? Path.GetFileName(FilePath) : "Vector SVG");
 
+    /// <summary>
+    /// Coalesces preview rasterizations; see <see cref="RefreshSvgPreview"/>.
+    /// </summary>
+    private readonly UiDebouncer _previewDebouncer;
+
+    /// <summary>Guards against a stale off-thread rasterize overwriting a newer one.</summary>
+    private int _previewGeneration;
+
     public SvgElementViewModel()
     {
+        _previewDebouncer = new UiDebouncer(PreviewDebounceMs, RefreshSvgPreview);
+
         Width = 160;
         Height = 160;
         RefreshSvgPreview();
     }
 
-    partial void OnSvgSourceChanged(string value) => RefreshSvgPreview();
-    partial void OnPresetNameChanged(string? value) => RefreshSvgPreview();
-    partial void OnTintColorHexChanged(string? value) => RefreshSvgPreview();
+    /// <summary>Quiet period before an SVG preview is re-rasterized.</summary>
+    private const int PreviewDebounceMs = 180;
 
+    // These are bound to editable inputs — SvgSource to a multi-line TextBox, TintColorHex to a
+    // colour picker — so they fired on every keystroke and every picker tick. Each one used to
+    // run RefreshSvgPreview synchronously on the UI thread, and that generates a complete PDF
+    // with QuestPDF, reparses it with PdfPig and rasterizes it with Skia at up to 2048px. That
+    // is hundreds of milliseconds of UI-thread block per character typed.
+    partial void OnSvgSourceChanged(string value) => _previewDebouncer.Request();
+    partial void OnPresetNameChanged(string? value) => _previewDebouncer.Request();
+    partial void OnTintColorHexChanged(string? value) => _previewDebouncer.Request();
+
+    /// <summary>
+    /// Re-rasterizes the SVG preview, doing the expensive work on a background thread.
+    /// </summary>
+    /// <remarks>
+    /// Kept public and synchronous-looking because callers treat it as "refresh now"; the
+    /// rasterize itself is offloaded per section 1 of
+    /// .agents/rules/performance_and_zero_lag_mandate.md, which lists Skia rendering and
+    /// QuestPDF generation as things that must never run on the UI thread.
+    /// </remarks>
     public void RefreshSvgPreview()
     {
         UpdatePathGeometry();
@@ -83,24 +112,45 @@ public partial class SvgElementViewModel : ElementViewModelBase, IDisposable
             return;
         }
 
-        try
+        // Snapshot the inputs on the calling thread so the background render never reads
+        // view model state that the user is still editing.
+        string svgData = SvgSource;
+        if (!string.IsNullOrWhiteSpace(TintColorHex))
         {
-            string svgData = SvgSource;
-            if (!string.IsNullOrWhiteSpace(TintColorHex))
+            svgData = svgData.Replace("currentColor", TintColorHex);
+        }
+
+        double width = Width;
+        double height = Height;
+        int generation = ++_previewGeneration;
+
+        _ = Task.Run(() =>
+        {
+            Bitmap? bmp;
+            try
             {
-                svgData = svgData.Replace("currentColor", TintColorHex);
+                bmp = PdfPageRenderer.RenderSvgToBitmap(svgData, width, height);
+            }
+            catch
+            {
+                return; // Retain existing or fallback
             }
 
-            var bmp = PdfPageRenderer.RenderSvgToBitmap(svgData, Width, Height);
-            if (bmp != null)
+            if (bmp == null) return;
+
+            Dispatcher.UIThread.Post(() =>
             {
+                // A newer edit already superseded this render; drop it rather than flicker
+                // backwards, and dispose the bitmap we are throwing away.
+                if (generation != _previewGeneration)
+                {
+                    bmp.Dispose();
+                    return;
+                }
+
                 PreviewBitmap = bmp;
-            }
-        }
-        catch
-        {
-            // Retain existing or fallback
-        }
+            }, DispatcherPriority.Background);
+        });
     }
 
     public void UpdatePathGeometry()
@@ -200,6 +250,7 @@ public partial class SvgElementViewModel : ElementViewModelBase, IDisposable
 
     public void Dispose()
     {
+        _previewDebouncer.Dispose();
         _previousPreviewBitmap?.Dispose();
         _previousPreviewBitmap = null;
         PreviewBitmap?.Dispose();

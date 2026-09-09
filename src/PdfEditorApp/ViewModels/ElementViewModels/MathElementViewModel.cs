@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PdfEditorApp.Services;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Core.Models;
 using PdfEditorApp.Core.Models.Elements;
@@ -82,25 +83,42 @@ public partial class MathElementViewModel : ElementViewModelBase
 
     public MathElementViewModel()
     {
+        _renderDebouncer = new UiDebouncer(RenderDebounceMs, RenderSvg);
+
         Width = 280;
         Height = 60;
+
+        // Direct, not debounced: the element needs geometry immediately on creation, and the
+        // debounced path needs a running dispatcher which headless hosts do not have.
         RenderSvg();
     }
 
-    partial void OnFormulaChanged(string value) => RenderSvg();
-    partial void OnFontSizeChanged(double value) => RenderSvg();
-    partial void OnTextColorHexChanged(string value) => RenderSvg();
-    partial void OnBackgroundColorHexChanged(string value) => RenderSvg();
-    partial void OnBorderColorHexChanged(string value) => RenderSvg();
-    partial void OnBorderThicknessChanged(double value) => RenderSvg();
-    partial void OnCornerRadiusChanged(double value) => RenderSvg();
-    partial void OnPaddingChanged(double value) => RenderSvg();
-    partial void OnShowBackgroundChanged(bool value) => RenderSvg();
-    partial void OnShowBorderChanged(bool value) => RenderSvg();
-    partial void OnShowEquationNumberChanged(bool value) => RenderSvg();
-    partial void OnEquationNumberChanged(string value) => RenderSvg();
-    partial void OnAlignmentChanged(TextAlignmentMode value) => RenderSvg();
-    partial void OnDisplayStyleChanged(MathDisplayStyle value) => RenderSvg();
+    /// <summary>Coalesces formula re-layout; see <see cref="RenderSvg"/>.</summary>
+    private readonly UiDebouncer _renderDebouncer;
+
+    /// <summary>Quiet period before the formula is re-laid-out.</summary>
+    private const int RenderDebounceMs = 180;
+
+    // Fourteen properties triggered a full re-layout, and Formula is two-way bound to the
+    // in-place editor TextBox (Views/DocumentCanvasView.axaml) — so every character retokenized
+    // the formula, rebuilt the AST, re-measured it recursively and rebuilt the whole SVG
+    // document with a StringBuilder. MathFormulaControl caches its AST by (Formula, FontSize);
+    // this path never did. ToModel() carries only Formula, so the SVG is regenerated downstream
+    // and coalescing it here cannot affect export.
+    partial void OnFormulaChanged(string value) => _renderDebouncer.Request();
+    partial void OnFontSizeChanged(double value) => _renderDebouncer.Request();
+    partial void OnTextColorHexChanged(string value) => _renderDebouncer.Request();
+    partial void OnBackgroundColorHexChanged(string value) => _renderDebouncer.Request();
+    partial void OnBorderColorHexChanged(string value) => _renderDebouncer.Request();
+    partial void OnBorderThicknessChanged(double value) => _renderDebouncer.Request();
+    partial void OnCornerRadiusChanged(double value) => _renderDebouncer.Request();
+    partial void OnPaddingChanged(double value) => _renderDebouncer.Request();
+    partial void OnShowBackgroundChanged(bool value) => _renderDebouncer.Request();
+    partial void OnShowBorderChanged(bool value) => _renderDebouncer.Request();
+    partial void OnShowEquationNumberChanged(bool value) => _renderDebouncer.Request();
+    partial void OnEquationNumberChanged(string value) => _renderDebouncer.Request();
+    partial void OnAlignmentChanged(TextAlignmentMode value) => _renderDebouncer.Request();
+    partial void OnDisplayStyleChanged(MathDisplayStyle value) => _renderDebouncer.Request();
 
     public void RenderSvg()
     {

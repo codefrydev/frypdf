@@ -532,13 +532,23 @@ public class PdfEngineTests
         Assert.NotNull(vm.QrPngBytes);
         Assert.True(vm.QrPngBytes.Length > 0);
 
+        // Property changes now request a debounced refresh instead of regenerating inline, so
+        // the refresh is driven explicitly here. Asserting straight after the setter would
+        // silently pass against the *previous* bytes: there is no dispatcher loop in the test
+        // host, so a posted callback never runs.
+        var initial = vm.QrPngBytes;
+
         vm.Content = "https://codefrydev.in/docs";
+        vm.RefreshQrBitmap();
         Assert.NotNull(vm.QrPngBytes);
+        Assert.NotEqual(initial, vm.QrPngBytes);
 
         vm.DarkColorHex = "#16A34A";
+        vm.RefreshQrBitmap();
         Assert.NotNull(vm.QrPngBytes);
 
         vm.EccLevel = QrCodeEccLevel.H;
+        vm.RefreshQrBitmap();
         Assert.NotNull(vm.QrPngBytes);
     }
 

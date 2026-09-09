@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using PdfEditorApp.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LiveChartsCore;
@@ -203,6 +204,8 @@ public partial class ChartElementViewModel : ElementViewModelBase
         Bars.Add(new ChartBarItem { Category = "Q3", Value = 2.5, ValueLabel = "$2.5B", ColorHex = "#3B82F6" });
         Bars.Add(new ChartBarItem { Category = "Q4", Value = 3.1, ValueLabel = "$3.1B", ColorHex = "#0F6CBD" });
 
+        _rasterDebouncer = new UiDebouncer(RasterDebounceMs, RasterizeChartBitmap);
+
         Bars.CollectionChanged += (s, e) => { if (!_suppressChartUpdate) UpdateLiveChart(); };
         PropertyChanged += (s, e) =>
         {
@@ -249,6 +252,10 @@ public partial class ChartElementViewModel : ElementViewModelBase
         }, token);
     }
 
+    // These stay synchronous on purpose: UpdateLiveChart also rebuilds CartesianSeries /
+    // PieSeries, which the chart control binds to directly, so deferring them would leave the
+    // canvas showing the previous chart type. Only the expensive half — the Skia rasterization
+    // — is coalesced and offloaded, inside UpdateLiveChart.
     partial void OnChartTypeChanged(ChartType value) => UpdateLiveChart();
     partial void OnPaletteChanged(ChartPalette value) => UpdateLiveChart();
     partial void OnLegendPositionChanged(ChartLegendPosition value) => UpdateLiveChart();
@@ -599,18 +606,70 @@ public partial class ChartElementViewModel : ElementViewModelBase
             }
         };
 
-        // Render high-DPI live bitmap for native Avalonia canvas
+        // The bitmap is the expensive half, so it is coalesced and offloaded; see
+        // RasterizeChartBitmap.
+        _rasterDebouncer.Request();
+    }
+
+    /// <summary>Coalesces chart rasterization.</summary>
+    private readonly UiDebouncer _rasterDebouncer;
+
+    /// <summary>Quiet period before the chart bitmap is re-rasterized.</summary>
+    private const int RasterDebounceMs = 120;
+
+    /// <summary>Guards against a stale off-thread chart raster overwriting a newer one.</summary>
+    private int _chartRenderGeneration;
+
+    /// <summary>
+    /// Rasterizes the chart to a bitmap for the native Avalonia canvas, off the UI thread.
+    /// </summary>
+    /// <remarks>
+    /// At dpiScale 2.0 a 500x300 chart means a 1000x600 SkiaSharp surface plus a PNG encode and
+    /// a PNG decode. This used to run synchronously on the UI thread from every property
+    /// handler, including Title, which is bound to a TextBox — so typing a chart title
+    /// re-rendered the entire chart per character. Section 1 of
+    /// .agents/rules/performance_and_zero_lag_mandate.md forbids Skia rendering on the UI
+    /// thread; only the model snapshot and the bitmap hand-off happen here.
+    /// </remarks>
+    private void RasterizeChartBitmap()
+    {
         try
         {
             var model = (PdfChartElement)ToModel();
             int renderW = Math.Max(200, (int)Width);
             int renderH = Math.Max(120, (int)Height);
-            byte[] pngBytes = LiveChartsRenderer.RenderChartToPngBytes(model, renderW, renderH, 2.0f);
-            if (pngBytes != null && pngBytes.Length > 0)
+            int generation = ++_chartRenderGeneration;
+
+            _ = Task.Run(() =>
             {
-                using var ms = new System.IO.MemoryStream(pngBytes);
-                ChartBitmap = new Avalonia.Media.Imaging.Bitmap(ms);
-            }
+                byte[] pngBytes;
+                try
+                {
+                    pngBytes = LiveChartsRenderer.RenderChartToPngBytes(model, renderW, renderH, 2.0f);
+                }
+                catch
+                {
+                    return; // Fallback for edge cases
+                }
+
+                if (pngBytes == null || pngBytes.Length == 0) return;
+
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    // Superseded by a newer edit while this was rendering.
+                    if (generation != _chartRenderGeneration) return;
+
+                    try
+                    {
+                        using var ms = new System.IO.MemoryStream(pngBytes);
+                        ChartBitmap = new Avalonia.Media.Imaging.Bitmap(ms);
+                    }
+                    catch
+                    {
+                        // Fallback for edge cases
+                    }
+                }, Avalonia.Threading.DispatcherPriority.Background);
+            });
         }
         catch
         {

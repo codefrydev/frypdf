@@ -44,32 +44,72 @@ public partial class InspectorViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Section ids currently realized, so an unchanged set can skip the rebuild.</summary>
+    private string[] _dynamicSectionIds = Array.Empty<string>();
+
+    /// <summary>Element the realized sections were built for.</summary>
+    private object? _dynamicSectionTarget;
+
+    /// <summary>
+    /// Rebuilds the plugin-contributed inspector sections for <paramref name="element"/>.
+    /// </summary>
+    /// <remarks>
+    /// This is on the selection-change path, and it used to unconditionally Clear() the bound
+    /// collection and re-invoke every plugin section factory — tearing down and re-realizing
+    /// the ItemsControl containers in the 320 KB InspectorSidebarView. Several paths re-apply
+    /// the *same* selection (PageViewModel.SelectElement re-raises unconditionally, and
+    /// UpdateSelection is also called directly on page change), so those repeats now cost
+    /// nothing.
+    ///
+    /// A different element always rebuilds, even one of the same kind: the section factories
+    /// receive the element, so the realized content is element-specific and reusing it would
+    /// leave the inspector bound to the previous selection.
+    /// </remarks>
     public void RefreshDynamicSections(object? element)
     {
-        DynamicSections.Clear();
-        if (_inspectorRegistry != null)
+        if (_inspectorRegistry == null)
         {
-            var sections = _inspectorRegistry.GetSectionsForTarget(element);
-            foreach (var sec in sections)
+            if (DynamicSections.Count > 0) DynamicSections.Clear();
+            _dynamicSectionIds = Array.Empty<string>();
+            _dynamicSectionTarget = null;
+            return;
+        }
+
+        var sections = _inspectorRegistry.GetSectionsForTarget(element);
+
+        var ids = new string[sections.Count];
+        for (int i = 0; i < sections.Count; i++) ids[i] = sections[i].SectionId;
+
+        if (ReferenceEquals(_dynamicSectionTarget, element) &&
+            DynamicSections.Count == ids.Length &&
+            _dynamicSectionIds.AsSpan().SequenceEqual(ids))
+        {
+            return;
+        }
+
+        DynamicSections.Clear();
+        foreach (var sec in sections)
+        {
+            var content = sec.Factory(null!, element);
+            if (content is DynamicInspectorSectionViewModel dvm)
             {
-                var content = sec.Factory(null!, element);
-                if (content is DynamicInspectorSectionViewModel dvm)
+                DynamicSections.Add(dvm);
+            }
+            else
+            {
+                DynamicSections.Add(new DynamicInspectorSectionViewModel
                 {
-                    DynamicSections.Add(dvm);
-                }
-                else
-                {
-                    DynamicSections.Add(new DynamicInspectorSectionViewModel
-                    {
-                        SectionId = sec.SectionId,
-                        Title = sec.Title,
-                        IconKind = sec.IconKind,
-                        Order = sec.Order,
-                        Content = content
-                    });
-                }
+                    SectionId = sec.SectionId,
+                    Title = sec.Title,
+                    IconKind = sec.IconKind,
+                    Order = sec.Order,
+                    Content = content
+                });
             }
         }
+
+        _dynamicSectionIds = ids;
+        _dynamicSectionTarget = element;
     }
 
     public UndoRedoService? UndoRedo { get; set; }

@@ -276,24 +276,25 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         if (oldValue != null)
         {
             oldValue.SelectionChanged -= OnElementSelectionChanged;
-            oldValue.MultiSelectionChanged -= OnMultiSelectionChanged;
         }
 
         if (newValue != null)
         {
+            // MultiSelectionChanged is deliberately not subscribed. PageViewModel raises it
+            // only ever alongside SelectionChanged (SelectElements, SelectElement and
+            // ClearSelection all raise both), and its handler did exactly what
+            // OnElementSelectionChanged already does — so the inspector was rebuilt twice for
+            // every selection change. Each rebuild sets 15 observable properties, re-raises 17
+            // more, and calls RefreshDynamicSections, which invokes plugin-supplied section
+            // factories against the 320 KB InspectorSidebarView. The event itself stays on
+            // PageViewModel for external consumers.
             newValue.SelectionChanged += OnElementSelectionChanged;
-            newValue.MultiSelectionChanged += OnMultiSelectionChanged;
             Inspector.UpdateSelection(newValue.SelectedElement, newValue);
         }
         else
         {
             Inspector.UpdateSelection(null, null);
         }
-    }
-
-    private void OnMultiSelectionChanged()
-    {
-        Inspector.UpdateSelection(CurrentPage?.SelectedElement, CurrentPage);
     }
 
     // Canvas Grid & Snap-to-Grid

@@ -13,7 +13,33 @@
     <Company>Code Fry Dev</Company>
     <Copyright>Copyright © 2026 Code Fry Dev</Copyright>
     <Description>Privacy-first, professional desktop PDF creator and editor studio</Description>
+    <!--
+      The shipped launcher is FryPDF, but the managed assembly stays PdfEditorApp:
+      PluginAssemblyLoader treats "PdfEditorApp" / "PdfEditorApp.Core" as the host
+      contract, the plugin guide publishes PdfEditorApp.dll as a HintPath, and five
+      avares://PdfEditorApp/ URIs resolve against the assembly name. Renaming the
+      assembly would break every third-party plugin; renaming the apphost does not.
+    -->
+    <PublishedAppHostName>FryPDF</PublishedAppHostName>
   </PropertyGroup>
+
+  <!--
+    Renamed after Publish rather than after Build: RunCommand is hardcoded to
+    $(TargetDir)$(AssemblyName)$(_NativeExecutableExtension), so renaming the build
+    output would break `dotnet run` and IDE F5. The apphost stores the name of its
+    managed dll internally and hostfxr derives runtimeconfig/deps from that, never
+    from the executable's own filename, so the rename is transparent at runtime.
+  -->
+  <Target Name="RenamePublishedAppHost" AfterTargets="Publish"
+          Condition="'$(PublishedAppHostName)' != '' and '$(AssemblyName)' != '$(PublishedAppHostName)' and '$(UseAppHost)' != 'false'">
+    <PropertyGroup>
+      <_OldAppHost>$(PublishDir)$(AssemblyName)$(_NativeExecutableExtension)</_OldAppHost>
+      <_NewAppHost>$(PublishDir)$(PublishedAppHostName)$(_NativeExecutableExtension)</_NewAppHost>
+    </PropertyGroup>
+    <Delete Files="$(_NewAppHost)" Condition="Exists('$(_NewAppHost)')" />
+    <Move SourceFiles="$(_OldAppHost)" DestinationFiles="$(_NewAppHost)" Condition="Exists('$(_OldAppHost)')" />
+    <Message Importance="high" Text="Published apphost renamed to $(PublishedAppHostName)$(_NativeExecutableExtension)" Condition="Exists('$(_NewAppHost)')" />
+  </Target>
 
   <ItemGroup>
     <Folder Include="Models\" />

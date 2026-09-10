@@ -89,7 +89,7 @@ jobs:
       - name: Build Inno Setup installer (.exe)
         shell: pwsh
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" packaging\windows\installer.iss "/DMyAppVersion=$env:VERSION" "/DMyPublishDir=$env:GITHUB_WORKSPACE\publish\win-x64"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" packaging\windows\installer.iss "/DMyAppVersion=$env:VERSION" "/DMyAppVersionNumeric=$env:FOUR_PART_VERSION" "/DMyPublishDir=$env:GITHUB_WORKSPACE\publish\win-x64"
 
       - name: Build & Sign Windows MSIX Package (.msix)
         shell: pwsh
@@ -141,18 +141,18 @@ jobs:
           cp -R publish/osx-arm64/. "$APP/Contents/MacOS/"
           sed "s/__VERSION__/$VERSION/g" packaging/macos/Info.plist.template > "$APP/Contents/Info.plist"
           cp packaging/macos/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
-          chmod +x "$APP/Contents/MacOS/PdfEditorApp"
+          chmod +x "$APP/Contents/MacOS/FryPDF"
 
       # Ad-hoc signing keeps the bundle identity stable across runs without full notarization
       - name: Ad-hoc codesign
         run: codesign --force --deep --sign - "FryPDF.app"
 
-      - name: Create dmg
+      - name: Create branded dmg
         run: |
-          mkdir -p dmg-root
-          cp -R "FryPDF.app" dmg-root/
-          ln -s /Applications dmg-root/Applications
-          hdiutil create -volname "FryPDF" -srcfolder dmg-root -ov -format UDZO "FryPDF-$VERSION-arm64.dmg"
+          bash packaging/macos/make-dmg.sh \
+            --app "FryPDF.app" \
+            --volname "FryPDF" \
+            --output "FryPDF-$VERSION-arm64.dmg"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

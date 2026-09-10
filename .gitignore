@@ -89,3 +89,14 @@ VisualArtifacts/
 *_side_by_side.png
 
 Human.md
+# Python tooling (tools/, packaging/macos/dmg/)
+__pycache__/
+*.py[cod]
+.venv-dmg/
+
+# Packaging build output
+publish/
+*.dmg
+*.msix
+*.cer
+packaging/windows/FryPDF-Setup-*.exe

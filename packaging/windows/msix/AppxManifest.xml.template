@@ -29,7 +29,7 @@
 
   <Applications>
     <Application Id="FryPDF"
-      Executable="PdfEditorApp.exe"
+      Executable="FryPDF.exe"
       EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="FryPDF"

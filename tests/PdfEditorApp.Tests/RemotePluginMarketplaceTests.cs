@@ -36,10 +36,42 @@ public class TestMarketplacePlugin : IFryPlugin
 
 // Shares AppLogService.Instance's buffer with AppLogServiceTests — same collection to avoid races.
 [Collection("AppLogService")]
-public class RemotePluginMarketplaceTests
+public class RemotePluginMarketplaceTests : IDisposable
 {
-    private static IServiceProvider CreateTestServices(string? testDir = null, HttpClient? httpClient = null, string? registryBaseUrl = null)
+    private readonly List<string> _tempDirs = new();
+
+    /// <summary>
+    /// Allocates a plugins directory that belongs to a single test.
+    /// </summary>
+    /// <remarks>
+    /// Passing no directory used to leave <see cref="PluginMarketplaceService"/> to fall back
+    /// to <see cref="FryPdfPaths.PluginsDirectory"/>, which every such test then shared. That
+    /// directory holds <c>catalog_cache.json</c>, which the service writes after a successful
+    /// fetch and re-reads from its own constructor — so a test backed by a mock handler would
+    /// persist its fixture there and a later test would load it as if it were the real
+    /// registry. The result was an order-dependent failure that also survived between runs,
+    /// because the file outlives the process. Every test now gets its own directory.
+    /// </remarks>
+    private string NewTempDir(string prefix)
     {
+        var dir = Path.Combine(AppContext.BaseDirectory, $"{prefix}_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(dir);
+        _tempDirs.Add(dir);
+        return dir;
+    }
+
+    public void Dispose()
+    {
+        foreach (var dir in _tempDirs)
+        {
+            try { Directory.Delete(dir, recursive: true); } catch { }
+        }
+    }
+
+    private IServiceProvider CreateTestServices(string? testDir = null, HttpClient? httpClient = null, string? registryBaseUrl = null)
+    {
+        testDir ??= NewTempDir("frypdf_mkt");
+
         var services = new ServiceCollection();
         services.AddSingleton<FryPluginContext>();
         services.AddSingleton<IFryPluginContext>(sp => sp.GetRequiredService<FryPluginContext>());
@@ -47,50 +79,83 @@ public class RemotePluginMarketplaceTests
         services.AddSingleton<OverlayRegistry>();
         services.AddSingleton<IOverlayRegistry>(sp => sp.GetRequiredService<OverlayRegistry>());
         services.AddSingleton<IInstalledPluginStore>(sp =>
-        {
-            var storePath = testDir != null
-                ? Path.Combine(testDir, "installed_plugins.json")
-                : Path.Combine(AppContext.BaseDirectory, $"installed_plugins_test_{Guid.NewGuid():N}.json");
-            return new FileInstalledPluginStore(storePath);
-        });
+            new FileInstalledPluginStore(Path.Combine(testDir, "installed_plugins.json")));
 
         services.AddSingleton<IPluginMarketplaceService>(sp =>
         {
             var host = sp.GetRequiredService<PluginHost>();
             var overlay = sp.GetRequiredService<OverlayRegistry>();
             var store = sp.GetRequiredService<IInstalledPluginStore>();
-            var pluginsDir = testDir != null ? Path.Combine(testDir, "plugins") : null;
-            return new PluginMarketplaceService(host, overlay, store, httpClient, registryBaseUrl, pluginsDir);
+            return new PluginMarketplaceService(
+                host, overlay, store, httpClient, registryBaseUrl, Path.Combine(testDir, "plugins"));
         });
 
         return services.BuildServiceProvider();
     }
 
     [Fact]
-    public async Task FetchRemoteCatalogAsync_ParsesOfficialGitHubCatalog_WhenOnline()
+    public async Task FetchRemoteCatalogAsync_ParsesOfficialCatalogSchema()
     {
-        var sp = CreateTestServices();
+        // Served from a stub rather than raw.githubusercontent.com. This test is named for
+        // the parsing of the official catalog schema, and that is all it should depend on -
+        // reaching the real host made it fail offline, behind a proxy, and any time the
+        // published catalog changed.
+        var handler = new MockHttpMessageHandler(Array.Empty<byte>(), OfficialCatalogFixture);
+        using var httpClient = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(5) };
+
+        var sp = CreateTestServices(
+            httpClient: httpClient,
+            registryBaseUrl: PluginMarketplaceService.DefaultRegistryBaseUrl);
         var marketplace = sp.GetRequiredService<IPluginMarketplaceService>();
 
-        var remoteItems = await marketplace.FetchRemoteCatalogAsync();
+        var remoteItems = await marketplace.FetchRemoteCatalogAsync(forceRefresh: true);
 
-        // If machine is online, catalog from codefrydev/PDFCreator-resources is fetched
-        if (remoteItems.Count > 0)
-        {
-            var ticTacToe = remoteItems.FirstOrDefault(i => i.Id == "com.frypdf.plugin.tictactoe");
-            if (ticTacToe != null)
-            {
-                Assert.Equal("Tic-Tac-Toe", ticTacToe.Name);
-                Assert.Equal("Code Fry Dev", ticTacToe.Publisher);
-                Assert.Equal("UI & Extensions", ticTacToe.Category);
-                Assert.StartsWith("https://raw.githubusercontent.com/codefrydev/PDFCreator-resources/", ticTacToe.DownloadUrl);
-                Assert.Contains("tictactoe", ticTacToe.Tags);
-            }
+        var ticTacToe = remoteItems.SingleOrDefault(i => i.Id == "com.frypdf.plugin.tictactoe");
+        Assert.NotNull(ticTacToe);
+        Assert.Equal("Tic-Tac-Toe", ticTacToe!.Name);
+        Assert.Equal("Code Fry Dev", ticTacToe.Publisher);
+        Assert.Equal("UI & Extensions", ticTacToe.Category);
+        Assert.StartsWith("https://raw.githubusercontent.com/codefrydev/PDFCreator-resources/", ticTacToe.DownloadUrl);
+        Assert.Contains("tictactoe", ticTacToe.Tags);
 
-            var fullCatalog = await marketplace.GetCatalogAsync();
-            Assert.NotEmpty(fullCatalog);
-        }
+        // Fields the schema leaves optional must fall back to the model's defaults.
+        var snake = remoteItems.SingleOrDefault(i => i.Id == "frypdf.overlay.snake");
+        Assert.NotNull(snake);
+        Assert.Equal("General", snake!.Category);
+        Assert.Empty(snake.Tags);
+
+        var fullCatalog = await marketplace.GetCatalogAsync();
+        Assert.NotEmpty(fullCatalog);
     }
+
+    /// <summary>
+    /// Mirrors the shape of catalog.json in codefrydev/PDFCreator-resources: camelCase keys,
+    /// absolute raw.githubusercontent.com download URLs, and one entry that omits the
+    /// optional fields so the defaults stay covered.
+    /// </summary>
+    private const string OfficialCatalogFixture = """
+[
+  {
+    "id": "com.frypdf.plugin.tictactoe",
+    "name": "Tic-Tac-Toe",
+    "publisher": "Code Fry Dev",
+    "version": "1.0.0",
+    "category": "UI & Extensions",
+    "description": "Interactive floating Tic-Tac-Toe mini-game.",
+    "tags": [ "game", "tictactoe", "overlay" ],
+    "downloadUrl": "https://raw.githubusercontent.com/codefrydev/PDFCreator-resources/refs/heads/main/plugins/com.frypdf.plugin.tictactoe/TicTacToe.fryplugin",
+    "formattedSize": "51 KB"
+  },
+  {
+    "id": "frypdf.overlay.snake",
+    "name": "Retro Arcade Snake Game",
+    "publisher": "Code Fry Dev",
+    "version": "1.0.0",
+    "description": "Classic snake, rendered as a floating overlay.",
+    "downloadUrl": "https://raw.githubusercontent.com/codefrydev/PDFCreator-resources/refs/heads/main/plugins/frypdf.overlay.snake/Snake.fryplugin"
+  }
+]
+""";
 
     [Fact]
     public async Task FetchRemoteCatalogAsync_HandlesOfflineGracefully_WithoutThrowing()
@@ -207,7 +272,10 @@ public class RemotePluginMarketplaceTests
         }
     }
 
-    [Fact]
+    // Genuinely reaches the GitHub CDN, so it is opt-in: FRYPDF_LIVE_NETWORK_TESTS=1.
+    // It was previously a plain [Fact] wrapped in null checks, which meant that offline it
+    // passed while asserting nothing at all.
+    [LiveNetworkFact]
     public async Task InstallPluginAsync_DownloadsRealPackageFromGitHubCdn_AndMountsSuccessfully()
     {
         var tempDir = Path.Combine(AppContext.BaseDirectory, $"frypdf_live_cdn_test_{Guid.NewGuid():N}");
@@ -220,26 +288,27 @@ public class RemotePluginMarketplaceTests
             var host = sp.GetRequiredService<PluginHost>();
             var overlayReg = sp.GetRequiredService<IOverlayRegistry>();
 
-            // Fetch remote catalog from live GitHub CDN
-            var catalog = await marketplace.FetchRemoteCatalogAsync();
-            var tttItem = catalog.FirstOrDefault(i => i.Id == "com.frypdf.plugin.tictactoe");
-            if (tttItem != null)
-            {
-                // Attempt real download if online
-                bool installed = await marketplace.InstallPluginAsync("com.frypdf.plugin.tictactoe");
-                if (installed)
-                {
-                    Assert.True(marketplace.IsPluginInstalled("com.frypdf.plugin.tictactoe"));
-                    Assert.True(host.IsPluginActive("com.frypdf.plugin.tictactoe"));
-                    Assert.True(overlayReg.IsOverlayVisible("com.frypdf.plugin.tictactoe"));
+            // Asserted unconditionally: opting in to this test is a statement that the CDN
+            // is expected to be reachable, so an empty catalog or a failed install is a
+            // real failure. The null/false guards this used to carry meant it reported
+            // success while doing nothing.
+            var catalog = await marketplace.FetchRemoteCatalogAsync(forceRefresh: true);
+            Assert.Contains(catalog, i => i.Id == "com.frypdf.plugin.tictactoe");
 
-                    // Clean uninstall
-                    bool uninstalled = await marketplace.UninstallPluginAsync("com.frypdf.plugin.tictactoe");
-                    Assert.True(uninstalled);
-                    Assert.False(marketplace.IsPluginInstalled("com.frypdf.plugin.tictactoe"));
-                    Assert.False(host.IsPluginActive("com.frypdf.plugin.tictactoe"));
-                }
-            }
+            string lastStatus = "";
+            bool installed = await marketplace.InstallPluginAsync(
+                "com.frypdf.plugin.tictactoe", statusCallback: s => lastStatus = s);
+            Assert.True(installed, $"Live install failed with status: {lastStatus}");
+
+            Assert.True(marketplace.IsPluginInstalled("com.frypdf.plugin.tictactoe"));
+            Assert.True(host.IsPluginActive("com.frypdf.plugin.tictactoe"));
+            Assert.True(overlayReg.IsOverlayVisible("com.frypdf.plugin.tictactoe"));
+
+            // Clean uninstall
+            bool uninstalled = await marketplace.UninstallPluginAsync("com.frypdf.plugin.tictactoe");
+            Assert.True(uninstalled);
+            Assert.False(marketplace.IsPluginInstalled("com.frypdf.plugin.tictactoe"));
+            Assert.False(host.IsPluginActive("com.frypdf.plugin.tictactoe"));
         }
         finally
         {
@@ -272,10 +341,16 @@ public class RemotePluginMarketplaceTests
     private class MockHttpMessageHandler : HttpMessageHandler
     {
         private readonly byte[] _pkgBytes;
+        private readonly string? _catalogJson;
 
-        public MockHttpMessageHandler(byte[] pkgBytes)
+        /// <param name="catalogJson">
+        /// Catalog to serve for <c>catalog.json</c>. Defaults to the two-entry mock registry
+        /// below; pass a fixture to exercise a different schema.
+        /// </param>
+        public MockHttpMessageHandler(byte[] pkgBytes, string? catalogJson = null)
         {
             _pkgBytes = pkgBytes;
+            _catalogJson = catalogJson;
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -284,7 +359,7 @@ public class RemotePluginMarketplaceTests
 
             if (uri.EndsWith("catalog.json", StringComparison.OrdinalIgnoreCase))
             {
-                var catalogJson = @"[
+                var catalogJson = _catalogJson ?? @"[
   {
     ""id"": ""com.frypdf.test.marketplace"",
     ""name"": ""Test Marketplace Plugin"",

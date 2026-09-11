@@ -160,17 +160,9 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Capsule 2: Layout Modes (Continuous, Single Page, Two-Page Spread) -->
+                    <!-- Capsule 2: Layout Modes (Single Page, Two-Page Spread) -->
                     <Border Classes="toolbar-capsule">
                         <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                            <!-- Continuous Scroll -->
-                            <Button Classes="toolbar-btn" Width="28" Height="26"
-                                     Classes.mode-active="{Binding IsContinuousScroll}"
-                                     Command="{Binding SetContinuousScrollLayoutCommand}"
-                                     ToolTip.Tip="Continuous Vertical Scroll">
-                                <materialIcons:MaterialIcon Kind="ViewHeadline" Width="15" Height="15"
-                                                            Foreground="{Binding IsContinuousScroll, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
-                            </Button>
                             <!-- Single Page -->
                             <Button Classes="toolbar-btn" Width="28" Height="26"
                                      Classes.mode-active="{Binding IsSinglePageMode}"
@@ -792,93 +784,6 @@
                         </StackPanel>
                     </Border>
                 </Border>
-
-                <!-- Layout 1: Continuous Vertical Scroll Mode -->
-                <ScrollViewer x:Name="ContinuousScrollViewer"
-                              HorizontalScrollBarVisibility="Auto"
-                              VerticalScrollBarVisibility="Auto"
-                              ScrollChanged="OnContinuousViewerScrollChanged"
-                              Padding="32"
-                              Focusable="False"
-                              IsVisible="{Binding IsContinuousScroll}">
-                    <ScrollViewer.GestureRecognizers>
-                        <PinchGestureRecognizer />
-                    </ScrollViewer.GestureRecognizers>
-                    <ItemsControl x:Name="ContinuousItemsControl"
-                                  ItemsSource="{Binding Pages}"
-                                  HorizontalAlignment="Center">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <!-- Intentionally a plain StackPanel, not VirtualizingStackPanel: this
-                                     list's scroll handling (OnContinuousScrollOffsetChanged) does its
-                                     own pixel-based math against ScrollViewer.Offset/Viewport to figure
-                                     out which pages are visible. VirtualizingStackPanel switches the
-                                     containing ScrollViewer to logical (item-based) scrolling, which
-                                     breaks that pixel math outright — pages stopped rendering entirely
-                                     past whatever was eagerly warmed at load. The two thumbnail rails
-                                     don't have this dependency (nothing reads Offset for them) and stay
-                                     virtualized. -->
-                                <StackPanel Orientation="Vertical" Spacing="28" HorizontalAlignment="Center" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:PdfViewerPageItem">
-                                <StackPanel HorizontalAlignment="Center" Spacing="8" Focusable="False">
-                                    <!-- Crisp High-DPI Vector Rendered Page Canvas -->
-                                    <LayoutTransformControl HorizontalAlignment="Center">
-                                        <LayoutTransformControl.LayoutTransform>
-                                            <RotateTransform Angle="{Binding RotationAngle}" />
-                                        </LayoutTransformControl.LayoutTransform>
-                                        <Border Classes="reader-page-card"
-                                                Classes.reading-theme-sepia="{Binding #RootPdfViewer.ViewModel.IsThemeSepia}"
-                                                Classes.reading-theme-dark="{Binding #RootPdfViewer.ViewModel.IsThemeDark}"
-                                                Classes.reading-theme-highcontrast="{Binding #RootPdfViewer.ViewModel.IsThemeHighContrast}">
-                                            <Border.Width>
-                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
-                                                    <Binding Path="WidthPoints" />
-                                                    <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
-                                                </MultiBinding>
-                                            </Border.Width>
-                                            <Border.Height>
-                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
-                                                    <Binding Path="HeightPoints" />
-                                                    <Binding Path="#RootPdfViewer.ViewModel.ZoomLevel" />
-                                                </MultiBinding>
-                                            </Border.Height>
-
-                                            <Panel>
-                                                <!-- High Quality Anti-Aliased Interpolation Bitmap -->
-                                                <Image Source="{Binding Bitmap}"
-                                                       Stretch="UniformToFill"
-                                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
-
-                                                <!-- Interactive Vector Text Selection & Highlight Layer -->
-                                                <controls:PdfTextOverlayControl
-                                                    Page="{Binding}"
-                                                    ZoomLevel="{Binding #RootPdfViewer.ViewModel.ZoomLevel}"
-                                                    ViewerViewModel="{Binding #RootPdfViewer.ViewModel}" />
-
-                                                <!-- Fallback when loading / empty -->
-                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
-                                                            IsVisible="{Binding Bitmap, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=invert}">
-                                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="36" Height="36" Foreground="{DynamicResource WinSubtleBrush}" />
-                                                    <TextBlock Text="{Binding PageLabel}" FontSize="12" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                                </StackPanel>
-                                            </Panel>
-                                        </Border>
-                                    </LayoutTransformControl>
-
-                                    <!-- Page Number Footnote Indicator -->
-                                    <TextBlock Text="{Binding PageLabel}"
-                                               FontSize="10.5"
-                                               FontWeight="Medium"
-                                               Foreground="{Binding #RootPdfViewer.ViewModel.ThemeTextColorHex}"
-                                               HorizontalAlignment="Center" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
 
                 <!-- Layout 2: Single Page Fit Mode -->
                 <ScrollViewer x:Name="SinglePageScrollViewer"

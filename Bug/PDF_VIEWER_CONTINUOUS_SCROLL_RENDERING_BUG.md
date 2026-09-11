@@ -2,13 +2,19 @@
 
 - **ID**: `BUG-001`
 - **Component**: `PdfEditorApp` -> `PdfViewerView` / `PdfViewerViewModel`
-- **Status**: Open / Postponed for later resolution
+- **Status**: Closed — Obsolete (2026-09-11)
 - **Reported Date**: 2026-09-02
 - **Related Files**:
   - [`src/PdfEditorApp/Views/PdfViewerView.axaml`](../src/PdfEditorApp/Views/PdfViewerView.axaml)
   - [`src/PdfEditorApp/Views/PdfViewerView.axaml.cs`](../src/PdfEditorApp/Views/PdfViewerView.axaml.cs)
   - [`src/PdfEditorApp/ViewModels/PdfViewerViewModel.cs`](../src/PdfEditorApp/ViewModels/PdfViewerViewModel.cs)
   - [`src/PdfEditorApp/Views/Controls/PdfTextOverlayControl.cs`](../src/PdfEditorApp/Views/Controls/PdfTextOverlayControl.cs)
+
+---
+
+## 0. Resolution (2026-09-11)
+
+Continuous Scroll Mode itself was removed from the PDF viewer (`PdfViewLayoutMode.ContinuousScroll`, `ContinuousScrollViewer`/`ContinuousItemsControl`, `ResolveVisiblePages`, `OnContinuousScrollOffsetChanged`, and the `RequestPagesVisible` windowing/eviction algorithm all deleted) in favor of the existing Single Page and Two-Page Spread modes, which don't have this class of bug — a page is either the one on screen or it isn't, there's no scroll-position-to-visible-page inference to get wrong. This report is kept for historical reference on the investigation; the underlying code path no longer exists, so there's nothing left to fix.
 
 ---
 

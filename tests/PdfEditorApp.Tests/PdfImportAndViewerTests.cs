@@ -158,6 +158,10 @@ public class PdfImportAndViewerTests
         var viewer = new PdfViewerViewModel();
         await viewer.LoadDocumentBytesAsync(pdfBytes, "Invoice.pdf");
 
+        // Opening a document now auto-fits to the viewport (Single Page is the default layout
+        // mode), so establish a known 100% baseline before testing zoom operations themselves.
+        viewer.ResetZoomCommand.Execute(null);
+
         // Initial Zoom: 1.0 (100%)
         Assert.Equal(1.0, viewer.ZoomLevel);
         Assert.Equal("100%", viewer.ZoomPercentageText);
@@ -1189,7 +1193,7 @@ public class PdfImportAndViewerTests
     }
 
     [Fact]
-    public void PdfViewerViewModel_RequestPagesVisible_RendersVisiblePagesAndDisposesFarPages()
+    public void PdfViewerViewModel_CurrentPageNumberChanged_UpdatesSelectionAndEvictsFarPageBitmaps()
     {
         var vm = new PdfViewerViewModel();
         for (int i = 1; i <= 30; i++)
@@ -1201,9 +1205,6 @@ public class PdfImportAndViewerTests
                 HeightPoints = 700
             });
         }
-
-        // Simulate user scrolling down to Page 18
-        vm.RequestPagesVisible(18, 18);
 
         var page18 = vm.Pages[17];
         Assert.Equal(18, page18.PageNumber);

@@ -193,64 +193,34 @@ public partial class PdfViewerViewModel
     }
 
     /// <summary>
-    /// Tells the viewer which pages are actually on screen right now (called from the view's
-    /// scroll handler). Renders full-resolution bitmaps for the visible range plus a small
-    /// lookahead, and releases them for pages that have scrolled well out of view — so memory
-    /// stays bounded by what's near the viewport instead of growing with document length.
+    /// Frees full-resolution bitmaps for pages away from the current page (or the current
+    /// two-page spread), so memory stays bounded to a handful of pages regardless of how long
+    /// the document is or how far the user has paged through it. Called whenever the current
+    /// page changes.
     /// </summary>
-    public void RequestPagesVisible(int firstPageNumber, int lastPageNumber)
+    private void EvictDistantPageBitmaps(int centerPageNumber)
     {
         if (Pages.Count == 0) return;
 
-        // Small lookahead by design. Every render serializes behind a single lock, so a wide
-        // window just builds a queue that delays the pages actually on screen.
-        const int renderLookahead = 2;
-        const int keepAliveLookahead = 40;
+        // Matches the ±1 lookahead OnCurrentPageNumberChanged already renders — no reason to
+        // keep more resident when only one page (or spread) is ever on screen at a time.
+        const int keepAliveRadius = 1;
 
-        int renderFirst = Math.Max(1, firstPageNumber - renderLookahead);
-        int renderLast = Math.Min(Pages.Count, lastPageNumber + renderLookahead);
+        int keepFirst = centerPageNumber - keepAliveRadius;
+        int keepLast = centerPageNumber + keepAliveRadius;
 
-        if (renderFirst == _lastVisibleFirstPage && renderLast == _lastVisibleLastPage) return;
-        _lastVisibleFirstPage = renderFirst;
-        _lastVisibleLastPage = renderLast;
+        int? spreadLeft = IsTwoPageSpreadMode ? SelectedSpread?.LeftPage?.PageNumber : null;
+        int? spreadRight = IsTwoPageSpreadMode ? SelectedSpread?.RightPage?.PageNumber : null;
 
-        // 1. On-screen pages first. Order matters: renders are serialized, so anything queued
-        // ahead of the visible pages directly delays what the user is waiting to see. This
-        // used to iterate from (firstVisible - lookahead) upward, which meant the pages just
-        // ABOVE the viewport were always rasterized before the page being looked at.
-        for (int p = firstPageNumber; p <= lastPageNumber; p++)
+        foreach (var page in Pages)
         {
-            EnsurePageRendered(p);
-        }
+            if (page.PageNumber >= keepFirst && page.PageNumber <= keepLast) continue;
+            if (spreadLeft.HasValue && page.PageNumber == spreadLeft.Value) continue;
+            if (spreadRight.HasValue && page.PageNumber == spreadRight.Value) continue;
 
-        // 2. Then the lookahead, nearest-first outward.
-        for (int d = 1; d <= renderLookahead; d++)
-        {
-            int before = firstPageNumber - d;
-            if (before >= 1) EnsurePageRendered(before);
-
-            int after = lastPageNumber + d;
-            if (after <= Pages.Count) EnsurePageRendered(after);
-        }
-
-        // Note: text geometry is deliberately NOT warmed here. It's as expensive as a render
-        // and shares the same lock, so warming it for every page in the window starved the
-        // visible pages' renders. It stays on-demand (first pointer interaction with a page).
-
-        // 3. Release bitmaps for pages far outside the viewport.
-        int keepFirst = Math.Max(1, firstPageNumber - keepAliveLookahead);
-        int keepLast = Math.Min(Pages.Count, lastPageNumber + keepAliveLookahead);
-
-        for (int i = 0; i < Pages.Count; i++)
-        {
-            int pageNum = i + 1;
-            if (pageNum < keepFirst || pageNum > keepLast)
-            {
-                // The "Fallback when loading" placeholder shows again if the user scrolls back;
-                // ThumbnailBitmap is left alone since the thumbnail rail may show a wider
-                // range than the main viewport and thumbnails are cheap to keep resident.
-                Pages[i].Bitmap = null;
-            }
+            // The "Fallback when loading" placeholder shows again if the user pages back;
+            // ThumbnailBitmap is left alone since thumbnails are cheap to keep resident.
+            page.Bitmap = null;
         }
     }
 
@@ -288,10 +258,10 @@ public partial class PdfViewerViewModel
 
             // 2. Progressively build thumbnails and extract accurate text / geometry for every
             // page — full-resolution page bitmaps are NOT rendered here (beyond the first
-            // screenful below); those are rendered on demand for the pages actually scrolled
-            // into view (see RequestPagesVisible), otherwise a large document would render
-            // every page's full-res bitmap up front and hold them all in memory regardless of
-            // whether they're ever looked at.
+            // screenful below); those are rendered on demand for the page(s) actually being
+            // viewed (see EnsurePageRendered / EvictDistantPageBitmaps), otherwise a large
+            // document would render every page's full-res bitmap up front and hold them all in
+            // memory regardless of whether they're ever looked at.
             const int eagerFirstScreenfulPages = 8;
             for (int i = 1; i <= Pages.Count; i++)
             {

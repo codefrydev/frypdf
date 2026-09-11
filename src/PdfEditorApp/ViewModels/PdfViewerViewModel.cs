@@ -32,8 +32,6 @@ public partial class PdfViewerViewModel : ViewModelBase
     private readonly object _renderLock = new();
     private byte[]? _currentPdfBytes;
     private string? _currentPassword;
-    private int _lastVisibleFirstPage = -1;
-    private int _lastVisibleLastPage = -1;
 
     /// <summary>
     /// Count of in-flight renders for pages the user is actually looking at. Every rasterization
@@ -159,15 +157,12 @@ public partial class PdfViewerViewModel : ViewModelBase
     /// </summary>
     public Func<(double ViewportWidth, double ViewportHeight, double HorizontalPadding, double VerticalPadding)>? ViewportSizeProvider { get; set; }
 
-    // Layout Modes: Continuous Scroll, Single Page, Two-Page Spread
+    // Layout Modes: Single Page, Two-Page Spread
     [ObservableProperty]
-    private PdfViewLayoutMode _selectedLayoutMode = PdfViewLayoutMode.ContinuousScroll;
+    private PdfViewLayoutMode _selectedLayoutMode = PdfViewLayoutMode.SinglePage;
 
     [ObservableProperty]
-    private bool _isContinuousScroll = true;
-
-    [ObservableProperty]
-    private bool _isSinglePageMode = false;
+    private bool _isSinglePageMode = true;
 
     [ObservableProperty]
     private bool _isTwoPageSpreadMode = false;
@@ -410,8 +405,6 @@ public partial class PdfViewerViewModel : ViewModelBase
             ZoomMode = PdfViewerZoomMode.Custom;
         }
 
-        InvalidateVisiblePageCache();
-
         // Dynamic High-DPI Vector Re-render on Zoom Change (Debounced)
         _zoomDebounceCts?.Cancel();
         _zoomDebounceCts = new CancellationTokenSource();
@@ -442,12 +435,6 @@ public partial class PdfViewerViewModel : ViewModelBase
         }, token);
     }
 
-    public void InvalidateVisiblePageCache()
-    {
-        _lastVisibleFirstPage = -1;
-        _lastVisibleLastPage = -1;
-    }
-
     partial void OnCurrentPageNumberChanged(int value)
     {
         JumpPageText = value.ToString();
@@ -467,6 +454,7 @@ public partial class PdfViewerViewModel : ViewModelBase
             if (value < Pages.Count) EnsurePageRendered(value + 1);
         }
         UpdateSelectedSpreadForPage(value);
+        EvictDistantPageBitmaps(value);
     }
 
     partial void OnSelectedPageChanged(PdfViewerPageItem? value)
@@ -491,7 +479,6 @@ public partial class PdfViewerViewModel : ViewModelBase
 
     partial void OnSelectedLayoutModeChanged(PdfViewLayoutMode value)
     {
-        IsContinuousScroll = (value == PdfViewLayoutMode.ContinuousScroll);
         IsSinglePageMode = (value == PdfViewLayoutMode.SinglePage);
         IsTwoPageSpreadMode = (value == PdfViewLayoutMode.TwoPageSpread);
 
@@ -520,17 +507,6 @@ public partial class PdfViewerViewModel : ViewModelBase
             EnsurePageRendered(CurrentPageNumber);
 
             FitToPage();
-        }
-        else if (IsContinuousScroll)
-        {
-            if (IsFitToWidthActive)
-            {
-                FitToWidth();
-            }
-            else if (IsFitToPageActive)
-            {
-                FitToPage();
-            }
         }
     }
 

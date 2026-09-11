@@ -500,7 +500,6 @@ public enum PdfReaderTheme
 
 public enum PdfViewLayoutMode
 {
-    ContinuousScroll,
     SinglePage,
     TwoPageSpread
 }

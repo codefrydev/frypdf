@@ -353,8 +353,6 @@ public partial class PdfViewerViewModel
         {
             oldPage.Dispose();
         }
-        _lastVisibleFirstPage = -1;
-        _lastVisibleLastPage = -1;
 
         lock (_renderLock)
         {
@@ -541,6 +539,12 @@ public partial class PdfViewerViewModel
             IsScannedBannerDismissed = false;
 
             RebuildPageSpreads();
+
+            // Re-apply whichever layout mode is current (Single Page by default, or Two-Page
+            // Spread if the user had already switched before opening this document — the
+            // ViewModel is reused across document opens) so the document lands already fit to
+            // the viewport instead of at a fixed 100% zoom.
+            OnSelectedLayoutModeChanged(SelectedLayoutMode);
 
             // Start progressive background worker to render remaining pages, thumbnails, and bookmarks
             StartBackgroundWorker(_backgroundRenderCts.Token);

@@ -83,31 +83,28 @@ public class PdfReaderTests
     }
 
     [Fact]
-    public async Task PdfViewer_LayoutModes_TogglesContinuousSingleAndSpread()
+    public async Task PdfViewer_LayoutModes_TogglesSingleAndSpread()
     {
         var vm = new PdfViewerViewModel();
         byte[] pdfBytes = CreateSamplePdfBytes();
         await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
 
-        Assert.Equal(PdfViewLayoutMode.ContinuousScroll, vm.SelectedLayoutMode);
-        Assert.True(vm.IsContinuousScroll);
-        Assert.False(vm.IsSinglePageMode);
-        Assert.False(vm.IsTwoPageSpreadMode);
-
-        // Switch to Single Page
-        vm.SetLayoutModeCommand.Execute("SinglePage");
         Assert.Equal(PdfViewLayoutMode.SinglePage, vm.SelectedLayoutMode);
-        Assert.False(vm.IsContinuousScroll);
         Assert.True(vm.IsSinglePageMode);
         Assert.False(vm.IsTwoPageSpreadMode);
 
         // Switch to Two-Page Spread
         vm.SetLayoutModeCommand.Execute("TwoPageSpread");
         Assert.Equal(PdfViewLayoutMode.TwoPageSpread, vm.SelectedLayoutMode);
-        Assert.False(vm.IsContinuousScroll);
         Assert.False(vm.IsSinglePageMode);
         Assert.True(vm.IsTwoPageSpreadMode);
         Assert.Equal(2, vm.PageSpreads.Count); // Cover (p1) + Spread (p2-p3)
+
+        // Switch back to Single Page
+        vm.SetLayoutModeCommand.Execute("SinglePage");
+        Assert.Equal(PdfViewLayoutMode.SinglePage, vm.SelectedLayoutMode);
+        Assert.True(vm.IsSinglePageMode);
+        Assert.False(vm.IsTwoPageSpreadMode);
     }
 
     [Fact]
@@ -151,6 +148,9 @@ public class PdfReaderTests
         byte[] pdfBytes = CreateSamplePdfBytes();
         await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
 
+        // Opening a document now auto-fits to the viewport (Single Page is the default layout
+        // mode), so establish a known 100% baseline before testing zoom operations themselves.
+        vm.ResetZoomCommand.Execute(null);
         Assert.Equal(1.0, vm.ZoomLevel);
         Assert.Equal("100%", vm.ZoomPercentageText);
 
@@ -515,14 +515,7 @@ public class PdfReaderTests
         await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
         vm.ViewportSizeProvider = () => (1000.0, 700.0, 64.0, 64.0);
 
-        // Initially Continuous Scroll
-        Assert.True(vm.IsContinuousScroll);
-        Assert.False(vm.IsSinglePageMode);
-        Assert.False(vm.IsTwoPageSpreadMode);
-
-        // Switch to Single Page
-        vm.SetSinglePageLayoutCommand.Execute(null);
-        Assert.False(vm.IsContinuousScroll);
+        // Initially Single Page
         Assert.True(vm.IsSinglePageMode);
         Assert.False(vm.IsTwoPageSpreadMode);
         Assert.Equal(PdfViewLayoutMode.SinglePage, vm.SelectedLayoutMode);
@@ -534,7 +527,6 @@ public class PdfReaderTests
 
         // Switch to Two Page Spread
         vm.SetTwoPageSpreadLayoutCommand.Execute(null);
-        Assert.False(vm.IsContinuousScroll);
         Assert.False(vm.IsSinglePageMode);
         Assert.True(vm.IsTwoPageSpreadMode);
         Assert.Equal(PdfViewLayoutMode.TwoPageSpread, vm.SelectedLayoutMode);
@@ -543,12 +535,11 @@ public class PdfReaderTests
         Assert.True(vm.SelectedSpread.LeftPage != null || vm.SelectedSpread.RightPage != null);
         Assert.True(vm.IsFitToPageActive);
 
-        // Switch back to Continuous Scroll
-        vm.SetContinuousScrollLayoutCommand.Execute(null);
-        Assert.True(vm.IsContinuousScroll);
-        Assert.False(vm.IsSinglePageMode);
+        // Switch back to Single Page
+        vm.SetSinglePageLayoutCommand.Execute(null);
+        Assert.True(vm.IsSinglePageMode);
         Assert.False(vm.IsTwoPageSpreadMode);
-        Assert.Equal(PdfViewLayoutMode.ContinuousScroll, vm.SelectedLayoutMode);
+        Assert.Equal(PdfViewLayoutMode.SinglePage, vm.SelectedLayoutMode);
     }
 
     [Fact]

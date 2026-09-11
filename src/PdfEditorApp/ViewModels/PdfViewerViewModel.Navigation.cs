@@ -160,12 +160,6 @@ public partial class PdfViewerViewModel
     // --- Layout & View Modes ---
 
     [RelayCommand]
-    public void SetContinuousScrollLayout()
-    {
-        SetLayoutMode("ContinuousScroll");
-    }
-
-    [RelayCommand]
     public void SetSinglePageLayout()
     {
         SetLayoutMode("SinglePage");
@@ -185,7 +179,6 @@ public partial class PdfViewerViewModel
             SelectedLayoutMode = mode;
             ShowToast(mode switch
             {
-                PdfViewLayoutMode.ContinuousScroll => "Continuous Scroll Layout",
                 PdfViewLayoutMode.SinglePage => "Single Page Fit Layout",
                 PdfViewLayoutMode.TwoPageSpread => "Two-Page Book Spread Layout",
                 _ => "Layout Changed"

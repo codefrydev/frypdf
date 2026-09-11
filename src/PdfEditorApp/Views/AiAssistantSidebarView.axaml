@@ -4,6 +4,7 @@
              xmlns:models="using:PdfEditorApp.Models"
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:controls="using:PdfEditorApp.Views.Controls"
              x:Class="PdfEditorApp.Views.AiAssistantSidebarView"
              x:DataType="vm:AiAssistantViewModel">
 
@@ -389,9 +390,9 @@
                                                 </Grid>
 
                                                 <!-- Generating Progress Animation -->
-                                                <StackPanel Spacing="4" IsVisible="{Binding IsGenerating}">
-                                                    <ProgressBar IsIndeterminate="True" Height="3" CornerRadius="2" />
-                                                    <TextBlock Text="Executing canvas agent actions..." FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
+                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="{Binding IsGenerating}">
+                                                    <controls:LoadingAnimationControl Width="20" Height="20" />
+                                                    <TextBlock Text="Executing canvas agent actions..." FontSize="10" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                                                 </StackPanel>
 
                                                 <!-- Real-Time Tool Invocations Box -->

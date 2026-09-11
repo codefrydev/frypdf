@@ -4,6 +4,7 @@
              xmlns:models="using:PdfEditorApp.Models"
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:controls="using:PdfEditorApp.Views.Controls"
              x:Class="PdfEditorApp.Views.Shell.PdfToolWorkspaceView"
              x:Name="RootWorkspace"
              x:DataType="vm:PdfToolViewModelBase"
@@ -360,7 +361,10 @@
                 </Grid>
 
                 <Border Background="#66000000" IsVisible="{Binding Preview.IsLoading}" IsHitTestVisible="False">
-                    <TextBlock Text="Loading preview..." Foreground="White" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <StackPanel Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <controls:LoadingAnimationControl Width="64" Height="64" HorizontalAlignment="Center" />
+                        <TextBlock Text="Loading preview..." Foreground="White" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                    </StackPanel>
                 </Border>
             </Grid>
         </Grid>

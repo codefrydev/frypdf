@@ -785,10 +785,9 @@
                             CornerRadius="14"
                             Padding="28,20"
                             BoxShadow="0 12 32 0 #25000000">
-                        <StackPanel Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="40" Height="40" Foreground="#0F6CBD" HorizontalAlignment="Center" />
+                        <StackPanel Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <controls:LoadingAnimationControl Width="88" Height="88" HorizontalAlignment="Center" />
                             <TextBlock Text="{Binding DocumentTitle}" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
-                            <ProgressBar IsIndeterminate="True" Width="160" Height="3" HorizontalAlignment="Center" Foreground="#0F6CBD" />
                             <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                         </StackPanel>
                     </Border>

@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d"
              x:Class="PdfEditorApp.Views.Controls.LoadingAnimationControl">
     <UserControl.Styles>
         <!-- Outer Ring: Spins Clockwise -->
@@ -63,12 +63,13 @@
         </Style>
     </UserControl.Styles>
 
+    <Viewbox Stretch="Uniform">
     <Panel Width="200" Height="200">
 
-        <!-- Background Ring (Static, Light Gray) -->
+        <!-- Background Ring (Static, theme-aware track) -->
         <Ellipse Width="180" Height="180"
                  HorizontalAlignment="Center" VerticalAlignment="Center"
-                 Stroke="#e2e8f0" StrokeThickness="2" />
+                 Stroke="{DynamicResource M3OutlineVariantBrush}" StrokeThickness="2" />
 
         <!-- Outer Rotating Ring (Blue) -->
         <Ellipse Classes="OuterRing"
@@ -91,7 +92,7 @@
                 Width="120" Height="120"
                 HorizontalAlignment="Center" VerticalAlignment="Center"
                 CornerRadius="60"
-                Background="White"
+                Background="{DynamicResource M3SurfaceContainerHighBrush}"
                 BoxShadow="0 4 6 0 #1A000000"
                 RenderTransformOrigin="50%,50%">
 
@@ -111,4 +112,5 @@
             </Viewbox>
         </Border>
     </Panel>
+    </Viewbox>
 </UserControl>

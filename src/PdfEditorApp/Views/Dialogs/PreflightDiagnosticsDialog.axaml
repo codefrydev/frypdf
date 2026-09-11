@@ -4,6 +4,7 @@
              xmlns:services="using:PdfEditorApp.Services"
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:controls="using:PdfEditorApp.Views.Controls"
              x:Class="PdfEditorApp.Views.Dialogs.PreflightDiagnosticsDialog"
              x:DataType="vm:MainViewModel">
 
@@ -54,7 +55,7 @@
                         <!-- Busy Indicator: audit runs off the UI thread, this is the only sign it's happening -->
                         <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="12" IsVisible="{Binding IsAuditRunning}">
                             <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                                <ProgressBar IsIndeterminate="True" Width="120" Height="6" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" Foreground="{DynamicResource M3PrimaryBrush}" Background="{DynamicResource WinHoverBrush}" />
+                                <controls:LoadingAnimationControl Width="32" Height="32" />
                                 <TextBlock Text="Running audit..." FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                         </Border>

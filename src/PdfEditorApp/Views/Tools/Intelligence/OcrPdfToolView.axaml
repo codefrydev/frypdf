@@ -3,6 +3,7 @@
              xmlns:vm="using:PdfEditorApp.ViewModels.Tools.Intelligence"
              xmlns:shell="using:PdfEditorApp.Views.Shell"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:controls="using:PdfEditorApp.Views.Controls"
              x:Class="PdfEditorApp.Views.Tools.Intelligence.OcrPdfToolView"
              x:DataType="vm:OcrPdfToolViewModel">
 
@@ -283,8 +284,8 @@
 
                     <!-- Loading Indicator Overlay -->
                     <Border Background="#88000000" CornerRadius="4" IsVisible="{Binding IsExtractingPageText}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
-                            <ProgressBar IsIndeterminate="True" Width="160" Height="4" Foreground="#65A30D" />
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
+                            <controls:LoadingAnimationControl Width="72" Height="72" HorizontalAlignment="Center" />
                             <TextBlock Text="Recognizing text with OCR..." Foreground="White" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" />
                         </StackPanel>
                     </Border>

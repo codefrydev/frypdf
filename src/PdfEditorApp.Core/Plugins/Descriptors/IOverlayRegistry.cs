@@ -44,12 +44,6 @@ public interface IOverlayRegistry
     void ToggleOverlay(string overlayId);
 
     /// <summary>
-    /// Hides every currently visible overlay. Used when navigating back to Home so
-    /// no studio overlay remains on top of the home workspace.
-    /// </summary>
-    void HideAllOverlays();
-
-    /// <summary>
     /// Checks whether the specified overlay is currently visible and active.
     /// </summary>
     bool IsOverlayVisible(string overlayId);

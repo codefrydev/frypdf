@@ -237,15 +237,6 @@ public sealed class OverlayRegistry : IOverlayRegistry, IDisposable
         }
     }
 
-    /// <inheritdoc />
-    public void HideAllOverlays()
-    {
-        // Snapshot the keys to avoid mutating _activeInstances while iterating.
-        var ids = _activeInstances.Keys.ToList();
-        foreach (var id in ids)
-            HideOverlay(id);
-    }
-
     private void UpdateStoreOverlayState(string overlayId, bool isOpen, double? x = null, double? y = null)
     {
         try

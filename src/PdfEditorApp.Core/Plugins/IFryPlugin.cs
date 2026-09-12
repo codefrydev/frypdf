@@ -42,6 +42,12 @@ public interface IFryPlugin
     IReadOnlyDictionary<string, Manifests.PluginSettingDefinition>? SettingsSchema => null;
 
     /// <summary>
+    /// Indicates whether this plugin's shell overlay (if registered) should be automatically shown on application launch
+    /// or upon installation. Defaults to false so plugins do not bombard the user with floating overlay windows.
+    /// </summary>
+    bool AutoOpenOverlay => false;
+
+    /// <summary>
     /// Mounts the plugin into the active context, registering services, pipelines, tools, and effects.
     /// </summary>
     /// <param name="ctx">The active plugin context.</param>

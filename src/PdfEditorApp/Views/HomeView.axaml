@@ -77,7 +77,7 @@
         <Border x:Name="LeftSidebarBorder"
                 Grid.Column="0"
                 Classes.compact="{Binding IsSidebarCompactRail}"
-                IsVisible="{Binding !IsToolPageActive}"
+                IsVisible="{Binding IsNavigationSidebarVisible}"
                 Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="0,0,1,0">

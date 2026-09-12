@@ -207,4 +207,88 @@ public class OverlayExtensibilityTests
         inst1.ToggleMinimize();
         Assert.True(inst1.IsMinimized);
     }
+
+    [Fact]
+    public void OverlayRegistry_UpdatesStoreOverlayState_OnShowAndHide()
+    {
+        var tempFile = Path.Combine(Path.GetTempPath(), $"test_overlay_store_{Guid.NewGuid():N}.json");
+        try
+        {
+            var store = new FileInstalledPluginStore(tempFile);
+            store.AddOrUpdate(new InstalledPluginRecord
+            {
+                PluginId = "frypdf.overlay.mock",
+                Name = "Mock Plugin",
+                Version = "1.0.0",
+                IsEnabled = true,
+                WasOverlayOpen = false
+            });
+
+            var services = new ServiceCollection();
+            services.AddSingleton<IInstalledPluginStore>(store);
+            var sp = services.BuildServiceProvider();
+
+            var registry = new OverlayRegistry(sp);
+            var desc = new OverlayDescriptor
+            {
+                Id = "frypdf.overlay.mock",
+                Title = "Mock Overlay",
+                AutoOpenOnStartup = false,
+                ViewFactory = _ => "MockContent"
+            };
+
+            using var reg = registry.RegisterOverlay(desc);
+            Assert.False(store.Get("frypdf.overlay.mock")?.WasOverlayOpen);
+
+            // Show updates WasOverlayOpen to true
+            registry.ShowOverlay("frypdf.overlay.mock");
+            Assert.True(store.Get("frypdf.overlay.mock")?.WasOverlayOpen);
+
+            // Hide updates WasOverlayOpen to false
+            registry.HideOverlay("frypdf.overlay.mock");
+            Assert.False(store.Get("frypdf.overlay.mock")?.WasOverlayOpen);
+        }
+        finally
+        {
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+        }
+    }
+
+    private class MockAutoOpenPlugin : PdfEditorApp.Core.Plugins.IFryPlugin
+    {
+        public string Id => "test.auto_open";
+        public string Name => "Auto Open Plugin";
+        public Version Version => new(1, 0, 0);
+        public System.Collections.Generic.IReadOnlyList<Type> RequiredServices => Array.Empty<Type>();
+        public bool AutoOpenOverlay => true;
+        public Task ApplyAsync(PdfEditorApp.Core.Plugins.IFryPluginContext ctx, System.Threading.CancellationToken ct = default) => Task.CompletedTask;
+    }
+
+    private class MockDefaultPlugin : PdfEditorApp.Core.Plugins.IFryPlugin
+    {
+        public string Id => "test.default_tool";
+        public string Name => "Default Tool Plugin";
+        public Version Version => new(1, 0, 0);
+        public System.Collections.Generic.IReadOnlyList<Type> RequiredServices => Array.Empty<Type>();
+        // AutoOpenOverlay defaults to false in IFryPlugin
+        public Task ApplyAsync(PdfEditorApp.Core.Plugins.IFryPluginContext ctx, System.Threading.CancellationToken ct = default) => Task.CompletedTask;
+    }
+
+    [Fact]
+    public void IFryPlugin_AutoOpenOverlay_DefaultsToFalse()
+    {
+        PdfEditorApp.Core.Plugins.IFryPlugin defaultPlugin = new MockDefaultPlugin();
+        Assert.False(defaultPlugin.AutoOpenOverlay);
+
+        PdfEditorApp.Core.Plugins.IFryPlugin autoOpenPlugin = new MockAutoOpenPlugin();
+        Assert.True(autoOpenPlugin.AutoOpenOverlay);
+
+        var overlayDesc = new OverlayDescriptor
+        {
+            Id = "test.overlay.startup",
+            Title = "Startup Overlay"
+        };
+        Assert.False(overlayDesc.AutoOpenOnStartup);
+    }
 }
+

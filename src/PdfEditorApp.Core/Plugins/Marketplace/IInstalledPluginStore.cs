@@ -12,6 +12,7 @@ public interface IInstalledPluginStore
     InstalledPluginRecord? Get(string pluginId);
     bool IsInstalled(string pluginId);
     void AddOrUpdate(InstalledPluginRecord record);
+    void UpdateOverlayState(string pluginId, bool wasOverlayOpen, double? lastX = null, double? lastY = null);
     bool Remove(string pluginId);
     void Save();
 }

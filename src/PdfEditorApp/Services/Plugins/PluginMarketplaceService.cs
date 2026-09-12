@@ -150,6 +150,29 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
         return null;
     }
 
+    private bool ShouldAutoOpenOverlay(string pluginId, IOverlayRegistry? overlayRegistry)
+    {
+        if (_pluginHost != null)
+        {
+            var plugin = _pluginHost.GetPlugin(pluginId);
+            if (plugin != null && plugin.AutoOpenOverlay)
+            {
+                return true;
+            }
+        }
+
+        if (overlayRegistry != null)
+        {
+            var overlayDesc = overlayRegistry.GetOverlay(pluginId);
+            if (overlayDesc != null && overlayDesc.AutoOpenOnStartup)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private async Task RestorePersistedPluginsAsync(CancellationToken ct = default)
     {
         if (_pluginHost == null) return;
@@ -184,7 +207,10 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                 if (rec.WasOverlayOpen)
                 {
                     var overlayReg = _overlayRegistry ?? _pluginHost.Context.GetService<IOverlayRegistry>();
-                    overlayReg?.ShowOverlay(rec.PluginId);
+                    if (ShouldAutoOpenOverlay(rec.PluginId, overlayReg))
+                    {
+                        overlayReg?.ShowOverlay(rec.PluginId);
+                    }
                 }
             }
             else
@@ -204,7 +230,10 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                     if (rec.WasOverlayOpen)
                     {
                         var alreadyLoadedOverlayReg = _overlayRegistry ?? _pluginHost.Context.GetService<IOverlayRegistry>();
-                        alreadyLoadedOverlayReg?.ShowOverlay(rec.PluginId);
+                        if (ShouldAutoOpenOverlay(rec.PluginId, alreadyLoadedOverlayReg))
+                        {
+                            alreadyLoadedOverlayReg?.ShowOverlay(rec.PluginId);
+                        }
                     }
 
                     continue;
@@ -249,7 +278,10 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                                 if (rec.WasOverlayOpen)
                                 {
                                     var overlayReg = _overlayRegistry ?? _pluginHost.Context.GetService<IOverlayRegistry>();
-                                    overlayReg?.ShowOverlay(rec.PluginId);
+                                    if (ShouldAutoOpenOverlay(rec.PluginId, overlayReg))
+                                    {
+                                        overlayReg?.ShowOverlay(rec.PluginId);
+                                    }
                                 }
                             }
                         }
@@ -529,6 +561,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
         item.Status = MarketplacePluginStatus.Installing;
         statusCallback?.Invoke($"Connecting to FryPDF Marketplace registry for '{item.Name}'...");
         progress?.Report(0.1);
+        bool autoOpen = false;
 
         // Case A: Remote package download from registry
         if (!string.IsNullOrWhiteSpace(item.DownloadUrl))
@@ -567,15 +600,14 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                                     $"Package is {declaredLength} bytes, above the {MaxPackageBytes} byte limit.");
                             }
 
-                            await using var stream = await response.Content.ReadAsStreamAsync(ct);
-                            await using var fileStream = File.Create(tempPackagePath);
-
-                            var buffer = new byte[8192];
+                            using var fileStream = new FileStream(tempPackagePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                            using var contentStream = await response.Content.ReadAsStreamAsync(ct);
+                            var buffer = new byte[81920];
                             long totalBytesRead = 0;
                             int bytesRead;
 
                             var reportStopwatch = Stopwatch.StartNew();
-                            while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, ct)) > 0)
+                            while ((bytesRead = await contentStream.ReadAsync(buffer, ct)) > 0)
                             {
                                 totalBytesRead += bytesRead;
                                 if (totalBytesRead > MaxPackageBytes)
@@ -583,7 +615,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                                     // A server that under-declares Content-Length must not be able
                                     // to stream unbounded data into the plugins directory.
                                     throw new InvalidOperationException(
-                                        $"Package exceeded the {MaxPackageBytes} byte download limit.");
+                                        $"Package download exceeded the {MaxPackageBytes} byte limit while streaming.");
                                 }
 
                                 await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), ct);
@@ -659,6 +691,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                 statusCallback?.Invoke("Mounting extension into isolated plugin kernel...");
                 progress?.Report(0.85);
 
+                autoOpen = false;
                 if (_pluginHost != null)
                 {
                     _pluginHost.RegisterPlugins(pkgResult.AssemblyPackage.Plugins);
@@ -671,7 +704,11 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                     }
 
                     var overlayReg = _overlayRegistry ?? _pluginHost.Context.GetService<IOverlayRegistry>();
-                    overlayReg?.ShowOverlay(item.Id);
+                    autoOpen = ShouldAutoOpenOverlay(item.Id, overlayReg);
+                    if (autoOpen)
+                    {
+                        overlayReg?.ShowOverlay(item.Id);
+                    }
                 }
 
                 lock (_catalogLock) { _installedMarketplaceIds.Add(item.Id); }
@@ -682,7 +719,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                     Version = item.Version,
                     InstalledAt = DateTime.UtcNow,
                     IsEnabled = true,
-                    WasOverlayOpen = true
+                    WasOverlayOpen = autoOpen
                 });
 
                 item.Status = MarketplacePluginStatus.Installed;
@@ -753,6 +790,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
 
         // Mount and activate real plugin into host if available
         var plugin = InstantiatePlugin(item.Id);
+        autoOpen = false;
         if (plugin != null && _pluginHost != null)
         {
             if (_pluginHost.GetPluginState(item.Id) == PluginState.Unloaded)
@@ -766,7 +804,11 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
             }
 
             var overlayReg = _overlayRegistry ?? _pluginHost.Context.GetService<IOverlayRegistry>();
-            overlayReg?.ShowOverlay(item.Id);
+            autoOpen = ShouldAutoOpenOverlay(item.Id, overlayReg);
+            if (autoOpen)
+            {
+                overlayReg?.ShowOverlay(item.Id);
+            }
         }
 
         lock (_catalogLock) { _installedMarketplaceIds.Add(item.Id); }
@@ -777,7 +819,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
             Version = item.Version,
             InstalledAt = DateTime.UtcNow,
             IsEnabled = true,
-            WasOverlayOpen = true
+            WasOverlayOpen = autoOpen
         });
 
         item.Status = MarketplacePluginStatus.Installed;

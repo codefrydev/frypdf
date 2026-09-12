@@ -234,4 +234,45 @@ public class HomeViewModelTests
         Assert.False(vm.IsToolPageActive);
         Assert.Null(vm.ActiveToolViewModel);
     }
+
+    [Fact]
+    public void HomeViewModel_FullViewportStudio_HidesNavigationSidebar()
+    {
+        // Arrange
+        var navRegistry = new PdfEditorApp.Services.Navigation.NavigationRegistry();
+        var studioDesc = new PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor
+        {
+            Id = "TestStudio",
+            Title = "Test Studio",
+            Group = "Overview",
+            DisplayMode = PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.FullViewport,
+            HideTopSearchBar = true,
+            ViewFactory = _ => new object()
+        };
+        navRegistry.RegisterNavigationItem(studioDesc);
+
+        var vm = new HomeViewModel(
+            new MockRecentService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            new PdfToolRegistry(),
+            navigationRegistry: navRegistry);
+
+        // On Home, navigation sidebar is visible
+        Assert.True(vm.IsNavigationSidebarVisible);
+
+        // Act: Navigate to FullViewport studio
+        vm.SelectNavSection("TestStudio");
+
+        // Assert: Studio occupies 100% of viewport, sidebar and top search bar are hidden
+        Assert.False(vm.IsNavigationSidebarVisible, "Sidebar must hide when a full-viewport studio is active");
+        Assert.False(vm.IsTopSearchBarVisible, "Top search bar must hide when HideTopSearchBar is true");
+        Assert.True(vm.IsFullViewportActive, "IsFullViewportActive must be true");
+
+        // Act: Return to Home
+        vm.SelectNavSection("Home");
+
+        // Assert: Sidebar is restored
+        Assert.True(vm.IsNavigationSidebarVisible, "Sidebar must be restored on Home");
+    }
 }

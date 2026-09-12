@@ -108,6 +108,18 @@ public class PluginHost : IAsyncDisposable, IDisposable
     public bool IsPluginActive(string pluginId) => GetPluginState(pluginId) == PluginState.Active;
 
     /// <summary>
+    /// Gets a registered plugin instance by its ID, or null if not found.
+    /// </summary>
+    public IFryPlugin? GetPlugin(string pluginId)
+    {
+        if (string.IsNullOrWhiteSpace(pluginId)) return null;
+        lock (_lock)
+        {
+            return _entries.TryGetValue(pluginId, out var entry) ? entry.Plugin : null;
+        }
+    }
+
+    /// <summary>
     /// Registers a plugin for mounting.
     /// </summary>
     public void RegisterPlugin(IFryPlugin plugin)

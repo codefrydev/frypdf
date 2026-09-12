@@ -116,7 +116,19 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
     private string _selectedLicenseCategory = "All";
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsTopSearchBarVisible))]
+    [NotifyPropertyChangedFor(nameof(IsHomeSection))]
+    [NotifyPropertyChangedFor(nameof(IsNewDocumentSection))]
+    [NotifyPropertyChangedFor(nameof(IsPdfReaderSection))]
+    [NotifyPropertyChangedFor(nameof(IsToolsSection))]
+    [NotifyPropertyChangedFor(nameof(IsStarredSection))]
+    [NotifyPropertyChangedFor(nameof(IsTrashSection))]
+    [NotifyPropertyChangedFor(nameof(IsLicensingSection))]
+    [NotifyPropertyChangedFor(nameof(IsFontPackagesSection))]
+    [NotifyPropertyChangedFor(nameof(IsTesseractDataSection))]
+    [NotifyPropertyChangedFor(nameof(IsHelpSection))]
+    [NotifyPropertyChangedFor(nameof(IsSettingsSection))]
+    [NotifyPropertyChangedFor(nameof(IsPluginsSection))]
+    [NotifyPropertyChangedFor(nameof(IsNavigationSidebarVisible))]
     [NotifyPropertyChangedFor(nameof(TopSearchPlaceholder))]
     private HomeNavSection _selectedNavSection = HomeNavSection.Home;
 
@@ -126,6 +138,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
     [NotifyPropertyChangedFor(nameof(IsStandardScrollableContentActive))]
     [NotifyPropertyChangedFor(nameof(IsTopSearchBarVisible))]
     [NotifyPropertyChangedFor(nameof(IsSidebarCompactRail))]
+    [NotifyPropertyChangedFor(nameof(IsNavigationSidebarVisible))]
     [NotifyPropertyChangedFor(nameof(DynamicFullViewportPageView))]
     [NotifyPropertyChangedFor(nameof(DynamicScrollablePageView))]
     private bool _isToolPageActive;
@@ -135,6 +148,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
     [NotifyPropertyChangedFor(nameof(IsStandardScrollableContentActive))]
     [NotifyPropertyChangedFor(nameof(IsTopSearchBarVisible))]
     [NotifyPropertyChangedFor(nameof(IsSidebarCompactRail))]
+    [NotifyPropertyChangedFor(nameof(IsNavigationSidebarVisible))]
     [NotifyPropertyChangedFor(nameof(DynamicFullViewportPageView))]
     [NotifyPropertyChangedFor(nameof(DynamicScrollablePageView))]
     private PdfEditorApp.Core.Plugins.Descriptors.NavigationItemDescriptor? _activeNavDescriptor;
@@ -211,6 +225,17 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
     }
 
     public bool IsSidebarCompactRail => !IsToolPageActive && ActiveNavDescriptor?.DisplayMode == PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.ImmersiveStudio;
+
+    /// <summary>
+    /// Controls visibility of the main navigation sidebar rail.
+    /// Hidden when a tool is open or when an edge-to-edge full-viewport studio (like Image Studio) is active,
+    /// giving the studio 100% of the window width without the outer sidebar squeezing it.
+    /// </summary>
+    public bool IsNavigationSidebarVisible =>
+        !IsToolPageActive &&
+        (ActiveNavDescriptor == null ||
+         ActiveNavDescriptor.DisplayMode != PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.FullViewport ||
+         SelectedNavSection == HomeNavSection.Plugins);
 
     public object? DynamicFullViewportPageView => IsFullViewportActive && !IsPluginsWorkspaceActive ? DynamicPageView : null;
     public object? DynamicScrollablePageView => IsStandardScrollableContentActive ? DynamicPageView : null;
@@ -522,6 +547,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
         OnPropertyChanged(nameof(IsStandardScrollableContentActive));
         OnPropertyChanged(nameof(IsTopSearchBarVisible));
         OnPropertyChanged(nameof(IsSidebarCompactRail));
+        OnPropertyChanged(nameof(IsNavigationSidebarVisible));
         OnPropertyChanged(nameof(DynamicFullViewportPageView));
         OnPropertyChanged(nameof(DynamicScrollablePageView));
 

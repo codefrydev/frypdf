@@ -97,6 +97,22 @@ public class FileInstalledPluginStore : IInstalledPluginStore
         }
     }
 
+    public void UpdateOverlayState(string pluginId, bool wasOverlayOpen, double? lastX = null, double? lastY = null)
+    {
+        if (string.IsNullOrWhiteSpace(pluginId)) return;
+
+        lock (_lock)
+        {
+            if (_records.TryGetValue(pluginId, out var existing))
+            {
+                existing.WasOverlayOpen = wasOverlayOpen;
+                if (lastX.HasValue) existing.LastX = lastX.Value;
+                if (lastY.HasValue) existing.LastY = lastY.Value;
+                SaveInternal();
+            }
+        }
+    }
+
     public bool Remove(string pluginId)
     {
         if (string.IsNullOrWhiteSpace(pluginId)) return false;

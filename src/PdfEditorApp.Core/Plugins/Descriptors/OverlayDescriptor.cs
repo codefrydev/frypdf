@@ -45,6 +45,7 @@ public sealed class OverlayDescriptor
     public OverlayChromeMode ChromeMode { get; init; } = OverlayChromeMode.StandardCard;
     public bool HasCustomChrome => ChromeMode == OverlayChromeMode.CustomChrome;
     public bool IsResizable { get; init; } = true;
+    public bool AutoOpenOnStartup { get; init; } = false;
     public double MinWidth { get; init; } = 220;
     public double MinHeight { get; init; } = 100;
     public double MaxWidth { get; init; } = 1600;

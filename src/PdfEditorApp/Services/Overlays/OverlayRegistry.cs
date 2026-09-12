@@ -126,6 +126,8 @@ public sealed class OverlayRegistry : IOverlayRegistry, IDisposable
         var desc = GetOverlay(overlayId);
         if (desc == null) return;
 
+        UpdateStoreOverlayState(desc.Id, true);
+
         if (_activeInstances.TryGetValue(desc.Id, out var existingInstance))
         {
             RunOnUIThread(() =>
@@ -221,12 +223,37 @@ public sealed class OverlayRegistry : IOverlayRegistry, IDisposable
 
         if (_activeInstances.TryGetValue(targetId, out var instance))
         {
+            UpdateStoreOverlayState(targetId, false, instance.X, instance.Y);
             RunOnUIThread(() =>
             {
                 instance.IsVisible = false;
                 ActiveOverlays.Remove(instance);
                 ActiveOverlaysChanged?.Invoke();
             });
+        }
+        else
+        {
+            UpdateStoreOverlayState(targetId, false);
+        }
+    }
+
+    private void UpdateStoreOverlayState(string overlayId, bool isOpen, double? x = null, double? y = null)
+    {
+        try
+        {
+            var store = _serviceProvider.GetService(typeof(PdfEditorApp.Core.Plugins.Marketplace.IInstalledPluginStore)) as PdfEditorApp.Core.Plugins.Marketplace.IInstalledPluginStore;
+            if (store == null) return;
+
+            store.UpdateOverlayState(overlayId, isOpen, x, y);
+            if (overlayId.StartsWith("frypdf.overlay.", StringComparison.OrdinalIgnoreCase))
+            {
+                var stripped = overlayId["frypdf.overlay.".Length..];
+                store.UpdateOverlayState(stripped, isOpen, x, y);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[OverlayRegistry] Error updating overlay state in store: {ex.Message}");
         }
     }
 

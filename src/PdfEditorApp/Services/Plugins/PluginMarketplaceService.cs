@@ -574,6 +574,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                             long totalBytesRead = 0;
                             int bytesRead;
 
+                            var reportStopwatch = Stopwatch.StartNew();
                             while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, ct)) > 0)
                             {
                                 totalBytesRead += bytesRead;
@@ -588,7 +589,27 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                                 await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), ct);
 
                                 if (declaredLength > 0)
-                                    progress?.Report(0.2 + 0.5 * ((double)totalBytesRead / declaredLength));
+                                {
+                                    double fraction = (double)totalBytesRead / declaredLength;
+                                    progress?.Report(0.2 + 0.5 * fraction);
+                                    if (reportStopwatch.ElapsedMilliseconds >= 100 || totalBytesRead == declaredLength)
+                                    {
+                                        reportStopwatch.Restart();
+                                        var dlStr = MarketplacePluginItem.FormatBytes(totalBytesRead);
+                                        var totalStr = MarketplacePluginItem.FormatBytes(declaredLength);
+                                        var pct = Math.Clamp((int)(fraction * 100), 0, 100);
+                                        statusCallback?.Invoke($"Downloading {item.Name}: {dlStr} / {totalStr} ({pct}%)...");
+                                    }
+                                }
+                                else
+                                {
+                                    if (reportStopwatch.ElapsedMilliseconds >= 100)
+                                    {
+                                        reportStopwatch.Restart();
+                                        var dlStr = MarketplacePluginItem.FormatBytes(totalBytesRead);
+                                        statusCallback?.Invoke($"Downloading {item.Name}: {dlStr} downloaded...");
+                                    }
+                                }
                             }
                             downloaded = true;
                         }

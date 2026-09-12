@@ -143,6 +143,8 @@ public class PluginsManagerPageTests
         Assert.NotEmpty(vm.FilteredInstalledPlugins);
         var target = vm.FilteredInstalledPlugins.First(p => p.Id == "frypdf.tool.pdftoword");
 
+        // Switch to Installed tab to select an installed plugin
+        vm.SelectedTab = PluginsManagerTab.Installed;
         vm.SelectedInstalledPlugin = target;
         Assert.NotNull(vm.SelectedDetail);
         Assert.Equal("frypdf.tool.pdftoword", vm.SelectedDetail.Id);
@@ -162,6 +164,98 @@ public class PluginsManagerPageTests
         Assert.Contains("Active", vm.SelectedDetail.RuntimeStatus);
 
         await host.StopAsync();
+    }
+
+    [Fact]
+    public async Task PluginsManager_DefaultTabIsStore_AndButtonsReflectStateAccurately()
+    {
+        var sp = CreateTestServices();
+        var host = sp.GetRequiredService<PluginHost>();
+        var bundles = new IFryPluginBundle[] { new ToolsOrganizeBundle() };
+        var profile = new PluginProfile { ProfileName = "desktop", Bundles = bundles.Select(b => b.Id).ToList() };
+        ProfileLoader.ApplyProfile(profile, host, bundles);
+        await host.StartAsync();
+
+        var marketplace = sp.GetRequiredService<IPluginMarketplaceService>();
+        var vm = new PluginsManagerViewModel(host, marketplace);
+        await vm.LoadAllDataAsync();
+
+        // 1. First tab is Store (Marketplace)
+        Assert.Equal(PluginsManagerTab.Marketplace, vm.SelectedTab);
+        Assert.NotNull(vm.SelectedDetail);
+
+        // 2. Uninstalled Store Item button state verification
+        var uninstalledItem = vm.FilteredMarketplacePlugins.FirstOrDefault(m => !m.IsInstalled);
+        Assert.NotNull(uninstalledItem);
+        vm.SelectedMarketplacePlugin = uninstalledItem;
+
+        var detail = vm.SelectedDetail;
+        Assert.NotNull(detail);
+        Assert.False(detail.IsInstalled);
+        Assert.True(detail.CanInstall);
+        Assert.False(detail.CanUninstall); // Critical fix: NO delete button for uninstalled store items!
+        Assert.False(detail.CanToggleActive);
+        Assert.Equal("Available in Store", detail.RuntimeStatus);
+
+        // 3. Installed System Built-in plugin button state verification
+        vm.SelectedTab = PluginsManagerTab.Installed;
+        var mergePlugin = vm.FilteredInstalledPlugins.First(p => p.Id == "frypdf.tool.merge");
+        vm.SelectedInstalledPlugin = mergePlugin;
+
+        detail = vm.SelectedDetail;
+        Assert.NotNull(detail);
+        Assert.True(detail.IsInstalled);
+        Assert.True(detail.IsSystemBuiltIn);
+        Assert.False(detail.CanUninstall); // System built-in cannot be uninstalled
+        Assert.True(detail.CanToggleActive); // Can be enabled/disabled
+        Assert.True(detail.IsActiveAndInstalled);
+
+        await host.StopAsync();
+    }
+
+    [Fact]
+    public async Task PluginsManager_InstallProgressAndStatus_UpdatesDuringInstallation()
+    {
+        var tempDir = Path.Combine(AppContext.BaseDirectory, $"frypdf_progress_test_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            var sp = CreateTestServices(tempDir);
+            var host = sp.GetRequiredService<PluginHost>();
+            var marketplace = sp.GetRequiredService<IPluginMarketplaceService>();
+
+            var vm = new PluginsManagerViewModel(host, marketplace);
+            await vm.LoadAllDataAsync();
+
+            var snake = vm.FilteredMarketplacePlugins.First(m => m.Id == "frypdf.overlay.snake");
+            vm.SelectedMarketplacePlugin = snake;
+
+            // Before install
+            Assert.False(vm.IsInstalling);
+            Assert.Equal(0, vm.InstallProgress);
+            Assert.False(vm.SelectedDetail!.IsInstalling);
+
+            // Trigger install command
+            var installTask = vm.InstallMarketplacePluginCommand.ExecuteAsync("frypdf.overlay.snake");
+            await installTask;
+
+            // After install finishes
+            Assert.False(vm.IsInstalling);
+            Assert.True(marketplace.IsPluginInstalled("frypdf.overlay.snake"));
+
+            // Re-select installed Snake in marketplace
+            vm.SelectedMarketplacePlugin = vm.FilteredMarketplacePlugins.First(m => m.Id == "frypdf.overlay.snake");
+            var detail = vm.SelectedDetail!;
+            Assert.True(detail.IsInstalled);
+            Assert.True(detail.IsExternal);
+            Assert.True(detail.CanUninstall); // External installed items CAN be uninstalled
+
+            await marketplace.UninstallPluginAsync("frypdf.overlay.snake");
+        }
+        finally
+        {
+            try { Directory.Delete(tempDir, recursive: true); } catch { }
+        }
     }
 
     [Fact]

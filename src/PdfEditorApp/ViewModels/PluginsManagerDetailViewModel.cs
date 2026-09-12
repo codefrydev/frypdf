@@ -72,13 +72,44 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
     private bool _isVerified = true;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanInstall))]
+    [NotifyPropertyChangedFor(nameof(CanToggleActive))]
+    [NotifyPropertyChangedFor(nameof(CanUninstall))]
+    [NotifyPropertyChangedFor(nameof(IsActiveAndInstalled))]
+    [NotifyPropertyChangedFor(nameof(IsDisabledAndInstalled))]
     private bool _isInstalled = true;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsActiveAndInstalled))]
+    [NotifyPropertyChangedFor(nameof(IsDisabledAndInstalled))]
     private bool _isActive = true;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanUninstall))]
+    [NotifyPropertyChangedFor(nameof(IsSystemBuiltIn))]
     private bool _isExternal;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanInstall))]
+    [NotifyPropertyChangedFor(nameof(CanToggleActive))]
+    [NotifyPropertyChangedFor(nameof(CanUninstall))]
+    private bool _isInstalling;
+
+    [ObservableProperty]
+    private double _installProgress;
+
+    [ObservableProperty]
+    private int _installProgressPercent;
+
+    [ObservableProperty]
+    private string _installStatusText = string.Empty;
+
+    public bool CanInstall => !IsInstalled && !IsInstalling;
+    public bool CanToggleActive => IsInstalled && !IsInstalling;
+    public bool CanUninstall => IsInstalled && IsExternal && !IsInstalling;
+    public bool IsActiveAndInstalled => IsInstalled && IsActive;
+    public bool IsDisabledAndInstalled => IsInstalled && !IsActive;
+    public bool IsSystemBuiltIn => IsInstalled && !IsExternal;
 
     [ObservableProperty]
     private string _sourceAssembly = "Built-in";
@@ -281,6 +312,7 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
     public static PluginsManagerDetailViewModel FromMarketplaceItem(MarketplacePluginItem item)
     {
         var isInstalled = item.Status == MarketplacePluginStatus.Installed;
+        var isInstalling = item.Status == MarketplacePluginStatus.Installing;
         var vm = new PluginsManagerDetailViewModel
         {
             Id = item.Id,
@@ -302,10 +334,14 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
             IsInstalled = isInstalled,
             IsActive = isInstalled,
             IsExternal = true,
+            IsInstalling = isInstalling,
+            InstallProgress = item.InstallProgress,
+            InstallProgressPercent = item.InstallProgressPercent,
+            InstallStatusText = item.InstallStatusText,
             SourceAssembly = isInstalled ? $"plugins/{item.Id}/{item.Id}.dll" : "FryPDF Marketplace Remote Registry",
             AssemblyPath = isInstalled ? $"plugins/{item.Id}/{item.Id}.dll" : "Remote Package Archive (.fryplugin)",
             AssemblyLoadContextName = "PluginAssemblyLoadContext (Isolated)",
-            RuntimeStatus = isInstalled ? "Active (Mounted in Kernel)" : "Available in Marketplace"
+            RuntimeStatus = isInstalled ? "Active (Mounted in Kernel)" : (isInstalling ? "Installing..." : "Available in Store")
         };
 
         foreach (var c in item.ContributedFeatures)

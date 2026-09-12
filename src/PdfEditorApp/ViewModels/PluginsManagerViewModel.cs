@@ -46,7 +46,7 @@ public partial class PluginsManagerViewModel : ViewModelBase
     public Action<string>? ShowToastCallback { get; set; }
 
     [ObservableProperty]
-    private PluginsManagerTab _selectedTab = PluginsManagerTab.Installed;
+    private PluginsManagerTab _selectedTab = PluginsManagerTab.Marketplace;
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
@@ -59,6 +59,21 @@ public partial class PluginsManagerViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isBusy;
+
+    [ObservableProperty]
+    private bool _isInstalling;
+
+    [ObservableProperty]
+    private string _installingPluginId = string.Empty;
+
+    [ObservableProperty]
+    private double _installProgress;
+
+    [ObservableProperty]
+    private int _installProgressPercent;
+
+    [ObservableProperty]
+    private string _installStatusMessage = string.Empty;
 
     [ObservableProperty]
     private string _statusMessage = string.Empty;
@@ -137,13 +152,24 @@ public partial class PluginsManagerViewModel : ViewModelBase
     {
         ApplyFilters();
         // Update detail selection based on the new tab
-        if (value == PluginsManagerTab.Installed && SelectedInstalledPlugin != null)
+        if (value == PluginsManagerTab.Installed)
         {
-            UpdateDetailFromInstalled(SelectedInstalledPlugin);
+            if (SelectedInstalledPlugin == null && FilteredInstalledPlugins.Count > 0)
+            {
+                SelectedInstalledPlugin = FilteredInstalledPlugins[0];
+            }
+            else if (SelectedInstalledPlugin != null)
+            {
+                UpdateDetailFromInstalled(SelectedInstalledPlugin);
+            }
         }
         else if (value == PluginsManagerTab.Marketplace)
         {
-            if (SelectedMarketplacePlugin != null)
+            if (SelectedMarketplacePlugin == null && FilteredMarketplacePlugins.Count > 0)
+            {
+                SelectedMarketplacePlugin = FilteredMarketplacePlugins[0];
+            }
+            else if (SelectedMarketplacePlugin != null)
             {
                 UpdateDetailFromMarketplace(SelectedMarketplacePlugin);
             }
@@ -243,9 +269,16 @@ public partial class PluginsManagerViewModel : ViewModelBase
             PopulateInstalledPlugins();
             ApplyFilters();
 
-            if (SelectedDetail == null && FilteredInstalledPlugins.Count > 0)
+            if (SelectedDetail == null)
             {
-                SelectedInstalledPlugin = FilteredInstalledPlugins[0];
+                if (SelectedTab == PluginsManagerTab.Marketplace && FilteredMarketplacePlugins.Count > 0)
+                {
+                    SelectedMarketplacePlugin = FilteredMarketplacePlugins[0];
+                }
+                else if (FilteredInstalledPlugins.Count > 0)
+                {
+                    SelectedInstalledPlugin = FilteredInstalledPlugins[0];
+                }
             }
 
             await _marketplaceService.FetchRemoteCatalogAsync();
@@ -259,6 +292,11 @@ public partial class PluginsManagerViewModel : ViewModelBase
             // Re-filter now that the marketplace half has arrived.
             ApplyFilters();
             OnPropertyChanged(nameof(MarketplaceCount));
+
+            if (SelectedDetail == null && SelectedTab == PluginsManagerTab.Marketplace && FilteredMarketplacePlugins.Count > 0)
+            {
+                SelectedMarketplacePlugin = FilteredMarketplacePlugins[0];
+            }
         }
         catch (Exception ex)
         {
@@ -522,41 +560,129 @@ public partial class PluginsManagerViewModel : ViewModelBase
     [RelayCommand]
     public async Task InstallMarketplacePluginAsync(string pluginId)
     {
+        if (IsInstalling) return;
+
         IsBusy = true;
-        StatusMessage = $"Installing extension '{pluginId}' from store...";
+        IsInstalling = true;
+        InstallingPluginId = pluginId;
+        InstallProgress = 0.05;
+        InstallProgressPercent = 5;
+        InstallStatusMessage = "Connecting to marketplace...";
+        StatusMessage = InstallStatusMessage;
         var sw = Stopwatch.StartNew();
+
+        MarketplacePluginItem? marketplaceItem;
+        lock (_dataLock)
+        {
+            marketplaceItem = _allMarketplace.FirstOrDefault(m => string.Equals(m.Id, pluginId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (marketplaceItem != null)
+        {
+            marketplaceItem.Status = MarketplacePluginStatus.Installing;
+            marketplaceItem.InstallProgress = 0.05;
+            marketplaceItem.InstallProgressPercent = 5;
+            marketplaceItem.InstallStatusText = "Connecting...";
+        }
+
+        if (SelectedDetail != null && string.Equals(SelectedDetail.Id, pluginId, StringComparison.OrdinalIgnoreCase))
+        {
+            SelectedDetail.IsInstalling = true;
+            SelectedDetail.InstallProgress = 0.05;
+            SelectedDetail.InstallProgressPercent = 5;
+            SelectedDetail.InstallStatusText = "Connecting...";
+        }
 
         try
         {
             var progress = new Progress<double>(p =>
             {
-                StatusMessage = $"Installing {pluginId} ({(int)(p * 100)}%)...";
+                InstallProgress = p;
+                InstallProgressPercent = Math.Clamp((int)(p * 100), 0, 100);
+                if (marketplaceItem != null)
+                {
+                    marketplaceItem.InstallProgress = p;
+                    marketplaceItem.InstallProgressPercent = InstallProgressPercent;
+                }
+                if (SelectedDetail != null && string.Equals(SelectedDetail.Id, pluginId, StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedDetail.InstallProgress = p;
+                    SelectedDetail.InstallProgressPercent = InstallProgressPercent;
+                }
             });
 
-            bool success = await _marketplaceService.InstallPluginAsync(pluginId, progress, s => StatusMessage = s);
+            void OnStatus(string s)
+            {
+                StatusMessage = s;
+                InstallStatusMessage = s;
+                if (marketplaceItem != null)
+                {
+                    marketplaceItem.InstallStatusText = s;
+                }
+                if (SelectedDetail != null && string.Equals(SelectedDetail.Id, pluginId, StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedDetail.InstallStatusText = s;
+                }
+            }
+
+            bool success = await _marketplaceService.InstallPluginAsync(pluginId, progress, OnStatus);
             if (success)
             {
                 AppLogService.Instance.Log(AppLogLevel.Info, "PluginInstall",
                     $"UI: installed '{pluginId}' in {sw.ElapsedMilliseconds}ms.");
-                ShowToastCallback?.Invoke($"Installed extension '{pluginId}' successfully!");
+                ShowToastCallback?.Invoke($"Installed extension '{marketplaceItem?.Name ?? pluginId}' successfully!");
+
+                if (marketplaceItem != null)
+                {
+                    marketplaceItem.Status = MarketplacePluginStatus.Installed;
+                    marketplaceItem.InstallProgressPercent = 100;
+                    marketplaceItem.InstallStatusText = "Installed";
+                }
+                if (SelectedDetail != null && string.Equals(SelectedDetail.Id, pluginId, StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedDetail.IsInstalling = false;
+                    SelectedDetail.IsInstalled = true;
+                    SelectedDetail.IsActive = true;
+                    SelectedDetail.RuntimeStatus = "Active (Mounted in Kernel)";
+                }
+
                 await LoadAllDataAsync();
-                SelectedTab = PluginsManagerTab.Installed;
             }
             else
             {
                 AppLogService.Instance.Log(AppLogLevel.Warning, "PluginInstall",
                     $"UI: install failed for '{pluginId}' after {sw.ElapsedMilliseconds}ms (see PluginInstall entries above for cause).");
-                ShowToastCallback?.Invoke($"Failed to install extension '{pluginId}'");
+                ShowToastCallback?.Invoke($"Failed to install extension '{marketplaceItem?.Name ?? pluginId}'");
+
+                if (marketplaceItem != null)
+                {
+                    marketplaceItem.Status = MarketplacePluginStatus.Available;
+                }
+                if (SelectedDetail != null && string.Equals(SelectedDetail.Id, pluginId, StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedDetail.IsInstalling = false;
+                }
             }
         }
         catch (Exception ex)
         {
             AppLogService.Instance.LogError("PluginInstall", $"UI: install error for '{pluginId}' after {sw.ElapsedMilliseconds}ms", ex);
             ShowToastCallback?.Invoke($"Install error: {ex.Message}");
+
+            if (marketplaceItem != null)
+            {
+                marketplaceItem.Status = MarketplacePluginStatus.Available;
+            }
+            if (SelectedDetail != null && string.Equals(SelectedDetail.Id, pluginId, StringComparison.OrdinalIgnoreCase))
+            {
+                SelectedDetail.IsInstalling = false;
+            }
         }
         finally
         {
             IsBusy = false;
+            IsInstalling = false;
+            InstallingPluginId = string.Empty;
         }
     }
 
@@ -568,6 +694,23 @@ public partial class PluginsManagerViewModel : ViewModelBase
         {
             await _marketplaceService.UninstallPluginAsync(pluginId);
             ShowToastCallback?.Invoke($"Uninstalled extension '{pluginId}'");
+
+            MarketplacePluginItem? marketplaceItem;
+            lock (_dataLock)
+            {
+                marketplaceItem = _allMarketplace.FirstOrDefault(m => string.Equals(m.Id, pluginId, StringComparison.OrdinalIgnoreCase));
+            }
+            if (marketplaceItem != null)
+            {
+                marketplaceItem.Status = MarketplacePluginStatus.Available;
+            }
+            if (SelectedDetail != null && string.Equals(SelectedDetail.Id, pluginId, StringComparison.OrdinalIgnoreCase))
+            {
+                SelectedDetail.IsInstalled = false;
+                SelectedDetail.IsActive = false;
+                SelectedDetail.RuntimeStatus = "Available in Store";
+            }
+
             await LoadAllDataAsync();
         }
         catch (Exception ex)

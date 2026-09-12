@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace PdfEditorApp.Core.Plugins.Marketplace;
 
@@ -18,7 +19,7 @@ public enum MarketplacePluginStatus
 /// Domain model for an extension or plugin available in the FryPDF Marketplace / Store.
 /// Inspired by the VS Code Extensions Gallery item schema.
 /// </summary>
-public sealed class MarketplacePluginItem
+public sealed partial class MarketplacePluginItem : ObservableObject
 {
     public required string Id { get; init; }
     public required string Name { get; init; }
@@ -48,5 +49,30 @@ public sealed class MarketplacePluginItem
     public IReadOnlyList<string> Highlights { get; init; } = Array.Empty<string>();
     public IReadOnlyList<string> ContributedFeatures { get; init; } = Array.Empty<string>();
     public IReadOnlyList<string> Dependencies { get; init; } = Array.Empty<string>();
-    public MarketplacePluginStatus Status { get; set; } = MarketplacePluginStatus.Available;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsInstalled))]
+    private MarketplacePluginStatus _status = MarketplacePluginStatus.Available;
+
+    public bool IsInstalled => Status == MarketplacePluginStatus.Installed;
+
+    [ObservableProperty]
+    private double _installProgress;
+
+    [ObservableProperty]
+    private int _installProgressPercent;
+
+    [ObservableProperty]
+    private string _installStatusText = string.Empty;
+
+    /// <summary>
+    /// Formats a byte count into a human-readable size string (KB, MB, GB).
+    /// </summary>
+    public static string FormatBytes(long bytes)
+    {
+        if (bytes <= 0) return "0 KB";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024.0):F1} MB";
+        return $"{bytes / (1024.0 * 1024.0 * 1024.0):F2} GB";
+    }
 }

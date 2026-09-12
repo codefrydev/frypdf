@@ -222,28 +222,8 @@
                                 CornerRadius="{StaticResource M3ShapeCornerFull}"
                                 Padding="3">
                             <Grid ColumnDefinitions="*,*,*">
-                                <!-- Installed Tab -->
+                                <!-- Store / Marketplace Tab (First) -->
                                 <Button Grid.Column="0"
-                                        Classes="action-pill-btn"
-                                        Classes.active="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Installed}"
-                                        Command="{Binding SelectTabCommand}"
-                                        CommandParameter="Installed"
-                                        Height="30"
-                                        Padding="6,0"
-                                        HorizontalAlignment="Stretch">
-                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
-                                        <TextBlock Text="Installed" FontSize="11" FontWeight="SemiBold" />
-                                        <Border Background="{DynamicResource WinHoverBrush}"
-                                                CornerRadius="{StaticResource M3ShapeCornerSmall}"
-                                                Padding="4,1"
-                                                VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding ActiveInstalledCount}" FontSize="9.5" FontWeight="Bold" />
-                                        </Border>
-                                    </StackPanel>
-                                </Button>
-
-                                <!-- Store / Marketplace Tab -->
-                                <Button Grid.Column="1"
                                         Classes="action-pill-btn"
                                         Classes.active="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Marketplace}"
                                         Command="{Binding SelectTabCommand}"
@@ -252,6 +232,7 @@
                                         Padding="6,0"
                                         HorizontalAlignment="Stretch">
                                     <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="StoreOutline" Width="13" Height="13" Foreground="{DynamicResource WinAccentBrush}" />
                                         <TextBlock Text="Store" FontSize="11" FontWeight="SemiBold" />
                                         <Border Background="{DynamicResource WinAccentLightBrush}"
                                                 CornerRadius="{StaticResource M3ShapeCornerSmall}"
@@ -262,7 +243,28 @@
                                     </StackPanel>
                                 </Button>
 
-                                <!-- Profiles Tab -->
+                                <!-- Installed Tab (Second) -->
+                                <Button Grid.Column="1"
+                                        Classes="action-pill-btn"
+                                        Classes.active="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Installed}"
+                                        Command="{Binding SelectTabCommand}"
+                                        CommandParameter="Installed"
+                                        Height="30"
+                                        Padding="6,0"
+                                        HorizontalAlignment="Stretch">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="PackageVariantClosed" Width="13" Height="13" />
+                                        <TextBlock Text="Installed" FontSize="11" FontWeight="SemiBold" />
+                                        <Border Background="{DynamicResource WinHoverBrush}"
+                                                CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                Padding="4,1"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding ActiveInstalledCount}" FontSize="9.5" FontWeight="Bold" />
+                                        </Border>
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Profiles Tab (Third) -->
                                 <Button Grid.Column="2"
                                         Classes="action-pill-btn"
                                         Classes.active="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Updates}"
@@ -271,7 +273,10 @@
                                         Height="30"
                                         Padding="6,0"
                                         HorizontalAlignment="Stretch">
-                                    <TextBlock Text="Profiles" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="TuneVariant" Width="13" Height="13" />
+                                        <TextBlock Text="Profiles" FontSize="11" FontWeight="SemiBold" />
+                                    </StackPanel>
                                 </Button>
                             </Grid>
                         </Border>
@@ -379,10 +384,14 @@
                                                                    Foreground="{DynamicResource WinMutedBrush}"
                                                                    TextTrimming="CharacterEllipsis"
                                                                    MaxWidth="210" />
-                                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                                            <TextBlock Text="{Binding SourceAssembly}"
+                                                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                            <Ellipse Width="6" Height="6"
+                                                                     Fill="{Binding IsActive, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='#10B981|#94A3B8'}"
+                                                                     VerticalAlignment="Center" />
+                                                            <TextBlock Text="{Binding IsActive, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Active|Disabled'}"
                                                                        FontSize="9.5"
-                                                                       Foreground="{DynamicResource WinSubtleBrush}" />
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{Binding IsActive, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='#10B981|#94A3B8'}" />
                                                             <TextBlock Text="•" FontSize="9.5" Foreground="{DynamicResource WinBorderSubtleBrush}" />
                                                             <TextBlock Text="{Binding Category}"
                                                                        FontSize="9.5"
@@ -501,7 +510,7 @@
                                                         </StackPanel>
                                                     </StackPanel>
 
-                                                    <!-- Action Column: Install vs Installed Badge -->
+                                                    <!-- Action Column: Install vs Installing vs Installed Badge -->
                                                     <Panel Grid.Column="2" VerticalAlignment="Center">
                                                         <!-- Install Action Button -->
                                                         <Button Classes="action-pill-btn"
@@ -514,6 +523,21 @@
                                                                 VerticalAlignment="Center">
                                                             <TextBlock Text="Install" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
                                                         </Button>
+
+                                                        <!-- Installing Progress Badge -->
+                                                        <Border Background="{DynamicResource WinAccentLightBrush}"
+                                                                BorderBrush="{DynamicResource WinAccentBorderBrush}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                                                Padding="8,3"
+                                                                IsVisible="{Binding Status, Converter={StaticResource EqualityConverter}, ConverterParameter=Installing}"
+                                                                ToolTip.Tip="{Binding InstallStatusText}"
+                                                                VerticalAlignment="Center">
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                                <materialIcons:MaterialIcon Kind="Loading" Width="11" Height="11" Foreground="{DynamicResource WinAccentBrush}" />
+                                                                <TextBlock Text="{Binding InstallProgressPercent, StringFormat='{}{0}%'}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
+                                                            </StackPanel>
+                                                        </Border>
 
                                                         <!-- Installed Badge (like VS Code) -->
                                                         <Border Background="{DynamicResource WinHoverBrush}"
@@ -728,9 +752,8 @@
                                                                        VerticalAlignment="Center" />
                                         </Border>
 
-                                        <!-- Title, Monospace ID & Publisher Info -->
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Name}"
                                                            FontSize="20"
                                                            FontWeight="Bold"
@@ -744,7 +767,11 @@
                                                                FontWeight="SemiBold"
                                                                Foreground="{DynamicResource WinMutedBrush}" />
                                                 </Border>
+
+                                                <!-- Verified Official Badge -->
                                                 <Border Background="{DynamicResource WinAccentLightBrush}"
+                                                        BorderBrush="{DynamicResource WinAccentBorderBrush}"
+                                                        BorderThickness="1"
                                                         CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                                         Padding="6,2"
                                                         IsVisible="{Binding IsOfficial}"
@@ -753,6 +780,59 @@
                                                                FontSize="10"
                                                                FontWeight="Bold"
                                                                Foreground="{DynamicResource WinAccentBrush}" />
+                                                </Border>
+
+                                                <!-- System Built-in Module Badge -->
+                                                <Border Background="{DynamicResource M3SecondaryContainerBrush}"
+                                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Padding="6,2"
+                                                        IsVisible="{Binding IsSystemBuiltIn}"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="System Built-in"
+                                                               FontSize="10"
+                                                               FontWeight="Bold"
+                                                               Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
+                                                </Border>
+
+                                                <!-- Status Badge: Enabled -->
+                                                <Border Background="{DynamicResource WinSuccessLightBrush}"
+                                                        BorderBrush="{DynamicResource WinSuccessBorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Padding="6,2"
+                                                        IsVisible="{Binding IsActiveAndInstalled}"
+                                                        VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                        <Ellipse Width="6" Height="6" Fill="{DynamicResource WinSuccessBrush}" />
+                                                        <TextBlock Text="Enabled" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSuccessBrush}" />
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <!-- Status Badge: Disabled -->
+                                                <Border Background="{DynamicResource WinWarningLightBrush}"
+                                                        BorderBrush="{DynamicResource WinWarningBorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Padding="6,2"
+                                                        IsVisible="{Binding IsDisabledAndInstalled}"
+                                                        VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                        <Ellipse Width="6" Height="6" Fill="{DynamicResource WinWarningBrush}" />
+                                                        <TextBlock Text="Disabled" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinWarningBrush}" />
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <!-- Status Badge: Available in Store -->
+                                                <Border Background="{DynamicResource WinHoverBrush}"
+                                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Padding="6,2"
+                                                        IsVisible="{Binding !IsInstalled}"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="Available in Store" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                                                 </Border>
                                             </StackPanel>
 
@@ -793,59 +873,125 @@
                                             </Border>
                                         </StackPanel>
 
-                                        <!-- Action Buttons (Enable/Disable, Install, Settings) -->
-                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                                            <!-- Install Button (for Marketplace items) -->
+                                        <!-- Action Buttons: Install, Installing, Enable/Disable, Settings, Uninstall -->
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <!-- 1. Install Button (for Marketplace items not yet installed) -->
                                             <Button Classes="accent-btn"
                                                     Height="36"
                                                     Padding="18,0"
-                                                    IsVisible="{Binding !IsInstalled}"
+                                                    IsVisible="{Binding CanInstall}"
                                                     Command="{Binding InstallCommand}"
-                                                    ToolTip.Tip="Install extension into FryPDF">
+                                                    ToolTip.Tip="Download and install this extension from the store">
                                                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                                     <materialIcons:MaterialIcon Kind="Download" Width="16" Height="16" />
                                                     <TextBlock Text="Install" FontSize="12" FontWeight="SemiBold" />
                                                 </StackPanel>
                                             </Button>
 
-                                            <!-- Toggle Active Button (for Installed items) -->
+                                            <!-- 2. Installing Button (disabled progress indicator while downloading) -->
+                                            <Button Classes="action-pill-btn"
+                                                    Height="36"
+                                                    Padding="16,0"
+                                                    IsEnabled="False"
+                                                    IsVisible="{Binding IsInstalling}"
+                                                    ToolTip.Tip="Downloading and mounting extension...">
+                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="Loading" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
+                                                    <TextBlock Text="{Binding InstallProgressPercent, StringFormat='Installing ({0}%)...'}"
+                                                               FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
+                                                </StackPanel>
+                                            </Button>
+
+                                            <!-- 3. Toggle Active Button (Disable / Enable for Installed items) -->
                                             <Button Classes="action-pill-btn"
                                                     Height="36"
                                                     Padding="14,0"
-                                                    IsVisible="{Binding IsInstalled}"
+                                                    IsVisible="{Binding CanToggleActive}"
                                                     Command="{Binding ToggleActiveCommand}"
-                                                    ToolTip.Tip="Enable or disable this extension">
+                                                    ToolTip.Tip="Temporarily activate or deactivate this extension without removing its files">
                                                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                    <materialIcons:MaterialIcon Kind="Power" Width="15" Height="15"
-                                                                               Foreground="{Binding IsActive, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='#10B981|#EF4444'}" />
+                                                    <materialIcons:MaterialIcon Kind="PauseCircleOutline" Width="15" Height="15"
+                                                                                Foreground="{DynamicResource WinMutedBrush}"
+                                                                                IsVisible="{Binding IsActive}" />
+                                                    <materialIcons:MaterialIcon Kind="PlayCircleOutline" Width="15" Height="15"
+                                                                                Foreground="{DynamicResource WinSuccessBrush}"
+                                                                                IsVisible="{Binding !IsActive}" />
                                                     <TextBlock Text="{Binding IsActive, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Disable|Enable'}"
                                                                FontSize="11.5" FontWeight="SemiBold" />
                                                 </StackPanel>
                                             </Button>
 
-                                            <!-- Settings Quick Jump Button -->
+                                            <!-- 4. Settings Quick Jump Button (for extensions with configurable preferences) -->
                                             <Button Classes="action-pill-btn"
                                                     Height="36"
-                                                    Padding="12,0"
+                                                    Padding="14,0"
                                                     Command="{Binding SelectTabCommand}"
                                                     CommandParameter="Settings"
                                                     IsVisible="{Binding HasSettings}"
-                                                    ToolTip.Tip="Open Extension Preferences">
-                                                <materialIcons:MaterialIcon Kind="CogOutline" Width="16" Height="16" Foreground="{DynamicResource WinTextBrush}" />
+                                                    ToolTip.Tip="Open extension preferences">
+                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="CogOutline" Width="15" Height="15" Foreground="{DynamicResource WinTextBrush}" />
+                                                    <TextBlock Text="Settings" FontSize="11.5" FontWeight="SemiBold" />
+                                                </StackPanel>
                                             </Button>
 
-                                            <!-- Uninstall Button (for External / Marketplace items) -->
+                                            <!-- 5. Uninstall Button (Only for removable external packages, NEVER for uninstalled or core modules!) -->
                                             <Button Classes="action-pill-btn"
                                                     Height="36"
-                                                    Padding="12,0"
-                                                    IsVisible="{Binding IsExternal}"
+                                                    Padding="14,0"
+                                                    IsVisible="{Binding CanUninstall}"
                                                     Command="{Binding UninstallCommand}"
-                                                    ToolTip.Tip="Uninstall extension package">
-                                                <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="15" Height="15" Foreground="#EF4444" />
+                                                    ToolTip.Tip="Permanently remove this extension and its files from your computer">
+                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="15" Height="15" Foreground="#EF4444" />
+                                                    <TextBlock Text="Uninstall" FontSize="11.5" FontWeight="SemiBold" Foreground="#EF4444" />
+                                                </StackPanel>
                                             </Button>
                                         </StackPanel>
 
                                     </Grid>
+
+                                    <!-- Live Download & Install Progress Bar Card (M3 Expressive) -->
+                                    <Border IsVisible="{Binding IsInstalling}"
+                                            Background="{DynamicResource M3SecondaryContainerBrush}"
+                                            BorderBrush="{DynamicResource WinAccentBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                            Padding="14,10"
+                                            Margin="0,14,0,0">
+                                        <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="CloudDownloadOutline" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
+                                                    <TextBlock Text="{Binding InstallStatusText}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="1" Text="{Binding InstallProgressPercent, StringFormat='{}{0}%'}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
+                                            </Grid>
+                                            <ProgressBar Grid.Row="1"
+                                                         Minimum="0" Maximum="100"
+                                                         Value="{Binding InstallProgressPercent}"
+                                                         Height="6"
+                                                         CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                                         Foreground="{DynamicResource WinAccentBrush}"
+                                                         Background="{DynamicResource WinBorderBrush}" />
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Disabled Status Context Callout -->
+                                    <Border IsVisible="{Binding IsDisabledAndInstalled}"
+                                            Background="{DynamicResource WinWarningLightBrush}"
+                                            BorderBrush="{DynamicResource WinWarningBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                                            Padding="12,9"
+                                            Margin="0,14,0,0">
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="16" Height="16" Foreground="{DynamicResource WinWarningBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="This extension is currently disabled. Its tools, ribbon actions, and workspace features are suspended. Click 'Enable' above to activate them."
+                                                       FontSize="11" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                        </Grid>
+                                    </Border>
 
                                     <!-- Stats Row Divider -->
                                     <Grid Margin="0,16,0,0">

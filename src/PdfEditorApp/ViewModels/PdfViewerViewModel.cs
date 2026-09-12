@@ -194,6 +194,12 @@ public partial class PdfViewerViewModel : ViewModelBase
     private bool _isSidebarOpen = true;
 
     [ObservableProperty]
+    private PdfViewerRibbonTab _activeRibbonTab = PdfViewerRibbonTab.View;
+
+    [ObservableProperty]
+    private bool _isRibbonCollapsed = false;
+
+    [ObservableProperty]
     private bool _isLoading = false;
 
     [ObservableProperty]

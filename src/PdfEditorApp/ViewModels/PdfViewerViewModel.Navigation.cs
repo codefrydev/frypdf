@@ -535,6 +535,27 @@ public partial class PdfViewerViewModel
     }
 
     [RelayCommand]
+    public void SelectRibbonTab(object? param)
+    {
+        if (param is PdfViewerRibbonTab tab)
+        {
+            ActiveRibbonTab = tab;
+            IsRibbonCollapsed = false;
+        }
+        else if (param is string s && Enum.TryParse<PdfViewerRibbonTab>(s, true, out var parsed))
+        {
+            ActiveRibbonTab = parsed;
+            IsRibbonCollapsed = false;
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleRibbonCollapse()
+    {
+        IsRibbonCollapsed = !IsRibbonCollapsed;
+    }
+
+    [RelayCommand]
     public void ToggleFullscreen()
     {
         IsFullscreen = !IsFullscreen;

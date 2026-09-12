@@ -1216,5 +1216,38 @@ public class PdfImportAndViewerTests
         Assert.Equal(18, vm.CurrentPageNumber);
         Assert.Equal(18, vm.SelectedPage?.PageNumber);
     }
+
+    [Fact]
+    public void PdfViewerViewModel_Ribbon_SelectsTabsAndTogglesCollapse()
+    {
+        var vm = new PdfViewerViewModel();
+
+        // 1. Initial State
+        Assert.Equal(PdfViewerRibbonTab.View, vm.ActiveRibbonTab);
+        Assert.False(vm.IsRibbonCollapsed);
+
+        // 2. Select Annotate Tab via Enum
+        vm.SelectRibbonTab(PdfViewerRibbonTab.Annotate);
+        Assert.Equal(PdfViewerRibbonTab.Annotate, vm.ActiveRibbonTab);
+        Assert.False(vm.IsRibbonCollapsed);
+
+        // 3. Select Tools Tab via String (CommandParameter compatibility)
+        vm.SelectRibbonTab("Tools");
+        Assert.Equal(PdfViewerRibbonTab.Tools, vm.ActiveRibbonTab);
+        Assert.False(vm.IsRibbonCollapsed);
+
+        // 4. Select Themes Tab
+        vm.SelectRibbonTab("Themes");
+        Assert.Equal(PdfViewerRibbonTab.Themes, vm.ActiveRibbonTab);
+
+        // 5. Toggle Collapse
+        vm.ToggleRibbonCollapse();
+        Assert.True(vm.IsRibbonCollapsed);
+
+        // 6. Selecting a tab while collapsed automatically expands ribbon
+        vm.SelectRibbonTab(PdfViewerRibbonTab.View);
+        Assert.Equal(PdfViewerRibbonTab.View, vm.ActiveRibbonTab);
+        Assert.False(vm.IsRibbonCollapsed);
+    }
 }
 

@@ -20,6 +20,14 @@ public enum PdfViewerSidebarTab
     Info
 }
 
+public enum PdfViewerRibbonTab
+{
+    View,
+    Annotate,
+    Tools,
+    Themes
+}
+
 public enum PdfViewerSelectionMode
 {
     Text,

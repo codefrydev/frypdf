@@ -475,6 +475,10 @@
     <Style Selector="Button.m3-icon-btn:pressed">
         <Setter Property="RenderTransform" Value="scale(0.93)" />
     </Style>
+    <Style Selector="Button.m3-icon-btn.active">
+        <Setter Property="Background" Value="{DynamicResource M3SecondaryContainerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSecondaryContainerBrush}" />
+    </Style>
 
     <!-- =================================================================== -->
     <!-- 2. SEGMENTED BUTTONS & CAPSULES                                     -->
@@ -550,6 +554,9 @@
         <Setter Property="Foreground" Value="{DynamicResource M3OnSecondaryContainerBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource M3SecondaryContainerBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.m3-chip.pill, Button.m3-filter-chip.pill, ToggleButton.m3-chip.pill, ToggleButton.m3-filter-chip.pill">
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
     </Style>
 
     <!-- M3 Compact Preset Pill Chip (Tactile Studio Presets) -->

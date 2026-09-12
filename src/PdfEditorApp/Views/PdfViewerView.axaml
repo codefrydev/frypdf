@@ -30,367 +30,792 @@
         <KeyBinding Gesture="Escape" Command="{Binding CancelLoadingCommand}" />
         <KeyBinding Gesture="Cmd+W" Command="{Binding BackToHomeCommand}" />
         <KeyBinding Gesture="Ctrl+W" Command="{Binding BackToHomeCommand}" />
+        <KeyBinding Gesture="Cmd+F1" Command="{Binding ToggleRibbonCollapseCommand}" />
+        <KeyBinding Gesture="Ctrl+F1" Command="{Binding ToggleRibbonCollapseCommand}" />
+        <KeyBinding Gesture="Cmd+B" Command="{Binding ToggleSidebarCommand}" />
+        <KeyBinding Gesture="Ctrl+B" Command="{Binding ToggleSidebarCommand}" />
+        <KeyBinding Gesture="Cmd+F" Command="{Binding ToggleSearchBarCommand}" />
+        <KeyBinding Gesture="Ctrl+F" Command="{Binding ToggleSearchBarCommand}" />
+        <KeyBinding Gesture="Cmd+R" Command="{Binding RotateClockwiseCommand}" />
+        <KeyBinding Gesture="Ctrl+R" Command="{Binding RotateClockwiseCommand}" />
+        <KeyBinding Gesture="Cmd+O" Command="{Binding OpenAnotherPdfCommand}" />
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenAnotherPdfCommand}" />
+        <KeyBinding Gesture="Cmd+1" Command="{Binding FitToWidthCommand}" />
+        <KeyBinding Gesture="Ctrl+1" Command="{Binding FitToWidthCommand}" />
+        <KeyBinding Gesture="Cmd+9" Command="{Binding FitToPageCommand}" />
+        <KeyBinding Gesture="Ctrl+9" Command="{Binding FitToPageCommand}" />
+        <KeyBinding Gesture="Cmd+0" Command="{Binding ResetZoomCommand}" />
+        <KeyBinding Gesture="Ctrl+0" Command="{Binding ResetZoomCommand}" />
+        <KeyBinding Gesture="F11" Command="{Binding ToggleFullscreenCommand}" />
     </UserControl.KeyBindings>
 
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- ============================================================== -->
-        <!-- 1. TOP SLEEK ACROBAT-STYLE READING TOOLBAR (Apple Preview/Acro)-->
+        <!-- 1. TOP M3 EXPRESSIVE PDF VIEWER RIBBON                         -->
         <!-- ============================================================== -->
         <Border Grid.Row="0"
-                Background="{DynamicResource WinPanelBrush}"
-                Height="48"
-                BorderBrush="{DynamicResource WinBorderBrush}"
+                Background="{DynamicResource M3SurfaceContainerLowBrush}"
+                BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                 BorderThickness="0,0,0,1"
-                Padding="12,0"
                 IsVisible="{Binding !IsFullscreen}">
-            <Grid ColumnDefinitions="Auto,*,Auto">
+            <Grid RowDefinitions="Auto,Auto">
 
-                <!-- Left Section: Back, Document Title & Open -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                    <!-- Back to Dashboard -->
-                    <Button Classes="toolbar-btn"
-                            Command="{Binding BackToHomeCommand}"
-                            ToolTip.Tip="Back to Home Dashboard (⌘W)">
-                        <materialIcons:MaterialIcon Kind="ArrowLeft" Width="18" Height="18" Foreground="{DynamicResource WinMutedBrush}" />
-                    </Button>
+                <!-- 1.1 TOP RIBBON TABS & DOCUMENT BAR -->
+                <Border Grid.Row="0"
+                        Background="{DynamicResource M3SurfaceBrush}"
+                        BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="12,6,12,6">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
 
-                    <Rectangle Width="1" Height="18" Fill="{DynamicResource WinBorderBrush}" Margin="1,0" />
+                        <!-- Left: Back, Document Brand, Name & Options -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <!-- Back to Dashboard -->
+                            <Button Classes="m3-icon-btn"
+                                    Width="30" Height="30"
+                                    Command="{Binding BackToHomeCommand}"
+                                    ToolTip.Tip="Back to Home Dashboard (⌘W / Ctrl+W)">
+                                <materialIcons:MaterialIcon Kind="ArrowLeft" Width="17" Height="17" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                            </Button>
 
-                    <!-- PDF File Badge & Title with Rename -->
-                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="22" Height="22" Foreground="#E11D48" VerticalAlignment="Center" />
+                            <Rectangle Width="1" Height="16" Fill="{DynamicResource M3OutlineVariantBrush}" Margin="1,0" />
 
-                    <Button Classes="m3-header-btn"
-                            Padding="6,3"
-                            Command="{Binding RenameDocumentCommand}"
-                            ToolTip.Tip="Rename Document (F2)">
-                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding DocumentTitle}"
-                                       FontSize="13"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource WinTextBrush}"
-                                       VerticalAlignment="Center"
-                                       MaxWidth="220"
-                                       TextTrimming="CharacterEllipsis" />
-                            <materialIcons:MaterialIcon Kind="PencilOutline" Width="13" Height="13" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" />
+                            <!-- PDF File Badge & Title with Rename -->
+                            <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#E11D48" VerticalAlignment="Center" />
+
+                            <Button Classes="m3-header-btn"
+                                    Padding="6,2"
+                                    Command="{Binding RenameDocumentCommand}"
+                                    ToolTip.Tip="Rename Document (F2)">
+                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding DocumentTitle}"
+                                               FontSize="12.5"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource M3OnSurfaceBrush}"
+                                               VerticalAlignment="Center"
+                                               MaxWidth="180"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <materialIcons:MaterialIcon Kind="PencilOutline" Width="12" Height="12" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Document Options Menu Button -->
+                            <Button Classes="m3-icon-btn" Width="26" Height="26" ToolTip.Tip="Document Options (Rename, Duplicate, Reveal, Delete)">
+                                <Button.Flyout>
+                                    <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                        <MenuItem Header="Rename Document..." InputGesture="F2" Command="{Binding RenameDocumentCommand}">
+                                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="PencilOutline" Width="15" Height="15" Foreground="{DynamicResource M3PrimaryBrush}" /></MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="Duplicate Document" Command="{Binding DuplicateDocumentCommand}">
+                                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="ContentCopy" Width="15" Height="15" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" /></MenuItem.Icon>
+                                        </MenuItem>
+                                        <Separator />
+                                        <MenuItem Header="Reveal in File Manager" Command="{Binding RevealInFileManagerCommand}">
+                                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" /></MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="Copy File Path" Command="{Binding CopyPathCommand}">
+                                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="ClipboardTextOutline" Width="15" Height="15" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" /></MenuItem.Icon>
+                                        </MenuItem>
+                                        <Separator />
+                                        <MenuItem Header="Delete File..." Command="{Binding DeleteDocumentCommand}">
+                                            <MenuItem.Icon><materialIcons:MaterialIcon Kind="TrashCanOutline" Width="15" Height="15" Foreground="#DC2626" /></MenuItem.Icon>
+                                        </MenuItem>
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                                <materialIcons:MaterialIcon Kind="DotsVertical" Width="14" Height="14" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                            </Button>
+
+                            <!-- Pages Count Pill -->
+                            <Border Background="{DynamicResource M3SurfaceContainerHighBrush}"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Padding="8,2" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding TotalPagesCount, StringFormat='{}{0} pgs'}"
+                                           FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                            </Border>
+
+                            <!-- File Size Badge -->
+                            <Border Background="{DynamicResource M3SurfaceContainerHighBrush}"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                    Padding="8,2" VerticalAlignment="Center"
+                                    IsVisible="{Binding HasDocumentFileSize}">
+                                <TextBlock Text="{Binding DocumentFileSize}"
+                                           FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                            </Border>
                         </StackPanel>
-                    </Button>
 
-                    <!-- Document Actions Menu Button -->
-                    <Button Classes="toolbar-btn" Width="26" Height="26" ToolTip.Tip="Document Options (Rename, Duplicate, Reveal, Delete)">
-                        <Button.Flyout>
-                            <MenuFlyout Placement="BottomEdgeAlignedLeft">
-                                <MenuItem Header="Rename Document..." InputGesture="F2" Command="{Binding RenameDocumentCommand}">
-                                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="PencilOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" /></MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem Header="Duplicate Document" Command="{Binding DuplicateDocumentCommand}">
-                                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="ContentCopy" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" /></MenuItem.Icon>
-                                </MenuItem>
-                                <Separator />
-                                <MenuItem Header="Reveal in File Manager" Command="{Binding RevealInFileManagerCommand}">
-                                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" /></MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem Header="Copy File Path" Command="{Binding CopyPathCommand}">
-                                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="ClipboardTextOutline" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" /></MenuItem.Icon>
-                                </MenuItem>
-                                <Separator />
-                                <MenuItem Header="Delete File..." Command="{Binding DeleteDocumentCommand}">
-                                    <MenuItem.Icon><materialIcons:MaterialIcon Kind="TrashCanOutline" Width="15" Height="15" Foreground="#DC2626" /></MenuItem.Icon>
-                                </MenuItem>
-                            </MenuFlyout>
-                        </Button.Flyout>
-                        <materialIcons:MaterialIcon Kind="DotsVertical" Width="15" Height="15" Foreground="{DynamicResource WinMutedBrush}" />
-                    </Button>
+                        <!-- Center: Ribbon Tab Selection Segmented Capsule -->
+                        <Border Grid.Column="1" Classes="m3-segmented-container" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="2">
+                                <!-- View Tab -->
+                                <Button Classes="m3-segment-btn"
+                                        Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=View}"
+                                        Command="{Binding SelectRibbonTabCommand}"
+                                        CommandParameter="{x:Static vm:PdfViewerRibbonTab.View}"
+                                        ToolTip.Tip="View: Page navigation, single/spread layout, zoom &amp; sizing">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="EyeOutline" Width="14" Height="14" />
+                                        <TextBlock Text="View" VerticalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+                                </Button>
 
-                    <!-- Pages Count Pill -->
-                    <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding TotalPagesCount, StringFormat='{}{0} pgs'}"
-                                   FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                    </Border>
+                                <!-- Annotate Tab -->
+                                <Button Classes="m3-segment-btn"
+                                        Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Annotate}"
+                                        Command="{Binding SelectRibbonTabCommand}"
+                                        CommandParameter="{x:Static vm:PdfViewerRibbonTab.Annotate}"
+                                        ToolTip.Tip="Annotate: Text/Area selection, highlights, sticky notes, stamps &amp; OCR">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="DrawPen" Width="14" Height="14" />
+                                        <TextBlock Text="Annotate" VerticalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+                                </Button>
 
-                    <!-- Open Another PDF Button -->
-                    <Button Classes="toolbar-btn"
-                            Width="30" Height="28"
-                            Command="{Binding OpenAnotherPdfCommand}"
-                            ToolTip.Tip="Open another PDF document to read (⌘O)">
-                        <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
-                    </Button>
-                </StackPanel>
+                                <!-- Tools Tab -->
+                                <Button Classes="m3-segment-btn"
+                                        Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Tools}"
+                                        Command="{Binding SelectRibbonTabCommand}"
+                                        CommandParameter="{x:Static vm:PdfViewerRibbonTab.Tools}"
+                                        ToolTip.Tip="Tools: Find text, page rotation, save copy &amp; FryPDF Studio bridge">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="Tools" Width="14" Height="14" />
+                                        <TextBlock Text="Tools" VerticalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+                                </Button>
 
-                <!-- Center Section: Navigation, Layout Modes, Zoom Capsules -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <!-- Themes Tab -->
+                                <Button Classes="m3-segment-btn"
+                                        Classes.active="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Themes}"
+                                        Command="{Binding SelectRibbonTabCommand}"
+                                        CommandParameter="{x:Static vm:PdfViewerRibbonTab.Themes}"
+                                        ToolTip.Tip="Themes: Eye-comfort reading modes &amp; sidebar navigation panels">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="PaletteOutline" Width="14" Height="14" />
+                                        <TextBlock Text="Themes" VerticalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Border>
 
-                    <!-- Capsule 1: Navigation & Direct Jump Box -->
-                    <Border Classes="toolbar-capsule">
-                        <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                            <Button Classes="toolbar-btn" Width="26" Height="26" Command="{Binding FirstPageCommand}" ToolTip.Tip="First Page (Home)">
-                                <materialIcons:MaterialIcon Kind="PageFirst" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
-                            </Button>
-                            <Button Classes="toolbar-btn" Width="26" Height="26" Command="{Binding PreviousPageCommand}" ToolTip.Tip="Previous Page (PageUp / ⌥←)">
-                                <materialIcons:MaterialIcon Kind="ChevronLeft" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
-                            </Button>
-
-                            <!-- Direct Page Jump Input Box -->
-                            <TextBox x:Name="JumpPageTextBox"
-                                     Text="{Binding JumpPageText, Mode=TwoWay}"
-                                     Width="38"
-                                     Height="24"
-                                     FontSize="11.5"
-                                     FontWeight="SemiBold"
-                                     TextAlignment="Center"
-                                     Padding="0,2"
-                                     VerticalAlignment="Center"
-                                     CornerRadius="4"
-                                     ToolTip.Tip="Type page number and press Enter to jump">
-                                <TextBox.KeyBindings>
-                                    <KeyBinding Gesture="Enter" Command="{Binding CommitJumpPageCommand}" />
-                                </TextBox.KeyBindings>
-                            </TextBox>
-
-                            <TextBlock Text="{Binding TotalPagesCount, StringFormat='/ {0}'}"
-                                       FontSize="11.5"
-                                       FontWeight="Medium"
-                                       Foreground="{DynamicResource WinMutedBrush}"
-                                       VerticalAlignment="Center"
-                                       Margin="3,0,4,0" />
-
-                            <Button Classes="toolbar-btn" Width="26" Height="26" Command="{Binding NextPageCommand}" ToolTip.Tip="Next Page (PageDown / ⌥→)">
-                                <materialIcons:MaterialIcon Kind="ChevronRight" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
-                            </Button>
-                            <Button Classes="toolbar-btn" Width="26" Height="26" Command="{Binding LastPageCommand}" ToolTip.Tip="Last Page (End)">
-                                <materialIcons:MaterialIcon Kind="PageLast" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
-                            </Button>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Capsule 2: Layout Modes (Single Page, Two-Page Spread) -->
-                    <Border Classes="toolbar-capsule">
-                        <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                            <!-- Single Page -->
-                            <Button Classes="toolbar-btn" Width="28" Height="26"
-                                     Classes.mode-active="{Binding IsSinglePageMode}"
-                                     Command="{Binding SetSinglePageLayoutCommand}"
-                                     ToolTip.Tip="Single Page Fit View">
-                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="15" Height="15"
-                                                            Foreground="{Binding IsSinglePageMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
-                            </Button>
-                            <!-- Two-Page Book Spread -->
-                            <Button Classes="toolbar-btn" Width="28" Height="26"
-                                     Classes.mode-active="{Binding IsTwoPageSpreadMode}"
-                                     Command="{Binding SetTwoPageSpreadLayoutCommand}"
-                                     ToolTip.Tip="Two-Page Spread (Book &amp; Magazine Mode)">
-                                <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="15" Height="15"
-                                                            Foreground="{Binding IsTwoPageSpreadMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
-                            </Button>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Capsule 3: Zoom Controls -->
-                    <Border Classes="toolbar-capsule">
-                        <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                            <Button Classes="toolbar-btn" Width="26" Height="26"
-                                    Classes.mode-active="{Binding IsFitToWidthActive}"
-                                    Command="{Binding FitToWidthCommand}" ToolTip.Tip="Fit to Width (⌘1)">
-                                <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="14" Height="14"
-                                                            Foreground="{Binding IsFitToWidthActive, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
-                            </Button>
-                            <Button Classes="toolbar-btn" Width="26" Height="26"
-                                    Classes.mode-active="{Binding IsFitToPageActive}"
-                                    Command="{Binding FitToPageCommand}" ToolTip.Tip="Fit to Page (⌘9)">
-                                <materialIcons:MaterialIcon Kind="FitToScreenOutline" Width="14" Height="14"
-                                                            Foreground="{Binding IsFitToPageActive, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
+                        <!-- Right: Quick Actions & Ribbon Collapse -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <!-- Quick Find in Document -->
+                            <Button Classes="m3-icon-btn" Width="28" Height="28"
+                                    Classes.active="{Binding IsSearchBarVisible}"
+                                    Command="{Binding ToggleSearchBarCommand}"
+                                    ToolTip.Tip="Find Text in Document (⌘F / Ctrl+F)">
+                                <materialIcons:MaterialIcon Kind="Magnify" Width="15" Height="15" />
                             </Button>
 
-                            <Rectangle Width="1" Height="14" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
-
-                            <Button Classes="toolbar-btn" Width="24" Height="26" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom Out (⌘-)">
-                                <materialIcons:MaterialIcon Kind="Minus" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
+                            <!-- Primary Action: Edit in Studio -->
+                            <Button Classes="m3-filled-btn"
+                                    Padding="12,5"
+                                    Height="30"
+                                    Command="{Binding EditInStudioCommand}"
+                                    ToolTip.Tip="Open in FryPDF Editor to modify text, vector layouts, and images">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="PencilBoxOutline" Width="14" Height="14" />
+                                    <TextBlock Text="Edit in Studio" VerticalAlignment="Center" FontSize="11.5" />
+                                </StackPanel>
                             </Button>
 
-                            <!-- Zoom Percentage Button (Click resets 100%) -->
-                            <Button Background="Transparent"
-                                    BorderThickness="0"
-                                    Padding="4,2"
-                                    Command="{Binding ResetZoomCommand}"
-                                    ToolTip.Tip="Reset 100% Zoom (⌘0)">
-                                <TextBlock Text="{Binding ZoomPercentageText}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" Width="38" TextAlignment="Center" />
+                            <Rectangle Width="1" Height="16" Fill="{DynamicResource M3OutlineVariantBrush}" Margin="2,0" />
+
+                            <!-- Sidebar Toggle -->
+                            <Button Classes="m3-icon-btn" Width="28" Height="28"
+                                    Classes.active="{Binding IsSidebarOpen}"
+                                    Command="{Binding ToggleSidebarCommand}"
+                                    ToolTip.Tip="Toggle Navigation Sidebar (⌘B / Ctrl+B)">
+                                <materialIcons:MaterialIcon Kind="DockLeft" Width="15" Height="15" />
                             </Button>
 
-                            <Button Classes="toolbar-btn" Width="24" Height="26" Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom In (⌘+)">
-                                <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" Foreground="{DynamicResource WinMutedBrush}" />
-                            </Button>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Capsule: Text & Area Selection Modes -->
-                    <Border Classes="toolbar-capsule">
-                        <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                            <!-- Text Selection Tool (I-Beam) -->
-                            <Button Classes="toolbar-btn" Width="28" Height="26"
-                                    Classes.mode-active="{Binding IsTextSelectionMode}"
-                                    Command="{Binding SetTextSelectionModeCommand}"
-                                    ToolTip.Tip="Text Selection Tool (I-Beam): Click &amp; drag words/lines">
-                                <materialIcons:MaterialIcon Kind="FormatColorText" Width="15" Height="15"
-                                                            Foreground="{Binding IsTextSelectionMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
-                            </Button>
-                            <!-- Area / Marquee Selection Tool -->
-                            <Button Classes="toolbar-btn" Width="28" Height="26"
-                                    Classes.mode-active="{Binding IsAreaSelectionMode}"
-                                    Command="{Binding SetAreaSelectionModeCommand}"
-                                    ToolTip.Tip="Area / Marquee Tool: Select rectangular regions on scanned documents, tables &amp; columns">
-                                <materialIcons:MaterialIcon Kind="CropFree" Width="15" Height="15"
-                                                            Foreground="{Binding IsAreaSelectionMode, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
+                            <!-- Ribbon Minimize / Expand Chevron -->
+                            <Button Classes="m3-icon-btn" Width="28" Height="28"
+                                    Command="{Binding ToggleRibbonCollapseCommand}"
+                                    ToolTip.Tip="Collapse or Expand Ribbon Toolbar (⌘F1 / Ctrl+F1)">
+                                <materialIcons:MaterialIcon Kind="{Binding IsRibbonCollapsed, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='ChevronDown|ChevronUp'}"
+                                                            Width="16" Height="16" />
                             </Button>
                         </StackPanel>
-                    </Border>
 
-                </StackPanel>
+                    </Grid>
+                </Border>
 
-                <!-- Right Section: Themes, Tools, Fullscreen & Edit in Studio -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                <!-- 1.2 RIBBON DYNAMIC TOOLS PANEL (COLLAPSIBLE) -->
+                <Border Grid.Row="1"
+                        Background="{DynamicResource M3SurfaceContainerLowBrush}"
+                        Height="46"
+                        Padding="12,0"
+                        IsVisible="{Binding !IsRibbonCollapsed}">
+                    <ScrollViewer Classes="ribbon-scroll-viewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                        <Panel VerticalAlignment="Center">
 
-                    <!-- Capsule 4: Reading Themes (Daylight, Sepia, Night, High Contrast) -->
-                    <Border Classes="toolbar-capsule">
-                        <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                            <!-- Daylight -->
-                            <Button Classes="toolbar-btn" Width="26" Height="26"
-                                    Classes.mode-active="{Binding IsThemeDefault}"
-                                    Command="{Binding SetDefaultReadingThemeCommand}"
-                                    ToolTip.Tip="Daylight Theme (Standard White)">
-                                <materialIcons:MaterialIcon Kind="WhiteBalanceSunny" Width="14" Height="14"
-                                                            Foreground="{Binding IsThemeDefault, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#94A3B8'}" />
-                            </Button>
-                            <!-- Sepia -->
-                            <Button Classes="toolbar-btn" Width="26" Height="26"
-                                    Classes.mode-active="{Binding IsThemeSepia}"
-                                    Command="{Binding SetSepiaReadingThemeCommand}"
-                                    ToolTip.Tip="Warm Sepia Book Theme (Reduced Eye Strain)">
-                                <materialIcons:MaterialIcon Kind="BookOpenOutline" Width="14" Height="14"
-                                                            Foreground="{Binding IsThemeSepia, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#D97706|#94A3B8'}" />
-                            </Button>
-                            <!-- Dark Night -->
-                            <Button Classes="toolbar-btn" Width="26" Height="26"
-                                    Classes.mode-active="{Binding IsThemeDark}"
-                                    Command="{Binding SetDarkReadingThemeCommand}"
-                                    ToolTip.Tip="Dark Night Reading Theme (OLED / Low Light)">
-                                <materialIcons:MaterialIcon Kind="WeatherNight" Width="14" Height="14"
-                                                            Foreground="{Binding IsThemeDark, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#6366F1|#94A3B8'}" />
-                            </Button>
-                            <!-- High Contrast -->
-                            <Button Classes="toolbar-btn" Width="26" Height="26"
-                                    Classes.mode-active="{Binding IsThemeHighContrast}"
-                                    Command="{Binding SetHighContrastReadingThemeCommand}"
-                                    ToolTip.Tip="High Contrast Mode (Accessibility)">
-                                <materialIcons:MaterialIcon Kind="ContrastCircle" Width="14" Height="14"
-                                                            Foreground="{Binding IsThemeHighContrast, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#EAB308|#94A3B8'}" />
-                            </Button>
-                        </StackPanel>
-                    </Border>
+                            <!-- ================= TAB 1: VIEW ================= -->
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                        IsVisible="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=View}">
 
-                    <!-- OCR / Text Recognition Button -->
-                    <Button Classes="toolbar-btn"
-                            Height="28"
-                            Padding="8,0"
-                            Command="{Binding RecognizeActivePageOcrCommand}"
-                            Classes.mode-active="{Binding IsCurrentPageScanned}"
-                            ToolTip.Tip="Recognize Text with OCR on this page (Apple Vision / Tesseract)">
-                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="ScanHelper" Width="15" Height="15"
-                                                        Foreground="{Binding IsCurrentPageScanned, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
-                            <TextBlock Text="OCR" FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{Binding IsCurrentPageScanned, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}"
-                                       VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+                                <!-- Navigation Segmented Capsule -->
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn" Width="28" Height="28" Padding="0"
+                                                Command="{Binding FirstPageCommand}" ToolTip.Tip="First Page (Home)">
+                                            <materialIcons:MaterialIcon Kind="PageFirst" Width="15" Height="15" />
+                                        </Button>
+                                        <Button Classes="m3-segment-btn" Width="28" Height="28" Padding="0"
+                                                Command="{Binding PreviousPageCommand}" ToolTip.Tip="Previous Page (PageUp / ⌥←)">
+                                            <materialIcons:MaterialIcon Kind="ChevronLeft" Width="17" Height="17" />
+                                        </Button>
 
-                    <!-- Search Trigger -->
-                    <Button Classes="toolbar-btn"
-                            Width="28" Height="28"
-                            Command="{Binding ToggleSearchBarCommand}"
-                            ToolTip.Tip="Find Text in Document (⌘F / Ctrl+F)">
-                        <materialIcons:MaterialIcon Kind="Magnify" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
-                    </Button>
+                                        <!-- Direct Page Jump Input Capsule -->
+                                        <Border Background="{DynamicResource M3SurfaceContainerHighBrush}"
+                                                CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                                Padding="6,0" Margin="2,0" VerticalAlignment="Center" Height="26">
+                                            <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                                <TextBox x:Name="JumpPageTextBox"
+                                                         Text="{Binding JumpPageText, Mode=TwoWay}"
+                                                         Width="32" Height="22"
+                                                         FontSize="11.5" FontWeight="SemiBold"
+                                                         TextAlignment="Center"
+                                                         Background="Transparent"
+                                                         BorderThickness="0"
+                                                         Padding="0"
+                                                         VerticalAlignment="Center"
+                                                         ToolTip.Tip="Type page number and press Enter to jump">
+                                                    <TextBox.KeyBindings>
+                                                        <KeyBinding Gesture="Enter" Command="{Binding CommitJumpPageCommand}" />
+                                                    </TextBox.KeyBindings>
+                                                </TextBox>
 
-                    <!-- Markup Tools Capsule -->
-                    <Border Classes="toolbar-capsule">
-                        <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                            <!-- Highlight -->
-                            <Button Classes="toolbar-btn" Width="24" Height="24"
-                                    Command="{Binding AddHighlightAnnotationCommand}"
-                                    CommandParameter="#FEF08A"
-                                    ToolTip.Tip="Highlight Page Region">
-                                <materialIcons:MaterialIcon Kind="FormatColorHighlight" Width="14" Height="14" Foreground="#CA8A04" />
-                            </Button>
-                            <!-- Sticky Note -->
-                            <Button Classes="toolbar-btn" Width="24" Height="24"
-                                    Command="{Binding OpenAddNoteDialogCommand}"
-                                    ToolTip.Tip="Add Sticky Note Annotation">
-                                <materialIcons:MaterialIcon Kind="CommentTextOutline" Width="14" Height="14" Foreground="#0284C7" />
-                            </Button>
-                            <!-- Stamp -->
-                            <Button Classes="toolbar-btn" Width="24" Height="24"
-                                    Command="{Binding AddStampCommand}"
-                                    CommandParameter="APPROVED"
-                                    ToolTip.Tip="Apply 'APPROVED' Stamp">
-                                <materialIcons:MaterialIcon Kind="CheckDecagramOutline" Width="14" Height="14" Foreground="#16A34A" />
-                            </Button>
-                        </StackPanel>
-                    </Border>
+                                                <TextBlock Text="{Binding TotalPagesCount, StringFormat='/ {0}'}"
+                                                           FontSize="11" FontWeight="Medium"
+                                                           Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,3,0" />
+                                            </StackPanel>
+                                        </Border>
 
-                    <!-- Rotate Clockwise -->
-                    <Button Classes="toolbar-btn"
-                            Width="28" Height="28"
-                            Command="{Binding RotateClockwiseCommand}"
-                            ToolTip.Tip="Rotate 90° Clockwise (⌘R)">
-                        <materialIcons:MaterialIcon Kind="RotateRight" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
-                    </Button>
+                                        <Button Classes="m3-segment-btn" Width="28" Height="28" Padding="0"
+                                                Command="{Binding NextPageCommand}" ToolTip.Tip="Next Page (PageDown / ⌥→)">
+                                            <materialIcons:MaterialIcon Kind="ChevronRight" Width="17" Height="17" />
+                                        </Button>
+                                        <Button Classes="m3-segment-btn" Width="28" Height="28" Padding="0"
+                                                Command="{Binding LastPageCommand}" ToolTip.Tip="Last Page (End)">
+                                            <materialIcons:MaterialIcon Kind="PageLast" Width="15" Height="15" />
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
 
-                    <!-- Save Copy As -->
-                    <Button Classes="toolbar-btn"
-                            Width="28" Height="28"
-                            Command="{Binding SaveAsCommand}"
-                            ToolTip.Tip="Save Document Copy As...">
-                        <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
-                    </Button>
+                                <!-- Page Layout Segmented Capsule -->
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn"
+                                                Classes.active="{Binding IsSinglePageMode}"
+                                                Command="{Binding SetSinglePageLayoutCommand}"
+                                                ToolTip.Tip="Single Page Fit View">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Single Page" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Classes.active="{Binding IsTwoPageSpreadMode}"
+                                                Command="{Binding SetTwoPageSpreadLayoutCommand}"
+                                                ToolTip.Tip="Two-Page Spread (Book &amp; Magazine Mode)">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Two-Page" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
 
-                    <!-- Fullscreen Mode -->
-                    <Button Classes="toolbar-btn"
-                            Width="28" Height="28"
-                            Command="{Binding ToggleFullscreenCommand}"
-                            ToolTip.Tip="Presentation Fullscreen Mode (F11)">
-                        <materialIcons:MaterialIcon Kind="Fullscreen" Width="16" Height="16" Foreground="{DynamicResource WinMutedBrush}" />
-                    </Button>
+                                <!-- Zoom Mode Segmented Capsule -->
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn"
+                                                Classes.active="{Binding IsFitToWidthActive}"
+                                                Command="{Binding FitToWidthCommand}"
+                                                ToolTip.Tip="Fit to Width (⌘1 / Ctrl+1)">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="15" Height="15" />
+                                                <TextBlock Text="Fit Width" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Classes.active="{Binding IsFitToPageActive}"
+                                                Command="{Binding FitToPageCommand}"
+                                                ToolTip.Tip="Fit to Page (⌘9 / Ctrl+9)">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="FitToScreenOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Fit Page" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
 
-                    <Rectangle Width="1" Height="18" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
+                                <!-- Zoom Stepper Segmented Capsule -->
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn" Width="26" Height="28" Padding="0"
+                                                Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom Out (⌘-)">
+                                            <materialIcons:MaterialIcon Kind="Minus" Width="14" Height="14" />
+                                        </Button>
+                                        <Button Classes="m3-segment-btn" Padding="8,2" Height="28"
+                                                Command="{Binding ResetZoomCommand}"
+                                                ToolTip.Tip="Reset 100% Zoom (⌘0 / Ctrl+0)">
+                                            <TextBlock Text="{Binding ZoomPercentageText}" FontSize="11" FontWeight="SemiBold" TextAlignment="Center" />
+                                        </Button>
+                                        <Button Classes="m3-segment-btn" Width="26" Height="28" Padding="0"
+                                                Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom In (⌘+)">
+                                            <materialIcons:MaterialIcon Kind="Plus" Width="14" Height="14" />
+                                        </Button>
+                                        <Button Classes="m3-segment-btn" Width="24" Height="28" Padding="0"
+                                                ToolTip.Tip="Zoom Presets">
+                                            <Button.Flyout>
+                                                <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                                    <MenuItem Header="50%" Command="{Binding SetZoomPresetCommand}" CommandParameter="50%" />
+                                                    <MenuItem Header="75%" Command="{Binding SetZoomPresetCommand}" CommandParameter="75%" />
+                                                    <MenuItem Header="100% (Actual Size)" Command="{Binding SetZoomPresetCommand}" CommandParameter="100%" />
+                                                    <MenuItem Header="125%" Command="{Binding SetZoomPresetCommand}" CommandParameter="125%" />
+                                                    <MenuItem Header="150%" Command="{Binding SetZoomPresetCommand}" CommandParameter="150%" />
+                                                    <MenuItem Header="200%" Command="{Binding SetZoomPresetCommand}" CommandParameter="200%" />
+                                                    <MenuItem Header="300%" Command="{Binding SetZoomPresetCommand}" CommandParameter="300%" />
+                                                    <MenuItem Header="400%" Command="{Binding SetZoomPresetCommand}" CommandParameter="400%" />
+                                                </MenuFlyout>
+                                            </Button.Flyout>
+                                            <materialIcons:MaterialIcon Kind="ChevronDown" Width="14" Height="14" />
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
 
-                    <!-- EDIT IN FRYPDF PRIMARY ACTION BUTTON -->
-                    <Button Background="#0F6CBD"
-                            Foreground="White"
-                            CornerRadius="6"
-                            Padding="12,6"
-                            FontWeight="SemiBold"
-                            FontSize="11.5"
-                            Command="{Binding EditInStudioCommand}"
-                            Cursor="Hand"
-                            ToolTip.Tip="Open in FryPDF Editor to modify text, layout, and images">
-                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="DrawPen" Width="14" Height="14" Foreground="White" />
-                            <TextBlock Text="Edit" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+                                <!-- Viewport Chips -->
+                                <Button Classes="m3-filter-chip pill"
+                                        Classes.active="{Binding IsFullscreen}"
+                                        Command="{Binding ToggleFullscreenCommand}"
+                                        ToolTip.Tip="Presentation Fullscreen Mode (F11)">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="Fullscreen" Width="15" Height="15" />
+                                        <TextBlock Text="Fullscreen" VerticalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+                                </Button>
 
-                    <Rectangle Width="1" Height="18" Fill="{DynamicResource WinBorderBrush}" Margin="2,0" />
+                                <Button Classes="m3-filter-chip pill"
+                                        Classes.active="{Binding IsSidebarOpen}"
+                                        Command="{Binding ToggleSidebarCommand}"
+                                        ToolTip.Tip="Toggle Navigation Sidebar (⌘B / Ctrl+B)">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="DockLeft" Width="15" Height="15" />
+                                        <TextBlock Text="Sidebar" VerticalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+                                </Button>
 
-                    <!-- Navigation Sidebar Drawer Toggle -->
-                    <Button Classes="toolbar-btn"
-                            Width="28" Height="28"
-                            Command="{Binding ToggleSidebarCommand}"
-                            Classes.mode-active="{Binding IsSidebarOpen}"
-                            ToolTip.Tip="Toggle Navigation Sidebar (⌘B)">
-                        <materialIcons:MaterialIcon Kind="DockLeft" Width="16" Height="16"
-                                                    Foreground="{Binding IsSidebarOpen, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#64748B'}" />
-                    </Button>
-                </StackPanel>
+                            </StackPanel>
+
+
+                            <!-- ================= TAB 2: ANNOTATE ================= -->
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                        IsVisible="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Annotate}">
+
+                                <!-- Selection Modes Segmented Capsule -->
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn"
+                                                Classes.active="{Binding IsTextSelectionMode}"
+                                                Command="{Binding SetTextSelectionModeCommand}"
+                                                ToolTip.Tip="Text Selection Tool (I-Beam): Click &amp; drag words/lines">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="FormatColorText" Width="15" Height="15" />
+                                                <TextBlock Text="Text Select" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Classes.active="{Binding IsAreaSelectionMode}"
+                                                Command="{Binding SetAreaSelectionModeCommand}"
+                                                ToolTip.Tip="Area / Marquee Tool: Select rectangular regions on scanned documents, tables &amp; columns">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="CropFree" Width="15" Height="15" />
+                                                <TextBlock Text="Area Select" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Highlight & Palette Segmented Capsule -->
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding AddHighlightAnnotationCommand}"
+                                                CommandParameter="#FEF08A"
+                                                ToolTip.Tip="Highlight Selected Text or Passage">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="FormatColorHighlight" Width="15" Height="15" Foreground="#CA8A04" />
+                                                <TextBlock Text="Highlight" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn" Width="24" Height="28" Padding="0"
+                                                ToolTip.Tip="Highlight Color Palette">
+                                            <Button.Flyout>
+                                                <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                                    <MenuItem Header="Yellow" Command="{Binding AddHighlightAnnotationCommand}" CommandParameter="#FEF08A">
+                                                        <MenuItem.Icon><materialIcons:MaterialIcon Kind="Circle" Width="14" Height="14" Foreground="#EAB308" /></MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Green" Command="{Binding AddHighlightAnnotationCommand}" CommandParameter="#BBF7D0">
+                                                        <MenuItem.Icon><materialIcons:MaterialIcon Kind="Circle" Width="14" Height="14" Foreground="#22C55E" /></MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Blue" Command="{Binding AddHighlightAnnotationCommand}" CommandParameter="#BAE6FD">
+                                                        <MenuItem.Icon><materialIcons:MaterialIcon Kind="Circle" Width="14" Height="14" Foreground="#0EA5E9" /></MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Pink" Command="{Binding AddHighlightAnnotationCommand}" CommandParameter="#FBCFE8">
+                                                        <MenuItem.Icon><materialIcons:MaterialIcon Kind="Circle" Width="14" Height="14" Foreground="#EC4899" /></MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Purple" Command="{Binding AddHighlightAnnotationCommand}" CommandParameter="#E9D5FF">
+                                                        <MenuItem.Icon><materialIcons:MaterialIcon Kind="Circle" Width="14" Height="14" Foreground="#A855F7" /></MenuItem.Icon>
+                                                    </MenuItem>
+                                                </MenuFlyout>
+                                            </Button.Flyout>
+                                            <materialIcons:MaterialIcon Kind="Palette" Width="14" Height="14" Foreground="#CA8A04" />
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Notes Chips -->
+                                <Button Classes="m3-filter-chip pill"
+                                        Command="{Binding OpenAddNoteDialogCommand}"
+                                        ToolTip.Tip="Add Sticky Note Annotation">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="CommentTextOutline" Width="15" Height="15" Foreground="#0284C7" />
+                                        <TextBlock Text="Sticky Note" VerticalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="m3-filter-chip pill"
+                                        Command="{Binding AddNoteFromSelectionCommand}"
+                                        ToolTip.Tip="Add Note Quoting Active Text Selection">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="CommentQuoteOutline" Width="15" Height="15" Foreground="#8B5CF6" />
+                                        <TextBlock Text="Note Quote" VerticalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Stamps Segmented Capsule -->
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding AddStampCommand}"
+                                                CommandParameter="APPROVED"
+                                                ToolTip.Tip="Apply 'APPROVED' Stamp">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="CheckDecagramOutline" Width="15" Height="15" Foreground="#16A34A" />
+                                                <TextBlock Text="Approved" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding AddStampCommand}"
+                                                CommandParameter="REVIEWED"
+                                                ToolTip.Tip="Apply 'REVIEWED' Stamp">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="FileCheckOutline" Width="15" Height="15" Foreground="#2563EB" />
+                                                <TextBlock Text="Reviewed" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding AddStampCommand}"
+                                                CommandParameter="CONFIDENTIAL"
+                                                ToolTip.Tip="Apply 'CONFIDENTIAL' Stamp">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="ShieldAlertOutline" Width="15" Height="15" Foreground="#DC2626" />
+                                                <TextBlock Text="Confidential" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding AddStampCommand}"
+                                                CommandParameter="DRAFT"
+                                                ToolTip.Tip="Apply 'DRAFT' Stamp">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="FileClockOutline" Width="15" Height="15" Foreground="#D97706" />
+                                                <TextBlock Text="Draft" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- OCR & Copy -->
+                                <Button Classes="m3-filter-chip pill"
+                                        Classes.active="{Binding IsCurrentPageScanned}"
+                                        Command="{Binding RecognizeActivePageOcrCommand}"
+                                        ToolTip.Tip="Recognize Text with OCR on this page (Apple Vision / Tesseract)">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="ScanHelper" Width="15" Height="15" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                        <TextBlock Text="OCR Page" VerticalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding CopySelectedTextCommand}"
+                                                ToolTip.Tip="Copy Selected Text to Clipboard (⌘C / Ctrl+C)">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="ContentCopy" Width="15" Height="15" />
+                                                <TextBlock Text="Copy Text" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding CopySelectedCitationCommand}"
+                                                ToolTip.Tip="Copy Citation with Page Reference &amp; Document Name">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="FormatQuoteClose" Width="15" Height="15" />
+                                                <TextBlock Text="Citation" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+
+
+                            <!-- ================= TAB 3: TOOLS ================= -->
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                        IsVisible="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Tools}">
+
+                                <!-- Search Chip -->
+                                <Button Classes="m3-filter-chip pill"
+                                        Classes.active="{Binding IsSearchBarVisible}"
+                                        Command="{Binding ToggleSearchBarCommand}"
+                                        ToolTip.Tip="Find Text across Document (⌘F / Ctrl+F)">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="Magnify" Width="15" Height="15" Foreground="{DynamicResource M3PrimaryBrush}" />
+                                        <TextBlock Text="Find Text" VerticalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Page Rotation Segmented Capsule -->
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding RotateClockwiseCommand}"
+                                                ToolTip.Tip="Rotate 90° Clockwise (⌘R / Ctrl+R)">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="RotateRight" Width="15" Height="15" />
+                                                <TextBlock Text="Rotate CW" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding RotateCounterClockwiseCommand}"
+                                                ToolTip.Tip="Rotate 90° Counter-Clockwise">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="RotateLeft" Width="15" Height="15" />
+                                                <TextBlock Text="Rotate CCW" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding RotateAllPagesClockwiseCommand}"
+                                                ToolTip.Tip="Rotate All Pages 90° Clockwise">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="Autorenew" Width="15" Height="15" />
+                                                <TextBlock Text="Rotate All" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Document Operations Segmented Capsule -->
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding SaveAsCommand}"
+                                                ToolTip.Tip="Save Document Copy As...">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="ContentSaveOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Save As..." VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding OpenAnotherPdfCommand}"
+                                                ToolTip.Tip="Open another PDF document (⌘O / Ctrl+O)">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Open PDF" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding RevealInFileManagerCommand}"
+                                                ToolTip.Tip="Reveal PDF file in system file manager">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="FolderEyeOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Show File" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding RenameDocumentCommand}"
+                                                ToolTip.Tip="Rename Document (F2)">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="PencilOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Rename" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- FryPDF Studio & PDF Tools Bridge -->
+                                <Button Classes="m3-filled-btn"
+                                        Height="30"
+                                        Padding="12,5"
+                                        Command="{Binding EditInStudioCommand}"
+                                        ToolTip.Tip="Open live vector deconstruction editor to edit text, objects &amp; images">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="DrawPen" Width="15" Height="15" />
+                                        <TextBlock Text="Edit in Studio" VerticalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="m3-filter-chip pill"
+                                        ToolTip.Tip="Run Modular PDF Processing Tools">
+                                    <Button.Flyout>
+                                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                            <MenuItem Header="Compress PDF..." Command="{Binding RunToolOnDocumentCommand}" CommandParameter="Compress">
+                                                <MenuItem.Icon><materialIcons:MaterialIcon Kind="ZipBoxOutline" Width="15" Height="15" Foreground="{DynamicResource M3PrimaryBrush}" /></MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Watermark PDF..." Command="{Binding RunToolOnDocumentCommand}" CommandParameter="Watermark">
+                                                <MenuItem.Icon><materialIcons:MaterialIcon Kind="Watermark" Width="15" Height="15" Foreground="#0284C7" /></MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Convert PDF to Office/Images..." Command="{Binding RunToolOnDocumentCommand}" CommandParameter="Convert">
+                                                <MenuItem.Icon><materialIcons:MaterialIcon Kind="FileSyncOutline" Width="15" Height="15" Foreground="#16A34A" /></MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Split Pages..." Command="{Binding RunToolOnDocumentCommand}" CommandParameter="Split">
+                                                <MenuItem.Icon><materialIcons:MaterialIcon Kind="CallSplit" Width="15" Height="15" Foreground="#D97706" /></MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Merge Documents..." Command="{Binding RunToolOnDocumentCommand}" CommandParameter="Merge">
+                                                <MenuItem.Icon><materialIcons:MaterialIcon Kind="CallMerge" Width="15" Height="15" Foreground="#8B5CF6" /></MenuItem.Icon>
+                                            </MenuItem>
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <materialIcons:MaterialIcon Kind="WrenchOutline" Width="15" Height="15" />
+                                        <TextBlock Text="PDF Tools ▾" VerticalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+                                </Button>
+
+                            </StackPanel>
+
+
+                            <!-- ================= TAB 4: THEMES ================= -->
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                        IsVisible="{Binding ActiveRibbonTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Themes}">
+
+                                <!-- Reading Themes Segmented Capsule -->
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn"
+                                                Classes.active="{Binding IsThemeDefault}"
+                                                Command="{Binding SetDefaultReadingThemeCommand}"
+                                                ToolTip.Tip="Daylight Theme (Standard White Paper)">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="WhiteBalanceSunny" Width="15" Height="15" />
+                                                <TextBlock Text="Daylight" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Classes.active="{Binding IsThemeSepia}"
+                                                Command="{Binding SetSepiaReadingThemeCommand}"
+                                                ToolTip.Tip="Warm Sepia Book Theme (Reduced Eye Fatigue)">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="BookOpenOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Warm Sepia" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Classes.active="{Binding IsThemeDark}"
+                                                Command="{Binding SetDarkReadingThemeCommand}"
+                                                ToolTip.Tip="Dark Night Reading Theme (OLED / Low Light)">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="WeatherNight" Width="15" Height="15" />
+                                                <TextBlock Text="Dark Night" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Classes.active="{Binding IsThemeHighContrast}"
+                                                Command="{Binding SetHighContrastReadingThemeCommand}"
+                                                ToolTip.Tip="High Contrast Mode (Accessibility)">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="ContrastCircle" Width="15" Height="15" />
+                                                <TextBlock Text="High Contrast" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Sidebar Panels Segmented Capsule -->
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding SelectSidebarTabCommand}"
+                                                CommandParameter="Thumbnails"
+                                                ToolTip.Tip="Show Page Thumbnails Panel">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="ViewGridOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Thumbnails" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding SelectSidebarTabCommand}"
+                                                CommandParameter="Bookmarks"
+                                                ToolTip.Tip="Show Document Outline &amp; Bookmarks">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="BookmarkMultipleOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Bookmarks" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding SelectSidebarTabCommand}"
+                                                CommandParameter="Annotations"
+                                                ToolTip.Tip="Show Review Annotations List">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="CommentOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Annotations" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Command="{Binding SelectSidebarTabCommand}"
+                                                CommandParameter="Info"
+                                                ToolTip.Tip="Show Document Metadata &amp; Security Info">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="InformationOutline" Width="15" Height="15" />
+                                                <TextBlock Text="File Info" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Quick Layout Segmented Capsule -->
+                                <Border Classes="m3-segmented-container">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                        <Button Classes="m3-segment-btn"
+                                                Classes.active="{Binding IsSinglePageMode}"
+                                                Command="{Binding SetSinglePageLayoutCommand}"
+                                                ToolTip.Tip="Single Page Fit View">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Single Page" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="m3-segment-btn"
+                                                Classes.active="{Binding IsTwoPageSpreadMode}"
+                                                Command="{Binding SetTwoPageSpreadLayoutCommand}"
+                                                ToolTip.Tip="Two-Page Spread (Book &amp; Magazine Mode)">
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <materialIcons:MaterialIcon Kind="BookOpenPageVariantOutline" Width="15" Height="15" />
+                                                <TextBlock Text="Two-Page" VerticalAlignment="Center" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+
+                        </Panel>
+                    </ScrollViewer>
+                </Border>
 
             </Grid>
         </Border>

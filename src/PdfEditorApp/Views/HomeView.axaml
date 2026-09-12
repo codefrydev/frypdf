@@ -120,7 +120,58 @@
                     </StackPanel>
                 </Border>
 
-                <ScrollViewer DockPanel.Dock="Top" Margin="10,12,10,0" VerticalScrollBarVisibility="Auto">
+                <!-- Sidebar Footer with Theme Toggle & Version (Docked to Bottom FIRST so it stays pinned) -->
+                <Border DockPanel.Dock="Bottom"
+                        Padding="14,10"
+                        BorderBrush="{DynamicResource WinBorderSubtleBrush}"
+                        BorderThickness="0,1,0,0">
+                    <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                        <!-- Theme Toggle Button -->
+                        <Button Grid.Row="0"
+                                Command="{Binding ToggleThemeCommand}"
+                                Background="{DynamicResource WinInputBgBrush}"
+                                BorderBrush="{DynamicResource WinBorderBrush}"
+                                BorderThickness="1"
+                                Foreground="{DynamicResource WinTextBrush}"
+                                CornerRadius="8"
+                                Padding="10,6"
+                                HorizontalAlignment="Stretch"
+                                Cursor="Hand"
+                                ToolTip.Tip="Toggle Dark and Light Studio Theme">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="WeatherSunny" Width="15" Height="15" Foreground="#F59E0B" IsVisible="{Binding IsDarkMode}" />
+                                    <materialIcons:MaterialIcon Kind="WeatherNight" Width="15" Height="15" Foreground="#818CF8" IsVisible="{Binding !IsDarkMode}" />
+                                    <!-- Theme label hidden in compact rail; icon alone is sufficient -->
+                                    <TextBlock Text="{Binding IsDarkMode, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Light Mode|Dark Mode'}"
+                                               FontSize="11.5"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding !IsSidebarCompactRail}" />
+                                </StackPanel>
+                                <!-- Swap arrow hidden in compact — no room and no label to pair with -->
+                                <materialIcons:MaterialIcon Grid.Column="2" Kind="SwapHorizontal" Width="14" Height="14"
+                                                           Foreground="{DynamicResource WinSubtleBrush}"
+                                                           VerticalAlignment="Center"
+                                                           IsVisible="{Binding !IsSidebarCompactRail}" />
+                            </Grid>
+                        </Button>
+
+                        <!-- Version Badge — collapsed in compact rail to save vertical space -->
+                        <TextBlock Grid.Row="1"
+                                   Text="{Binding AppVersionDisplay}"
+                                   FontSize="9.5"
+                                   Foreground="{DynamicResource WinSubtleBrush}"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"
+                                   IsVisible="{Binding !IsSidebarCompactRail}" />
+                    </Grid>
+                </Border>
+
+                <!-- Navigation Items (Scrollable Center filling remaining height between Top and Bottom) -->
+                <ScrollViewer Margin="10,12,6,6"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Spacing="2">
 
                         <!-- ===== PLUGIN-DRIVEN NAVIGATION SIDEBAR =====
@@ -449,57 +500,6 @@
 
                     </StackPanel>
                 </ScrollViewer>
-
-
-
-
-                <!-- Sidebar Footer with Theme Toggle & Version -->
-                <Border DockPanel.Dock="Bottom"
-                        Padding="14,10"
-                        BorderBrush="{DynamicResource WinBorderSubtleBrush}"
-                        BorderThickness="0,1,0,0">
-                    <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-                        <!-- Theme Toggle Button -->
-                        <Button Grid.Row="0"
-                                Command="{Binding ToggleThemeCommand}"
-                                Background="{DynamicResource WinInputBgBrush}"
-                                BorderBrush="{DynamicResource WinBorderBrush}"
-                                BorderThickness="1"
-                                Foreground="{DynamicResource WinTextBrush}"
-                                CornerRadius="8"
-                                Padding="10,6"
-                                HorizontalAlignment="Stretch"
-                                Cursor="Hand"
-                                ToolTip.Tip="Toggle Dark and Light Studio Theme">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                    <materialIcons:MaterialIcon Kind="WeatherSunny" Width="15" Height="15" Foreground="#F59E0B" IsVisible="{Binding IsDarkMode}" />
-                                    <materialIcons:MaterialIcon Kind="WeatherNight" Width="15" Height="15" Foreground="#818CF8" IsVisible="{Binding !IsDarkMode}" />
-                                    <!-- Theme label hidden in compact rail; icon alone is sufficient -->
-                                    <TextBlock Text="{Binding IsDarkMode, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Light Mode|Dark Mode'}"
-                                               FontSize="11.5"
-                                               FontWeight="SemiBold"
-                                               VerticalAlignment="Center"
-                                               IsVisible="{Binding !IsSidebarCompactRail}" />
-                                </StackPanel>
-                                <!-- Swap arrow hidden in compact — no room and no label to pair with -->
-                                <materialIcons:MaterialIcon Grid.Column="2" Kind="SwapHorizontal" Width="14" Height="14"
-                                                           Foreground="{DynamicResource WinSubtleBrush}"
-                                                           VerticalAlignment="Center"
-                                                           IsVisible="{Binding !IsSidebarCompactRail}" />
-                            </Grid>
-                        </Button>
-
-                        <!-- Version Badge — collapsed in compact rail to save vertical space -->
-                        <TextBlock Grid.Row="1"
-                                   Text="FryPDF v1.0 · Privacy-first PDF Studio"
-                                   FontSize="9.5"
-                                   Foreground="{DynamicResource WinSubtleBrush}"
-                                   TextWrapping="Wrap"
-                                   HorizontalAlignment="Center"
-                                   IsVisible="{Binding !IsSidebarCompactRail}" />
-                    </Grid>
-                </Border>
             </DockPanel>
         </Border>
 

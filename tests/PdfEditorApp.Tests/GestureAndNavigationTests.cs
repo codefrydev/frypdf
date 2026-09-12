@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using Avalonia.Input;
 using PdfEditorApp.Models;
@@ -501,5 +502,38 @@ public class GestureAndNavigationTests
         Assert.Null(home.DynamicPageView);
         Assert.Null(home.DynamicFullViewportPageView);
         Assert.Null(home.DynamicScrollablePageView);
+    }
+
+    [Fact]
+    public void HomeView_SidebarLayout_DockPanelOrdersBottomFooterBeforeScrollViewerForVerticalScrolling()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "src", "PdfEditorApp", "Views", "HomeView.axaml")))
+        {
+            dir = dir.Parent;
+        }
+
+        Assert.NotNull(dir);
+        var homeViewPath = Path.Combine(dir!.FullName, "src", "PdfEditorApp", "Views", "HomeView.axaml");
+        var xaml = File.ReadAllText(homeViewPath);
+
+        // Footer must be docked to Bottom
+        Assert.Contains("DockPanel.Dock=\"Bottom\"", xaml);
+
+        var footerIndex = xaml.IndexOf("<!-- Sidebar Footer with Theme Toggle & Version (Docked to Bottom FIRST so it stays pinned) -->", StringComparison.Ordinal);
+        var scrollViewerIndex = xaml.IndexOf("<!-- Navigation Items (Scrollable Center filling remaining height between Top and Bottom) -->", StringComparison.Ordinal);
+
+        Assert.True(footerIndex > 0, "Footer comment marker must be present in HomeView.axaml");
+        Assert.True(scrollViewerIndex > 0, "ScrollViewer comment marker must be present in HomeView.axaml");
+        Assert.True(footerIndex < scrollViewerIndex, "In DockPanel, child with DockPanel.Dock='Bottom' must appear BEFORE the fill ScrollViewer so that the center list can vertically scroll without pushing the footer off-screen.");
+
+        // ScrollViewer must have auto vertical and disabled horizontal scrollbars, and MUST NOT dock to Top
+        var scrollViewerTagStart = xaml.IndexOf("<ScrollViewer", scrollViewerIndex, StringComparison.Ordinal);
+        var scrollViewerTagEnd = xaml.IndexOf(">", scrollViewerTagStart, StringComparison.Ordinal);
+        var scrollViewerTag = xaml.Substring(scrollViewerTagStart, scrollViewerTagEnd - scrollViewerTagStart + 1);
+
+        Assert.Contains("VerticalScrollBarVisibility=\"Auto\"", scrollViewerTag);
+        Assert.Contains("HorizontalScrollBarVisibility=\"Disabled\"", scrollViewerTag);
+        Assert.DoesNotContain("DockPanel.Dock=\"Top\"", scrollViewerTag);
     }
 }

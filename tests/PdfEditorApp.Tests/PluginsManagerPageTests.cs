@@ -227,7 +227,7 @@ public class PluginsManagerPageTests
             var vm = new PluginsManagerViewModel(host, marketplace);
             await vm.LoadAllDataAsync();
 
-            var snake = vm.FilteredMarketplacePlugins.First(m => m.Id == "frypdf.overlay.snake");
+            var snake = vm.FilteredMarketplacePlugins.ToList().First(m => m.Id == "frypdf.overlay.snake");
             vm.SelectedMarketplacePlugin = snake;
 
             // Before install
@@ -244,7 +244,7 @@ public class PluginsManagerPageTests
             Assert.True(marketplace.IsPluginInstalled("frypdf.overlay.snake"));
 
             // Re-select installed Snake in marketplace
-            vm.SelectedMarketplacePlugin = vm.FilteredMarketplacePlugins.First(m => m.Id == "frypdf.overlay.snake");
+            vm.SelectedMarketplacePlugin = vm.FilteredMarketplacePlugins.ToList().First(m => m.Id == "frypdf.overlay.snake");
             var detail = vm.SelectedDetail!;
             Assert.True(detail.IsInstalled);
             Assert.True(detail.IsExternal);

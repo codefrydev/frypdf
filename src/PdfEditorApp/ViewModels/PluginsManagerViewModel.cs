@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
@@ -38,6 +39,7 @@ public partial class PluginsManagerViewModel : ViewModelBase
     private readonly IPluginMarketplaceService _marketplaceService;
     private readonly IPdfToolRegistry? _toolRegistry;
     private readonly object _dataLock = new();
+    private readonly SemaphoreSlim _loadLock = new(1, 1);
     private readonly List<PluginItemViewModel> _allInstalled = new();
     private readonly List<MarketplacePluginItem> _allMarketplace = new();
 
@@ -256,11 +258,12 @@ public partial class PluginsManagerViewModel : ViewModelBase
 
     public async Task LoadAllDataAsync()
     {
-        IsBusy = true;
-        StatusMessage = "Refreshing loaded plugins and marketplace catalog...";
-
+        await _loadLock.WaitAsync();
         try
         {
+            IsBusy = true;
+            StatusMessage = "Refreshing loaded plugins and marketplace catalog...";
+
             // The installed list is entirely local, so publish it before touching the network.
             // ApplyFilters is what populates the bound collections and the detail pane, and it
             // used to sit *after* the catalog fetch — so opening the page while that call was
@@ -305,6 +308,7 @@ public partial class PluginsManagerViewModel : ViewModelBase
         finally
         {
             IsBusy = false;
+            _loadLock.Release();
         }
     }
 

@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using Avalonia.Threading;
@@ -180,6 +181,34 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
     public bool IsTopSearchBarVisible => !IsToolPageActive && ActiveNavDescriptor != null && !ActiveNavDescriptor.HideTopSearchBar;
 
     public string TopSearchPlaceholder => string.Empty;
+
+    public string AppVersionDisplay
+    {
+        get
+        {
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var infoVer = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+                if (!string.IsNullOrWhiteSpace(infoVer))
+                {
+                    return $"FryPDF v{infoVer.Split('+')[0]} · Privacy-first PDF Studio";
+                }
+
+                var ver = assembly.GetName().Version;
+                if (ver != null)
+                {
+                    return $"FryPDF v{ver.Major}.{ver.Minor}.{ver.Build} · Privacy-first PDF Studio";
+                }
+            }
+            catch
+            {
+                // fallback
+            }
+
+            return "FryPDF · Privacy-first PDF Studio";
+        }
+    }
 
     public bool IsSidebarCompactRail => !IsToolPageActive && ActiveNavDescriptor?.DisplayMode == PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.ImmersiveStudio;
 

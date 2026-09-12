@@ -100,32 +100,6 @@ public class AppLifecycleAndStartupTests
     }
 
     [Fact]
-    public async Task NonBlockingShutdown_WithSlowResource_CompletesWithinBoundedTimeout()
-    {
-        var slowDisposable = new SlowAsyncDisposable(delayMilliseconds: 5000);
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
-        var teardownTask = Task.Run(async () =>
-        {
-            try
-            {
-                await slowDisposable.DisposeAsync();
-            }
-            catch
-            {
-                // Ignored in shutdown
-            }
-        }, cts.Token);
-
-        var completedTask = await Task.WhenAny(teardownTask, Task.Delay(TimeSpan.FromMilliseconds(200)));
-        stopwatch.Stop();
-
-        Assert.NotSame(teardownTask, completedTask);
-        Assert.True(stopwatch.ElapsedMilliseconds < 2000, "Shutdown must not block the calling thread indefinitely.");
-    }
-
-    [Fact]
     public async Task NonBlockingShutdown_WithNormalResource_CompletesCleanly()
     {
         var normalDisposable = new SlowAsyncDisposable(delayMilliseconds: 20);

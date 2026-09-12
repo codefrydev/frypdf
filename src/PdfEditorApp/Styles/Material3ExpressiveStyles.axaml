@@ -494,7 +494,7 @@
     </Style>
 
     <!-- M3 Segment Button Item -->
-    <Style Selector="Button.m3-segment-btn, RadioButton.m3-segment-btn">
+    <Style Selector="Button.m3-segment-btn, RadioButton.m3-segment-btn, ToggleButton.m3-segment-btn">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceVariantBrush}" />
         <Setter Property="BorderThickness" Value="0" />
@@ -513,11 +513,11 @@
             </Transitions>
         </Setter>
     </Style>
-    <Style Selector="Button.m3-segment-btn:pointerover, RadioButton.m3-segment-btn:pointerover">
+    <Style Selector="Button.m3-segment-btn:pointerover, RadioButton.m3-segment-btn:pointerover, ToggleButton.m3-segment-btn:pointerover">
         <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
     </Style>
-    <Style Selector="Button.m3-segment-btn.active, RadioButton.m3-segment-btn:checked">
+    <Style Selector="Button.m3-segment-btn.active, RadioButton.m3-segment-btn:checked, ToggleButton.m3-segment-btn:checked">
         <Setter Property="Background" Value="{DynamicResource M3SecondaryContainerBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource M3OnSecondaryContainerBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
@@ -589,6 +589,12 @@
     </Style>
     <Style Selector="Button.m3-preset-chip:pressed">
         <Setter Property="RenderTransform" Value="scale(0.96)" />
+    </Style>
+    <Style Selector="Button.m3-preset-chip.active">
+        <Setter Property="Background" Value="{DynamicResource M3SecondaryContainerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSecondaryContainerBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3SecondaryContainerBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 
     <!-- M3 Expressive Inspector Section Header Toggle Button (Full-width expandable category bar) -->

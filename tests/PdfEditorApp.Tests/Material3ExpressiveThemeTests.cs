@@ -128,8 +128,10 @@ public class Material3ExpressiveThemeTests
         // M3 Segmented Capsules & Chips
         Assert.Contains("Border.m3-segmented-container", styles);
         Assert.Contains("RadioButton.m3-segment-btn", styles);
+        Assert.Contains("ToggleButton.m3-segment-btn", styles);
         Assert.Contains("Button.m3-chip", styles);
         Assert.Contains("Button.m3-preset-chip", styles);
+        Assert.Contains("Button.m3-preset-chip.active", styles);
         Assert.Contains("ToggleButton.m3-filter-chip", styles);
 
         // M3 Expressive Cards & Containers

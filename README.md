@@ -11,6 +11,7 @@
 [![Avalonia UI](https://img.shields.io/badge/Avalonia-12.1-7029E6?style=flat-square&logo=avalonia&logoColor=white)](https://avaloniaui.net/)
 [![QuestPDF](https://img.shields.io/badge/QuestPDF-2026.8-FF4500?style=flat-square)](https://www.questpdf.com/)
 [![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Windows%20%7C%20Linux-4B5563?style=flat-square)](https://github.com/CodeFryDev/FryPDF)
+[![CI](https://img.shields.io/github/actions/workflow/status/CodeFryDev/FryPDF/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/CodeFryDev/FryPDF/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/Tests-788%20Passed-10B981?style=flat-square)](tests/PdfEditorApp.Tests)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
@@ -64,6 +65,9 @@ dotnet test
 - [Feature Catalog](docs/FEATURES.md)
 - [Contributing Guide](docs/CONTRIBUTING.md)
 - [Licenses & Attributions](docs/THIRD_PARTY_LICENSES.md)
+- [Changelog](CHANGELOG.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security Policy](SECURITY.md)
 
 ---
 

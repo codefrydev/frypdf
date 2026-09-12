@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contributing Guide
+    url: https://github.com/CodeFryDev/FryPDF/blob/main/docs/CONTRIBUTING.md
+    about: Read this before opening a pull request.
+  - name: Security Vulnerability
+    url: https://github.com/CodeFryDev/FryPDF/security/advisories/new
+    about: Please report security issues privately instead of opening a public issue.

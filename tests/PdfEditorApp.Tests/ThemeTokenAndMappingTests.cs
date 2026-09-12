@@ -47,7 +47,6 @@ public class ThemeTokenAndMappingTests
         ["Views/LicensingPageView.axaml"] = "logo mark",
         ["Views/HomeView.axaml"] = "logo mark",
         ["Views/InspectorSidebarView.axaml"] = "colour swatch buttons: the literal IS the value the button applies",
-        ["Views/SettingsPageView.axaml"] = "notification style preview: the literal IS the style being previewed",
         ["Views/FryPdfViewerView.axaml"] = "presentation mode is a fixed dark chrome, not theme-driven",
     };
 

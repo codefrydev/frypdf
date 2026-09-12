@@ -11,16 +11,104 @@ using PdfEditorApp.Services;
 namespace PdfEditorApp.ViewModels;
 
 /// <summary>
+/// Categories for grouping preferences in the Settings & UI Studio.
+/// </summary>
+public enum SettingsCategory
+{
+    All,
+    Appearance,
+    Canvas,
+    Notifications,
+    Ai,
+    Privacy
+}
+
+/// <summary>
 /// ViewModel managing user UI customization preferences, notification placements, and workspace behaviors.
 /// </summary>
 public partial class SettingsViewModel : ViewModelBase
 {
     private readonly IUiSettingsService _uiSettingsService;
     private readonly IThemeService? _themeService;
+    private bool _isUpdatingFromService;
 
     public void TriggerToast(string message, ToastNotificationType type = ToastNotificationType.Primary, string? icon = null)
     {
         WeakReferenceMessenger.Default.Send(new ShowToastMessage(message, type, icon));
+    }
+
+    [ObservableProperty]
+    private SettingsCategory _selectedCategory = SettingsCategory.All;
+
+    [ObservableProperty]
+    private string _searchQuery = string.Empty;
+
+    public bool HasSearchQuery => !string.IsNullOrWhiteSpace(SearchQuery);
+
+    public bool IsAppearanceVisible =>
+        (SelectedCategory is SettingsCategory.All or SettingsCategory.Appearance) &&
+        MatchesSearch("appearance theme color dark light reading reader sepia night contrast ribbon shortcut hint density");
+
+    public bool IsCanvasVisible =>
+        (SelectedCategory is SettingsCategory.All or SettingsCategory.Canvas) &&
+        MatchesSearch("canvas grid snap zoom alignment inspector document guidelines points");
+
+    public bool IsNotificationsVisible =>
+        (SelectedCategory is SettingsCategory.All or SettingsCategory.Notifications) &&
+        MatchesSearch("notification toast snackbar sound duration alert badge position placement audio dismiss playground preview");
+
+    public bool IsAiVisible =>
+        (SelectedCategory is SettingsCategory.All or SettingsCategory.Ai) &&
+        MatchesSearch("ai local llm ollama openai groq model endpoint token cloud intelligence assistant provider");
+
+    public bool IsPrivacyVisible =>
+        (SelectedCategory is SettingsCategory.All or SettingsCategory.Privacy) &&
+        MatchesSearch("privacy storage reset default offline telemetry data json profile factory");
+
+    public bool HasSearchResults =>
+        IsAppearanceVisible || IsCanvasVisible || IsNotificationsVisible || IsAiVisible || IsPrivacyVisible;
+
+    private bool MatchesSearch(string categoryKeywords)
+    {
+        if (string.IsNullOrWhiteSpace(SearchQuery)) return true;
+        var q = SearchQuery.Trim().ToLowerInvariant();
+        return categoryKeywords.Contains(q, StringComparison.OrdinalIgnoreCase);
+    }
+
+    partial void OnSearchQueryChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasSearchQuery));
+        RefreshCategoryVisibilities();
+    }
+
+    partial void OnSelectedCategoryChanged(SettingsCategory value)
+    {
+        RefreshCategoryVisibilities();
+    }
+
+    private void RefreshCategoryVisibilities()
+    {
+        OnPropertyChanged(nameof(IsAppearanceVisible));
+        OnPropertyChanged(nameof(IsCanvasVisible));
+        OnPropertyChanged(nameof(IsNotificationsVisible));
+        OnPropertyChanged(nameof(IsAiVisible));
+        OnPropertyChanged(nameof(IsPrivacyVisible));
+        OnPropertyChanged(nameof(HasSearchResults));
+    }
+
+    [RelayCommand]
+    public void ClearSearch()
+    {
+        SearchQuery = string.Empty;
+    }
+
+    [RelayCommand]
+    public void SelectCategory(string categoryName)
+    {
+        if (Enum.TryParse<SettingsCategory>(categoryName, true, out var cat))
+        {
+            SelectedCategory = cat;
+        }
     }
 
     [ObservableProperty]
@@ -223,21 +311,119 @@ public partial class SettingsViewModel : ViewModelBase
 
     private void LoadFromSettings(UiSettingsModel s)
     {
-        ToastPosition = s.ToastPosition;
-        ToastStyleVariant = s.ToastStyleVariant;
-        ToastDurationMs = s.ToastDurationMs;
-        ToastShowCloseButton = s.ToastShowCloseButton;
-        ToastSoundEnabled = s.ToastSoundEnabled;
-        ThemeMode = s.ThemeMode;
-        ReadingTheme = s.ReadingTheme;
-        ShowGridByDefault = s.ShowGridByDefault;
-        SnapToGridByDefault = s.SnapToGridByDefault;
-        GridSnapSize = s.GridSnapSize;
-        DefaultZoomMode = s.DefaultZoomMode;
-        CompactRibbonByDefault = s.CompactRibbonByDefault;
-        AutoExpandInspectorOnSelect = s.AutoExpandInspectorOnSelect;
-        ShowShortcutHints = s.ShowShortcutHints;
+        _isUpdatingFromService = true;
+        try
+        {
+            ToastPosition = s.ToastPosition;
+            ToastStyleVariant = s.ToastStyleVariant;
+            ToastDurationMs = s.ToastDurationMs;
+            ToastShowCloseButton = s.ToastShowCloseButton;
+            ToastSoundEnabled = s.ToastSoundEnabled;
+            ThemeMode = s.ThemeMode;
+            ReadingTheme = s.ReadingTheme;
+            ShowGridByDefault = s.ShowGridByDefault;
+            SnapToGridByDefault = s.SnapToGridByDefault;
+            GridSnapSize = s.GridSnapSize;
+            DefaultZoomMode = s.DefaultZoomMode;
+            CompactRibbonByDefault = s.CompactRibbonByDefault;
+            AutoExpandInspectorOnSelect = s.AutoExpandInspectorOnSelect;
+            ShowShortcutHints = s.ShowShortcutHints;
+            RefreshPreview();
+        }
+        finally
+        {
+            _isUpdatingFromService = false;
+        }
+    }
+
+    partial void OnShowGridByDefaultChanged(bool value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.ShowGridByDefault = value);
+    }
+
+    partial void OnSnapToGridByDefaultChanged(bool value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.SnapToGridByDefault = value);
+    }
+
+    partial void OnGridSnapSizeChanged(GridSnapSize value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.GridSnapSize = value);
+    }
+
+    partial void OnDefaultZoomModeChanged(PdfViewerZoomMode value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.DefaultZoomMode = value);
+    }
+
+    partial void OnCompactRibbonByDefaultChanged(bool value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.CompactRibbonByDefault = value);
+    }
+
+    partial void OnAutoExpandInspectorOnSelectChanged(bool value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.AutoExpandInspectorOnSelect = value);
+    }
+
+    partial void OnShowShortcutHintsChanged(bool value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.ShowShortcutHints = value);
+    }
+
+    partial void OnThemeModeChanged(AppThemeMode value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.ThemeMode = value);
+        _themeService?.SetTheme(value);
         RefreshPreview();
+    }
+
+    partial void OnReadingThemeChanged(PdfReaderTheme value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.ReadingTheme = value);
+        _themeService?.SetReadingTheme(value);
+    }
+
+    partial void OnToastPositionChanged(ToastPosition value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.ToastPosition = value);
+        RefreshPreview();
+    }
+
+    partial void OnToastStyleVariantChanged(ToastStyleVariant value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.ToastStyleVariant = value);
+        RefreshPreview();
+    }
+
+    partial void OnToastDurationMsChanged(int value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.ToastDurationMs = value);
+    }
+
+    partial void OnToastShowCloseButtonChanged(bool value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.ToastShowCloseButton = value);
+        RefreshPreview();
+    }
+
+    partial void OnToastSoundEnabledChanged(bool value)
+    {
+        if (_isUpdatingFromService) return;
+        _uiSettingsService.UpdateSettings(s => s.ToastSoundEnabled = value);
     }
 
     // --- Position Selection Commands ---

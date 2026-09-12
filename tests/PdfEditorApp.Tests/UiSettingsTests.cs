@@ -337,13 +337,58 @@ public class UiSettingsTests : IDisposable
     {
         var home = new HomeViewModel();
         Assert.False(home.IsSettingsSection);
+        Assert.False(home.IsTopSearchBarVisible);
 
         home.SelectNavSectionCommand.Execute("Settings");
 
         Assert.Equal(HomeNavSection.Settings, home.SelectedNavSection);
         Assert.True(home.IsSettingsSection);
         Assert.False(home.IsHomeSection);
+        Assert.False(home.IsTopSearchBarVisible);
         Assert.NotNull(home.Settings);
+    }
+
+    [Fact]
+    public void HomeViewModel_TopSearchBar_HiddenOnAllStandardPages()
+    {
+        var home = new HomeViewModel();
+
+        // Top search bar is completely removed from all standard pages
+        home.SelectNavSectionCommand.Execute("Home");
+        Assert.False(home.IsTopSearchBarVisible);
+
+        home.SelectNavSectionCommand.Execute("NewDocument");
+        Assert.False(home.IsTopSearchBarVisible);
+
+        home.SelectNavSectionCommand.Execute("AllTools");
+        Assert.False(home.IsTopSearchBarVisible);
+
+        home.SelectNavSectionCommand.Execute("Starred");
+        Assert.False(home.IsTopSearchBarVisible);
+
+        home.SelectNavSectionCommand.Execute("Settings");
+        Assert.False(home.IsTopSearchBarVisible);
+
+        home.SelectNavSectionCommand.Execute("Help");
+        Assert.False(home.IsTopSearchBarVisible);
+
+        home.SelectNavSectionCommand.Execute("FontPackages");
+        Assert.False(home.IsTopSearchBarVisible);
+
+        home.SelectNavSectionCommand.Execute("TesseractData");
+        Assert.False(home.IsTopSearchBarVisible);
+
+        home.SelectNavSectionCommand.Execute("Licensing");
+        Assert.False(home.IsTopSearchBarVisible);
+
+        home.SelectNavSectionCommand.Execute("Trash");
+        Assert.False(home.IsTopSearchBarVisible);
+
+        home.SelectNavSectionCommand.Execute("PdfReader");
+        Assert.False(home.IsTopSearchBarVisible);
+
+        home.SelectNavSectionCommand.Execute("Plugins");
+        Assert.False(home.IsTopSearchBarVisible);
     }
 
     [Fact]
@@ -421,5 +466,111 @@ public class UiSettingsTests : IDisposable
         Assert.Null(home.DynamicPageView);
         Assert.Equal(HomeNavSection.Settings, home.SelectedNavSection);
         Assert.True(home.IsSettingsSection);
+    }
+
+    [Fact]
+    public void SettingsViewModel_CategoryNavigation_FiltersSectionVisibility()
+    {
+        var service = new UiSettingsService();
+        var vm = new SettingsViewModel(service);
+
+        // Default is All
+        Assert.Equal(SettingsCategory.All, vm.SelectedCategory);
+        Assert.True(vm.IsAppearanceVisible);
+        Assert.True(vm.IsCanvasVisible);
+        Assert.True(vm.IsNotificationsVisible);
+        Assert.True(vm.IsAiVisible);
+        Assert.True(vm.IsPrivacyVisible);
+        Assert.True(vm.HasSearchResults);
+
+        // Switch to Appearance
+        vm.SelectCategoryCommand.Execute("Appearance");
+        Assert.Equal(SettingsCategory.Appearance, vm.SelectedCategory);
+        Assert.True(vm.IsAppearanceVisible);
+        Assert.False(vm.IsCanvasVisible);
+        Assert.False(vm.IsNotificationsVisible);
+        Assert.False(vm.IsAiVisible);
+        Assert.False(vm.IsPrivacyVisible);
+
+        // Switch to Canvas
+        vm.SelectCategoryCommand.Execute("Canvas");
+        Assert.Equal(SettingsCategory.Canvas, vm.SelectedCategory);
+        Assert.False(vm.IsAppearanceVisible);
+        Assert.True(vm.IsCanvasVisible);
+
+        // Switch to Notifications
+        vm.SelectCategoryCommand.Execute("Notifications");
+        Assert.Equal(SettingsCategory.Notifications, vm.SelectedCategory);
+        Assert.True(vm.IsNotificationsVisible);
+        Assert.False(vm.IsAppearanceVisible);
+
+        // Switch back to All
+        vm.SelectCategoryCommand.Execute("All");
+        Assert.Equal(SettingsCategory.All, vm.SelectedCategory);
+        Assert.True(vm.IsAppearanceVisible);
+        Assert.True(vm.IsCanvasVisible);
+        Assert.True(vm.IsNotificationsVisible);
+    }
+
+    [Fact]
+    public void SettingsViewModel_SearchQuery_FiltersSettingsAcrossCategories()
+    {
+        var service = new UiSettingsService();
+        var vm = new SettingsViewModel(service);
+
+        // Search for "ollama" -> only AI card should be visible
+        vm.SearchQuery = "ollama";
+        Assert.True(vm.HasSearchQuery);
+        Assert.True(vm.IsAiVisible);
+        Assert.False(vm.IsAppearanceVisible);
+        Assert.False(vm.IsCanvasVisible);
+        Assert.True(vm.HasSearchResults);
+
+        // Search for "grid" -> only Canvas card should be visible
+        vm.SearchQuery = "grid";
+        Assert.True(vm.IsCanvasVisible);
+        Assert.False(vm.IsAiVisible);
+        Assert.False(vm.IsAppearanceVisible);
+
+        // Search for nonexistent term -> HasSearchResults should be false
+        vm.SearchQuery = "xyz_nonexistent_setting_12345";
+        Assert.False(vm.HasSearchResults);
+        Assert.False(vm.IsAppearanceVisible);
+        Assert.False(vm.IsCanvasVisible);
+        Assert.False(vm.IsAiVisible);
+
+        // Clear search restores all
+        vm.ClearSearchCommand.Execute(null);
+        Assert.False(vm.HasSearchQuery);
+        Assert.True(vm.HasSearchResults);
+        Assert.True(vm.IsAppearanceVisible);
+        Assert.True(vm.IsCanvasVisible);
+        Assert.True(vm.IsNotificationsVisible);
+    }
+
+    [Fact]
+    public void SettingsViewModel_DirectPropertyMutation_PersistsToService()
+    {
+        var service = new UiSettingsService();
+        var vm = new SettingsViewModel(service);
+
+        // Test direct two-way property setters (used by ToggleSwitch and ComboBox controls)
+        vm.ShowGridByDefault = true;
+        Assert.True(service.Settings.ShowGridByDefault);
+
+        vm.SnapToGridByDefault = true;
+        Assert.True(service.Settings.SnapToGridByDefault);
+
+        vm.CompactRibbonByDefault = true;
+        Assert.True(service.Settings.CompactRibbonByDefault);
+
+        vm.ToastSoundEnabled = true;
+        Assert.True(service.Settings.ToastSoundEnabled);
+
+        vm.GridSnapSize = GridSnapSize.Points50;
+        Assert.Equal(GridSnapSize.Points50, service.Settings.GridSnapSize);
+
+        vm.DefaultZoomMode = PdfViewerZoomMode.FitPage;
+        Assert.Equal(PdfViewerZoomMode.FitPage, service.Settings.DefaultZoomMode);
     }
 }

@@ -115,6 +115,8 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
     private string _selectedLicenseCategory = "All";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsTopSearchBarVisible))]
+    [NotifyPropertyChangedFor(nameof(TopSearchPlaceholder))]
     private HomeNavSection _selectedNavSection = HomeNavSection.Home;
 
     [ObservableProperty]
@@ -175,7 +177,10 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
     public bool IsPluginsWorkspaceActive => SelectedNavSection == HomeNavSection.Plugins && !IsToolPageActive;
     public bool IsFullViewportActive => !IsToolPageActive && (ActiveNavDescriptor?.DisplayMode is PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.FullViewport or PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.ImmersiveStudio || SelectedNavSection == HomeNavSection.Plugins);
     public bool IsStandardScrollableContentActive => !IsToolPageActive && !IsFullViewportActive;
-    public bool IsTopSearchBarVisible => !IsToolPageActive && !(ActiveNavDescriptor?.HideTopSearchBar ?? false) && SelectedNavSection != HomeNavSection.Plugins;
+    public bool IsTopSearchBarVisible => !IsToolPageActive && ActiveNavDescriptor != null && !ActiveNavDescriptor.HideTopSearchBar;
+
+    public string TopSearchPlaceholder => string.Empty;
+
     public bool IsSidebarCompactRail => !IsToolPageActive && ActiveNavDescriptor?.DisplayMode == PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.ImmersiveStudio;
 
     public object? DynamicFullViewportPageView => IsFullViewportActive && !IsPluginsWorkspaceActive ? DynamicPageView : null;

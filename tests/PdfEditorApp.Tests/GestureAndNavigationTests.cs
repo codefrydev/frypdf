@@ -388,12 +388,12 @@ public class GestureAndNavigationTests
             new PdfEditorApp.Services.Tools.Core.PdfToolRegistry(),
             navigationRegistry: navReg);
 
-        // Before navigation: Home dashboard is active (scrollable, search bar visible)
+        // Before navigation: Home dashboard is active (scrollable, search bar hidden)
         Assert.False(home.IsFullViewportActive);
         Assert.True(home.IsStandardScrollableContentActive);
-        Assert.True(home.IsTopSearchBarVisible);
+        Assert.False(home.IsTopSearchBarVisible);
 
-        // Navigate to full-viewport tool
+        // Navigate to full-viewport tool (descriptor has HideTopSearchBar = false)
         home.SelectNavSectionCommand.Execute("CanvaImageEditor");
 
         Assert.True(home.IsFullViewportActive);
@@ -438,9 +438,13 @@ public class GestureAndNavigationTests
 
         Assert.False(home.IsFullViewportActive);
         Assert.True(home.IsStandardScrollableContentActive);
-        Assert.True(home.IsTopSearchBarVisible);
+        Assert.False(home.IsTopSearchBarVisible);
         Assert.False(home.IsSidebarCompactRail);
         Assert.Null(home.DynamicPageView);
+
+        // Navigating to NewDocument keeps top search bar hidden
+        home.SelectNavSectionCommand.Execute("NewDocument");
+        Assert.False(home.IsTopSearchBarVisible);
     }
 
     [Fact]

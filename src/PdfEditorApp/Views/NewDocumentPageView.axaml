@@ -104,27 +104,73 @@
 
     <StackPanel Margin="32,24,32,32">
 
-        <!-- Section Header with Title, Category Pills and Expand / Collapse Button -->
-        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,20" VerticalAlignment="Center">
+        <!-- Header Row: Title & Subtitle on Left, Actions on Right -->
+        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,16" VerticalAlignment="Center">
 
             <!-- Left: Title & Subtitle -->
-            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+            <StackPanel Grid.Column="0" Spacing="3" VerticalAlignment="Center">
                 <TextBlock Text="Start a new document"
-                           FontSize="18"
+                           FontSize="20"
                            FontWeight="Bold"
                            Foreground="{DynamicResource WinTextBrush}" />
                 <TextBlock Text="{Binding MatchingTemplatesCount, StringFormat='{}{0} professionally crafted templates'}"
-                           FontSize="12"
+                           FontSize="13"
                            Foreground="{DynamicResource WinMutedBrush}" />
             </StackPanel>
 
-            <!-- Center: Category Filter Pills -->
-            <StackPanel Grid.Column="1"
-                        Orientation="Horizontal"
-                        Spacing="6"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Margin="12,0">
+            <!-- Right: Open File Action & Template Gallery Expand / Collapse Toggle Button -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <Button Command="{Binding OpenFileCommand}"
+                        Classes="primary-btn"
+                        ToolTip.Tip="Open an existing PDF or .frypdf project file">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" VerticalAlignment="Center" />
+                        <TextBlock Text="Open File" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button Classes="gallery-toggle-btn"
+                        Command="{Binding ToggleTemplateGalleryCommand}"
+                        ToolTip.Tip="Toggle full template gallery grid view">
+                    <Panel>
+                        <!-- Collapsed State Content -->
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="{Binding !IsTemplateGalleryExpanded}">
+                            <TextBlock Text="Template gallery"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="#0F6CBD"
+                                       VerticalAlignment="Center" />
+                            <materialIcons:MaterialIcon Kind="ChevronDown"
+                                                        Width="16" Height="16"
+                                                        Foreground="#0F6CBD"
+                                                        VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- Expanded State Content -->
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="{Binding IsTemplateGalleryExpanded}">
+                            <TextBlock Text="Collapse gallery"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="#0F6CBD"
+                                       VerticalAlignment="Center" />
+                            <materialIcons:MaterialIcon Kind="ChevronUp"
+                                                        Width="16" Height="16"
+                                                        Foreground="#0F6CBD"
+                                                        VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Panel>
+                </Button>
+            </StackPanel>
+
+        </Grid>
+
+        <!-- Dedicated Category Filter Bar (Full width, horizontally scrollable, zero collision) -->
+        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Disabled"
+                      Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="8"
+                        VerticalAlignment="Center">
                 <Button Classes="home-filter-pill"
                         Classes.active="{Binding SelectedTemplateCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=All}"
                         Command="{Binding SetTemplateCategoryCommand}"
@@ -180,42 +226,7 @@
                     Invitations
                 </Button>
             </StackPanel>
-
-            <!-- Right: Template Gallery Expand / Collapse Toggle Button -->
-            <Button Grid.Column="2"
-                    Classes="gallery-toggle-btn"
-                    Command="{Binding ToggleTemplateGalleryCommand}"
-                    ToolTip.Tip="Toggle full template gallery grid view">
-                <Panel>
-                    <!-- Collapsed State Content -->
-                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="{Binding !IsTemplateGalleryExpanded}">
-                        <TextBlock Text="Template gallery"
-                                   FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="#0F6CBD"
-                                   VerticalAlignment="Center" />
-                        <materialIcons:MaterialIcon Kind="ChevronDown"
-                                                    Width="16" Height="16"
-                                                    Foreground="#0F6CBD"
-                                                    VerticalAlignment="Center" />
-                    </StackPanel>
-
-                    <!-- Expanded State Content -->
-                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsVisible="{Binding IsTemplateGalleryExpanded}">
-                        <TextBlock Text="Collapse gallery"
-                                   FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="#0F6CBD"
-                                   VerticalAlignment="Center" />
-                        <materialIcons:MaterialIcon Kind="ChevronUp"
-                                                    Width="16" Height="16"
-                                                    Foreground="#0F6CBD"
-                                                    VerticalAlignment="Center" />
-                    </StackPanel>
-                </Panel>
-            </Button>
-
-        </Grid>
+        </ScrollViewer>
 
         <!-- ===== 1. COMPACT / FEATURED VIEW (when Collapsed) ===== -->
         <Border IsVisible="{Binding !IsTemplateGalleryExpanded}">

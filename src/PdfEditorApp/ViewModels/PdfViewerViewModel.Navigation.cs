@@ -587,6 +587,7 @@ public partial class PdfViewerViewModel
         _backgroundRenderCts?.Cancel();
         IsOpeningDocument = false;
         IsLoading = false;
+        WeakReferenceMessenger.Default.Send(new HideLoadingProgressMessage());
         WeakReferenceMessenger.Default.Send(new NavigateToHomeMessage());
     }
 }

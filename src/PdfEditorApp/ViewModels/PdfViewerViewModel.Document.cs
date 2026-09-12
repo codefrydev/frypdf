@@ -18,6 +18,7 @@ using PdfEditorApp.Models;
 using PdfEditorApp.Services;
 using PdfEditorApp.Services.Ocr;
 using PdfEditorApp.Services.Tools.Core;
+using PdfEditorApp.Core.Plugins.Loading;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Outline;
@@ -366,6 +367,18 @@ public partial class PdfViewerViewModel
         DocumentTitle = string.IsNullOrWhiteSpace(sourceFilePath) ? "Document.pdf" : Path.GetFileName(sourceFilePath);
         DocumentFileSize = pdfBytes.Length > 0 ? FormatFileSize(pdfBytes.Length) : string.Empty;
 
+        WeakReferenceMessenger.Default.Send(new ShowLoadingProgressMessage(new LoadingProgressOptions
+        {
+            Title = DocumentTitle,
+            Category = "DOCUMENT VIEWER",
+            StatusMessage = "Parsing PDF structures & XRefs...",
+            FileSize = DocumentFileSize,
+            PipelinePhases = new[] { "Parse XRef", "Deconstruct", "Skia Canvas" },
+            ActivePhaseIndex = 0,
+            IsCancellable = true,
+            OnCancel = () => CancelLoadingCommand.Execute(null)
+        }));
+
         // Release the previous document's rendered bitmaps before replacing it — this
         // ViewModel is a long-lived singleton reused across every document open, so
         // nothing else ever frees this memory otherwise.
@@ -437,7 +450,11 @@ public partial class PdfViewerViewModel
                     }
 
                     // 1. Fast Page 1 extraction & immediate render
-                    Dispatcher.UIThread.Post(() => StatusMessage = "Rendering high-fidelity preview...");
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        StatusMessage = "Rendering high-fidelity preview...";
+                        WeakReferenceMessenger.Default.Send(new UpdateLoadingProgressMessage("Rendering high-fidelity preview...", ActivePhaseIndex: 1));
+                    });
                     var firstPage = doc.GetPage(1);
                     double defaultWidth = Math.Max(100, firstPage.Width);
                     double defaultHeight = Math.Max(100, firstPage.Height);
@@ -461,6 +478,11 @@ public partial class PdfViewerViewModel
                         }
                     }
                     catch { }
+
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        WeakReferenceMessenger.Default.Send(new UpdateLoadingProgressMessage("Finalizing document pages...", ActivePhaseIndex: 2));
+                    });
 
                     // 2. Instant Skeleton Generation, with REAL per-page dimensions.
                     Dispatcher.UIThread.Post(() => StatusMessage = $"Assembling {total} page layouts...");
@@ -557,6 +579,7 @@ public partial class PdfViewerViewModel
             IsLoading = false;
             IsOpeningDocument = false;
             StatusMessage = $"Ready • {total} pages";
+            WeakReferenceMessenger.Default.Send(new HideLoadingProgressMessage());
 
             bool page1HasNoText = (SelectedPage != null && SelectedPage.Words.Count == 0 && string.IsNullOrWhiteSpace(SelectedPage.ExtractedText));
             IsScannedDocument = page1HasNoText;
@@ -579,12 +602,14 @@ public partial class PdfViewerViewModel
             StatusMessage = "Loading cancelled.";
             IsLoading = false;
             IsOpeningDocument = false;
+            WeakReferenceMessenger.Default.Send(new HideLoadingProgressMessage());
         }
         catch (Exception ex)
         {
             StatusMessage = $"Error: {ex.Message}";
             IsLoading = false;
             IsOpeningDocument = false;
+            WeakReferenceMessenger.Default.Send(new HideLoadingProgressMessage());
         }
     }
 

@@ -94,6 +94,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
     public DataStudioViewModel DataStudio { get; }
     public BatchGenerationViewModel BatchGeneration { get; }
     public AiAssistantViewModel AiAssistant { get; }
+    public LoadingProgressViewModel LoadingProgress { get; }
 
     // --- HOME / EDITOR / VIEWER VIEW-SWITCHING ---
 
@@ -813,7 +814,8 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         PdfEditorApp.Core.Plugins.Descriptors.ISidebarRegistry? sidebarRegistry = null,
         PdfEditorApp.Core.Plugins.Descriptors.IDialogRegistry? dialogRegistry = null,
         PdfEditorApp.Core.Plugins.Descriptors.INavigationRegistry? navigationRegistry = null,
-        PdfEditorApp.Core.Plugins.Descriptors.IOverlayRegistry? overlayRegistry = null)
+        PdfEditorApp.Core.Plugins.Descriptors.IOverlayRegistry? overlayRegistry = null,
+        LoadingProgressViewModel? loadingProgress = null)
     {
         _exportService = exportService;
         _templateService = templateService;
@@ -941,6 +943,8 @@ public partial class MainViewModel : ViewModelBase, IDisposable
             RequestOpenSettings = () => NavigateToSettingsCommand.Execute(null),
             RequestReturnToThumbnails = () => SelectSidebarTab(SidebarTabKind.Thumbnails)
         };
+
+        LoadingProgress = loadingProgress ?? new LoadingProgressViewModel();
 
         // Set up Home page
         Home = homeViewModel ?? new HomeViewModel(_recentService, _templateService, _persistenceService, _toolRegistry, ToolRunner, effectiveToolFactory, _themeService, _uiSettingsService, navigationRegistry, _pluginHost?.Context);

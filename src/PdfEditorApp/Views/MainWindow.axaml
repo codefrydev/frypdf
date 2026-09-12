@@ -123,6 +123,8 @@
         <KeyBinding Gesture="Ctrl+Shift+Delete" Command="{Binding DeleteCurrentPageCommand}" />
         <KeyBinding Gesture="Cmd+Shift+Delete" Command="{Binding DeleteCurrentPageCommand}" />
         <KeyBinding Gesture="F2" Command="{Binding RenameCurrentDocumentCommand}" />
+        <!-- Universal Loading Cancel / Escape -->
+        <KeyBinding Gesture="Escape" Command="{Binding LoadingProgress.CancelCommand}" />
     </Window.KeyBindings>
 
     <!-- Main Window Root Layout -->
@@ -555,6 +557,13 @@
                                 VerticalAlignment="Center" />
             </Grid>
         </Border>
+
+        <!-- Universal Full-Screen Loading Progress Overlay (LoadingProgressPlugin) -->
+        <overlays:GlobalLoadingProgressHost ZIndex="99995"
+                                            DataContext="{Binding LoadingProgress}"
+                                            IsVisible="{Binding IsActive}"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch" />
     </Grid>
 
 </Window>

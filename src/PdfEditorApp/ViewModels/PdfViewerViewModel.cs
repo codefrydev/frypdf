@@ -203,6 +203,12 @@ public partial class PdfViewerViewModel : ViewModelBase
     private string _statusMessage = "Ready";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDocumentFileSize))]
+    private string _documentFileSize = string.Empty;
+
+    public bool HasDocumentFileSize => !string.IsNullOrWhiteSpace(DocumentFileSize);
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowScannedDocumentBanner))]
     private bool _hasDocument = false;
 

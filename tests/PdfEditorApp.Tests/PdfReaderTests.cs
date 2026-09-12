@@ -684,6 +684,32 @@ public class PdfReaderTests
         double zoomAt0 = vm.ZoomLevel;
         Assert.True(zoomAt0 > expectedZoom90); // Portrait fit zoom (1.55) is larger than landscape fit zoom (1.10)
     }
+
+    [Fact]
+    public async Task PdfViewer_LoadingDocument_ComputesFileSizeAndClearsStalePage()
+    {
+        var vm = new PdfViewerViewModel();
+        byte[] pdfBytes = CreateSamplePdfBytes();
+
+        await vm.LoadDocumentBytesAsync(pdfBytes, "SampleReport.pdf");
+        Assert.NotNull(vm.SelectedPage);
+        Assert.True(vm.HasDocumentFileSize);
+        Assert.NotEmpty(vm.DocumentFileSize);
+        Assert.False(vm.IsOpeningDocument);
+    }
+
+    [Fact]
+    public void PdfViewer_CancelLoading_CancelsAndResetsState()
+    {
+        var vm = new PdfViewerViewModel();
+        vm.IsOpeningDocument = true;
+        vm.IsLoading = true;
+
+        vm.CancelLoadingCommand.Execute(null);
+
+        Assert.False(vm.IsOpeningDocument);
+        Assert.False(vm.IsLoading);
+    }
 }
 
 

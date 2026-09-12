@@ -9,6 +9,7 @@ using Avalonia;
 using Avalonia.Input.Platform;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using PdfEditorApp.Core.Models;
@@ -311,17 +312,35 @@ public partial class PdfViewerViewModel
         if (!File.Exists(filePath))
         {
             StatusMessage = $"File not found: {filePath}";
+            IsOpeningDocument = false;
+            IsLoading = false;
             return;
         }
+
+        IsOpeningDocument = true;
+        IsLoading = true;
+        DocumentTitle = Path.GetFileName(filePath);
+        CurrentFilePath = filePath;
+        SelectedPage = null;
+        SelectedSpread = null;
+        StatusMessage = "Reading file from disk...";
 
         try
         {
             byte[] bytes = await File.ReadAllBytesAsync(filePath);
             await LoadDocumentFromBytesAsync(bytes, filePath, password);
         }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Loading cancelled.";
+            IsLoading = false;
+            IsOpeningDocument = false;
+        }
         catch (Exception ex)
         {
             StatusMessage = $"Error loading document: {ex.Message}";
+            IsLoading = false;
+            IsOpeningDocument = false;
         }
     }
 
@@ -345,6 +364,7 @@ public partial class PdfViewerViewModel
         _currentPassword = password;
         CurrentFilePath = sourceFilePath;
         DocumentTitle = string.IsNullOrWhiteSpace(sourceFilePath) ? "Document.pdf" : Path.GetFileName(sourceFilePath);
+        DocumentFileSize = pdfBytes.Length > 0 ? FormatFileSize(pdfBytes.Length) : string.Empty;
 
         // Release the previous document's rendered bitmaps before replacing it — this
         // ViewModel is a long-lived singleton reused across every document open, so
@@ -360,6 +380,8 @@ public partial class PdfViewerViewModel
             _openDocument = null;
         }
 
+        SelectedPage = null;
+        SelectedSpread = null;
         Pages.Clear();
         PageSpreads.Clear();
         Bookmarks.Clear();
@@ -374,6 +396,7 @@ public partial class PdfViewerViewModel
 
             var (metaList, pagesList, total) = await Task.Run(() =>
             {
+                Dispatcher.UIThread.Post(() => StatusMessage = "Parsing PDF structures & XRefs...");
                 var parsingOptions = new ParsingOptions();
                 if (!string.IsNullOrEmpty(password))
                 {
@@ -414,6 +437,7 @@ public partial class PdfViewerViewModel
                     }
 
                     // 1. Fast Page 1 extraction & immediate render
+                    Dispatcher.UIThread.Post(() => StatusMessage = "Rendering high-fidelity preview...");
                     var firstPage = doc.GetPage(1);
                     double defaultWidth = Math.Max(100, firstPage.Width);
                     double defaultHeight = Math.Max(100, firstPage.Height);
@@ -438,7 +462,8 @@ public partial class PdfViewerViewModel
                     }
                     catch { }
 
-                    // 2. Instant Skeleton Generation, with REAL per-page dimensions. Reading a
+                    // 2. Instant Skeleton Generation, with REAL per-page dimensions.
+                    Dispatcher.UIThread.Post(() => StatusMessage = $"Assembling {total} page layouts...");
                     // page's declared size is cheap (the page dictionary's MediaBox) — nothing
                     // like the cost of full word/text extraction — so it's worth doing for every
                     // page right now rather than defaulting every page to page 1's size until
@@ -561,6 +586,14 @@ public partial class PdfViewerViewModel
             IsLoading = false;
             IsOpeningDocument = false;
         }
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024.0):F1} MB";
+        return $"{bytes / (1024.0 * 1024.0 * 1024.0):F2} GB";
     }
 
     /// <summary>Renders a specific page at the specified scale directly from PDF bytes using Skia.</summary>

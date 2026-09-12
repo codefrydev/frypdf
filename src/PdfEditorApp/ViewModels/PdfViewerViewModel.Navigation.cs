@@ -579,5 +579,15 @@ public partial class PdfViewerViewModel
     {
         WeakReferenceMessenger.Default.Send(new NavigateToHomeMessage());
     }
+
+    [RelayCommand]
+    public void CancelLoading()
+    {
+        _renderCts?.Cancel();
+        _backgroundRenderCts?.Cancel();
+        IsOpeningDocument = false;
+        IsLoading = false;
+        WeakReferenceMessenger.Default.Send(new NavigateToHomeMessage());
+    }
 }
 

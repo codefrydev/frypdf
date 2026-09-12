@@ -291,6 +291,10 @@ public class TotalMicrokernelTests
         var profilePath = Path.Combine(AppContext.BaseDirectory, "profiles", "desktop.profile.json");
         if (!File.Exists(profilePath))
         {
+            profilePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "profiles", "desktop.profile.json"));
+        }
+        if (!File.Exists(profilePath))
+        {
             profilePath = "profiles/desktop.profile.json";
         }
 

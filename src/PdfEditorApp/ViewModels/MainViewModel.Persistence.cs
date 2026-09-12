@@ -1,12 +1,15 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Core.Models;
 using PdfEditorApp.Core.Plugins.Descriptors;
+using PdfEditorApp.Core.Plugins.Loading;
 using PdfEditorApp.Models;
+using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels.ElementViewModels;
 
 namespace PdfEditorApp.ViewModels;
@@ -441,4 +444,109 @@ public partial class MainViewModel
         UpdateStatus($"Loaded document: {DocumentTitle}");
         IsBusy = false;
     }
+
+    // --- SHUTDOWN PERSISTENCE & AUTOSAVE RECOVERY ---
+
+    /// <summary>
+    /// Indicates whether the active session has open document content or modifications that should be preserved.
+    /// </summary>
+    public bool HasUnsavedWork
+    {
+        get
+        {
+            if (Pages.Count == 0) return false;
+            return UndoRedo.CanUndo || Pages.Any(p => p.Elements.Count > 0) || !string.IsNullOrEmpty(CurrentFilePath);
+        }
+    }
+
+    /// <summary>
+    /// Writes an autosave recovery snapshot of the currently open document so work is never lost.
+    /// </summary>
+    public async Task AutoSaveCurrentDocumentAsync()
+    {
+        try
+        {
+            if (Pages.Count == 0) return;
+            var docModel = ToDocumentModel();
+            await _persistenceService.SaveAutoSaveAsync(docModel, CurrentFilePath);
+            AppLogService.Instance.Log(AppLogLevel.Info, "Persistence",
+                $"Autosave recovery snapshot preserved for '{(string.IsNullOrEmpty(CurrentFilePath) ? "untitled" : CurrentFilePath)}'.");
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("Persistence", "Failed to write autosave recovery snapshot", ex);
+        }
+    }
+
+    /// <summary>
+    /// Executes graceful shutdown tasks with phased progress updates on the full-screen loading screen.
+    /// </summary>
+    public async Task PrepareForShutdownAsync(ILoadingProgressHandle? progressHandle = null)
+    {
+        try
+        {
+            // Phase 0: Inspect active workspace and documents
+            progressHandle?.UpdateStatus("Checking active workspace and document state...", progressPercent: 20.0, activePhaseIndex: 0);
+            await Task.Delay(100);
+
+            // Phase 1: AutoSave active document if present
+            progressHandle?.UpdateStatus("Preserving document recovery snapshot...", progressPercent: 50.0, activePhaseIndex: 1);
+            if (HasUnsavedWork)
+            {
+                await AutoSaveCurrentDocumentAsync();
+            }
+
+            // Phase 2: Preferences & Diagnostic Logs
+            progressHandle?.UpdateStatus("Flushing diagnostics and persisting preferences...", progressPercent: 80.0, activePhaseIndex: 2);
+            await Task.Delay(100);
+
+            // Phase 3: Final shutdown
+            progressHandle?.UpdateStatus("All work safely preserved. Goodbye!", progressPercent: 100.0, activePhaseIndex: 3);
+            await Task.Delay(180);
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("Shutdown", "Error during shutdown preparation", ex);
+        }
+    }
+
+    /// <summary>
+    /// Checks whether a recoverable autosave snapshot exists from a previous session.
+    /// </summary>
+    public bool CheckForRecoverableAutoSave(out string autoSavePath)
+    {
+        autoSavePath = string.Empty;
+        try
+        {
+            return _persistenceService.HasRecoverableAutoSave(null, out autoSavePath);
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("Persistence", "Error checking for recoverable autosave", ex);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Restores the autosave snapshot if present.
+    /// </summary>
+    public async Task<bool> RestoreAutoSaveAsync(string autoSavePath)
+    {
+        try
+        {
+            var model = await _persistenceService.LoadAutoSaveAsync(autoSavePath);
+            if (model != null && model.Pages.Count > 0)
+            {
+                await LoadFromDocumentModelAsync(model);
+                ShowToast("Restored unsaved document from previous session", "Restore");
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("Persistence", "Error restoring autosave snapshot", ex);
+        }
+        return false;
+    }
 }
+

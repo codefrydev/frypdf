@@ -1,14 +1,22 @@
+using System;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using Microsoft.Extensions.DependencyInjection;
+using PdfEditorApp.Core.Plugins.Loading;
+using PdfEditorApp.Services;
 using PdfEditorApp.ViewModels;
 
 namespace PdfEditorApp.Views;
 
 public partial class MainWindow : Window
 {
+    private bool _isShutdownCompleted;
+    private bool _isClosingInProgress;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -22,6 +30,8 @@ public partial class MainWindow : Window
                 vm.BatchGeneration.StorageProvider = StorageProvider;
             }
         };
+
+        Closing += OnMainWindowClosing;
 
         AddHandler(KeyDownEvent, (sender, e) =>
         {
@@ -110,5 +120,75 @@ public partial class MainWindow : Window
                 }
             }
         }, RoutingStrategies.Tunnel);
+    }
+
+    private async void OnMainWindowClosing(object? sender, WindowClosingEventArgs e)
+    {
+        if (_isShutdownCompleted)
+        {
+            // Shutdown completed; hide window immediately and allow Avalonia to complete exit
+            Hide();
+            return;
+        }
+
+        // Intercept close to show full-screen saving loading progress and persist all work
+        e.Cancel = true;
+
+        if (_isClosingInProgress)
+        {
+            return;
+        }
+        _isClosingInProgress = true;
+
+        try
+        {
+            await ExecuteGracefulShutdownAsync();
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("MainWindow", "Graceful shutdown encountered an error, proceeding with exit", ex);
+        }
+        finally
+        {
+            _isShutdownCompleted = true;
+            Close();
+        }
+    }
+
+    private async Task ExecuteGracefulShutdownAsync()
+    {
+        var loadingService = App.Services?.GetService<ILoadingProgressService>();
+        ILoadingProgressHandle? handle = null;
+
+        if (loadingService != null)
+        {
+            handle = loadingService.Show(new LoadingProgressOptions
+            {
+                Title = "Saving & Closing FryPDF Studio",
+                Category = "SHUTDOWN & PERSISTENCE",
+                StatusMessage = "Checking active workspace and document state...",
+                PipelinePhases = new[] { "Inspect", "AutoSave", "Preferences", "Shutdown" },
+                ActivePhaseIndex = 0,
+                IsCancellable = false,
+                ProgressPercent = 15.0
+            });
+        }
+
+        try
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                await vm.PrepareForShutdownAsync(handle);
+            }
+            else
+            {
+                handle?.UpdateStatus("Closing studio...", progressPercent: 100.0, activePhaseIndex: 3);
+                await Task.Delay(200);
+            }
+        }
+        finally
+        {
+            handle?.Dispose();
+        }
     }
 }

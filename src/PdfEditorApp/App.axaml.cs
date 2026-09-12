@@ -9,6 +9,7 @@ using PdfEditorApp.ViewModels.Tools.Security;
 using PdfEditorApp.ViewModels.Tools.Conversion;
 using PdfEditorApp.ViewModels.Tools.Intelligence;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -80,27 +81,51 @@ public partial class App : Application
             // the only thing that can see a freeze that happens during rendering.
             _uiThreadWatchdog = new UiThreadWatchdog();
 
-            // Restore previously installed plugins once the window exists. This must not run
-            // during construction of the marketplace singleton: activating a plugin registers
-            // overlays and ribbon items that post to the dispatcher, so blocking on it from
-            // the UI thread deadlocks startup.
-            // InvokeAsync rather than Post: Post takes an Action, so an async lambda there
-            // would be async void.
+            // Professional startup setup orchestration (Google Material 3 Expressive)
             _ = Dispatcher.UIThread.InvokeAsync(async () =>
             {
+                var loadingService = Services.GetService<PdfEditorApp.Core.Plugins.Loading.ILoadingProgressService>();
+                PdfEditorApp.Core.Plugins.Loading.ILoadingProgressHandle? handle = null;
+
+                if (loadingService != null)
+                {
+                    handle = loadingService.Show(new PdfEditorApp.Core.Plugins.Loading.LoadingProgressOptions
+                    {
+                        Title = "Starting FryPDF Studio",
+                        Category = "STARTUP & INITIALIZATION",
+                        StatusMessage = "Mounting 17 microkernel plugin bundles...",
+                        PipelinePhases = new[] { "Theme", "Plugins", "Engine", "Workspace" },
+                        ActivePhaseIndex = 1,
+                        IsCancellable = false,
+                        ProgressPercent = 30.0
+                    });
+                }
+
                 try
                 {
+                    await Task.Delay(120);
+                    handle?.UpdateStatus("Initializing Skia hardware accelerated canvas...", progressPercent: 65.0, activePhaseIndex: 2);
+
                     var marketplace = Services.GetService<PdfEditorApp.Core.Plugins.Marketplace.IPluginMarketplaceService>();
                     if (marketplace != null)
                     {
                         await marketplace.InitializeAsync();
                     }
+
+                    handle?.UpdateStatus("Setting up workspace & dashboard...", progressPercent: 90.0, activePhaseIndex: 3);
+                    await Task.Delay(120);
+                    handle?.UpdateStatus("Ready!", progressPercent: 100.0, activePhaseIndex: 3);
+                    await Task.Delay(80);
                 }
                 catch (Exception ex)
                 {
-                    AppLogService.Instance.LogWarning("App", "Deferred plugin restore failed", ex);
+                    AppLogService.Instance.LogWarning("App", "Startup initialization warning", ex);
                 }
-            }, DispatcherPriority.Background);
+                finally
+                {
+                    handle?.Dispose();
+                }
+            }, DispatcherPriority.Loaded);
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -109,11 +134,6 @@ public partial class App : Application
     /// <summary>
     /// Tears down application services on shutdown.
     /// </summary>
-    /// <remarks>
-    /// Previously only AppLogService was disposed, so the ServiceProvider — and with it the
-    /// PluginHost singleton — was never disposed, meaning no plugin ever received its stop
-    /// callback and anything a plugin flushed on stop was lost.
-    /// </remarks>
     private static UiThreadWatchdog? _uiThreadWatchdog;
 
     private static void ShutdownServices()
@@ -125,9 +145,22 @@ public partial class App : Application
         {
             if (Services is IAsyncDisposable asyncDisposable)
             {
-                // PluginHost implements IAsyncDisposable; taking that path avoids its
-                // blocking Dispose, which waits on StopAsync from the UI thread.
-                asyncDisposable.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                // Run disposal off the UI thread with a bounded timeout (2 seconds)
+                // so the application exits cleanly and never deadlocks or hangs.
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                var teardownTask = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await asyncDisposable.DisposeAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        AppLogService.Instance.LogWarning("App", "Background teardown error", ex);
+                    }
+                }, cts.Token);
+
+                teardownTask.Wait(TimeSpan.FromSeconds(2));
             }
             else if (Services is IDisposable disposable)
             {

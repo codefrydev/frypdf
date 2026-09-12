@@ -16,7 +16,7 @@
 
         <!-- Toolbar primary action -->
         <shell:PdfToolWorkspaceView.ToolbarActionContent>
-            <Button Command="{Binding ExecuteToolCommand}" IsEnabled="{Binding !IsRunning}" Background="#0284C7" Foreground="White" CornerRadius="8" Padding="16,8" FontWeight="Bold" FontSize="12.5" Cursor="Hand">
+            <Button Command="{Binding ExecuteToolCommand}" IsEnabled="{Binding !IsRunning}" Background="#0284C7" Foreground="White" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="16,8" FontWeight="Bold" FontSize="12.5" Cursor="Hand">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <materialIcons:MaterialIcon Kind="SelectRemove" Width="15" Height="15" />
                     <TextBlock Text="{Binding Marks.Count, StringFormat='Redact {0} Region(s)'}" VerticalAlignment="Center" />
@@ -88,7 +88,7 @@
             <StackPanel Spacing="16">
 
                 <!-- Error Alert Banner -->
-                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="10" Padding="14,10" IsVisible="{Binding HasError}">
+                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerMedium}" Padding="14,10" IsVisible="{Binding HasError}">
                     <Grid ColumnDefinitions="Auto,*">
                         <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="20" Height="20" Foreground="#DC2626" Margin="0,0,10,0" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
@@ -99,10 +99,10 @@
                 </Border>
 
                 <!-- Success Banner -->
-                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="12" Padding="16" BoxShadow="0 4 12 #1016A34A" IsVisible="{Binding IsComplete}">
+                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerLarge}" Padding="16" BoxShadow="0 4 12 #1016A34A" IsVisible="{Binding IsComplete}">
                     <StackPanel Spacing="12">
                         <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                            <Border Width="34" Height="34" Background="#DCFCE7" CornerRadius="9">
+                            <Border Width="34" Height="34" Background="#DCFCE7" CornerRadius="{StaticResource M3ShapeCornerMedium}">
                                 <materialIcons:MaterialIcon Kind="CheckCircle" Width="20" Height="20" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Spacing="2" VerticalAlignment="Center">
@@ -112,13 +112,13 @@
                         </StackPanel>
 
                         <WrapPanel Orientation="Horizontal">
-                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
                                 <StackPanel Orientation="Horizontal" Spacing="5">
                                     <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="13" Height="13" />
                                     <TextBlock Text="Open Redacted PDF" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#DCFCE7" Foreground="#166534" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="8" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
+                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#DCFCE7" Foreground="#166534" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="12,7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,6,6">
                                 <StackPanel Orientation="Horizontal" Spacing="5">
                                     <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="13" Height="13" />
                                     <TextBlock Text="Show in Folder" VerticalAlignment="Center" />
@@ -129,27 +129,27 @@
                 </Border>
 
                 <!-- Processing Card -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" IsVisible="{Binding IsRunning}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerLarge}" Padding="14" IsVisible="{Binding IsRunning}">
                     <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="13" FontWeight="Bold" Foreground="#0284C7" VerticalAlignment="Center" />
                         </Grid>
-                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="7" CornerRadius="4" Foreground="#0284C7" Background="{DynamicResource WinHoverBrush}" />
+                        <ProgressBar Classes="m3-progress" Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="7" CornerRadius="{StaticResource M3ShapeCornerFull}" Foreground="#0284C7" Background="{DynamicResource WinHoverBrush}" />
                     </StackPanel>
                 </Border>
 
                 <!-- Dropzone -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="10" Padding="20,26" IsVisible="{Binding !HasSelectedFiles}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="{StaticResource M3ShapeCornerLarge}" Padding="20,26" IsVisible="{Binding !HasSelectedFiles}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
-                        <Border Width="52" Height="52" Background="#F0F9FF" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="14" HorizontalAlignment="Center">
+                        <Border Width="52" Height="52" Background="#F0F9FF" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerMedium}" HorizontalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="SelectRemove" Width="28" Height="28" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <StackPanel Spacing="3" HorizontalAlignment="Center">
                             <TextBlock Text="Select PDF to Redact" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
                             <TextBlock Text="Permanently sanitize sensitive information" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                         </StackPanel>
-                        <Button Command="{Binding AddFilesCommand}" Background="#0284C7" Foreground="White" CornerRadius="8" Padding="18,9" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
+                        <Button Command="{Binding AddFilesCommand}" Background="#0284C7" Foreground="White" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="18,9" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
                                 <TextBlock Text="Select PDF Document" VerticalAlignment="Center" />
@@ -162,7 +162,7 @@
                 <StackPanel Spacing="10" IsVisible="{Binding HasSelectedFiles}">
                     <Grid ColumnDefinitions="*,Auto">
                         <TextBlock Grid.Column="0" Text="{Binding PrimaryInputFile}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                        <Button Grid.Column="1" Command="{Binding ClearFilesCommand}" Background="#F0F9FF" Foreground="#0284C7" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="6" Padding="10,5" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
+                        <Button Grid.Column="1" Command="{Binding ClearFilesCommand}" Background="#F0F9FF" Foreground="#0284C7" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="10,5" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
                             Change File
                         </Button>
                     </Grid>
@@ -173,7 +173,7 @@
                 <StackPanel Spacing="6">
                     <TextBlock Text="Search text to find &amp; mark" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                     <TextBox Text="{Binding SearchPattern}" FontSize="12" PlaceholderText="e.g. CONFIDENTIAL, SSN, Secret..." />
-                    <Button Command="{Binding FindAndMarkCommand}" Background="#F0F9FF" Foreground="#0284C7" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="8" Padding="12,8" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Cursor="Hand" IsEnabled="{Binding !IsSearching}">
+                    <Button Command="{Binding FindAndMarkCommand}" Background="#F0F9FF" Foreground="#0284C7" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="12,8" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Cursor="Hand" IsEnabled="{Binding !IsSearching}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <materialIcons:MaterialIcon Kind="Magnify" Width="15" Height="15" />
                             <TextBlock Text="Find &amp; Mark Matches" VerticalAlignment="Center" />
@@ -189,7 +189,7 @@
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <TextBlock Text="Marked for Redaction" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
-                            <Border Background="#F0F9FF" CornerRadius="10" Padding="7,1" VerticalAlignment="Center">
+                            <Border Background="#F0F9FF" CornerRadius="{StaticResource M3ShapeCornerMedium}" Padding="7,1" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Marks.Count}" FontSize="10.5" FontWeight="Bold" Foreground="#0284C7" />
                             </Border>
                         </StackPanel>
@@ -203,7 +203,7 @@
                     <ItemsControl ItemsSource="{Binding Marks}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="models:RedactionMarkItem">
-                                <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,6">
+                                <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerMedium}" Padding="10,8" Margin="0,0,0,6">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <StackPanel Grid.Column="0" Spacing="2">
                                             <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" />
@@ -221,10 +221,10 @@
 
                 <CheckBox Content="Permanent Deep Content Sanitization" IsChecked="{Binding PermanentScrubText}" FontSize="12" />
 
-                <Border Background="#F0F9FF" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="8" Padding="12" IsVisible="{Binding PermanentScrubText}">
+                <Border Background="#F0F9FF" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerMedium}" Padding="12" IsVisible="{Binding PermanentScrubText}">
                     <TextBlock Text="Marked pages are rendered to flattened images before saving, so the underlying text is genuinely removed — not just covered." FontSize="11" Foreground="#0369A1" TextWrapping="Wrap" />
                 </Border>
-                <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="8" Padding="12" IsVisible="{Binding !PermanentScrubText}">
+                <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerMedium}" Padding="12" IsVisible="{Binding !PermanentScrubText}">
                     <TextBlock Text="Visual overlay only: a black box is drawn over each mark, but the underlying text stays in the PDF and can be recovered by removing the overlay." FontSize="11" Foreground="#92400E" TextWrapping="Wrap" />
                 </Border>
 

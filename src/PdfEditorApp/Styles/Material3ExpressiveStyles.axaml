@@ -864,4 +864,95 @@
         <Setter Property="Padding" Value="8,2" />
     </Style>
 
+    <!-- =================================================================== -->
+    <!-- 8. M3 TOOL SIDEBAR SUITE (Progress, Alerts, Dropzones, Cards)       -->
+    <!-- =================================================================== -->
+
+    <!-- M3 Expressive Tactile Progress Bar -->
+    <Style Selector="ProgressBar, ProgressBar.m3-progress">
+        <Setter Property="Height" Value="8" />
+        <Setter Property="MinHeight" Value="8" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighestBrush}" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Value" Duration="0:0:0.25" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- M3 Tool Alert Banners -->
+    <Style Selector="Border.m3-tool-alert-error">
+        <Setter Property="Background" Value="{DynamicResource M3ErrorContainerBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3ErrorBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerMedium}" />
+        <Setter Property="Padding" Value="14,12" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
+    </Style>
+    <Style Selector="Border.m3-tool-alert-success">
+        <Setter Property="Background" Value="{DynamicResource M3SuccessContainerBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3SuccessBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+        <Setter Property="Padding" Value="16,14" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
+    </Style>
+    <Style Selector="Border.m3-tool-alert-info">
+        <Setter Property="Background" Value="{DynamicResource M3PrimaryContainerBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerMedium}" />
+        <Setter Property="Padding" Value="14,12" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
+    </Style>
+
+    <!-- M3 Tool Dropzone & Document Selection -->
+    <Style Selector="Border.m3-tool-dropzone">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowestBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+        <Setter Property="Padding" Value="20,24" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.18" />
+                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.18" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.m3-tool-dropzone:pointerover">
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
+    </Style>
+
+    <!-- M3 Tool Document Card -->
+    <Style Selector="Border.m3-tool-doc-card">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowestBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerMedium}" />
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.m3-tool-doc-card:pointerover">
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+    </Style>
+
+    <!-- M3 Empty State Card -->
+    <Style Selector="Border.m3-empty-state">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowestBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineVariantBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerLarge}" />
+        <Setter Property="Padding" Value="24,20" />
+    </Style>
+
 </Styles>

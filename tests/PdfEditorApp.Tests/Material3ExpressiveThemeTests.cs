@@ -591,6 +591,66 @@ public class Material3ExpressiveThemeTests
         Assert.Contains("Classes=\"thumbnail-card\"", editorThumbnailsXaml);
         Assert.Contains("Classes=\"page-number-pill\"", editorThumbnailsXaml);
     }
+
+    [Fact]
+    public void Material3Styles_DefinesM3ToolSidebarSuite()
+    {
+        var stylesPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Styles", "Material3ExpressiveStyles.axaml");
+        var styles = File.ReadAllText(stylesPath);
+
+        Assert.Contains("ProgressBar, ProgressBar.m3-progress", styles);
+        Assert.Contains("Border.m3-tool-alert-error", styles);
+        Assert.Contains("Border.m3-tool-alert-success", styles);
+        Assert.Contains("Border.m3-tool-alert-info", styles);
+        Assert.Contains("Border.m3-tool-dropzone", styles);
+        Assert.Contains("Border.m3-tool-doc-card", styles);
+        Assert.Contains("Border.m3-empty-state", styles);
+    }
+
+    [Fact]
+    public void PdfToolWorkspaceView_LeftSidebarFollowsM3ExpressiveStandards()
+    {
+        var viewPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "Shell", "PdfToolWorkspaceView.axaml");
+        var xaml = File.ReadAllText(viewPath);
+
+        // Sidebar tab switcher styling
+        Assert.Contains("Button.workspace-tab", xaml);
+        Assert.Contains("M3ShapeCornerMedium", xaml);
+        Assert.Contains("M3SecondaryContainerBrush", xaml);
+
+        // Pages thumbnail gallery
+        Assert.Contains("Classes=\"thumbnail-item-btn\"", xaml);
+        Assert.Contains("Classes=\"thumbnail-card\"", xaml);
+        Assert.Contains("Classes=\"page-number-pill\"", xaml);
+    }
+
+    [Fact]
+    public void AllPdfTools_OptionButtonsAndCards_FollowM3ExpressiveShapeHierarchy()
+    {
+        var toolsDir = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "Tools");
+        var files = Directory.GetFiles(toolsDir, "*.axaml", SearchOption.AllDirectories);
+        Assert.Equal(31, files.Length);
+
+        foreach (var file in files)
+        {
+            var content = File.ReadAllText(file);
+            var filename = Path.GetFileName(file);
+
+            // Assert no arbitrary small CornerRadius on Button tags
+            var buttonMatch = System.Text.RegularExpressions.Regex.Match(
+                content,
+                @"<Button\b[^>]*?CornerRadius=""([0-9]+)""",
+                System.Text.RegularExpressions.RegexOptions.Singleline);
+            Assert.False(buttonMatch.Success, $"File {filename} contains Button with arbitrary numerical CornerRadius: {buttonMatch.Value}");
+
+            // Assert no arbitrary small CornerRadius on ProgressBar tags
+            var progressMatch = System.Text.RegularExpressions.Regex.Match(
+                content,
+                @"<ProgressBar\b[^>]*?CornerRadius=""([0-9]+)""",
+                System.Text.RegularExpressions.RegexOptions.Singleline);
+            Assert.False(progressMatch.Success, $"File {filename} contains ProgressBar with arbitrary numerical CornerRadius: {progressMatch.Value}");
+        }
+    }
 }
 
 

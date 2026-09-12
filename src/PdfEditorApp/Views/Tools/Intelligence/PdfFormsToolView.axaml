@@ -10,7 +10,7 @@
 
         <!-- Toolbar primary action -->
         <shell:PdfToolWorkspaceView.ToolbarActionContent>
-            <Button Command="{Binding ExecuteToolCommand}" IsEnabled="{Binding !IsRunning}" Background="#9333EA" Foreground="White" CornerRadius="8" Padding="16,8" FontWeight="Bold" FontSize="12.5" Cursor="Hand">
+            <Button Command="{Binding ExecuteToolCommand}" IsEnabled="{Binding !IsRunning}" Background="#9333EA" Foreground="White" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="16,8" FontWeight="Bold" FontSize="12.5" Cursor="Hand">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <materialIcons:MaterialIcon Kind="TextBoxOutline" Width="15" Height="15" />
                     <TextBlock Text="Process Form" VerticalAlignment="Center" />
@@ -23,7 +23,7 @@
             <StackPanel Spacing="16">
 
                 <!-- Error Alert Banner -->
-                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="10" Padding="16,12" IsVisible="{Binding HasError}">
+                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerMedium}" Padding="16,12" IsVisible="{Binding HasError}">
                     <Grid ColumnDefinitions="Auto,*">
                         <materialIcons:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Width="22" Height="22" Foreground="#DC2626" Margin="0,0,12,0" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
@@ -34,10 +34,10 @@
                 </Border>
 
                 <!-- Success Banner -->
-                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="12" Padding="20,18" BoxShadow="0 4 12 #1016A34A" IsVisible="{Binding IsComplete}">
+                <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerLarge}" Padding="20,18" BoxShadow="0 4 12 #1016A34A" IsVisible="{Binding IsComplete}">
                     <StackPanel Spacing="14">
                         <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                            <Border Width="40" Height="40" Background="#DCFCE7" CornerRadius="10">
+                            <Border Width="40" Height="40" Background="#DCFCE7" CornerRadius="{StaticResource M3ShapeCornerMedium}">
                                 <materialIcons:MaterialIcon Kind="CheckCircle" Width="24" Height="24" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Spacing="2" VerticalAlignment="Center">
@@ -47,13 +47,13 @@
                         </StackPanel>
 
                         <WrapPanel Orientation="Horizontal">
-                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
+                            <Button Command="{Binding OpenOutputFileCommand}" Background="#16A34A" Foreground="White" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <materialIcons:MaterialIcon Kind="FileEyeOutline" Width="15" Height="15" />
                                     <TextBlock Text="Open Form PDF" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#DCFCE7" Foreground="#166534" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="8" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
+                            <Button Command="{Binding OpenOutputFolderCommand}" Background="#DCFCE7" Foreground="#166534" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="14,8" FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,6">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="15" Height="15" />
                                     <TextBlock Text="Show in Folder" VerticalAlignment="Center" />
@@ -64,27 +64,27 @@
                 </Border>
 
                 <!-- Processing Card -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20,16" IsVisible="{Binding IsRunning}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerLarge}" Padding="20,16" IsVisible="{Binding IsRunning}">
                     <StackPanel Spacing="12">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}" FontSize="14" FontWeight="Bold" Foreground="#9333EA" VerticalAlignment="Center" />
                         </Grid>
-                        <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#9333EA" Background="{DynamicResource WinHoverBrush}" />
+                        <ProgressBar Classes="m3-progress" Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="8" CornerRadius="{StaticResource M3ShapeCornerFull}" Foreground="#9333EA" Background="{DynamicResource WinHoverBrush}" />
                     </StackPanel>
                 </Border>
 
                 <!-- Dropzone Box -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="12" Padding="24,28" IsVisible="{Binding !HasSelectedFiles}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="2" CornerRadius="{StaticResource M3ShapeCornerLarge}" Padding="24,28" IsVisible="{Binding !HasSelectedFiles}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
-                        <Border Width="56" Height="56" Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="16" HorizontalAlignment="Center">
+                        <Border Width="56" Height="56" Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerMedium}" HorizontalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="TextBoxOutline" Width="30" Height="30" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <StackPanel Spacing="4" HorizontalAlignment="Center">
                             <TextBlock Text="Select Interactive PDF Form" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
                             <TextBlock Text="Fill out AcroForm fields, flatten interactive form fields into static text, or export JSON data" FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                         </StackPanel>
-                        <Button Command="{Binding AddFilesCommand}" Background="#9333EA" Foreground="White" CornerRadius="8" Padding="20,10" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
+                        <Button Command="{Binding AddFilesCommand}" Background="#9333EA" Foreground="White" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="20,10" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="16" Height="16" />
                                 <TextBlock Text="Select PDF Form" VerticalAlignment="Center" />
@@ -94,17 +94,17 @@
                 </Border>
 
                 <!-- Loaded Document Card -->
-                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16" IsVisible="{Binding HasSelectedFiles}">
+                <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerLarge}" Padding="16" IsVisible="{Binding HasSelectedFiles}">
                     <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Form Document" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                            <Button Command="{Binding AddFilesCommand}" Background="#FAF5FF" Foreground="#9333EA" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="6" Padding="10,5" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
+                            <Button Command="{Binding AddFilesCommand}" Background="#FAF5FF" Foreground="#9333EA" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="10,5" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
                                 Change File
                             </Button>
                         </Grid>
-                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                        <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerMedium}" Padding="12,10">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Border Grid.Column="0" Width="32" Height="32" Background="#FAF5FF" CornerRadius="8" Margin="0,0,10,0">
+                                <Border Grid.Column="0" Width="32" Height="32" Background="#FAF5FF" CornerRadius="{StaticResource M3ShapeCornerSmall}" Margin="0,0,10,0">
                                     <materialIcons:MaterialIcon Kind="FilePdfBox" Width="18" Height="18" Foreground="#9333EA" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <TextBlock Grid.Column="1" Text="{Binding PrimaryInputFile}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
@@ -122,7 +122,7 @@
                     <TextBlock Text="Form Processing" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                 </StackPanel>
 
-                <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14,12">
+                <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerLarge}" Padding="14,12">
                     <StackPanel Spacing="12">
                         <CheckBox Content="Flatten Interactive Form Fields into Permanent Page Content" IsChecked="{Binding FlattenFields}" FontSize="12" />
                         <CheckBox Content="Export Extracted Field Values to JSON" IsChecked="{Binding ExportFieldValuesJson}" FontSize="12" />

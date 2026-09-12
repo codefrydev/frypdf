@@ -207,15 +207,20 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="models:PdfToolPreviewPage">
-                                        <Border Classes="thumbnail-card" Width="118" Margin="0,0,10,10"
-                                                Classes.selected="{Binding IsSelected}"
-                                                Cursor="Hand"
-                                                PointerPressed="OnThumbnailPointerPressed">
-                                            <StackPanel Spacing="4">
-                                                <Image Source="{Binding ThumbnailBitmap}" Height="140" Stretch="Uniform" />
-                                                <TextBlock Text="{Binding PageLabel}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
-                                            </StackPanel>
-                                        </Border>
+                                        <StackPanel Width="120" Margin="0,0,12,14"
+                                                    Cursor="Hand"
+                                                    PointerPressed="OnThumbnailPointerPressed">
+                                            <Border Classes="thumbnail-card"
+                                                    Classes.selected="{Binding IsSelected}"
+                                                    HorizontalAlignment="Center">
+                                                <Image Source="{Binding ThumbnailBitmap}" MaxWidth="116" MaxHeight="145" Stretch="Uniform" />
+                                            </Border>
+                                            <Border Classes="page-number-pill"
+                                                    Classes.selected="{Binding IsSelected}"
+                                                    Margin="0,6,0,0">
+                                                <TextBlock Text="{Binding PageLabel}" FontSize="10" />
+                                            </Border>
+                                        </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>

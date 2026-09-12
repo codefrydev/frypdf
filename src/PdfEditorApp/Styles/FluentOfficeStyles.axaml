@@ -569,14 +569,54 @@
         <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
     </Style>
 
-    <!-- Thumbnail Item Card (M3 Elevated Card) -->
+    <!-- ============================================================== -->
+    <!-- Thumbnail Item Styling: M3 Expressive Paper Sheet & Zero-Leak Interactive Button -->
+    <!-- ============================================================== -->
+
+    <!-- Thumbnail Item Button Wrapper (Zero-leak transparent interactive container for page sheets) -->
+    <Style Selector="Button.thumbnail-item-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0,0,0,16" />
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.thumbnail-item-btn /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="Button.thumbnail-item-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.thumbnail-item-btn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.thumbnail-item-btn:focus /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+
+    <!-- Thumbnail Item Card: Refined M3 Expressive Paper Sheet -->
     <Style Selector="Border.thumbnail-card">
-        <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowestBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerMedium}" />
-        <Setter Property="Padding" Value="5" />
-        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel1}" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="BoxShadow" Value="0 2 6 0 #14000000, 0 1 2 0 #0A000000" />
         <Setter Property="Transitions">
             <Transitions>
                 <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
@@ -584,15 +624,58 @@
             </Transitions>
         </Setter>
     </Style>
-    <Style Selector="Border.thumbnail-card:pointerover">
-        <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
-        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
+    <Style Selector="Border.thumbnail-card:pointerover, Button.thumbnail-item-btn:pointerover Border.thumbnail-card">
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="BoxShadow" Value="0 4 12 0 #1E000000, 0 2 4 0 #0C000000" />
     </Style>
     <Style Selector="Border.thumbnail-card.selected">
-        <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
         <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="Background" Value="{DynamicResource WinCardHoverBrush}" />
-        <Setter Property="BoxShadow" Value="{StaticResource M3ElevationLevel2}" />
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerLowestBrush}" />
+        <Setter Property="BoxShadow" Value="0 4 14 0 #280F6CBD, 0 1 3 0 #140F6CBD" />
+    </Style>
+
+    <!-- Page Number Pill for Thumbnails -->
+    <Style Selector="Border.page-number-pill">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+        <Setter Property="Padding" Value="10,2" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.page-number-pill TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.thumbnail-item-btn:pointerover Border.page-number-pill:not(.selected)">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceContainerHighestBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+    </Style>
+    <Style Selector="Button.thumbnail-item-btn:pointerover Border.page-number-pill:not(.selected) TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+    </Style>
+    <Style Selector="Border.page-number-pill.selected">
+        <Setter Property="Background" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="BoxShadow" Value="0 2 6 0 #250F6CBD" />
+    </Style>
+    <Style Selector="Border.page-number-pill.selected TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnPrimaryBrush}" />
+        <Setter Property="FontWeight" Value="Bold" />
     </Style>
 
     <!-- ============================================================== -->

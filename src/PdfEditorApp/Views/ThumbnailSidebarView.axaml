@@ -158,36 +158,25 @@
                              can be revisited deliberately rather than risking the same regression here. -->
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="vm:PageViewModel">
-                                <Button Background="Transparent"
-                                        BorderThickness="0"
-                                        Padding="0"
-                                        Margin="0,0,0,16"
-                                        HorizontalAlignment="Center"
+                                <Button Classes="thumbnail-item-btn"
                                         ContextMenu="{StaticResource PageThumbnailContextMenu}"
                                         Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).SelectPageCommand}"
                                         CommandParameter="{Binding}">
-                                    <StackPanel HorizontalAlignment="Center" Spacing="6">
+                                    <StackPanel HorizontalAlignment="Center" Spacing="8" IsHitTestVisible="False">
 
-                                        <!-- Real Live Miniature Page Card -->
-                                        <Border Background="{DynamicResource WinPanelBrush}"
-                                                BorderThickness="{Binding IsSelected, Converter={StaticResource BoolToThickness}, ConverterParameter='2.5|1'}"
-                                                BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#CBD5E1'}"
-                                                CornerRadius="6"
-                                                BoxShadow="0 4 14 #15000000"
-                                                Padding="2"
-                                                Width="148"
-                                                Height="208"
-                                                ClipToBounds="True">
+                                        <!-- Real Live Miniature Page Paper Sheet -->
+                                        <Border Classes="thumbnail-card"
+                                                Classes.selected="{Binding IsSelected}"
+                                                HorizontalAlignment="Center">
 
                                             <!-- Live Scaled Page Canvas Viewbox -->
-                                            <Viewbox Width="142" Height="202" Stretch="Uniform">
+                                            <Viewbox Width="146" Height="206" Stretch="Uniform">
                                                 <LayoutTransformControl>
                                                     <LayoutTransformControl.LayoutTransform>
                                                         <RotateTransform Angle="{Binding RotationAngle, FallbackValue=0}" />
                                                     </LayoutTransformControl.LayoutTransform>
                                                     <Border Width="{Binding Width}" Height="{Binding Height}"
-                                                            Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                            BoxShadow="0 1 4 #08000000">
+                                                            Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}">
 
                                                     <!-- Live Real Elements on Page -->
                                                     <ItemsControl ItemsSource="{Binding Elements}">
@@ -441,16 +430,9 @@
                                         </Border>
 
                                         <!-- Page Number Pill -->
-                                        <Border Background="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#F1F5F9'}"
-                                                BorderBrush="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#0F6CBD|#CBD5E1'}"
-                                                BorderThickness="1"
-                                                CornerRadius="10"
-                                                Padding="10,2">
-                                            <TextBlock Text="{Binding PageNumber, StringFormat='Page {0}'}"
-                                                       FontSize="10.5"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="{Binding IsSelected, Converter={StaticResource BoolToBrush}, ConverterParameter='#FFFFFF|#64748B'}"
-                                                       HorizontalAlignment="Center" />
+                                        <Border Classes="page-number-pill"
+                                                Classes.selected="{Binding IsSelected}">
+                                            <TextBlock Text="{Binding PageNumber, StringFormat='Page {0}'}" />
                                         </Border>
                                     </StackPanel>
                                 </Button>

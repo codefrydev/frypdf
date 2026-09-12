@@ -295,24 +295,17 @@
                         <ItemsControl ItemsSource="{Binding Pages}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="vm:FryPdfPageViewerViewModel">
-                                    <Button Background="Transparent"
-                                            BorderThickness="0"
-                                            Padding="8,6"
-                                            HorizontalAlignment="Stretch"
-                                            HorizontalContentAlignment="Stretch"
-                                            Cursor="Hand"
+                                    <Button Classes="thumbnail-item-btn"
+                                            Margin="0,0,0,12"
                                             Command="{Binding $parent[UserControl].((vm:FryPdfViewerViewModel)DataContext).GoToPageCommand}"
                                             CommandParameter="{Binding PageNumber}">
-                                        <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Center">
-                                            <!-- Mini Thumbnail Card -->
+                                        <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Center" IsHitTestVisible="False">
+                                            <!-- Mini Thumbnail Paper Sheet -->
                                             <Border Grid.Row="0"
+                                                    Classes="thumbnail-card"
                                                     Width="110"
                                                     Height="145"
-                                                    Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
-                                                    BorderBrush="{DynamicResource WinBorderBrush}"
-                                                    BorderThickness="1"
-                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
-                                                    BoxShadow="0 2 6 #14000000">
+                                                    Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}">
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
                                                     <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="28" Height="28" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                                                     <TextBlock Text="{Binding PageNumber, StringFormat='{}Page {0}'}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
@@ -320,8 +313,8 @@
                                             </Border>
 
                                             <!-- Page Number Pill -->
-                                            <Border Grid.Row="1" Margin="0,4,0,0" HorizontalAlignment="Center" Background="{DynamicResource M3SurfaceContainerHighBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="8,1.5">
-                                                <TextBlock Text="{Binding PageNumber}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                            <Border Grid.Row="1" Classes="page-number-pill" Margin="0,6,0,0">
+                                                <TextBlock Text="{Binding PageNumber}" />
                                             </Border>
                                         </Grid>
                                     </Button>

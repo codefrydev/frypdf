@@ -553,6 +553,42 @@ public class Material3ExpressiveThemeTests
             Assert.Contains("CornerRadius=\"{StaticResource M3ShapeCornerExtraLarge}\"", xaml);
         }
     }
+
+    [Fact]
+    public void PageThumbnails_UseM3ExpressivePaperSheetAndTransparentButtons()
+    {
+        var stylesPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Styles", "FluentOfficeStyles.axaml");
+        var styles = File.ReadAllText(stylesPath);
+
+        // Thumbnail item button wrapper suppresses pointerover/pressed background leak
+        Assert.Contains("Button.thumbnail-item-btn", styles);
+        Assert.Contains("Button.thumbnail-item-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter", styles);
+
+        // Thumbnail card has crisp paper sheet geometry, zero padding, and realistic paper shadow
+        Assert.Contains("Border.thumbnail-card", styles);
+        Assert.Contains("CornerRadius\" Value=\"3\"", styles);
+        Assert.Contains("Padding\" Value=\"0\"", styles);
+        Assert.Contains("ClipToBounds\" Value=\"True\"", styles);
+        Assert.Contains("Border.thumbnail-card.selected", styles);
+
+        // Page number pill uses full pill geometry
+        Assert.Contains("Border.page-number-pill", styles);
+        Assert.Contains("CornerRadius\" Value=\"{StaticResource M3ShapeCornerFull}\"", styles);
+        Assert.Contains("Border.page-number-pill.selected", styles);
+
+        // Views use thumbnail-item-btn and thumbnail-card
+        var pdfViewerPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "PdfViewerView.axaml");
+        var pdfViewerXaml = File.ReadAllText(pdfViewerPath);
+        Assert.Contains("Classes=\"thumbnail-item-btn\"", pdfViewerXaml);
+        Assert.Contains("Classes=\"thumbnail-card\"", pdfViewerXaml);
+        Assert.Contains("Classes=\"page-number-pill\"", pdfViewerXaml);
+
+        var editorThumbnailsPath = Path.Combine(_projectRoot, "src", "PdfEditorApp", "Views", "ThumbnailSidebarView.axaml");
+        var editorThumbnailsXaml = File.ReadAllText(editorThumbnailsPath);
+        Assert.Contains("Classes=\"thumbnail-item-btn\"", editorThumbnailsXaml);
+        Assert.Contains("Classes=\"thumbnail-card\"", editorThumbnailsXaml);
+        Assert.Contains("Classes=\"page-number-pill\"", editorThumbnailsXaml);
+    }
 }
 
 

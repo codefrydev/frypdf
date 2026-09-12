@@ -375,7 +375,7 @@
                             ToolTip.Tip="Open in FryPDF Editor to modify text, layout, and images">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="DrawPen" Width="14" Height="14" Foreground="White" />
-                            <TextBlock Text="Edit in FryPDF" VerticalAlignment="Center" />
+                            <TextBlock Text="Edit" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
 
@@ -475,41 +475,41 @@
                                  panel can switch to logical (item-based) scrolling and break. -->
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:PdfViewerPageItem">
-                                    <Button Background="Transparent"
-                                            BorderThickness="0"
-                                            Padding="0"
-                                            Margin="0,0,0,16"
-                                            HorizontalAlignment="Center"
-                                            Cursor="Hand"
-                                            Focusable="False"
+                                    <Button Classes="thumbnail-item-btn"
                                             Command="{Binding #RootPdfViewer.ViewModel.SelectPageCommand}"
                                             CommandParameter="{Binding}">
-                                        <StackPanel Spacing="6" HorizontalAlignment="Center" IsHitTestVisible="False">
-                                            <!-- Floating Page Thumbnail Card -->
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center" IsHitTestVisible="False">
+                                            <!-- Floating Page Thumbnail Paper Sheet -->
                                             <Border Classes="thumbnail-card"
                                                     Classes.selected="{Binding IsSelected}"
-                                                    Width="176" MinHeight="210" MaxHeight="250">
+                                                    HorizontalAlignment="Center">
                                                 <LayoutTransformControl HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <LayoutTransformControl.LayoutTransform>
                                                         <RotateTransform Angle="{Binding RotationAngle}" />
                                                     </LayoutTransformControl.LayoutTransform>
-                                                    <Image Source="{Binding ThumbnailBitmap}"
-                                                           Stretch="Uniform"
-                                                           RenderOptions.BitmapInterpolationMode="HighQuality"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center" />
+                                                    <Panel>
+                                                        <!-- Placeholder when bitmap is still rasterizing -->
+                                                        <Border Width="150" Height="200"
+                                                                Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                                                                IsVisible="{Binding ThumbnailBitmap, Converter={x:Static converters:EqualityToBooleanConverter.Instance}, ConverterParameter={x:Null}}">
+                                                            <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="32" Height="32" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <!-- Rendered High-Quality Page Bitmap -->
+                                                        <Image Source="{Binding ThumbnailBitmap}"
+                                                               MaxWidth="172"
+                                                               MaxHeight="222"
+                                                               Stretch="Uniform"
+                                                               RenderOptions.BitmapInterpolationMode="HighQuality"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center" />
+                                                    </Panel>
                                                 </LayoutTransformControl>
                                             </Border>
 
                                             <!-- Page Number Pill -->
-                                            <Border Background="{Binding IsSelected, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#0F6CBD|#E2E8F0'}"
-                                                    CornerRadius="10"
-                                                    Padding="9,2"
-                                                    HorizontalAlignment="Center">
-                                                <TextBlock Text="{Binding PageLabel}"
-                                                           FontSize="10.5"
-                                                           FontWeight="Bold"
-                                                           Foreground="{Binding IsSelected, Converter={StaticResource BooleanToBrushConverter}, ConverterParameter='#FFFFFF|#64748B'}" />
+                                            <Border Classes="page-number-pill"
+                                                    Classes.selected="{Binding IsSelected}">
+                                                <TextBlock Text="{Binding PageLabel}" />
                                             </Border>
                                         </StackPanel>
                                     </Button>

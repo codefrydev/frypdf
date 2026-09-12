@@ -623,8 +623,8 @@
     <!-- 4. CARDS SUITE (Elevated, Filled, Outlined, Interactive Action Wrappers) -->
     <!-- =================================================================== -->
 
-    <!-- Card Action Button Wrapper (Zero-leak transparent interactive container for elevated cards) -->
-    <Style Selector="Button.card-action-wrapper, Button.pdf-tool-btn, Button.template-card-btn, Button.workflow-banner-btn, Button.card-btn">
+    <!-- Card Action Button Wrapper (Zero-leak transparent interactive container for elevated cards and page sheets) -->
+    <Style Selector="Button.card-action-wrapper, Button.pdf-tool-btn, Button.template-card-btn, Button.workflow-banner-btn, Button.card-btn, Button.thumbnail-item-btn">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
@@ -640,14 +640,16 @@
                      Button.pdf-tool-btn /template/ ContentPresenter#PART_ContentPresenter,
                      Button.template-card-btn /template/ ContentPresenter#PART_ContentPresenter,
                      Button.workflow-banner-btn /template/ ContentPresenter#PART_ContentPresenter,
-                     Button.card-btn /template/ ContentPresenter#PART_ContentPresenter">
+                     Button.card-btn /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.thumbnail-item-btn /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="ClipToBounds" Value="False" />
     </Style>
     <Style Selector="Button.card-action-wrapper:pointerover /template/ ContentPresenter#PART_ContentPresenter,
                      Button.pdf-tool-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter,
                      Button.template-card-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter,
                      Button.workflow-banner-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter,
-                     Button.card-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                     Button.card-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.thumbnail-item-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
     </Style>
@@ -655,7 +657,8 @@
                      Button.pdf-tool-btn:pressed /template/ ContentPresenter#PART_ContentPresenter,
                      Button.template-card-btn:pressed /template/ ContentPresenter#PART_ContentPresenter,
                      Button.workflow-banner-btn:pressed /template/ ContentPresenter#PART_ContentPresenter,
-                     Button.card-btn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                     Button.card-btn:pressed /template/ ContentPresenter#PART_ContentPresenter,
+                     Button.thumbnail-item-btn:pressed /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
     </Style>

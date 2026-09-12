@@ -20,7 +20,7 @@ public record PdfToolDescriptor
     /// <summary>Descriptive summary explaining the tool's capabilities.</summary>
     public required string Description { get; init; }
 
-    /// <summary>Display category grouping, e.g. "Organize & Page", "Security", "Conversion", "Intelligence".</summary>
+    /// <summary>Display category grouping, e.g. "Organize &amp; Page", "Security", "Conversion", "Intelligence".</summary>
     public required string Category { get; init; }
 
     /// <summary>Material Design / vector icon identifier.</summary>

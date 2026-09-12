@@ -931,6 +931,16 @@ public partial class MainViewModel : ViewModelBase, IDisposable
                     FryPdfViewer.ReadingTheme = rt;
                 }
             };
+            PdfViewer.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(PdfViewerViewModel.ReadingTheme))
+                {
+                    if (_themeService.ReadingTheme != PdfViewer.ReadingTheme)
+                    {
+                        _themeService.SetReadingTheme(PdfViewer.ReadingTheme);
+                    }
+                }
+            };
         }
 
         var aiService = new Services.AI.AiService();

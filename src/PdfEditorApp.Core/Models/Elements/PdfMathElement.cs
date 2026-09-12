@@ -1,7 +1,7 @@
 namespace PdfEditorApp.Core.Models.Elements;
 
 /// <summary>
-/// Native mathematical equation & formula element supporting standard LaTeX / Math syntax,
+/// Native mathematical equation and formula element supporting standard LaTeX / Math syntax,
 /// vector SVG rendering, equation numbering tags, and full typography customization.
 /// </summary>
 public class PdfMathElement : PdfElementBase

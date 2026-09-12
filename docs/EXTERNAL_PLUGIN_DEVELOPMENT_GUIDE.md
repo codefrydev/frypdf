@@ -215,10 +215,10 @@ Create a new directory named `FryPdf.Plugin.WatermarkPlus` and add `FryPdf.Plugi
     </Reference>
   </ItemGroup>
 
-  <!-- Option B: NuGet SDK package — NOT YET PUBLISHED. Use Option A above. -->
+  <!-- Option B: NuGet SDK package (Recommended for CI/CD and external plugin repos) -->
   <!--
   <ItemGroup>
-    <PackageReference Include="FryPdf.PluginSdk" Version="1.0.0" PrivateAssets="all" />
+    <PackageReference Include="FryPdf.PluginSdk" Version="0.0.8" PrivateAssets="all" />
   </ItemGroup>
   -->
 

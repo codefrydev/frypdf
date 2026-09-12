@@ -85,7 +85,7 @@ public static class ProfileLoader
     }
 
     /// <summary>
-    /// Filters available plugins according to the profile and registers & starts them on the host.
+    /// Filters available plugins according to the profile and registers and starts them on the host.
     /// </summary>
     public static async Task ApplyToHostAsync(
         PluginHost host,

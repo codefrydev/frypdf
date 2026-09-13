@@ -10,7 +10,9 @@ using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using PdfEditorApp.Core.Plugins;
+using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Core.Plugins.Marketplace;
 using PdfEditorApp.Core.Plugins.Profiles;
 using PdfEditorApp.Plugins.Bundles;
@@ -38,6 +40,7 @@ public partial class PluginsManagerViewModel : ViewModelBase
     private readonly PluginHost? _pluginHost;
     private readonly IPluginMarketplaceService _marketplaceService;
     private readonly IPdfToolRegistry? _toolRegistry;
+    private readonly IOverlayRegistry? _overlayRegistry;
     private readonly object _dataLock = new();
     private readonly SemaphoreSlim _loadLock = new(1, 1);
     private readonly List<PluginItemViewModel> _allInstalled = new();
@@ -112,11 +115,13 @@ public partial class PluginsManagerViewModel : ViewModelBase
     public PluginsManagerViewModel(
         PluginHost? pluginHost = null,
         IPluginMarketplaceService? marketplaceService = null,
-        IPdfToolRegistry? toolRegistry = null)
+        IPdfToolRegistry? toolRegistry = null,
+        IOverlayRegistry? overlayRegistry = null)
     {
         _pluginHost = pluginHost;
         _marketplaceService = marketplaceService ?? new PluginMarketplaceService(pluginHost);
         _toolRegistry = toolRegistry;
+        _overlayRegistry = overlayRegistry;
 
         InitializeCategories();
         _ = LoadAllDataAsync();
@@ -547,6 +552,11 @@ public partial class PluginsManagerViewModel : ViewModelBase
             await UninstallMarketplacePluginAsync(id);
         };
 
+        detail.LaunchCallback = async (id) =>
+        {
+            await LaunchOverlayPluginAsync(id);
+        };
+
         detail.CopyToClipboardCallback = async (text) =>
         {
             if (Clipboard != null)
@@ -559,6 +569,47 @@ public partial class PluginsManagerViewModel : ViewModelBase
         {
             ShowToastCallback?.Invoke(msg);
         };
+    }
+
+    [RelayCommand]
+    public async Task LaunchOverlayPluginAsync(string pluginId)
+    {
+        if (string.IsNullOrWhiteSpace(pluginId)) return;
+
+        // Ensure plugin is active if installed
+        if (_pluginHost != null && !_pluginHost.IsPluginActive(pluginId))
+        {
+            try
+            {
+                await _pluginHost.EnablePluginAsync(pluginId);
+            }
+            catch (Exception ex)
+            {
+                AppLogService.Instance.LogWarning("PluginLaunch", $"Could not enable plugin '{pluginId}' before launch", ex);
+            }
+        }
+
+        var reg = _overlayRegistry
+            ?? _pluginHost?.Context?.GetService<IOverlayRegistry>()
+            ?? App.Services?.GetService<IOverlayRegistry>();
+
+        if (reg == null)
+        {
+            ShowToastCallback?.Invoke("Overlay service is not available.");
+            return;
+        }
+
+        var targetOverlay = reg.GetOverlay(pluginId) ??
+                            reg.GetAllOverlays().FirstOrDefault(o =>
+                                string.Equals(o.Id, pluginId, StringComparison.OrdinalIgnoreCase) ||
+                                o.Id.Contains(pluginId, StringComparison.OrdinalIgnoreCase) ||
+                                pluginId.Contains(o.Id, StringComparison.OrdinalIgnoreCase));
+
+        var targetId = targetOverlay?.Id ?? pluginId;
+        reg.ShowOverlay(targetId);
+
+        var displayName = targetOverlay?.Title ?? SelectedDetail?.Name ?? pluginId;
+        ShowToastCallback?.Invoke($"Launched '{displayName}' overlay");
     }
 
     [RelayCommand]

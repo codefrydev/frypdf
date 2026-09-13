@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
+using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Core.Plugins.Marketplace;
 
 namespace PdfEditorApp.ViewModels;
@@ -75,6 +78,7 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(CanInstall))]
     [NotifyPropertyChangedFor(nameof(CanToggleActive))]
     [NotifyPropertyChangedFor(nameof(CanUninstall))]
+    [NotifyPropertyChangedFor(nameof(CanLaunch))]
     [NotifyPropertyChangedFor(nameof(IsActiveAndInstalled))]
     [NotifyPropertyChangedFor(nameof(IsDisabledAndInstalled))]
     private bool _isInstalled = true;
@@ -93,6 +97,7 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(CanInstall))]
     [NotifyPropertyChangedFor(nameof(CanToggleActive))]
     [NotifyPropertyChangedFor(nameof(CanUninstall))]
+    [NotifyPropertyChangedFor(nameof(CanLaunch))]
     private bool _isInstalling;
 
     [ObservableProperty]
@@ -104,9 +109,14 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
     [ObservableProperty]
     private string _installStatusText = string.Empty;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanLaunch))]
+    private bool _isOverlayType;
+
     public bool CanInstall => !IsInstalled && !IsInstalling;
     public bool CanToggleActive => IsInstalled && !IsInstalling;
     public bool CanUninstall => IsInstalled && IsExternal && !IsInstalling;
+    public bool CanLaunch => IsInstalled && IsOverlayType && !IsInstalling;
     public bool IsActiveAndInstalled => IsInstalled && IsActive;
     public bool IsDisabledAndInstalled => IsInstalled && !IsActive;
     public bool IsSystemBuiltIn => IsInstalled && !IsExternal;
@@ -137,6 +147,7 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
     public Func<string, bool, Task>? ToggleActiveCallback { get; set; }
     public Func<string, Task>? InstallCallback { get; set; }
     public Func<string, Task>? UninstallCallback { get; set; }
+    public Func<string, Task>? LaunchCallback { get; set; }
     public Action<string>? CopyToClipboardCallback { get; set; }
     public Action<string>? ShowToastCallback { get; set; }
 
@@ -171,6 +182,36 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
     {
         if (UninstallCallback == null) return;
         await UninstallCallback(Id);
+    }
+
+    [RelayCommand]
+    public async Task LaunchAsync()
+    {
+        if (!CanLaunch) return;
+        if (!IsActive)
+        {
+            await ToggleActiveAsync();
+        }
+
+        if (LaunchCallback != null)
+        {
+            await LaunchCallback(Id);
+        }
+        else
+        {
+            var overlayReg = App.Services?.GetService<IOverlayRegistry>();
+            if (overlayReg != null)
+            {
+                var targetOverlay = overlayReg.GetOverlay(Id) ??
+                                    overlayReg.GetAllOverlays().FirstOrDefault(o =>
+                                        string.Equals(o.Id, Id, StringComparison.OrdinalIgnoreCase) ||
+                                        o.Id.Contains(Id, StringComparison.OrdinalIgnoreCase) ||
+                                        Id.Contains(o.Id, StringComparison.OrdinalIgnoreCase));
+                var targetId = targetOverlay?.Id ?? Id;
+                overlayReg.ShowOverlay(targetId);
+                ShowToastCallback?.Invoke($"Launched '{Name}' overlay");
+            }
+        }
     }
 
     [RelayCommand]
@@ -217,7 +258,8 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
             SourceAssembly = plugin.SourceAssembly,
             AssemblyPath = plugin.IsExternal ? plugin.SourceAssembly : "src/PdfEditorApp/bin/Debug/net10.0/PdfEditorApp.dll",
             AssemblyLoadContextName = plugin.IsExternal ? "IsolatedAssemblyLoadContext (ALC)" : "System.Runtime.Loader.Default",
-            RuntimeStatus = plugin.IsActive ? "Active (Mounted in Kernel)" : "Disabled (Suspended)"
+            RuntimeStatus = plugin.IsActive ? "Active (Mounted in Kernel)" : "Disabled (Suspended)",
+            IsOverlayType = DetermineIsOverlayType(plugin.Id, null, contributions, plugin.Description)
         };
 
         if (contributions != null && contributions.Count > 0)
@@ -341,7 +383,8 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
             SourceAssembly = isInstalled ? $"plugins/{item.Id}/{item.Id}.dll" : "FryPDF Marketplace Remote Registry",
             AssemblyPath = isInstalled ? $"plugins/{item.Id}/{item.Id}.dll" : "Remote Package Archive (.fryplugin)",
             AssemblyLoadContextName = "PluginAssemblyLoadContext (Isolated)",
-            RuntimeStatus = isInstalled ? "Active (Mounted in Kernel)" : (isInstalling ? "Installing..." : "Available in Store")
+            RuntimeStatus = isInstalled ? "Active (Mounted in Kernel)" : (isInstalling ? "Installing..." : "Available in Store"),
+            IsOverlayType = DetermineIsOverlayType(item.Id, item.Tags, item.ContributedFeatures, item.Description)
         };
 
         foreach (var c in item.ContributedFeatures)
@@ -360,5 +403,82 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
         }
 
         return vm;
+    }
+
+    /// <summary>
+    /// Checks whether the given plugin represents a floating shell overlay type.
+    /// </summary>
+    public static bool DetermineIsOverlayType(
+        string id,
+        IReadOnlyList<string>? tags = null,
+        IReadOnlyList<string>? features = null,
+        string? description = null)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return false;
+
+        // 1. Explicit ID pattern
+        if (id.Contains(".overlay.", StringComparison.OrdinalIgnoreCase) ||
+            id.Contains("overlay", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // 2. Known overlay extensions (Chess, Tic-Tac-Toe, Snake, etc.)
+        if (id.Equals("com.frypdf.plugin.chess", StringComparison.OrdinalIgnoreCase) ||
+            id.Equals("com.frypdf.plugin.tictactoe", StringComparison.OrdinalIgnoreCase) ||
+            id.Contains("chess", StringComparison.OrdinalIgnoreCase) ||
+            id.Contains("snake", StringComparison.OrdinalIgnoreCase) ||
+            id.Contains("tictactoe", StringComparison.OrdinalIgnoreCase) ||
+            id.Contains("musicplayer", StringComparison.OrdinalIgnoreCase) ||
+            id.Contains("scratchpad", StringComparison.OrdinalIgnoreCase) ||
+            id.Contains("telemetry", StringComparison.OrdinalIgnoreCase) ||
+            id.Contains("imageeditor", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // 3. Tags (e.g. overlay, game, arcade, hud)
+        if (tags != null && tags.Any(t =>
+            t.Equals("overlay", StringComparison.OrdinalIgnoreCase) ||
+            t.Equals("minigame", StringComparison.OrdinalIgnoreCase) ||
+            t.Equals("game", StringComparison.OrdinalIgnoreCase) ||
+            t.Equals("arcade", StringComparison.OrdinalIgnoreCase) ||
+            t.Equals("hud", StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        // 4. Contributed features mentioning overlay
+        if (features != null && features.Any(f =>
+            f.Contains("overlay", StringComparison.OrdinalIgnoreCase) ||
+            f.Contains("shell.overlay", StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        // 5. Description mentioning overlay
+        if (!string.IsNullOrWhiteSpace(description) &&
+            (description.Contains("shell.overlay", StringComparison.OrdinalIgnoreCase) ||
+             description.Contains("floating overlay", StringComparison.OrdinalIgnoreCase) ||
+             description.Contains("overlay", StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        // 6. Registered in active OverlayRegistry
+        var overlayReg = App.Services?.GetService<IOverlayRegistry>();
+        if (overlayReg != null)
+        {
+            if (overlayReg.GetOverlay(id) != null) return true;
+            if (overlayReg.GetAllOverlays().Any(o =>
+                string.Equals(o.Id, id, StringComparison.OrdinalIgnoreCase) ||
+                o.Id.Contains(id, StringComparison.OrdinalIgnoreCase) ||
+                id.Contains(o.Id, StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -902,6 +902,19 @@
                                                 </StackPanel>
                                             </Button>
 
+                                            <!-- 2.5 Launch Button (for installed overlay plugins) -->
+                                            <Button Classes="accent-btn"
+                                                    Height="36"
+                                                    Padding="16,0"
+                                                    IsVisible="{Binding CanLaunch}"
+                                                    Command="{Binding LaunchCommand}"
+                                                    ToolTip.Tip="Launch floating overlay in the active workspace">
+                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="RocketLaunchOutline" Width="15" Height="15" />
+                                                    <TextBlock Text="Launch" FontSize="11.5" FontWeight="SemiBold" />
+                                                </StackPanel>
+                                            </Button>
+
                                             <!-- 3. Toggle Active Button (Disable / Enable for Installed items) -->
                                             <Button Classes="action-pill-btn"
                                                     Height="36"

@@ -1691,6 +1691,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     public void SelectDynamicRibbonTab(string tabId)
     {
+        ActiveRibbonTab = (RibbonTabKind)(-1);
         ActiveDynamicRibbonTabId = tabId;
         if (IsRibbonCollapsed)
         {
@@ -1702,6 +1703,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     public void SelectRibbonTab(RibbonTabKind tab)
     {
+        if (tab == RibbonTabKind.Plugins) return;
         ActiveDynamicRibbonTabId = null;
         ActiveRibbonTab = tab;
         if (IsRibbonCollapsed)

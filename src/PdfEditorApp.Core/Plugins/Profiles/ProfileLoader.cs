@@ -75,10 +75,8 @@ public static class ProfileLoader
             {
                 foreach (var plugin in bundle.Plugins)
                 {
-                    if (!disabledSet.Contains(plugin.Id))
-                    {
-                        host.RegisterPlugin(plugin);
-                    }
+                    bool isEnabled = !disabledSet.Contains(plugin.Id);
+                    host.RegisterPlugin(plugin, isEnabled);
                 }
             }
         }
@@ -98,12 +96,28 @@ public static class ProfileLoader
 
         foreach (var plugin in availablePlugins)
         {
-            if (profile.IsPluginEnabled(plugin.Id))
-            {
-                host.RegisterPlugin(plugin);
-            }
+            bool isEnabled = profile.IsPluginEnabled(plugin.Id);
+            host.RegisterPlugin(plugin, isEnabled);
         }
 
         await host.StartAsync();
+    }
+
+    /// <summary>
+    /// Saves a <see cref="PluginProfile"/> instance to a JSON file with formatted indentation.
+    /// </summary>
+    public static void SaveToFile(PluginProfile profile, string filePath)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+
+        var dir = Path.GetDirectoryName(filePath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+
+        var json = JsonSerializer.Serialize(profile, JsonOptions);
+        File.WriteAllText(filePath, json);
     }
 }

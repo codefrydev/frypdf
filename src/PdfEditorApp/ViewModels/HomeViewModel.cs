@@ -757,6 +757,14 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
         }
 
         OnPropertyChanged(nameof(IsPluginDrivenNavigation));
+
+        // If the current section was unmounted and is no longer available in the registry,
+        // navigate back to Home to avoid leaving the view in an orphaned state.
+        if (SelectedNavSection == HomeNavSection.DiagnosticLogs &&
+            !allItems.Any(d => string.Equals(d.Id, "DiagnosticLogs", StringComparison.OrdinalIgnoreCase)))
+        {
+            SelectNavSection("Home");
+        }
     }
 
 

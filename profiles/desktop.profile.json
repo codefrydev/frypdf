@@ -19,7 +19,9 @@
     "FryPdf.Bundle.EditorSidebars"
   ],
 
-  "disabledPlugins": [],
+  "disabledPlugins": [
+    "frypdf.page.diagnosticlogs"
+  ],
   "settings": {
     "theme": "Auto",
     "enableHardwareAcceleration": "true"

@@ -28,6 +28,7 @@ public class PluginEntry
     public PluginState State { get; set; } = PluginState.Registered;
     public PluginScope? Scope { get; set; }
     public Exception? LastError { get; set; }
+    public bool IsExplicitlyDisabled { get; set; }
 
     public PluginEntry(IFryPlugin plugin)
     {
@@ -120,9 +121,9 @@ public class PluginHost : IAsyncDisposable, IDisposable
     }
 
     /// <summary>
-    /// Registers a plugin for mounting.
+    /// Registers a plugin for mounting, optionally specifying whether it starts enabled.
     /// </summary>
-    public void RegisterPlugin(IFryPlugin plugin)
+    public void RegisterPlugin(IFryPlugin plugin, bool isEnabled = true)
     {
         ArgumentNullException.ThrowIfNull(plugin);
 
@@ -150,7 +151,12 @@ public class PluginHost : IAsyncDisposable, IDisposable
             }
 
             _registeredPlugins.Add(plugin);
-            _entries[plugin.Id] = new PluginEntry(plugin);
+            var entry = new PluginEntry(plugin)
+            {
+                State = isEnabled ? PluginState.Registered : PluginState.Suspended,
+                IsExplicitlyDisabled = !isEnabled
+            };
+            _entries[plugin.Id] = entry;
         }
 
         if (scopeToUnwind != null)
@@ -189,7 +195,7 @@ public class PluginHost : IAsyncDisposable, IDisposable
         lock (_lock)
         {
             if (_isRunning) return;
-            pending = new List<IFryPlugin>(_registeredPlugins.Where(p => _entries[p.Id].State != PluginState.Active));
+            pending = new List<IFryPlugin>(_registeredPlugins.Where(p => !_entries[p.Id].IsExplicitlyDisabled && _entries[p.Id].State != PluginState.Active));
         }
 
         while (pending.Count > 0)
@@ -262,6 +268,7 @@ public class PluginHost : IAsyncDisposable, IDisposable
             {
                 throw new KeyNotFoundException($"Plugin with ID '{pluginId}' is not registered.");
             }
+            e.IsExplicitlyDisabled = false;
             if (e.State == PluginState.Active) return;
             entry = e;
         }
@@ -290,7 +297,12 @@ public class PluginHost : IAsyncDisposable, IDisposable
         PluginEntry entry;
         lock (_lock)
         {
-            if (!_entries.TryGetValue(pluginId, out var e) || e.State != PluginState.Active)
+            if (!_entries.TryGetValue(pluginId, out var e))
+            {
+                return;
+            }
+            e.IsExplicitlyDisabled = true;
+            if (e.State != PluginState.Active)
             {
                 return;
             }
@@ -428,7 +440,7 @@ public class PluginHost : IAsyncDisposable, IDisposable
             lock (_lock)
             {
                 candidates = _entries.Values
-                    .Where(e => e.State is PluginState.Suspended or PluginState.Registered)
+                    .Where(e => !e.IsExplicitlyDisabled && e.State is PluginState.Suspended or PluginState.Registered)
                     .Where(e => e.Plugin.RequiredServices.All(req => _context.HasService(req)))
                     .ToList();
             }

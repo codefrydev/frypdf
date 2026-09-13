@@ -379,8 +379,13 @@ public partial class PluginsManagerViewModel : ViewModelBase
 
         if (_pluginHost != null)
         {
-            foreach (var plugin in _pluginHost.LoadedPlugins)
+            var pluginsToShow = _pluginHost.RegisteredPlugins.Count > 0
+                ? _pluginHost.RegisteredPlugins
+                : _pluginHost.LoadedPlugins;
+
+            foreach (var plugin in pluginsToShow)
             {
+                bool isActive = _pluginHost.IsPluginActive(plugin.Id);
                 var vm = new PluginItemViewModel
                 {
                     Id = plugin.Id,
@@ -390,7 +395,7 @@ public partial class PluginsManagerViewModel : ViewModelBase
                     Description = InferDescription(plugin),
                     IconKind = InferIcon(plugin),
                     IconColorHex = InferColor(plugin),
-                    IsActive = true,
+                    IsActive = isActive,
                     IsExternal = plugin.GetType().Assembly != typeof(App).Assembly &&
                                  plugin.GetType().Assembly != typeof(PluginHost).Assembly,
                     SourceAssembly = plugin.GetType().Assembly.GetName().Name ?? "Core",
@@ -404,6 +409,14 @@ public partial class PluginsManagerViewModel : ViewModelBase
                         {
                             await _pluginHost.DisablePluginAsync(id);
                         }
+
+                        if (SelectedDetail != null && SelectedDetail.Id == id)
+                        {
+                            SelectedDetail.IsActive = active;
+                            SelectedDetail.RuntimeStatus = active ? "Active (Mounted in Kernel)" : "Disabled (Suspended)";
+                        }
+
+                        PersistPluginActiveState(id, active);
                         OnPropertyChanged(nameof(ActiveInstalledCount));
                     }
                 };
@@ -539,6 +552,17 @@ public partial class PluginsManagerViewModel : ViewModelBase
                 if (active) await _pluginHost.EnablePluginAsync(id);
                 else await _pluginHost.DisablePluginAsync(id);
             }
+
+            lock (_dataLock)
+            {
+                var item = _allInstalled.FirstOrDefault(p => string.Equals(p.Id, id, StringComparison.OrdinalIgnoreCase));
+                if (item != null && item.IsActive != active)
+                {
+                    item.IsActive = active;
+                }
+            }
+
+            PersistPluginActiveState(id, active);
             OnPropertyChanged(nameof(ActiveInstalledCount));
         };
 
@@ -569,6 +593,69 @@ public partial class PluginsManagerViewModel : ViewModelBase
         {
             ShowToastCallback?.Invoke(msg);
         };
+    }
+
+    /// <summary>
+    /// Persists a plugin's enabled/disabled state to the active profile configuration file.
+    /// </summary>
+    public void PersistPluginActiveState(string pluginId, bool isActive)
+    {
+        try
+        {
+            var profilePaths = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(FryPdfPaths.ProfilesDirectory))
+            {
+                profilePaths.Add(Path.Combine(FryPdfPaths.ProfilesDirectory, $"{ActiveProfileName}.profile.json"));
+            }
+
+            profilePaths.Add(Path.Combine(AppContext.BaseDirectory, "profiles", $"{ActiveProfileName}.profile.json"));
+            profilePaths.Add($"profiles/{ActiveProfileName}.profile.json");
+
+            PluginProfile? profile = null;
+            string? targetPath = null;
+
+            foreach (var path in profilePaths)
+            {
+                if (File.Exists(path))
+                {
+                    try
+                    {
+                        profile = ProfileLoader.LoadFromFile(path);
+                        targetPath = path;
+                        break;
+                    }
+                    catch { }
+                }
+            }
+
+            if (profile == null)
+            {
+                profile = new PluginProfile { ProfileName = ActiveProfileName };
+                targetPath = profilePaths[0];
+            }
+
+            if (isActive)
+            {
+                profile.DisabledPlugins.RemoveAll(d => string.Equals(d, pluginId, StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                if (!profile.DisabledPlugins.Any(d => string.Equals(d, pluginId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    profile.DisabledPlugins.Add(pluginId);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(targetPath))
+            {
+                ProfileLoader.SaveToFile(profile, targetPath);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[PluginsManager] Failed to persist plugin state for '{pluginId}': {ex.Message}");
+        }
     }
 
     [RelayCommand]
@@ -980,6 +1067,7 @@ public partial class PluginsManagerViewModel : ViewModelBase
         ["frypdf.page.help"] = new("Workspace Pages", "Interactive tutorials, user manuals, and keyboard shortcut guides.", "HelpCircleOutline", "#0284C7"),
         ["frypdf.page.settings"] = new("Workspace Pages", "Application preferences, theme switching, and hardware acceleration.", "CogOutline", "#64748B"),
         ["frypdf.page.plugins"] = new("Workspace Pages", "Manage installed extensions, install packages, and browse the store.", "PuzzleOutline", "#7C3AED"),
+        ["frypdf.page.diagnosticlogs"] = new("Workspace Pages", "Real-time diagnostic log viewer to monitor, filter, search, and export runtime engine events.", "FormatListBulletedSquare", "#DC2626"),
 
         // Canvas Elements
         ["frypdf.element.text"] = new("Canvas Elements", "Interactive typography block with Indic/CJK script-aware rendering.", "FormatText", "#3B82F6"),

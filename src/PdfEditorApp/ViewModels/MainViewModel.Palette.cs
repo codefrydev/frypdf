@@ -298,7 +298,13 @@ public partial class MainViewModel
                         IsActive = host.IsPluginActive(plugin.Id),
                         IsExternal = plugin.GetType().Assembly != typeof(MainViewModel).Assembly,
                         SourceAssembly = plugin.GetType().Assembly.GetName().Name ?? "FryPDF",
-                        SettingsSchema = plugin.SettingsSchema
+                        SettingsSchema = plugin.SettingsSchema,
+                        ToggleHandler = async (id, active) =>
+                        {
+                            if (active) await host.EnablePluginAsync(id);
+                            else await host.DisablePluginAsync(id);
+                            PersistPluginActiveState(id, active);
+                        }
                     });
                 }
             }
@@ -306,6 +312,66 @@ public partial class MainViewModel
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[Plugins] Failed to populate plugins: {ex.Message}");
+        }
+    }
+
+    private void PersistPluginActiveState(string pluginId, bool isActive)
+    {
+        try
+        {
+            var profilePaths = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(FryPdfPaths.ProfilesDirectory))
+            {
+                profilePaths.Add(System.IO.Path.Combine(FryPdfPaths.ProfilesDirectory, $"{ActiveProfileName}.profile.json"));
+            }
+
+            profilePaths.Add(System.IO.Path.Combine(AppContext.BaseDirectory, "profiles", $"{ActiveProfileName}.profile.json"));
+            profilePaths.Add($"profiles/{ActiveProfileName}.profile.json");
+
+            PdfEditorApp.Core.Plugins.Profiles.PluginProfile? profile = null;
+            string? targetPath = null;
+
+            foreach (var path in profilePaths)
+            {
+                if (System.IO.File.Exists(path))
+                {
+                    try
+                    {
+                        profile = PdfEditorApp.Core.Plugins.Profiles.ProfileLoader.LoadFromFile(path);
+                        targetPath = path;
+                        break;
+                    }
+                    catch { }
+                }
+            }
+
+            if (profile == null)
+            {
+                profile = new PdfEditorApp.Core.Plugins.Profiles.PluginProfile { ProfileName = ActiveProfileName };
+                targetPath = profilePaths[0];
+            }
+
+            if (isActive)
+            {
+                profile.DisabledPlugins.RemoveAll(d => string.Equals(d, pluginId, StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                if (!profile.DisabledPlugins.Any(d => string.Equals(d, pluginId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    profile.DisabledPlugins.Add(pluginId);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(targetPath))
+            {
+                PdfEditorApp.Core.Plugins.Profiles.ProfileLoader.SaveToFile(profile, targetPath);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] Failed to persist plugin state for '{pluginId}': {ex.Message}");
         }
     }
 

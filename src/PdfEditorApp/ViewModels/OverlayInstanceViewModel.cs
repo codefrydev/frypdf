@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PdfEditorApp.Core.Plugins.Descriptors;
@@ -133,6 +134,45 @@ public partial class OverlayInstanceViewModel : ObservableObject, IDisposable
         ZIndex = max + 1;
     }
 
+    private IDisposable? _trackedDisposableViewModel;
+
+    partial void OnContentChanged(object? oldValue, object? newValue)
+    {
+        if (oldValue is Avalonia.StyledElement oldElement)
+        {
+            oldElement.DataContextChanged -= OnElementDataContextChanged;
+        }
+
+        _trackedDisposableViewModel = null;
+
+        if (newValue is Avalonia.StyledElement newElement)
+        {
+            newElement.DataContextChanged += OnElementDataContextChanged;
+            try
+            {
+                _trackedDisposableViewModel = newElement.DataContext as IDisposable;
+            }
+            catch (InvalidOperationException)
+            {
+                // Called from a thread that does not own newElement
+            }
+        }
+    }
+
+    private void OnElementDataContextChanged(object? sender, EventArgs e)
+    {
+        if (sender is Avalonia.StyledElement el)
+        {
+            try
+            {
+                _trackedDisposableViewModel = el.DataContext as IDisposable;
+            }
+            catch (InvalidOperationException)
+            {
+            }
+        }
+    }
+
     /// <summary>
     /// Tears down the hosted plugin view and its view model.
     /// </summary>
@@ -151,8 +191,95 @@ public partial class OverlayInstanceViewModel : ObservableObject, IDisposable
         if (_isDisposed) return;
         _isDisposed = true;
 
-        DisposeContent(Content);
-        Content = null;
+        var content = Content;
+
+        // If we haven't captured the VM yet, try to read it now if this thread owns the element
+        if (_trackedDisposableViewModel == null && content is Avalonia.StyledElement element)
+        {
+            try
+            {
+                _trackedDisposableViewModel = element.DataContext as IDisposable;
+            }
+            catch (InvalidOperationException)
+            {
+                // Different thread owns element
+            }
+        }
+
+        IDisposable? vmToDispose = _trackedDisposableViewModel;
+        _trackedDisposableViewModel = null;
+
+        if (vmToDispose != null)
+        {
+            TryDispose(vmToDispose);
+        }
+
+        if (content is Avalonia.StyledElement styledElement)
+        {
+            styledElement.DataContextChanged -= OnElementDataContextChanged;
+
+            bool cleanedUpInline = false;
+            try
+            {
+                var liveVm = styledElement.DataContext as IDisposable;
+                styledElement.DataContext = null;
+                if (liveVm != null && !ReferenceEquals(liveVm, vmToDispose))
+                {
+                    TryDispose(liveVm);
+                }
+
+                if (styledElement is IDisposable dispElem)
+                {
+                    TryDispose(dispElem);
+                }
+
+                Content = null;
+                cleanedUpInline = true;
+            }
+            catch (InvalidOperationException)
+            {
+                // Different thread owns styledElement
+            }
+
+            if (!cleanedUpInline)
+            {
+                try
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        try
+                        {
+                            var liveVm = styledElement.DataContext as IDisposable;
+                            styledElement.DataContext = null;
+                            if (liveVm != null && !ReferenceEquals(liveVm, vmToDispose))
+                            {
+                                TryDispose(liveVm);
+                            }
+
+                            if (styledElement is IDisposable dispElem)
+                            {
+                                TryDispose(dispElem);
+                            }
+
+                            Content = null;
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[OverlayInstance] Off-thread Dispose UI cleanup error: {ex.Message}");
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[OverlayInstance] Could not post UI cleanup: {ex.Message}");
+                }
+            }
+        }
+        else if (content is IDisposable disposableContent)
+        {
+            TryDispose(disposableContent);
+            Content = null;
+        }
     }
 
     private bool _isDisposed;
@@ -168,15 +295,57 @@ public partial class OverlayInstanceViewModel : ObservableObject, IDisposable
         // binds to it.
         if (content is Avalonia.StyledElement element)
         {
-            if (element.DataContext is IDisposable disposableVm)
+            if (Dispatcher.UIThread.CheckAccess())
             {
-                TryDispose(disposableVm);
+                var disposableVm = element.DataContext as IDisposable;
+                element.DataContext = null;
+
+                if (disposableVm != null)
+                {
+                    TryDispose(disposableVm);
+                }
+
+                if (element is IDisposable disposableElement)
+                {
+                    TryDispose(disposableElement);
+                }
             }
+            else
+            {
+                // Off-UI thread. We cannot access element.DataContext directly without throwing
+                // an InvalidOperationException from AvaloniaObject.VerifyAccess().
+                try
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        try
+                        {
+                            var disposableVm = element.DataContext as IDisposable;
+                            element.DataContext = null;
 
-            element.DataContext = null;
+                            if (disposableVm != null)
+                            {
+                                TryDispose(disposableVm);
+                            }
+
+                            if (element is IDisposable disposableElement)
+                            {
+                                TryDispose(disposableElement);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[OverlayInstance] Off-thread DisposeContent post error: {ex.Message}");
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[OverlayInstance] Could not post DisposeContent to Dispatcher: {ex.Message}");
+                }
+            }
         }
-
-        if (content is IDisposable disposableContent)
+        else if (content is IDisposable disposableContent)
         {
             TryDispose(disposableContent);
         }

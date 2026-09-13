@@ -3,11 +3,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime;
 using System.Threading;
+using System.Threading.Tasks;
+using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Core.Plugins.Settings;
 using PdfEditorApp.Services;
 using PdfEditorApp.Services.Overlays;
+using PdfEditorApp.ViewModels;
 using Xunit;
 
 namespace PdfEditorApp.Tests;
@@ -115,6 +118,61 @@ public class RealtimePluginSafetyTests
         }
 
         Assert.Equal(1, content.DisposeCount);
+    }
+
+    [Fact]
+    public void DisposingTheRegistry_FromBackgroundThread_WithStyledElementContent_DoesNotThrowAndDisposesViewModel()
+    {
+        var services = new ServiceCollection().BuildServiceProvider();
+        var vm = new DisposableContent();
+        var element = new Border { DataContext = vm };
+
+        var registry = new OverlayRegistry(services);
+        registry.RegisterOverlay(Descriptor(_ => element));
+        registry.ShowOverlay("test.overlay.realtime");
+
+        // Simulate async disposal on a threadpool worker thread (such as during DI shutdown)
+        var exception = Record.Exception(() =>
+        {
+            Task.Run(() => registry.Dispose()).GetAwaiter().GetResult();
+        });
+
+        Assert.Null(exception);
+        Assert.Equal(1, vm.DisposeCount);
+    }
+
+    [Fact]
+    public void OverlayInstanceViewModel_Dispose_FromBackgroundThread_TearsDownTrackedViewModelSafely()
+    {
+        var vm = new DisposableContent();
+        var element = new Border { DataContext = vm };
+        var desc = Descriptor(_ => element);
+        var instance = new OverlayInstanceViewModel(desc)
+        {
+            Content = element
+        };
+
+        var exception = Record.Exception(() =>
+        {
+            Task.Run(() => instance.Dispose()).GetAwaiter().GetResult();
+        });
+
+        Assert.Null(exception);
+        Assert.Equal(1, vm.DisposeCount);
+    }
+
+    [Fact]
+    public void DisposeContent_WhenCalledOffUIThread_DoesNotThrowVerifyAccess()
+    {
+        var vm = new DisposableContent();
+        var element = new Border { DataContext = vm };
+
+        var exception = Record.Exception(() =>
+        {
+            Task.Run(() => OverlayInstanceViewModel.DisposeContent(element)).GetAwaiter().GetResult();
+        });
+
+        Assert.Null(exception);
     }
 
     // ─── Plugin settings store ──────────────────────────────────────────────

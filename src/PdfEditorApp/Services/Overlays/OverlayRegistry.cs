@@ -322,6 +322,12 @@ public sealed class OverlayRegistry : IOverlayRegistry, IDisposable
         }
 
         _activeInstances.Clear();
+
+        RunOnUIThread(() =>
+        {
+            ActiveOverlays.Clear();
+            ActiveOverlaysChanged?.Invoke();
+        });
     }
 
     private sealed class UnregisterDisposable : IDisposable

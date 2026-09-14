@@ -35,7 +35,27 @@ public interface IPluginMarketplaceService
     Task<bool> InstallPluginAsync(string pluginId, IProgress<double>? progress = null, Action<string>? statusCallback = null, CancellationToken ct = default);
 
     /// <summary>
-    /// Uninstalls an installed marketplace plugin.
+    /// Downloads and installs a specific version of a marketplace plugin package.
+    /// </summary>
+    Task<bool> InstallPluginVersionAsync(string pluginId, string version, IProgress<double>? progress = null, Action<string>? statusCallback = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// Switches the active running version of an installed plugin to another locally installed or available version.
+    /// </summary>
+    Task<bool> SwitchActiveVersionAsync(string pluginId, string targetVersion, CancellationToken ct = default);
+
+    /// <summary>
+    /// Retrieves all locally installed versions on disk for a given plugin ID.
+    /// </summary>
+    IReadOnlyList<string> GetInstalledVersions(string pluginId);
+
+    /// <summary>
+    /// Deletes a specific inactive version folder of a plugin from local disk.
+    /// </summary>
+    Task<bool> DeleteVersionAsync(string pluginId, string version, CancellationToken ct = default);
+
+    /// <summary>
+    /// Uninstalls an installed marketplace plugin (all versions).
     /// </summary>
     Task<bool> UninstallPluginAsync(string pluginId, CancellationToken ct = default);
 

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using PdfEditorApp.Core.Plugins;
 using PdfEditorApp.Core.Plugins.Manifests;
+using PdfEditorApp.Core.Plugins.Marketplace;
 using PdfEditorApp.Services; // FryPdfPaths — MSIX-safe writable paths; AppLogService — diagnostic logging
 
 namespace PdfEditorApp.Plugins.Loader;
@@ -682,41 +683,41 @@ public static class PluginAssemblyLoader
             }
         }
 
-        // 2. Discover unpacked plugin subdirectories
+        // 2. Discover unpacked plugin subdirectories (including version-isolated folders)
         var subDirectories = Directory.GetDirectories(pluginsDirectory);
+
+        // Read configured active version preferences if available
+        var activeVersions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            var installedStorePath = FryPdfPaths.InstalledPluginsJsonPath;
+            if (File.Exists(installedStorePath))
+            {
+                var storeJson = File.ReadAllText(installedStorePath);
+                var records = System.Text.Json.JsonSerializer.Deserialize<List<InstalledPluginRecord>>(storeJson);
+                if (records != null)
+                {
+                    foreach (var r in records)
+                    {
+                        var preferred = !string.IsNullOrWhiteSpace(r.ActiveVersion) ? r.ActiveVersion : r.Version;
+                        if (!string.IsNullOrWhiteSpace(r.PluginId) && !string.IsNullOrWhiteSpace(preferred))
+                        {
+                            activeVersions[r.PluginId] = preferred;
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+
         foreach (var subDir in subDirectories)
         {
             try
             {
-                string? entryDll = null;
-                var manifestFile = Path.Combine(subDir, "plugin.json");
-                if (File.Exists(manifestFile))
-                {
-                    var json = File.ReadAllText(manifestFile);
-                    var manifest = System.Text.Json.JsonSerializer.Deserialize<PdfEditorApp.Core.Plugins.Manifests.PluginManifest>(json);
-                    if (!string.IsNullOrWhiteSpace(manifest?.EntryPoint))
-                    {
-                        var candidate = Path.Combine(subDir, manifest.EntryPoint);
-                        if (File.Exists(candidate))
-                        {
-                            entryDll = candidate;
-                        }
-                    }
-                }
+                var folderName = Path.GetFileName(subDir);
+                activeVersions.TryGetValue(folderName, out var targetVersion);
 
-                if (entryDll == null)
-                {
-                    var folderName = Path.GetFileName(subDir);
-                    var candidate = Path.Combine(subDir, $"{folderName}.dll");
-                    if (File.Exists(candidate))
-                    {
-                        entryDll = candidate;
-                    }
-                    else
-                    {
-                        entryDll = Directory.GetFiles(subDir, "*.dll", SearchOption.TopDirectoryOnly).FirstOrDefault();
-                    }
-                }
+                var entryDll = ResolvePluginDirectoryEntryDll(subDir, targetVersion);
 
                 if (entryDll != null && !loadedPaths.Contains(entryDll))
                 {
@@ -768,5 +769,140 @@ public static class PluginAssemblyLoader
         }
 
         return packages;
+    }
+
+    /// <summary>
+    /// Returns all installed version names (e.g. ["1.0.0", "1.1.0"]) discovered on disk for a given plugin ID.
+    /// </summary>
+    public static IReadOnlyList<string> GetInstalledVersionsOnDisk(string pluginsDirectory, string pluginId)
+    {
+        if (string.IsNullOrWhiteSpace(pluginsDirectory) || string.IsNullOrWhiteSpace(pluginId))
+            return Array.Empty<string>();
+
+        var pluginDir = Path.Combine(pluginsDirectory, pluginId);
+        if (!Directory.Exists(pluginDir))
+            return Array.Empty<string>();
+
+        var innerDirs = Directory.GetDirectories(pluginDir);
+        var versions = new List<(string Name, Version? SemVer)>();
+
+        foreach (var inner in innerDirs)
+        {
+            var name = Path.GetFileName(inner);
+            var manifestCandidate = Path.Combine(inner, "plugin.json");
+            var hasDll = Directory.GetFiles(inner, "*.dll", SearchOption.TopDirectoryOnly).Length > 0;
+            if (File.Exists(manifestCandidate) || hasDll)
+            {
+                PluginCompatibilityChecker.TryParseVersion(name, out var ver);
+                versions.Add((name, ver));
+            }
+        }
+
+        if (versions.Count > 0)
+        {
+            return versions
+                .OrderByDescending(v => v.SemVer != null)
+                .ThenByDescending(v => v.SemVer)
+                .ThenByDescending(v => v.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(v => v.Name)
+                .ToList();
+        }
+
+        // If pluginDir itself is flat, return "1.0.0" or manifest version
+        var manifestPath = Path.Combine(pluginDir, "plugin.json");
+        if (File.Exists(manifestPath))
+        {
+            try
+            {
+                var json = File.ReadAllText(manifestPath);
+                var manifest = System.Text.Json.JsonSerializer.Deserialize<PdfEditorApp.Core.Plugins.Manifests.PluginManifest>(json);
+                if (!string.IsNullOrWhiteSpace(manifest?.Version))
+                    return new[] { manifest.Version };
+            }
+            catch { }
+        }
+
+        return new[] { "1.0.0" };
+    }
+
+    /// <summary>
+    /// Resolves the entry DLL inside a plugin directory, taking version subdirectories into account.
+    /// </summary>
+    public static string? ResolvePluginDirectoryEntryDll(string subDir, string? targetVersion = null)
+    {
+        if (string.IsNullOrWhiteSpace(subDir) || !Directory.Exists(subDir)) return null;
+
+        var innerDirs = Directory.GetDirectories(subDir);
+        var versionDirs = new List<(string DirPath, Version? SemVer, string Name)>();
+
+        foreach (var inner in innerDirs)
+        {
+            var name = Path.GetFileName(inner);
+            var manifestCandidate = Path.Combine(inner, "plugin.json");
+            var hasDll = Directory.GetFiles(inner, "*.dll", SearchOption.TopDirectoryOnly).Length > 0;
+            if (File.Exists(manifestCandidate) || hasDll)
+            {
+                PluginCompatibilityChecker.TryParseVersion(name, out var ver);
+                versionDirs.Add((inner, ver, name));
+            }
+        }
+
+        if (versionDirs.Count > 0)
+        {
+            // If targetVersion is specified, try to find matching version directory
+            if (!string.IsNullOrWhiteSpace(targetVersion))
+            {
+                var cleanTarget = targetVersion.Trim().TrimStart('v', 'V');
+                var match = versionDirs.FirstOrDefault(v =>
+                    string.Equals(v.Name.TrimStart('v', 'V'), cleanTarget, StringComparison.OrdinalIgnoreCase));
+                if (match.DirPath != null)
+                {
+                    return FindEntryDllInDirectory(match.DirPath);
+                }
+            }
+
+            // Otherwise, sort by SemVer descending to pick highest version
+            var best = versionDirs
+                .OrderByDescending(v => v.SemVer != null)
+                .ThenByDescending(v => v.SemVer)
+                .ThenByDescending(v => v.Name, StringComparer.OrdinalIgnoreCase)
+                .First();
+
+            return FindEntryDllInDirectory(best.DirPath);
+        }
+
+        // Flat legacy structure
+        return FindEntryDllInDirectory(subDir);
+    }
+
+    /// <summary>
+    /// Finds the entry DLL in an unpacked plugin directory by checking plugin.json manifest,
+    /// then folder name match, then any .dll.
+    /// </summary>
+    public static string? FindEntryDllInDirectory(string dir)
+    {
+        if (!Directory.Exists(dir)) return null;
+
+        var manifestFile = Path.Combine(dir, "plugin.json");
+        if (File.Exists(manifestFile))
+        {
+            try
+            {
+                var json = File.ReadAllText(manifestFile);
+                var manifest = System.Text.Json.JsonSerializer.Deserialize<PdfEditorApp.Core.Plugins.Manifests.PluginManifest>(json);
+                if (!string.IsNullOrWhiteSpace(manifest?.EntryPoint))
+                {
+                    var candidate = Path.Combine(dir, manifest.EntryPoint);
+                    if (File.Exists(candidate)) return candidate;
+                }
+            }
+            catch { }
+        }
+
+        var folderName = Path.GetFileName(dir);
+        var candidateByName = Path.Combine(dir, $"{folderName}.dll");
+        if (File.Exists(candidateByName)) return candidateByName;
+
+        return Directory.GetFiles(dir, "*.dll", SearchOption.TopDirectoryOnly).FirstOrDefault();
     }
 }

@@ -74,19 +74,22 @@ public static class FryPluginPackageLoader
             ? manifest.Id
             : Path.GetFileNameWithoutExtension(packageFilePath);
 
-        // The id comes from the plugin.json inside the archive, i.e. from an untrusted
-        // source. Unvalidated it reaches Path.Combine below — which returns a rooted second
-        // argument verbatim and does not collapse ".." — and the resulting directory is then
-        // recursively deleted and extracted into.
+        var pluginVersion = !string.IsNullOrWhiteSpace(manifest?.Version)
+            ? manifest.Version.Trim()
+            : null;
+
+        // The id and version come from the plugin.json inside the archive.
+        // We unpack into a version-isolated folder: <baseDirectory>/<pluginId>/<version>/
+        // so multiple versions can coexist without collision or locking issues.
         string destinationFolder;
         try
         {
             destinationFolder = PluginIdValidator.ResolveInstallDirectory(
-                baseDirectory, pluginId, $"package '{Path.GetFileName(packageFilePath)}'");
+                baseDirectory, pluginId, pluginVersion, $"package '{Path.GetFileName(packageFilePath)}'");
         }
         catch (ArgumentException ex)
         {
-            AppLogService.Instance.LogError("PluginLoader", "Rejected plugin package with an unsafe id", ex);
+            AppLogService.Instance.LogError("PluginLoader", "Rejected plugin package with an unsafe id or version", ex);
             throw;
         }
 
@@ -98,10 +101,13 @@ public static class FryPluginPackageLoader
             }
             catch (Exception ex)
             {
-                // If locked (e.g. a previous version's DLL is still loaded on Windows),
+                // If locked (e.g. a previous run's DLL is still loaded),
                 // create a unique timestamped folder instead of failing the install outright.
+                var fallbackId = pluginVersion != null
+                    ? $"{pluginId}/{pluginVersion}_{DateTime.UtcNow.Ticks}"
+                    : $"{pluginId}_{DateTime.UtcNow.Ticks}";
                 var fallback = PluginIdValidator.ResolveInstallDirectory(
-                    baseDirectory, $"{pluginId}_{DateTime.UtcNow.Ticks}", "locked-install fallback");
+                    baseDirectory, fallbackId, "locked-install fallback");
                 AppLogService.Instance.LogWarning("PluginLoader",
                     $"Could not remove existing install directory '{destinationFolder}' (likely locked); using fallback '{fallback}'", ex);
                 destinationFolder = fallback;
@@ -179,6 +185,58 @@ public static class FryPluginPackageLoader
             AssemblyPackage = assemblyPackage,
             InstallDirectory = destinationFolder
         };
+    }
+
+    /// <summary>
+    /// Unpacks a .fryplugin package to the target directory under its versioned subdirectory without loading assemblies.
+    /// </summary>
+    public static PluginManifest UnpackPackage(string packageFilePath, string targetPluginsDirectory, string? targetVersion = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(packageFilePath);
+        if (!File.Exists(packageFilePath))
+        {
+            throw new FileNotFoundException($"Plugin package '{packageFilePath}' not found.");
+        }
+
+        Directory.CreateDirectory(targetPluginsDirectory);
+
+        // Read manifest from ZIP
+        PluginManifest? manifest = null;
+        using (var archive = ZipFile.OpenRead(packageFilePath))
+        {
+            var manifestEntry = archive.Entries.FirstOrDefault(e =>
+                string.Equals(e.FullName, "plugin.json", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(Path.GetFileName(e.FullName), "plugin.json", StringComparison.OrdinalIgnoreCase));
+
+            if (manifestEntry != null)
+            {
+                using var stream = manifestEntry.Open();
+                using var reader = new StreamReader(stream);
+                var json = reader.ReadToEnd();
+                manifest = JsonSerializer.Deserialize<PluginManifest>(json);
+            }
+        }
+
+        var pluginId = !string.IsNullOrWhiteSpace(manifest?.Id)
+            ? manifest.Id
+            : Path.GetFileNameWithoutExtension(packageFilePath);
+
+        var pluginVersion = !string.IsNullOrWhiteSpace(targetVersion)
+            ? targetVersion.Trim()
+            : (!string.IsNullOrWhiteSpace(manifest?.Version) ? manifest.Version.Trim() : null);
+
+        var destinationFolder = PluginIdValidator.ResolveInstallDirectory(
+            targetPluginsDirectory, pluginId, pluginVersion, $"package '{Path.GetFileName(packageFilePath)}'");
+
+        if (Directory.Exists(destinationFolder))
+        {
+            Directory.Delete(destinationFolder, recursive: true);
+        }
+
+        Directory.CreateDirectory(destinationFolder);
+        ZipFile.ExtractToDirectory(packageFilePath, destinationFolder, overwriteFiles: true);
+
+        return manifest ?? new PluginManifest { Id = pluginId, Name = pluginId, Version = pluginVersion ?? "1.0.0" };
     }
 
     /// <summary>

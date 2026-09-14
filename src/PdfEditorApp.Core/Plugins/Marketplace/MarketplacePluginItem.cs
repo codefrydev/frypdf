@@ -49,6 +49,10 @@ public sealed partial class MarketplacePluginItem : ObservableObject
     public IReadOnlyList<string> Highlights { get; init; } = Array.Empty<string>();
     public IReadOnlyList<string> ContributedFeatures { get; init; } = Array.Empty<string>();
     public IReadOnlyList<string> Dependencies { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<MarketplacePluginVersion> Versions { get; set; } = Array.Empty<MarketplacePluginVersion>();
+
+    [ObservableProperty]
+    private MarketplacePluginVersion? _selectedVersion;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInstalled))]

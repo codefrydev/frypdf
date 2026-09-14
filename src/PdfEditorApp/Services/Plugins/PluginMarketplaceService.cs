@@ -150,6 +150,74 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
         return null;
     }
 
+    private void NormalizePluginVersions(MarketplacePluginItem item)
+    {
+        if (item == null) return;
+        var versions = new List<MarketplacePluginVersion>();
+        if (item.Versions != null && item.Versions.Count > 0)
+        {
+            versions.AddRange(item.Versions);
+        }
+        else if (!string.IsNullOrWhiteSpace(item.Version))
+        {
+            versions.Add(new MarketplacePluginVersion
+            {
+                Version = item.Version,
+                DownloadUrl = item.DownloadUrl,
+                Sha256 = item.Sha256,
+                FormattedSize = item.FormattedSize,
+                ReleaseNotes = item.Description
+            });
+        }
+
+        var installedOnDisk = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        string? activeInstalledVer = null;
+
+        var rec = _installedPluginStore.Get(item.Id);
+        if (rec != null)
+        {
+            activeInstalledVer = !string.IsNullOrWhiteSpace(rec.ActiveVersion) ? rec.ActiveVersion : rec.Version;
+            if (rec.InstalledVersions != null)
+            {
+                foreach (var iv in rec.InstalledVersions) installedOnDisk.Add(iv);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(_pluginsDirectory))
+        {
+            foreach (var v in PluginAssemblyLoader.GetInstalledVersionsOnDisk(_pluginsDirectory, item.Id))
+            {
+                installedOnDisk.Add(v);
+            }
+        }
+
+        foreach (var ver in versions)
+        {
+            var compat = PluginCompatibilityChecker.CheckCompatibility(ver);
+            ver.IsCompatible = compat.IsCompatible;
+            ver.CompatibilityNote = compat.Message;
+
+            var cleanVer = ver.Version.Trim().TrimStart('v', 'V');
+            ver.IsInstalled = installedOnDisk.Contains(ver.Version) || installedOnDisk.Contains(cleanVer);
+            ver.IsActive = activeInstalledVer != null &&
+                (string.Equals(activeInstalledVer, ver.Version, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(activeInstalledVer.TrimStart('v', 'V'), cleanVer, StringComparison.OrdinalIgnoreCase));
+        }
+
+        var sorted = versions
+            .OrderByDescending(v => PluginCompatibilityChecker.TryParseVersion(v.Version, out var semver) ? semver : new Version(0, 0))
+            .ToList();
+
+        item.Versions = sorted;
+
+        if (item.SelectedVersion == null)
+        {
+            item.SelectedVersion = sorted.FirstOrDefault(v => v.IsActive)
+                ?? sorted.FirstOrDefault(v => v.IsCompatible)
+                ?? sorted.FirstOrDefault();
+        }
+    }
+
     private bool ShouldAutoOpenOverlay(string pluginId, IOverlayRegistry? overlayRegistry)
     {
         if (_pluginHost != null)
@@ -245,20 +313,8 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                 {
                     try
                     {
-                        string? entryDll = null;
-                        var manifestFile = Path.Combine(pluginDir, "plugin.json");
-                        if (File.Exists(manifestFile))
-                        {
-                            var json = File.ReadAllText(manifestFile);
-                            var manifest = JsonSerializer.Deserialize<PdfEditorApp.Core.Plugins.Manifests.PluginManifest>(json);
-                            if (!string.IsNullOrWhiteSpace(manifest?.EntryPoint))
-                            {
-                                var candidate = Path.Combine(pluginDir, manifest.EntryPoint);
-                                if (File.Exists(candidate)) entryDll = candidate;
-                            }
-                        }
-
-                        entryDll ??= Directory.GetFiles(pluginDir, "*.dll", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                        var targetVer = !string.IsNullOrWhiteSpace(rec.ActiveVersion) ? rec.ActiveVersion : rec.Version;
+                        var entryDll = PluginAssemblyLoader.ResolvePluginDirectoryEntryDll(pluginDir, targetVer);
                         if (entryDll != null)
                         {
                             var pkg = PluginAssemblyLoader.LoadPluginAssembly(entryDll);
@@ -439,6 +495,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
             foreach (var item in _remoteExtensions)
             {
                 if (item == null || string.IsNullOrEmpty(item.Id)) continue;
+                NormalizePluginVersions(item);
                 item.Status = IsPluginInstalled(item.Id)
                     ? MarketplacePluginStatus.Installed
                     : MarketplacePluginStatus.Available;
@@ -469,6 +526,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
 
         foreach (var item in allItems)
         {
+            NormalizePluginVersions(item);
             item.Status = IsPluginInstalled(item.Id)
                 ? MarketplacePluginStatus.Installed
                 : MarketplacePluginStatus.Available;
@@ -505,6 +563,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
 
         foreach (var item in results)
         {
+            NormalizePluginVersions(item);
             item.Status = IsPluginInstalled(item.Id)
                 ? MarketplacePluginStatus.Installed
                 : MarketplacePluginStatus.Available;
@@ -513,7 +572,12 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
         return Task.FromResult<IReadOnlyList<MarketplacePluginItem>>(results);
     }
 
-    public async Task<bool> InstallPluginAsync(string pluginId, IProgress<double>? progress = null, Action<string>? statusCallback = null, CancellationToken ct = default)
+    public Task<bool> InstallPluginAsync(string pluginId, IProgress<double>? progress = null, Action<string>? statusCallback = null, CancellationToken ct = default)
+    {
+        return InstallPluginVersionAsync(pluginId, version: null, progress, statusCallback, ct);
+    }
+
+    public async Task<bool> InstallPluginVersionAsync(string pluginId, string? version = null, IProgress<double>? progress = null, Action<string>? statusCallback = null, CancellationToken ct = default)
     {
         var sw = Stopwatch.StartNew();
         MarketplacePluginItem? item;
@@ -541,11 +605,27 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                 Id = pluginId,
                 Name = shortName,
                 Publisher = "Community",
-                Version = "1.0.0",
+                Version = version ?? "1.0.0",
                 Description = $"{shortName} plugin.",
                 DownloadUrl = $"{_registryBaseUrl}/{pluginId}/{shortName}.fryplugin"
             };
         }
+
+        NormalizePluginVersions(item);
+
+        // Resolve target version metadata if multi-version
+        MarketplacePluginVersion? targetVerMeta = null;
+        if (!string.IsNullOrWhiteSpace(version))
+        {
+            targetVerMeta = item.Versions.FirstOrDefault(v =>
+                string.Equals(v.Version.TrimStart('v', 'V'), version.Trim().TrimStart('v', 'V'), StringComparison.OrdinalIgnoreCase));
+        }
+        targetVerMeta ??= item.SelectedVersion ?? item.Versions.FirstOrDefault();
+
+        var effectiveVersion = targetVerMeta?.Version ?? version ?? item.Version;
+        var downloadUrl = !string.IsNullOrWhiteSpace(targetVerMeta?.DownloadUrl) ? targetVerMeta.DownloadUrl : item.DownloadUrl;
+        var sha256 = !string.IsNullOrWhiteSpace(targetVerMeta?.Sha256) ? targetVerMeta.Sha256 : item.Sha256;
+        var formattedSize = !string.IsNullOrWhiteSpace(targetVerMeta?.FormattedSize) ? targetVerMeta.FormattedSize : item.FormattedSize;
 
         // The id comes from remote catalog JSON and is used below to build the temp package
         // path, the install directory, and the uninstall directory that gets recursively deleted.
@@ -559,24 +639,25 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
         }
 
         item.Status = MarketplacePluginStatus.Installing;
-        statusCallback?.Invoke($"Connecting to FryPDF Marketplace registry for '{item.Name}'...");
+        statusCallback?.Invoke($"Connecting to FryPDF Marketplace registry for '{item.Name}' v{effectiveVersion}...");
         progress?.Report(0.1);
         bool autoOpen = false;
 
         // Case A: Remote package download from registry
-        if (!string.IsNullOrWhiteSpace(item.DownloadUrl))
+        if (!string.IsNullOrWhiteSpace(downloadUrl))
         {
-            statusCallback?.Invoke($"Downloading {item.FormattedSize} package archive from registry...");
+            statusCallback?.Invoke($"Downloading {formattedSize} package archive from registry...");
             progress?.Report(0.2);
 
             var tempDir = Path.Combine(_pluginsDirectory, ".cache");
             Directory.CreateDirectory(tempDir);
-            var tempPackagePath = Path.Combine(tempDir, $"{item.Id}.fryplugin");
+            var safeVer = effectiveVersion.Replace('/', '_').Replace('\\', '_');
+            var tempPackagePath = Path.Combine(tempDir, $"{item.Id}_{safeVer}.fryplugin");
 
-            if (!IsAllowedDownloadUrl(item.DownloadUrl))
+            if (!IsAllowedDownloadUrl(downloadUrl))
             {
                 AppLogService.Instance.Log(AppLogLevel.Warning, "PluginInstall",
-                    $"Refused to download '{item.Id}': '{item.DownloadUrl}' is not on the registry host.");
+                    $"Refused to download '{item.Id}': '{downloadUrl}' is not on the registry host.");
                 statusCallback?.Invoke($"Refused to download '{item.Name}': untrusted download URL.");
                 item.Status = MarketplacePluginStatus.Available;
                 return false;
@@ -587,12 +668,10 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                 bool downloaded = false;
                 try
                 {
-                    using (var response = await _httpClient.GetAsync(item.DownloadUrl, HttpCompletionOption.ResponseHeadersRead, ct))
+                    using (var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, ct))
                     {
                         if (response.IsSuccessStatusCode)
                         {
-                            // Content-Length of 0 is not null, so "?? 1" did not guard it and the
-                            // progress division produced Infinity.
                             long declaredLength = response.Content.Headers.ContentLength ?? 0;
                             if (declaredLength > MaxPackageBytes)
                             {
@@ -612,8 +691,6 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                                 totalBytesRead += bytesRead;
                                 if (totalBytesRead > MaxPackageBytes)
                                 {
-                                    // A server that under-declares Content-Length must not be able
-                                    // to stream unbounded data into the plugins directory.
                                     throw new InvalidOperationException(
                                         $"Package download exceeded the {MaxPackageBytes} byte limit while streaming.");
                                 }
@@ -630,7 +707,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                                         var dlStr = MarketplacePluginItem.FormatBytes(totalBytesRead);
                                         var totalStr = MarketplacePluginItem.FormatBytes(declaredLength);
                                         var pct = Math.Clamp((int)(fraction * 100), 0, 100);
-                                        statusCallback?.Invoke($"Downloading {item.Name}: {dlStr} / {totalStr} ({pct}%)...");
+                                        statusCallback?.Invoke($"Downloading {item.Name} v{effectiveVersion}: {dlStr} / {totalStr} ({pct}%)...");
                                     }
                                 }
                                 else
@@ -661,14 +738,14 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                     return false;
                 }
 
-                if (!string.IsNullOrWhiteSpace(item.Sha256))
+                if (!string.IsNullOrWhiteSpace(sha256))
                 {
                     statusCallback?.Invoke("Verifying package SHA-256...");
                     var actual = await ComputeSha256Async(tempPackagePath, ct);
-                    if (!string.Equals(actual, item.Sha256.Trim(), StringComparison.OrdinalIgnoreCase))
+                    if (!string.Equals(actual, sha256.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
                         AppLogService.Instance.Log(AppLogLevel.Error, "PluginInstall",
-                            $"SHA-256 mismatch for '{item.Id}': catalog declared {item.Sha256}, download was {actual}. Install aborted.");
+                            $"SHA-256 mismatch for '{item.Id}': catalog declared {sha256}, download was {actual}. Install aborted.");
                         statusCallback?.Invoke($"'{item.Name}' failed integrity verification and was not installed.");
                         item.Status = MarketplacePluginStatus.Available;
                         return false;
@@ -676,14 +753,12 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                 }
                 else
                 {
-                    // Say what is actually true. The catalog carries no digest for this entry,
-                    // so unpacking below will load and execute unverified code.
                     AppLogService.Instance.Log(AppLogLevel.Warning, "PluginInstall",
                         $"Catalog entry '{item.Id}' carries no sha256; installing without integrity verification.");
                     statusCallback?.Invoke("No checksum published for this package — installing unverified.");
                 }
 
-                statusCallback?.Invoke("Unpacking package archive...");
+                statusCallback?.Invoke("Unpacking package archive into versioned storage...");
                 progress?.Report(0.75);
 
                 var pkgResult = FryPluginPackageLoader.UnpackAndLoad(tempPackagePath, _pluginsDirectory);
@@ -694,6 +769,11 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                 autoOpen = false;
                 if (_pluginHost != null)
                 {
+                    if (_pluginHost.IsPluginActive(item.Id))
+                    {
+                        await _pluginHost.DisablePluginAsync(item.Id, ct);
+                    }
+
                     _pluginHost.RegisterPlugins(pkgResult.AssemblyPackage.Plugins);
                     foreach (var pkgPlugin in pkgResult.AssemblyPackage.Plugins)
                     {
@@ -712,21 +792,28 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                 }
 
                 lock (_catalogLock) { _installedMarketplaceIds.Add(item.Id); }
-                _installedPluginStore.AddOrUpdate(new InstalledPluginRecord
-                {
-                    PluginId = item.Id,
-                    Name = item.Name,
-                    Version = item.Version,
-                    InstalledAt = DateTime.UtcNow,
-                    IsEnabled = true,
-                    WasOverlayOpen = autoOpen
-                });
 
+                var record = _installedPluginStore.Get(item.Id) ?? new InstalledPluginRecord { PluginId = item.Id };
+                record.Name = item.Name;
+                record.Version = effectiveVersion;
+                record.ActiveVersion = effectiveVersion;
+                record.ActiveDirectoryPath = pkgResult.InstallDirectory;
+                record.InstalledAt = DateTime.UtcNow;
+                record.IsEnabled = true;
+                record.WasOverlayOpen = autoOpen;
+                if (record.InstalledVersions == null) record.InstalledVersions = new List<string>();
+                if (!record.InstalledVersions.Contains(effectiveVersion, StringComparer.OrdinalIgnoreCase))
+                {
+                    record.InstalledVersions.Add(effectiveVersion);
+                }
+                _installedPluginStore.AddOrUpdate(record);
+
+                NormalizePluginVersions(item);
                 item.Status = MarketplacePluginStatus.Installed;
-                statusCallback?.Invoke($"'{item.Name}' installed and activated successfully!");
+                statusCallback?.Invoke($"'{item.Name}' v{effectiveVersion} installed and activated successfully!");
                 progress?.Report(1.0);
                 AppLogService.Instance.Log(AppLogLevel.Info, "PluginInstall",
-                    $"Installed '{item.Id}' ({pkgResult.AssemblyPackage.Plugins.Count} plugin(s)) via remote package in {sw.ElapsedMilliseconds}ms.");
+                    $"Installed '{item.Id}' v{effectiveVersion} ({pkgResult.AssemblyPackage.Plugins.Count} plugin(s)) in {sw.ElapsedMilliseconds}ms.");
                 return true;
             }
             catch (Exception ex)
@@ -745,10 +832,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
                         File.Delete(tempPackagePath);
                     }
                 }
-                catch (Exception ex)
-                {
-                    AppLogService.Instance.LogWarning("PluginInstall", $"Failed to delete temp package '{tempPackagePath}'", ex);
-                }
+                catch { }
             }
         }
 
@@ -759,7 +843,6 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
         progress?.Report(0.35);
         await Task.Delay(150, ct);
 
-        // Local/built-in components ship with the app; there is no download to verify.
         statusCallback?.Invoke("Preparing built-in extension components...");
         progress?.Report(0.65);
         await Task.Delay(100, ct);
@@ -769,14 +852,12 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
         Directory.CreateDirectory(targetDir);
 
         var manifestPath = Path.Combine(targetDir, "plugin.json");
-        // Serialize rather than interpolate: a catalog Name or Description containing a quote
-        // or a backslash previously produced malformed (or attacker-shaped) JSON.
         var manifestContent = JsonSerializer.Serialize(
             new PluginManifest
             {
                 Id = item.Id,
                 Name = item.Name,
-                Version = item.Version,
+                Version = effectiveVersion,
                 Description = item.Description,
                 Author = item.Publisher,
                 EntryPoint = $"{item.Id}.dll",
@@ -812,16 +893,21 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
         }
 
         lock (_catalogLock) { _installedMarketplaceIds.Add(item.Id); }
-        _installedPluginStore.AddOrUpdate(new InstalledPluginRecord
+        var builtinRecord = _installedPluginStore.Get(item.Id) ?? new InstalledPluginRecord { PluginId = item.Id };
+        builtinRecord.Name = item.Name;
+        builtinRecord.Version = effectiveVersion;
+        builtinRecord.ActiveVersion = effectiveVersion;
+        builtinRecord.InstalledAt = DateTime.UtcNow;
+        builtinRecord.IsEnabled = true;
+        builtinRecord.WasOverlayOpen = autoOpen;
+        if (builtinRecord.InstalledVersions == null) builtinRecord.InstalledVersions = new List<string>();
+        if (!builtinRecord.InstalledVersions.Contains(effectiveVersion, StringComparer.OrdinalIgnoreCase))
         {
-            PluginId = item.Id,
-            Name = item.Name,
-            Version = item.Version,
-            InstalledAt = DateTime.UtcNow,
-            IsEnabled = true,
-            WasOverlayOpen = autoOpen
-        });
+            builtinRecord.InstalledVersions.Add(effectiveVersion);
+        }
+        _installedPluginStore.AddOrUpdate(builtinRecord);
 
+        NormalizePluginVersions(item);
         item.Status = MarketplacePluginStatus.Installed;
 
         statusCallback?.Invoke($"'{item.Name}' installed and activated successfully!");
@@ -829,6 +915,96 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
         AppLogService.Instance.Log(AppLogLevel.Info, "PluginInstall",
             $"Installed '{item.Id}' via local/simulated path in {sw.ElapsedMilliseconds}ms.");
         return true;
+    }
+
+    public async Task<bool> SwitchActiveVersionAsync(string pluginId, string targetVersion, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(pluginId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetVersion);
+
+        var pluginDir = Path.Combine(_pluginsDirectory, pluginId);
+        var entryDll = PluginAssemblyLoader.ResolvePluginDirectoryEntryDll(pluginDir, targetVersion);
+        if (entryDll == null || !File.Exists(entryDll))
+        {
+            // If not found on local disk, install it from remote registry
+            return await InstallPluginVersionAsync(pluginId, targetVersion, ct: ct);
+        }
+
+        if (_pluginHost != null)
+        {
+            if (_pluginHost.IsPluginActive(pluginId))
+            {
+                await _pluginHost.DisablePluginAsync(pluginId, ct);
+            }
+
+            var pkg = PluginAssemblyLoader.LoadPluginAssembly(entryDll);
+            if (pkg.Plugins.Count > 0)
+            {
+                _pluginHost.RegisterPlugins(pkg.Plugins);
+                foreach (var p in pkg.Plugins)
+                {
+                    await _pluginHost.EnablePluginAsync(p.Id, ct);
+                }
+            }
+        }
+
+        var record = _installedPluginStore.Get(pluginId) ?? new InstalledPluginRecord { PluginId = pluginId };
+        record.ActiveVersion = targetVersion;
+        record.Version = targetVersion;
+        record.ActiveDirectoryPath = Path.GetDirectoryName(entryDll);
+        if (record.InstalledVersions == null) record.InstalledVersions = new List<string>();
+        if (!record.InstalledVersions.Contains(targetVersion, StringComparer.OrdinalIgnoreCase))
+        {
+            record.InstalledVersions.Add(targetVersion);
+        }
+        _installedPluginStore.AddOrUpdate(record);
+
+        ScanInstalledMarketplacePlugins();
+        return true;
+    }
+
+    public IReadOnlyList<string> GetInstalledVersions(string pluginId)
+    {
+        return PluginAssemblyLoader.GetInstalledVersionsOnDisk(_pluginsDirectory, pluginId);
+    }
+
+    public Task<bool> DeleteVersionAsync(string pluginId, string version, CancellationToken ct = default)
+    {
+        var record = _installedPluginStore.Get(pluginId);
+        var activeVer = record != null ? (!string.IsNullOrWhiteSpace(record.ActiveVersion) ? record.ActiveVersion : record.Version) : null;
+
+        if (string.Equals(activeVer, version, StringComparison.OrdinalIgnoreCase))
+        {
+            AppLogService.Instance.LogWarning("PluginInstall", $"Refused to delete currently active version '{version}' of '{pluginId}'");
+            return Task.FromResult(false);
+        }
+
+        var candidate = Path.Combine(_pluginsDirectory, pluginId, version);
+        if (!Directory.Exists(candidate))
+        {
+            candidate = Path.Combine(_pluginsDirectory, pluginId, $"v{version}");
+        }
+
+        if (Directory.Exists(candidate))
+        {
+            try
+            {
+                Directory.Delete(candidate, recursive: true);
+                if (record != null && record.InstalledVersions != null)
+                {
+                    record.InstalledVersions.RemoveAll(v => string.Equals(v, version, StringComparison.OrdinalIgnoreCase));
+                    _installedPluginStore.AddOrUpdate(record);
+                }
+                return Task.FromResult(true);
+            }
+            catch (Exception ex)
+            {
+                AppLogService.Instance.LogError("PluginInstall", $"Failed to delete version directory '{candidate}'", ex);
+                return Task.FromResult(false);
+            }
+        }
+
+        return Task.FromResult(false);
     }
 
     public async Task<bool> UninstallPluginAsync(string pluginId, CancellationToken ct = default)

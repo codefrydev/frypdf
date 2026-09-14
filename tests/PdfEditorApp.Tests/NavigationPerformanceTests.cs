@@ -92,6 +92,17 @@ public class NavigationPerformanceTests
         public Task<bool> InstallPluginAsync(string pluginId, IProgress<double>? progress = null,
             Action<string>? statusCallback = null, CancellationToken ct = default) => Task.FromResult(false);
 
+        public Task<bool> InstallPluginVersionAsync(string pluginId, string version, IProgress<double>? progress = null,
+            Action<string>? statusCallback = null, CancellationToken ct = default) => Task.FromResult(false);
+
+        public Task<bool> SwitchActiveVersionAsync(string pluginId, string targetVersion, CancellationToken ct = default)
+            => Task.FromResult(false);
+
+        public IReadOnlyList<string> GetInstalledVersions(string pluginId) => Array.Empty<string>();
+
+        public Task<bool> DeleteVersionAsync(string pluginId, string version, CancellationToken ct = default)
+            => Task.FromResult(false);
+
         public Task<bool> UninstallPluginAsync(string pluginId, CancellationToken ct = default)
             => Task.FromResult(false);
 

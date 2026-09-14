@@ -15,14 +15,15 @@ public enum ExtensionDetailTab
 {
     Overview,
     Contributions,
+    Versions,
     Settings,
     Runtime
 }
 
 /// <summary>
 /// Detail presentation model for the selected plugin in the Plugins & Extensions Studio.
-/// Displays comprehensive metadata, stats, action controls, and 4 dedicated tabs:
-/// Overview, Feature Contributions, Declarative Settings, and Runtime/Dependencies.
+/// Displays comprehensive metadata, stats, action controls, and 5 dedicated tabs:
+/// Overview, Feature Contributions, Versions & Changelog, Declarative Settings, and Runtime/Dependencies.
 /// </summary>
 public partial class PluginsManagerDetailViewModel : ViewModelBase
 {
@@ -98,6 +99,7 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(CanToggleActive))]
     [NotifyPropertyChangedFor(nameof(CanUninstall))]
     [NotifyPropertyChangedFor(nameof(CanLaunch))]
+    [NotifyPropertyChangedFor(nameof(CanShowVersionAction))]
     private bool _isInstalling;
 
     [ObservableProperty]
@@ -117,6 +119,7 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
     public bool CanToggleActive => IsInstalled && !IsInstalling;
     public bool CanUninstall => IsInstalled && IsExternal && !IsInstalling;
     public bool CanLaunch => IsInstalled && IsOverlayType && !IsInstalling;
+    public bool CanShowVersionAction => !IsSelectedVersionActive && !IsInstalling;
     public bool IsActiveAndInstalled => IsInstalled && IsActive;
     public bool IsDisabledAndInstalled => IsInstalled && !IsActive;
     public bool IsSystemBuiltIn => IsInstalled && !IsExternal;
@@ -136,6 +139,97 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
     [ObservableProperty]
     private string _assemblyLoadContextName = "Default AssemblyLoadContext";
 
+    public ObservableCollection<MarketplacePluginVersion> AvailableVersions { get; } = new();
+
+    [ObservableProperty]
+    private MarketplacePluginVersion? _selectedVersion;
+
+    [ObservableProperty]
+    private string _activeInstalledVersion = string.Empty;
+
+    [ObservableProperty]
+    private bool _isSelectedVersionInstalled;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanShowVersionAction))]
+    private bool _isSelectedVersionActive;
+
+    [ObservableProperty]
+    private bool _isUpgradeAvailable;
+
+    [ObservableProperty]
+    private bool _isRollbackAvailable;
+
+    [ObservableProperty]
+    private string _versionActionText = "Install";
+
+    [ObservableProperty]
+    private bool _hasMultipleVersions;
+
+    public bool HasVersions => AvailableVersions.Count > 0;
+
+    partial void OnSelectedVersionChanged(MarketplacePluginVersion? value)
+    {
+        UpdateVersionState();
+    }
+
+    public void UpdateVersionState()
+    {
+        if (SelectedVersion == null) return;
+
+        var selectedVerStr = SelectedVersion.Version.Trim().TrimStart('v', 'V');
+        var activeVerStr = !string.IsNullOrWhiteSpace(ActiveInstalledVersion)
+            ? ActiveInstalledVersion.Trim().TrimStart('v', 'V')
+            : Version.Trim().TrimStart('v', 'V');
+
+        IsSelectedVersionActive = IsInstalled && string.Equals(selectedVerStr, activeVerStr, StringComparison.OrdinalIgnoreCase);
+        IsSelectedVersionInstalled = SelectedVersion.IsInstalled;
+
+        if (IsSelectedVersionActive)
+        {
+            IsUpgradeAvailable = false;
+            IsRollbackAvailable = false;
+            VersionActionText = "Installed";
+        }
+        else if (IsSelectedVersionInstalled)
+        {
+            IsUpgradeAvailable = false;
+            IsRollbackAvailable = false;
+            VersionActionText = $"Switch to v{SelectedVersion.Version}";
+        }
+        else if (IsInstalled)
+        {
+            if (PluginCompatibilityChecker.TryParseVersion(selectedVerStr, out var selVer) &&
+                PluginCompatibilityChecker.TryParseVersion(activeVerStr, out var actVer))
+            {
+                if (selVer > actVer)
+                {
+                    IsUpgradeAvailable = true;
+                    IsRollbackAvailable = false;
+                    VersionActionText = $"Update to v{SelectedVersion.Version}";
+                }
+                else
+                {
+                    IsUpgradeAvailable = false;
+                    IsRollbackAvailable = true;
+                    VersionActionText = $"Rollback to v{SelectedVersion.Version}";
+                }
+            }
+            else
+            {
+                IsUpgradeAvailable = true;
+                IsRollbackAvailable = false;
+                VersionActionText = $"Switch to v{SelectedVersion.Version}";
+            }
+        }
+        else
+        {
+            IsUpgradeAvailable = false;
+            IsRollbackAvailable = false;
+            VersionActionText = $"Install v{SelectedVersion.Version}";
+        }
+    }
+
     public ObservableCollection<string> ContributedFeatures { get; } = new();
     public ObservableCollection<string> Highlights { get; } = new();
     public ObservableCollection<string> Dependencies { get; } = new();
@@ -146,10 +240,67 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
 
     public Func<string, bool, Task>? ToggleActiveCallback { get; set; }
     public Func<string, Task>? InstallCallback { get; set; }
+    public Func<string, string?, Task>? InstallVersionCallback { get; set; }
+    public Func<string, string, Task>? SwitchVersionCallback { get; set; }
+    public Func<string, string, Task>? DeleteVersionCallback { get; set; }
     public Func<string, Task>? UninstallCallback { get; set; }
     public Func<string, Task>? LaunchCallback { get; set; }
     public Action<string>? CopyToClipboardCallback { get; set; }
     public Action<string>? ShowToastCallback { get; set; }
+
+    [RelayCommand]
+    public async Task InstallSelectedVersionAsync()
+    {
+        if (SelectedVersion == null || IsInstalling) return;
+
+        if (IsSelectedVersionInstalled && !IsSelectedVersionActive)
+        {
+            await SwitchVersionAsync(SelectedVersion.Version);
+            return;
+        }
+
+        await InstallVersionAsync(SelectedVersion.Version);
+    }
+
+    [RelayCommand]
+    public async Task InstallVersionAsync(string? version)
+    {
+        var ver = version ?? SelectedVersion?.Version;
+        if (string.IsNullOrWhiteSpace(ver) || IsInstalling) return;
+
+        if (InstallVersionCallback != null)
+        {
+            await InstallVersionCallback(Id, ver);
+        }
+        else if (InstallCallback != null)
+        {
+            await InstallCallback(Id);
+        }
+    }
+
+    [RelayCommand]
+    public async Task SwitchVersionAsync(string? targetVersion)
+    {
+        var ver = targetVersion ?? SelectedVersion?.Version;
+        if (string.IsNullOrWhiteSpace(ver)) return;
+
+        if (SwitchVersionCallback != null)
+        {
+            await SwitchVersionCallback(Id, ver);
+        }
+    }
+
+    [RelayCommand]
+    public async Task DeleteVersionAsync(string? version)
+    {
+        var ver = version ?? SelectedVersion?.Version;
+        if (string.IsNullOrWhiteSpace(ver)) return;
+
+        if (DeleteVersionCallback != null)
+        {
+            await DeleteVersionCallback(Id, ver);
+        }
+    }
 
     [RelayCommand]
     public void SelectTab(string tabName)
@@ -345,6 +496,18 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
             }
         }
 
+        var selfVer = new MarketplacePluginVersion
+        {
+            Version = plugin.Version,
+            ReleaseNotes = plugin.Description,
+            IsInstalled = true,
+            IsActive = plugin.IsActive
+        };
+        vm.AvailableVersions.Add(selfVer);
+        vm.SelectedVersion = selfVer;
+        vm.ActiveInstalledVersion = plugin.Version;
+        vm.UpdateVersionState();
+
         return vm;
     }
 
@@ -401,6 +564,34 @@ public partial class PluginsManagerDetailViewModel : ViewModelBase
         {
             vm.Dependencies.Add(d);
         }
+
+        if (item.Versions != null && item.Versions.Count > 0)
+        {
+            foreach (var v in item.Versions)
+            {
+                vm.AvailableVersions.Add(v);
+            }
+            vm.HasMultipleVersions = vm.AvailableVersions.Count > 1;
+            vm.SelectedVersion = item.SelectedVersion ?? vm.AvailableVersions.FirstOrDefault();
+        }
+        else
+        {
+            var defaultVer = new MarketplacePluginVersion
+            {
+                Version = item.Version,
+                DownloadUrl = item.DownloadUrl,
+                Sha256 = item.Sha256,
+                FormattedSize = item.FormattedSize,
+                ReleaseNotes = item.Description,
+                IsInstalled = isInstalled,
+                IsActive = isInstalled
+            };
+            vm.AvailableVersions.Add(defaultVer);
+            vm.SelectedVersion = defaultVer;
+        }
+
+        vm.ActiveInstalledVersion = isInstalled ? item.Version : string.Empty;
+        vm.UpdateVersionState();
 
         return vm;
     }

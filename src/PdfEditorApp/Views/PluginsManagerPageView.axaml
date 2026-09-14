@@ -758,14 +758,65 @@
                                                            FontSize="20"
                                                            FontWeight="Bold"
                                                            Foreground="{DynamicResource WinTextBrush}" />
+                                                <!-- Version Badge (Single Version) -->
                                                 <Border Background="{DynamicResource WinHoverBrush}"
                                                         CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                                         Padding="6,2"
+                                                        IsVisible="{Binding !HasMultipleVersions}"
                                                         VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding Version, StringFormat='v{0}'}"
                                                                FontSize="11"
                                                                FontWeight="SemiBold"
                                                                Foreground="{DynamicResource WinMutedBrush}" />
+                                                </Border>
+
+                                                <!-- Version Dropdown Selector (Multi-Version) -->
+                                                <ComboBox ItemsSource="{Binding AvailableVersions}"
+                                                          SelectedItem="{Binding SelectedVersion, Mode=TwoWay}"
+                                                          IsVisible="{Binding HasMultipleVersions}"
+                                                          Height="28"
+                                                          FontSize="11"
+                                                          Padding="8,2"
+                                                          CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                          VerticalAlignment="Center"
+                                                          ToolTip.Tip="Select extension version">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate x:DataType="marketplace:MarketplacePluginVersion">
+                                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                                <TextBlock Text="{Binding Version, StringFormat='v{0}'}" FontWeight="SemiBold" />
+                                                                <TextBlock Text="(active)" FontSize="10" Foreground="{DynamicResource WinSuccessBrush}" IsVisible="{Binding IsActive}" />
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+
+                                                <!-- Host Compatibility Indicator -->
+                                                <Border Background="{DynamicResource WinSuccessLightBrush}"
+                                                        BorderBrush="{DynamicResource WinSuccessBorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Padding="6,2"
+                                                        IsVisible="{Binding SelectedVersion.IsCompatible, FallbackValue=False}"
+                                                        ToolTip.Tip="{Binding SelectedVersion.CompatibilityNote}"
+                                                        VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                        <materialIcons:MaterialIcon Kind="CheckCircleOutline" Width="11" Height="11" Foreground="{DynamicResource WinSuccessBrush}" />
+                                                        <TextBlock Text="Compatible" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinSuccessBrush}" />
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <Border Background="{DynamicResource WinWarningLightBrush}"
+                                                        BorderBrush="{DynamicResource WinWarningBorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                        Padding="6,2"
+                                                        IsVisible="{Binding !SelectedVersion.IsCompatible, FallbackValue=False}"
+                                                        ToolTip.Tip="{Binding SelectedVersion.CompatibilityNote}"
+                                                        VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                        <materialIcons:MaterialIcon Kind="AlertOutline" Width="11" Height="11" Foreground="{DynamicResource WinWarningBrush}" />
+                                                        <TextBlock Text="Incompatible" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinWarningBrush}" />
+                                                    </StackPanel>
                                                 </Border>
 
                                                 <!-- Verified Official Badge -->
@@ -875,16 +926,19 @@
 
                                         <!-- Action Buttons: Install, Installing, Enable/Disable, Settings, Uninstall -->
                                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                            <!-- 1. Install Button (for Marketplace items not yet installed) -->
+                                            <!-- 1. Install / Update / Rollback / Switch Button (Version-aware) -->
                                             <Button Classes="accent-btn"
                                                     Height="36"
                                                     Padding="18,0"
-                                                    IsVisible="{Binding CanInstall}"
-                                                    Command="{Binding InstallCommand}"
-                                                    ToolTip.Tip="Download and install this extension from the store">
+                                                    IsVisible="{Binding CanShowVersionAction}"
+                                                    Command="{Binding InstallSelectedVersionCommand}"
+                                                    ToolTip.Tip="Install or switch to the selected version">
                                                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                    <materialIcons:MaterialIcon Kind="Download" Width="16" Height="16" />
-                                                    <TextBlock Text="Install" FontSize="12" FontWeight="SemiBold" />
+                                                    <materialIcons:MaterialIcon Kind="ArrowUpBoldCircleOutline" Width="16" Height="16" IsVisible="{Binding IsUpgradeAvailable}" />
+                                                    <materialIcons:MaterialIcon Kind="History" Width="16" Height="16" IsVisible="{Binding IsRollbackAvailable}" />
+                                                    <materialIcons:MaterialIcon Kind="SwapHorizontal" Width="16" Height="16" IsVisible="{Binding IsSelectedVersionInstalled}" />
+                                                    <materialIcons:MaterialIcon Kind="Download" Width="16" Height="16" IsVisible="{Binding !IsInstalled}" />
+                                                    <TextBlock Text="{Binding VersionActionText}" FontSize="12" FontWeight="SemiBold" />
                                                 </StackPanel>
                                             </Button>
 
@@ -1061,6 +1115,20 @@
                                                     Padding="4,1"
                                                     IsVisible="{Binding HasContributions}">
                                                 <TextBlock Text="{Binding ContributedFeatures.Count}" FontSize="9.5" FontWeight="Bold" />
+                                            </Border>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="sub-tab-btn"
+                                            Classes.active="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Versions}"
+                                            Command="{Binding SelectTabCommand}"
+                                            CommandParameter="Versions">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock Text="Versions &amp; Releases" />
+                                            <Border Background="{DynamicResource WinHoverBrush}"
+                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                    Padding="4,1"
+                                                    IsVisible="{Binding HasVersions}">
+                                                <TextBlock Text="{Binding AvailableVersions.Count}" FontSize="9.5" FontWeight="Bold" />
                                             </Border>
                                         </StackPanel>
                                     </Button>
@@ -1284,6 +1352,177 @@
                                         </ItemsControl>
                                     </StackPanel>
                                 </Border>
+                            </StackPanel>
+
+                            <!-- 3E: Versions & Releases Tab -->
+                            <StackPanel IsVisible="{Binding SelectedTab, Converter={StaticResource EqualityConverter}, ConverterParameter=Versions}" Spacing="14">
+                                <!-- Header info card -->
+                                <Border Background="{DynamicResource WinPanelBrush}"
+                                        BorderBrush="{DynamicResource WinBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                        Padding="20">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="Version History &amp; Multi-Version Storage" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
+                                        <TextBlock Text="FryPDF allows storing multiple versions of an extension side-by-side on your local disk. You can switch the active version instantly without re-downloading, or rollback to an earlier release if needed."
+                                                   FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" LineHeight="18" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- List of Releases -->
+                                <ItemsControl ItemsSource="{Binding AvailableVersions}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="marketplace:MarketplacePluginVersion">
+                                            <Border Background="{DynamicResource WinPanelBrush}"
+                                                    BorderBrush="{DynamicResource WinBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                                                    Padding="18,14"
+                                                    Margin="0,0,0,10"
+                                                    BoxShadow="0 2 8 #08000000">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <!-- Version details -->
+                                                    <StackPanel Grid.Column="0" Spacing="8">
+                                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Version, StringFormat='v{0}'}"
+                                                                       FontSize="15"
+                                                                       FontWeight="Bold"
+                                                                       Foreground="{DynamicResource WinTextBrush}" />
+
+                                                            <!-- Active Pill -->
+                                                            <Border Background="{DynamicResource WinSuccessLightBrush}"
+                                                                    BorderBrush="{DynamicResource WinSuccessBorderBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                                    Padding="6,2"
+                                                                    IsVisible="{Binding IsActive}">
+                                                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                                    <materialIcons:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="{DynamicResource WinSuccessBrush}" />
+                                                                    <TextBlock Text="Active in Kernel" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinSuccessBrush}" />
+                                                                </StackPanel>
+                                                            </Border>
+
+                                                            <!-- Cached On Disk Pill -->
+                                                            <Border Background="{DynamicResource WinHoverBrush}"
+                                                                    BorderBrush="{DynamicResource WinBorderBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                                    Padding="6,2"
+                                                                    IsVisible="{Binding IsInstalled}">
+                                                                <TextBlock Text="Installed Locally" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
+                                                            </Border>
+
+                                                            <!-- Compatibility Pill -->
+                                                            <Border Background="{DynamicResource WinSuccessLightBrush}"
+                                                                    BorderBrush="{DynamicResource WinSuccessBorderBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                                    Padding="6,2"
+                                                                    IsVisible="{Binding IsCompatible}">
+                                                                <TextBlock Text="Compatible" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinSuccessBrush}" />
+                                                            </Border>
+                                                            <Border Background="{DynamicResource WinWarningLightBrush}"
+                                                                    BorderBrush="{DynamicResource WinWarningBorderBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                                    Padding="6,2"
+                                                                    IsVisible="{Binding !IsCompatible}">
+                                                                <TextBlock Text="Incompatible" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource WinWarningBrush}" />
+                                                            </Border>
+                                                        </StackPanel>
+
+                                                        <!-- Metadata row -->
+                                                        <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" IsVisible="{Binding ReleaseDate.Length}">
+                                                                <materialIcons:MaterialIcon Kind="CalendarOutline" Width="13" Height="13" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                                <TextBlock Text="{Binding ReleaseDate, StringFormat='Released {0}'}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                                                            </StackPanel>
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                                <materialIcons:MaterialIcon Kind="PackageVariantClosed" Width="13" Height="13" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                                <TextBlock Text="{Binding FormattedSize}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                                                            </StackPanel>
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" IsVisible="{Binding TargetFramework.Length}">
+                                                                <materialIcons:MaterialIcon Kind="CodeBraces" Width="13" Height="13" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                                <TextBlock Text="{Binding TargetFramework, StringFormat='Target: {0}'}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                                                            </StackPanel>
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" IsVisible="{Binding MinHostVersion.Length}">
+                                                                <materialIcons:MaterialIcon Kind="ApplicationOutline" Width="13" Height="13" Foreground="{DynamicResource WinSubtleBrush}" />
+                                                                <TextBlock Text="{Binding MinHostVersion, StringFormat='Min FryPDF: v{0}'}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+
+                                                        <!-- Release Notes -->
+                                                        <TextBlock Text="{Binding ReleaseNotes}"
+                                                                   FontSize="11.5"
+                                                                   Foreground="{DynamicResource WinMutedBrush}"
+                                                                   TextWrapping="Wrap"
+                                                                   IsVisible="{Binding ReleaseNotes.Length}"
+                                                                   Margin="0,2,0,0" />
+
+                                                        <!-- Compatibility Warning (if any) -->
+                                                        <TextBlock Text="{Binding CompatibilityNote}"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource WinWarningBrush}"
+                                                                   IsVisible="{Binding !IsCompatible}" />
+                                                    </StackPanel>
+
+                                                    <!-- Actions column -->
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                        <!-- Active Indicator -->
+                                                        <Border Background="{DynamicResource WinSuccessLightBrush}"
+                                                                CornerRadius="{StaticResource M3ShapeCornerFull}"
+                                                                Padding="12,6"
+                                                                IsVisible="{Binding IsActive}">
+                                                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                                <materialIcons:MaterialIcon Kind="Check" Width="14" Height="14" Foreground="{DynamicResource WinSuccessBrush}" />
+                                                                <TextBlock Text="Active" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinSuccessBrush}" />
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <!-- Switch to cached version button -->
+                                                        <Button Classes="action-pill-btn"
+                                                                Height="32"
+                                                                Padding="14,0"
+                                                                IsVisible="{Binding IsInstalledAndNotActive, FallbackValue=False}"
+                                                                Command="{Binding $parent[UserControl].((vm:PluginsManagerViewModel)DataContext).SelectedDetail.SwitchVersionCommand, FallbackValue={x:Null}}"
+                                                                CommandParameter="{Binding Version}"
+                                                                ToolTip.Tip="Activate this version without re-downloading">
+                                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                                <materialIcons:MaterialIcon Kind="SwapHorizontal" Width="14" Height="14" Foreground="{DynamicResource WinAccentBrush}" />
+                                                                <TextBlock Text="Switch" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
+                                                            </StackPanel>
+                                                        </Button>
+
+                                                        <!-- Install / Download version button -->
+                                                        <Button Classes="accent-btn"
+                                                                Height="32"
+                                                                Padding="14,0"
+                                                                IsVisible="{Binding !IsInstalled}"
+                                                                Command="{Binding $parent[UserControl].((vm:PluginsManagerViewModel)DataContext).SelectedDetail.InstallVersionCommand, FallbackValue={x:Null}}"
+                                                                CommandParameter="{Binding Version}"
+                                                                ToolTip.Tip="Download and activate this version">
+                                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                                <materialIcons:MaterialIcon Kind="Download" Width="14" Height="14" />
+                                                                <TextBlock Text="Install" FontSize="11" FontWeight="SemiBold" />
+                                                            </StackPanel>
+                                                        </Button>
+
+                                                        <!-- Delete cached version button (only if installed and not active) -->
+                                                        <Button Classes="action-pill-btn"
+                                                                Height="32"
+                                                                Padding="8,0"
+                                                                IsVisible="{Binding IsInstalledAndNotActive, FallbackValue=False}"
+                                                                Command="{Binding $parent[UserControl].((vm:PluginsManagerViewModel)DataContext).SelectedDetail.DeleteVersionCommand, FallbackValue={x:Null}}"
+                                                                CommandParameter="{Binding Version}"
+                                                                ToolTip.Tip="Delete this cached version from disk">
+                                                            <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="14" Height="14" Foreground="#EF4444" />
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </StackPanel>
 
                         </StackPanel>

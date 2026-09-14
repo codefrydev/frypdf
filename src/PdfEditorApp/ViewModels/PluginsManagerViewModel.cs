@@ -530,6 +530,26 @@ public partial class PluginsManagerViewModel : ViewModelBase
     private void UpdateDetailFromInstalled(PluginItemViewModel plugin)
     {
         var detail = PluginsManagerDetailViewModel.FromInstalledPlugin(plugin);
+
+        // If this plugin exists in marketplace catalog, enrich AvailableVersions with catalog releases
+        lock (_dataLock)
+        {
+            var marketItem = _allMarketplace.FirstOrDefault(m => string.Equals(m.Id, plugin.Id, StringComparison.OrdinalIgnoreCase));
+            if (marketItem != null && marketItem.Versions.Count > 0)
+            {
+                detail.AvailableVersions.Clear();
+                foreach (var v in marketItem.Versions)
+                {
+                    detail.AvailableVersions.Add(v);
+                }
+                detail.HasMultipleVersions = detail.AvailableVersions.Count > 1;
+                detail.SelectedVersion = detail.AvailableVersions.FirstOrDefault(v => v.Version == plugin.Version)
+                                         ?? detail.AvailableVersions.FirstOrDefault();
+            }
+        }
+        detail.ActiveInstalledVersion = plugin.Version;
+        detail.UpdateVersionState();
+
         WireDetailCallbacks(detail);
         SelectedDetail = detail;
         OnPropertyChanged(nameof(HasSelectedDetail));
@@ -538,6 +558,20 @@ public partial class PluginsManagerViewModel : ViewModelBase
     private void UpdateDetailFromMarketplace(MarketplacePluginItem item)
     {
         var detail = PluginsManagerDetailViewModel.FromMarketplaceItem(item);
+
+        // Check if installed in _allInstalled
+        lock (_dataLock)
+        {
+            var installed = _allInstalled.FirstOrDefault(p => string.Equals(p.Id, item.Id, StringComparison.OrdinalIgnoreCase));
+            if (installed != null)
+            {
+                detail.IsInstalled = true;
+                detail.IsActive = installed.IsActive;
+                detail.ActiveInstalledVersion = installed.Version;
+                detail.UpdateVersionState();
+            }
+        }
+
         WireDetailCallbacks(detail);
         SelectedDetail = detail;
         OnPropertyChanged(nameof(HasSelectedDetail));
@@ -569,6 +603,21 @@ public partial class PluginsManagerViewModel : ViewModelBase
         detail.InstallCallback = async (id) =>
         {
             await InstallMarketplacePluginAsync(id);
+        };
+
+        detail.InstallVersionCallback = async (id, ver) =>
+        {
+            await InstallMarketplacePluginVersionAsync(id, ver);
+        };
+
+        detail.SwitchVersionCallback = async (id, ver) =>
+        {
+            await SwitchMarketplacePluginVersionAsync(id, ver);
+        };
+
+        detail.DeleteVersionCallback = async (id, ver) =>
+        {
+            await DeleteMarketplacePluginVersionAsync(id, ver);
         };
 
         detail.UninstallCallback = async (id) =>
@@ -702,6 +751,11 @@ public partial class PluginsManagerViewModel : ViewModelBase
     [RelayCommand]
     public async Task InstallMarketplacePluginAsync(string pluginId)
     {
+        await InstallMarketplacePluginVersionAsync(pluginId, null);
+    }
+
+    public async Task InstallMarketplacePluginVersionAsync(string pluginId, string? version)
+    {
         if (IsInstalling) return;
 
         IsBusy = true;
@@ -709,7 +763,9 @@ public partial class PluginsManagerViewModel : ViewModelBase
         InstallingPluginId = pluginId;
         InstallProgress = 0.05;
         InstallProgressPercent = 5;
-        InstallStatusMessage = "Connecting to marketplace...";
+        InstallStatusMessage = string.IsNullOrWhiteSpace(version)
+            ? "Connecting to marketplace..."
+            : $"Connecting to marketplace for v{version}...";
         StatusMessage = InstallStatusMessage;
         var sw = Stopwatch.StartNew();
 
@@ -767,12 +823,22 @@ public partial class PluginsManagerViewModel : ViewModelBase
                 }
             }
 
-            bool success = await _marketplaceService.InstallPluginAsync(pluginId, progress, OnStatus);
+            bool success;
+            if (!string.IsNullOrWhiteSpace(version))
+            {
+                success = await _marketplaceService.InstallPluginVersionAsync(pluginId, version, progress, OnStatus);
+            }
+            else
+            {
+                success = await _marketplaceService.InstallPluginAsync(pluginId, progress, OnStatus);
+            }
+
             if (success)
             {
+                var verTag = !string.IsNullOrWhiteSpace(version) ? $" v{version}" : "";
                 AppLogService.Instance.Log(AppLogLevel.Info, "PluginInstall",
-                    $"UI: installed '{pluginId}' in {sw.ElapsedMilliseconds}ms.");
-                ShowToastCallback?.Invoke($"Installed extension '{marketplaceItem?.Name ?? pluginId}' successfully!");
+                    $"UI: installed '{pluginId}'{verTag} in {sw.ElapsedMilliseconds}ms.");
+                ShowToastCallback?.Invoke($"Installed extension '{marketplaceItem?.Name ?? pluginId}'{verTag} successfully!");
 
                 if (marketplaceItem != null)
                 {
@@ -785,7 +851,13 @@ public partial class PluginsManagerViewModel : ViewModelBase
                     SelectedDetail.IsInstalling = false;
                     SelectedDetail.IsInstalled = true;
                     SelectedDetail.IsActive = true;
+                    if (!string.IsNullOrWhiteSpace(version))
+                    {
+                        SelectedDetail.ActiveInstalledVersion = version;
+                        SelectedDetail.Version = version;
+                    }
                     SelectedDetail.RuntimeStatus = "Active (Mounted in Kernel)";
+                    SelectedDetail.UpdateVersionState();
                 }
 
                 await LoadAllDataAsync();
@@ -825,6 +897,70 @@ public partial class PluginsManagerViewModel : ViewModelBase
             IsBusy = false;
             IsInstalling = false;
             InstallingPluginId = string.Empty;
+        }
+    }
+
+    public async Task SwitchMarketplacePluginVersionAsync(string pluginId, string version)
+    {
+        if (IsBusy) return;
+
+        IsBusy = true;
+        StatusMessage = $"Switching '{pluginId}' to version {version}...";
+        try
+        {
+            bool success = await _marketplaceService.SwitchActiveVersionAsync(pluginId, version);
+            if (success)
+            {
+                ShowToastCallback?.Invoke($"Switched '{pluginId}' to version {version} successfully!");
+                if (SelectedDetail != null && string.Equals(SelectedDetail.Id, pluginId, StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedDetail.ActiveInstalledVersion = version;
+                    SelectedDetail.Version = version;
+                    SelectedDetail.UpdateVersionState();
+                }
+                await LoadAllDataAsync();
+            }
+            else
+            {
+                ShowToastCallback?.Invoke($"Failed to switch '{pluginId}' to version {version}.");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToastCallback?.Invoke($"Error switching version: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task DeleteMarketplacePluginVersionAsync(string pluginId, string version)
+    {
+        if (IsBusy) return;
+
+        IsBusy = true;
+        StatusMessage = $"Deleting version {version} of '{pluginId}'...";
+        try
+        {
+            bool success = await _marketplaceService.DeleteVersionAsync(pluginId, version);
+            if (success)
+            {
+                ShowToastCallback?.Invoke($"Deleted version {version} from local storage.");
+                await LoadAllDataAsync();
+            }
+            else
+            {
+                ShowToastCallback?.Invoke($"Failed to delete version {version}.");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToastCallback?.Invoke($"Error deleting version: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 

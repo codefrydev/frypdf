@@ -67,15 +67,38 @@ public static class PluginIdValidator
     /// <exception cref="ArgumentException">The id is invalid or escapes the root.</exception>
     public static string ResolveInstallDirectory(string root, string? pluginId, string context)
     {
+        return ResolveInstallDirectory(root, pluginId, null, context);
+    }
+
+    /// <summary>
+    /// Combines <paramref name="root"/> with validated <paramref name="pluginId"/> and optional
+    /// <paramref name="version"/>, and verifies the result still resolves inside <paramref name="root"/>.
+    /// </summary>
+    public static string ResolveInstallDirectory(string root, string? pluginId, string? version, string context)
+    {
         Require(pluginId, context);
 
         var fullRoot = Path.GetFullPath(root);
-        var candidate = Path.GetFullPath(Path.Combine(fullRoot, pluginId!));
+        string candidate;
+
+        if (!string.IsNullOrWhiteSpace(version))
+        {
+            var cleanVer = version.Trim().TrimStart('v', 'V');
+            if (!IsValid(cleanVer))
+            {
+                throw new ArgumentException($"Invalid plugin version '{version}' in {context}.", nameof(version));
+            }
+            candidate = Path.GetFullPath(Path.Combine(fullRoot, pluginId!, cleanVer));
+        }
+        else
+        {
+            candidate = Path.GetFullPath(Path.Combine(fullRoot, pluginId!));
+        }
 
         if (!IsInside(candidate, fullRoot))
         {
             throw new ArgumentException(
-                $"Plugin id '{pluginId}' in {context} resolves to '{candidate}', which is outside " +
+                $"Plugin id/version '{pluginId}/{version}' in {context} resolves to '{candidate}', which is outside " +
                 $"the plugins root '{fullRoot}'.",
                 nameof(pluginId));
         }

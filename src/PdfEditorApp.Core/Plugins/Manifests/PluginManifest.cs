@@ -33,6 +33,9 @@ public class PluginManifest
     [JsonPropertyName("dependencies")]
     public List<string> Dependencies { get; set; } = new();
 
+    [JsonPropertyName("isCollectible")]
+    public bool IsCollectible { get; set; } = true;
+
     [JsonPropertyName("settingsSchema")]
     public Dictionary<string, PluginSettingDefinition> SettingsSchema { get; set; } = new();
 }

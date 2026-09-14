@@ -21,6 +21,8 @@ public sealed class PluginAssemblyPackage : IDisposable
 
     public IReadOnlyList<IFryPlugin> Plugins { get; }
     public string AssemblyPath { get; }
+    public CollectiblePluginLoadContext Context => _context;
+    public bool IsCollectible => _context.IsCollectible;
 
     public PluginAssemblyPackage(
         string assemblyPath,
@@ -282,7 +284,7 @@ public static class PluginAssemblyLoader
     /// Zone.Identifier NTFS alternate data stream (Mark of the Web) that blocks DLL loading
     /// when a file is downloaded from the internet.
     /// </summary>
-    public static PluginAssemblyPackage LoadPluginAssembly(string assemblyPath)
+    public static PluginAssemblyPackage LoadPluginAssembly(string assemblyPath, bool? isCollectibleOverride = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(assemblyPath);
         if (!File.Exists(assemblyPath))
@@ -310,7 +312,8 @@ public static class PluginAssemblyLoader
             fullPath = StageToPluginsDirectory(fullPath, pluginsRoot);
         }
 
-        var alc = new CollectiblePluginLoadContext(fullPath, isCollectible: true);
+        bool isCollectible = isCollectibleOverride ?? DetermineIsCollectible(fullPath, assemblyPath);
+        var alc = new CollectiblePluginLoadContext(fullPath, isCollectible: isCollectible);
         Assembly assembly;
         try
         {
@@ -375,8 +378,40 @@ public static class PluginAssemblyLoader
         }
 
         AppLogService.Instance.Log(AppLogLevel.Info, "PluginLoader",
-            $"Loaded assembly '{Path.GetFileName(fullPath)}' with {plugins.Count} plugin(s) in {sw.ElapsedMilliseconds}ms (staged={staged}).");
+            $"Loaded assembly '{Path.GetFileName(fullPath)}' (isCollectible={isCollectible}) with {plugins.Count} plugin(s) in {sw.ElapsedMilliseconds}ms (staged={staged}).");
         return package;
+    }
+
+    /// <summary>
+    /// Checks whether the companion plugin.json declares "isCollectible": false.
+    /// Defaults to true (collectible ALC) for standard plugins.
+    /// </summary>
+    private static bool DetermineIsCollectible(string assemblyPath, string? originalPath = null)
+    {
+        foreach (var p in new[] { assemblyPath, originalPath })
+        {
+            if (string.IsNullOrWhiteSpace(p)) continue;
+            try
+            {
+                var dir = Path.GetDirectoryName(p);
+                if (!string.IsNullOrEmpty(dir))
+                {
+                    var manifestFile = Path.Combine(dir, "plugin.json");
+                    if (File.Exists(manifestFile))
+                    {
+                        var json = File.ReadAllText(manifestFile);
+                        var manifest = System.Text.Json.JsonSerializer.Deserialize<PluginManifest>(json);
+                        if (manifest != null)
+                        {
+                            return manifest.IsCollectible;
+                        }
+                    }
+                }
+            }
+            catch { }
+        }
+
+        return true;
     }
 
     /// <summary>

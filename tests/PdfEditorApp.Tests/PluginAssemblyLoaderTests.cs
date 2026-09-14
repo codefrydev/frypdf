@@ -142,4 +142,35 @@ public class PluginAssemblyLoaderTests
         Assert.Contains("Rebuild the plugin", ex.Message);
         Assert.IsType<FileNotFoundException>(ex.InnerException);
     }
+
+    [Fact]
+    public void LoadPluginAssembly_RespectsIsCollectibleFalseFromManifest()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "plugin_test_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            var manifestContent = """
+            {
+              "id": "test.noncollectible",
+              "name": "Test Non-Collectible Plugin",
+              "isCollectible": false
+            }
+            """;
+            File.WriteAllText(Path.Combine(tempDir, "plugin.json"), manifestContent);
+
+            // Use current test assembly as a dummy assembly to load
+            var srcAssembly = typeof(PluginAssemblyLoaderTests).Assembly.Location;
+            var destAssembly = Path.Combine(tempDir, Path.GetFileName(srcAssembly));
+            File.Copy(srcAssembly, destAssembly, overwrite: true);
+
+            using var package = PluginAssemblyLoader.LoadPluginAssembly(destAssembly);
+            Assert.False(package.IsCollectible);
+            Assert.False(package.Context.IsCollectible);
+        }
+        finally
+        {
+            try { Directory.Delete(tempDir, true); } catch { }
+        }
+    }
 }

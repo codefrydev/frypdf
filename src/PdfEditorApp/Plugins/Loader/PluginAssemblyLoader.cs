@@ -278,6 +278,90 @@ public static class PluginAssemblyLoader
     }
 
     /// <summary>
+    /// Unloads and disposes all active assembly load contexts associated with the given plugin ID.
+    /// Triggers cooperative garbage collection to release OS file handles and locks on assemblies.
+    /// </summary>
+    public static void UnloadPlugin(string pluginId)
+    {
+        if (string.IsNullOrWhiteSpace(pluginId)) return;
+
+        List<PluginAssemblyPackage> toUnload = new();
+        lock (_activePackages)
+        {
+            foreach (var package in _activePackages)
+            {
+                if (package.Plugins.Any(p => string.Equals(p.Id, pluginId, StringComparison.OrdinalIgnoreCase)) ||
+                    package.AssemblyPath.Contains(Path.DirectorySeparatorChar + pluginId + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+                    package.AssemblyPath.Contains('/' + pluginId + '/', StringComparison.OrdinalIgnoreCase))
+                {
+                    toUnload.Add(package);
+                }
+            }
+        }
+
+        foreach (var package in toUnload)
+        {
+            try
+            {
+                package.Dispose();
+            }
+            catch (Exception ex)
+            {
+                AppLogService.Instance.LogWarning("PluginLoader",
+                    $"Failed to unload package for plugin '{pluginId}' at '{package.AssemblyPath}'", ex);
+            }
+        }
+
+        if (toUnload.Count > 0)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+    }
+
+    /// <summary>
+    /// Unloads and disposes any active packages whose assembly is located inside the specified directory.
+    /// </summary>
+    public static void UnloadPackagesForDirectory(string directoryPath)
+    {
+        if (string.IsNullOrWhiteSpace(directoryPath)) return;
+
+        var fullDir = Path.GetFullPath(directoryPath);
+        List<PluginAssemblyPackage> toUnload = new();
+        lock (_activePackages)
+        {
+            foreach (var package in _activePackages)
+            {
+                if (PluginIdValidator.IsInside(Path.GetFullPath(package.AssemblyPath), fullDir))
+                {
+                    toUnload.Add(package);
+                }
+            }
+        }
+
+        foreach (var package in toUnload)
+        {
+            try
+            {
+                package.Dispose();
+            }
+            catch (Exception ex)
+            {
+                AppLogService.Instance.LogWarning("PluginLoader",
+                    $"Failed to unload package at '{package.AssemblyPath}'", ex);
+            }
+        }
+
+        if (toUnload.Count > 0)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+    }
+
+    /// <summary>
     /// Loads an isolated assembly, instantiates any <see cref="IFryPlugin"/> implementations, and returns a package.
     /// If the assembly lives outside the writable plugins directory (e.g. Downloads, Desktop, or a
     /// read-only Program Files install dir), it is first staged to

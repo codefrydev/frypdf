@@ -335,6 +335,39 @@ public class PluginHost : IAsyncDisposable, IDisposable
     }
 
     /// <summary>
+    /// Completely unregisters a plugin from the host, disabling it if active,
+    /// unwinding all its scoped effects, and removing it from all registration and active tracking.
+    /// </summary>
+    public async Task<bool> UnregisterPluginAsync(string pluginId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(pluginId);
+
+        PluginEntry? entry;
+        lock (_lock)
+        {
+            if (!_entries.TryGetValue(pluginId, out entry))
+            {
+                return false;
+            }
+        }
+
+        if (entry.State == PluginState.Active)
+        {
+            await DisablePluginAsync(pluginId, ct);
+        }
+
+        lock (_lock)
+        {
+            _entries.Remove(pluginId);
+            _registeredPlugins.RemoveAll(p => string.Equals(p.Id, pluginId, StringComparison.OrdinalIgnoreCase));
+            _activePlugins.RemoveAll(p => string.Equals(p.Plugin.Id, pluginId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        PluginStateChanged?.Invoke(pluginId, PluginState.Unloaded);
+        return true;
+    }
+
+    /// <summary>
     /// Reloads a plugin by disabling it and re-enabling it.
     /// </summary>
     public async Task ReloadPluginAsync(string pluginId, CancellationToken ct = default)

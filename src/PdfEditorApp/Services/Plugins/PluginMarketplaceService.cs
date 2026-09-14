@@ -11,6 +11,7 @@ using PdfEditorApp.Core.Plugins;
 using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Core.Plugins.Manifests;
 using PdfEditorApp.Core.Plugins.Marketplace;
+using PdfEditorApp.Core.Plugins.Settings;
 using PdfEditorApp.Plugins.Loader;
 using PdfEditorApp.Services;  // FryPdfPaths — writable-path resolver (MSIX-safe); AppLogService — diagnostic logging
 
@@ -28,6 +29,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
     private readonly PluginHost? _pluginHost;
     private readonly IOverlayRegistry? _overlayRegistry;
     private readonly IInstalledPluginStore _installedPluginStore;
+    private readonly IPluginSettingsStore? _pluginSettingsStore;
     private readonly string _pluginsDirectory;
     private readonly string _registryBaseUrl;
     private readonly HttpClient _httpClient;
@@ -49,7 +51,8 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
         IInstalledPluginStore? installedPluginStore = null,
         HttpClient? httpClient = null,
         string? registryBaseUrl = null,
-        string? pluginsDirectory = null)
+        string? pluginsDirectory = null,
+        IPluginSettingsStore? pluginSettingsStore = null)
     {
         _pluginHost = pluginHost;
         _overlayRegistry = overlayRegistry;
@@ -60,6 +63,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
             : pluginsDirectory;
         _installedPluginStore = installedPluginStore
             ?? new FileInstalledPluginStore(FryPdfPaths.InstalledPluginsJsonPath);
+        _pluginSettingsStore = pluginSettingsStore;
         _registryBaseUrl = string.IsNullOrWhiteSpace(registryBaseUrl) ? DefaultRegistryBaseUrl : registryBaseUrl.TrimEnd('/');
         // 15 seconds: GitHub CDN round-trip on a cold Windows boot (DNS + TLS handshake)
         // can easily exceed the old 6s limit, causing false "0 extensions" readings.
@@ -1009,7 +1013,10 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
 
     public async Task<bool> UninstallPluginAsync(string pluginId, CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(pluginId)) return false;
         var sw = Stopwatch.StartNew();
+
+        // 1. In-memory catalog item and multi-version status reset
         MarketplacePluginItem? item;
         lock (_catalogLock)
         {
@@ -1019,38 +1026,228 @@ public class PluginMarketplaceService : IPluginMarketplaceService, IDisposable
         if (item != null)
         {
             item.Status = MarketplacePluginStatus.Available;
+            item.InstallProgress = 0;
+            item.InstallProgressPercent = 0;
+            item.InstallStatusText = string.Empty;
+            if (item.Versions != null)
+            {
+                foreach (var v in item.Versions)
+                {
+                    v.IsInstalled = false;
+                    v.IsActive = false;
+                }
+            }
+            item.SelectedVersion = item.Versions?.FirstOrDefault();
         }
 
         lock (_catalogLock) { _installedMarketplaceIds.Remove(pluginId); }
+
+        // 2. Remove persistent record from installed_plugins.json
         _installedPluginStore.Remove(pluginId);
 
-        if (_pluginHost != null)
+        // 3. Purge persisted settings from IPluginSettingsStore (plugins.settings.json)
+        var settingsStore = _pluginSettingsStore;
+        if (settingsStore == null && _pluginHost != null && _pluginHost.Context.TryGetService<IPluginSettingsStore>(out var resolvedStore))
         {
-            var overlayReg = _overlayRegistry ?? _pluginHost.Context.GetService<IOverlayRegistry>();
-            overlayReg?.HideOverlay(pluginId);
-
-            if (_pluginHost.IsPluginActive(pluginId))
-            {
-                await _pluginHost.DisablePluginAsync(pluginId, ct);
-            }
+            settingsStore = resolvedStore;
+        }
+        try
+        {
+            settingsStore?.RemovePluginSettings(pluginId);
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("PluginInstall", $"Failed to purge settings for uninstalled plugin '{pluginId}'", ex);
         }
 
-        var targetDir = Path.Combine(_pluginsDirectory, pluginId);
-        if (Directory.Exists(targetDir))
+        // 4. Hide overlay and completely unregister from kernel runtime
+        if (_pluginHost != null)
         {
             try
             {
-                Directory.Delete(targetDir, recursive: true);
+                var overlayReg = _overlayRegistry;
+                if (overlayReg == null && _pluginHost.Context.TryGetService<IOverlayRegistry>(out var resolvedOverlay))
+                {
+                    overlayReg = resolvedOverlay;
+                }
+                overlayReg?.HideOverlay(pluginId);
             }
             catch (Exception ex)
             {
-                AppLogService.Instance.LogError("PluginInstall", $"Uninstall delete error for '{pluginId}'", ex);
+                AppLogService.Instance.LogWarning("PluginInstall", $"Error hiding overlay for '{pluginId}' during uninstall", ex);
+            }
+
+            try
+            {
+                await _pluginHost.UnregisterPluginAsync(pluginId, ct);
+            }
+            catch (Exception ex)
+            {
+                AppLogService.Instance.LogError("PluginInstall", $"Error unregistering plugin '{pluginId}' from host during uninstall", ex);
             }
         }
 
+        // 5. Unload assembly contexts & release OS file locks
+        try
+        {
+            PluginAssemblyLoader.UnloadPlugin(pluginId);
+            var targetDir = Path.Combine(_pluginsDirectory, pluginId);
+            PluginAssemblyLoader.UnloadPackagesForDirectory(targetDir);
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("PluginInstall", $"Error unloading ALC packages for '{pluginId}'", ex);
+        }
+
+        // 6. Delete all plugin directories and version subdirectories from local device
+        var primaryDir = Path.Combine(_pluginsDirectory, pluginId);
+        DeleteDirectoryRecursiveSafely(primaryDir);
+
+        // Also delete any timestamped fallback directories (<pluginId>_*)
+        try
+        {
+            if (Directory.Exists(_pluginsDirectory))
+            {
+                var fallbacks = Directory.GetDirectories(_pluginsDirectory, $"{pluginId}_*");
+                foreach (var fb in fallbacks)
+                {
+                    DeleteDirectoryRecursiveSafely(fb);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("PluginInstall", $"Error checking fallback directories for '{pluginId}'", ex);
+        }
+
+        // 7. Delete all cached .fryplugin package archives for this plugin (all versions!)
+        try
+        {
+            var cacheDir = Path.Combine(_pluginsDirectory, ".cache");
+            if (Directory.Exists(cacheDir))
+            {
+                var cachedFiles = Directory.GetFiles(cacheDir, $"{pluginId}*.fryplugin");
+                foreach (var file in cachedFiles)
+                {
+                    var fileName = Path.GetFileName(file);
+                    if (string.Equals(fileName, $"{pluginId}.fryplugin", StringComparison.OrdinalIgnoreCase) ||
+                        fileName.StartsWith($"{pluginId}_", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            File.SetAttributes(file, FileAttributes.Normal);
+                            File.Delete(file);
+                        }
+                        catch (Exception ex)
+                        {
+                            AppLogService.Instance.LogWarning("PluginInstall", $"Failed to delete cached package '{file}'", ex);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("PluginInstall", $"Error clearing package cache for '{pluginId}'", ex);
+        }
+
+        // 8. Delete any staging folders or files matching pluginId in .staging
+        try
+        {
+            var stagingDir = Path.Combine(_pluginsDirectory, ".staging");
+            if (Directory.Exists(stagingDir))
+            {
+                var stagedDirs = Directory.GetDirectories(stagingDir, $"{pluginId}*");
+                foreach (var sd in stagedDirs)
+                {
+                    DeleteDirectoryRecursiveSafely(sd);
+                }
+                var stagedFiles = Directory.GetFiles(stagingDir, $"{pluginId}*");
+                foreach (var sf in stagedFiles)
+                {
+                    try
+                    {
+                        File.SetAttributes(sf, FileAttributes.Normal);
+                        File.Delete(sf);
+                    }
+                    catch { }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            AppLogService.Instance.LogWarning("PluginInstall", $"Error clearing staging for '{pluginId}'", ex);
+        }
+
         AppLogService.Instance.Log(AppLogLevel.Info, "PluginInstall",
-            $"Uninstalled '{pluginId}' in {sw.ElapsedMilliseconds}ms.");
+            $"Uninstalled '{pluginId}' and deleted all local versions/caches in {sw.ElapsedMilliseconds}ms.");
         return true;
+    }
+
+    /// <summary>
+    /// Recursively and safely deletes a directory from the local device, stripping read-only
+    /// flags and using cooperative retries with garbage collection if OS file locks are detected.
+    /// </summary>
+    private static void DeleteDirectoryRecursiveSafely(string dirPath, int maxRetries = 3)
+    {
+        if (string.IsNullOrWhiteSpace(dirPath) || !Directory.Exists(dirPath)) return;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                foreach (var file in Directory.EnumerateFiles(dirPath, "*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        File.SetAttributes(file, FileAttributes.Normal);
+                    }
+                    catch { }
+                }
+
+                foreach (var subDir in Directory.EnumerateDirectories(dirPath, "*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        File.SetAttributes(subDir, FileAttributes.Normal);
+                    }
+                    catch { }
+                }
+
+                File.SetAttributes(dirPath, FileAttributes.Normal);
+                Directory.Delete(dirPath, recursive: true);
+                return;
+            }
+            catch (Exception ex)
+            {
+                if (attempt == maxRetries)
+                {
+                    try
+                    {
+                        var parent = Path.GetDirectoryName(dirPath) ?? dirPath;
+                        var staging = Path.Combine(parent, ".staging");
+                        Directory.CreateDirectory(staging);
+                        var trash = Path.Combine(staging, $".trash_{Path.GetFileName(dirPath)}_{DateTime.UtcNow.Ticks}");
+                        Directory.Move(dirPath, trash);
+                        AppLogService.Instance.LogWarning("PluginInstall",
+                            $"Locked directory '{dirPath}' moved to trash '{trash}' for later cleanup.", ex);
+                        return;
+                    }
+                    catch
+                    {
+                        AppLogService.Instance.LogError("PluginInstall",
+                            $"Failed to delete directory '{dirPath}' after {maxRetries} attempts.", ex);
+                    }
+                }
+                else
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                    Thread.Sleep(50 * attempt);
+                }
+            }
+        }
     }
 
     public bool IsPluginInstalled(string pluginId)

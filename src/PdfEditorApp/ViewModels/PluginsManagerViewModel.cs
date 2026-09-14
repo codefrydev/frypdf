@@ -981,15 +981,53 @@ public partial class PluginsManagerViewModel : ViewModelBase
             if (marketplaceItem != null)
             {
                 marketplaceItem.Status = MarketplacePluginStatus.Available;
+                if (marketplaceItem.Versions != null)
+                {
+                    foreach (var v in marketplaceItem.Versions)
+                    {
+                        v.IsInstalled = false;
+                        v.IsActive = false;
+                    }
+                }
+                marketplaceItem.SelectedVersion = marketplaceItem.Versions?.FirstOrDefault();
             }
+
             if (SelectedDetail != null && string.Equals(SelectedDetail.Id, pluginId, StringComparison.OrdinalIgnoreCase))
             {
                 SelectedDetail.IsInstalled = false;
                 SelectedDetail.IsActive = false;
+                SelectedDetail.ActiveInstalledVersion = string.Empty;
                 SelectedDetail.RuntimeStatus = "Available in Store";
+                foreach (var v in SelectedDetail.AvailableVersions)
+                {
+                    v.IsInstalled = false;
+                    v.IsActive = false;
+                }
+                SelectedDetail.UpdateVersionState();
+            }
+
+            lock (_dataLock)
+            {
+                _allInstalled.RemoveAll(p => string.Equals(p.Id, pluginId, StringComparison.OrdinalIgnoreCase));
             }
 
             await LoadAllDataAsync();
+
+            if (SelectedTab == PluginsManagerTab.Installed)
+            {
+                if (FilteredInstalledPlugins.Count > 0)
+                {
+                    SelectedInstalledPlugin = FilteredInstalledPlugins[0];
+                }
+                else
+                {
+                    SelectedDetail = null;
+                    OnPropertyChanged(nameof(HasSelectedDetail));
+                }
+            }
+
+            OnPropertyChanged(nameof(InstalledCount));
+            OnPropertyChanged(nameof(ActiveInstalledCount));
         }
         catch (Exception ex)
         {

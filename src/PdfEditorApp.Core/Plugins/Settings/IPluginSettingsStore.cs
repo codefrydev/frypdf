@@ -14,6 +14,7 @@ public interface IPluginSettingsStore
     T GetSetting<T>(string pluginId, string key, T defaultValue);
     void SetSetting<T>(string pluginId, string key, T value);
     Dictionary<string, object> GetPluginSettings(string pluginId);
+    bool RemovePluginSettings(string pluginId);
     void Save();
 }
 
@@ -155,6 +156,27 @@ public class FilePluginSettingsStore : IPluginSettingsStore, IDisposable
             }
             return new();
         }
+    }
+
+    /// <summary>
+    /// Removes all persisted settings and configuration values for a given plugin ID and flushes changes to disk.
+    /// </summary>
+    public bool RemovePluginSettings(string pluginId)
+    {
+        if (string.IsNullOrWhiteSpace(pluginId)) return false;
+
+        bool removed;
+        lock (_lock)
+        {
+            removed = _data.Remove(pluginId);
+        }
+
+        if (removed)
+        {
+            Save();
+        }
+
+        return removed;
     }
 
     /// <summary>

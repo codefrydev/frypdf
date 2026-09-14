@@ -1,12 +1,17 @@
 using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Extensions.DependencyInjection;
 using PdfEditorApp.Core.Models;
+using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Messages;
 using PdfEditorApp.Models;
 using PdfEditorApp.Services;
+using PdfEditorApp.ViewModels.Shortcuts;
 
 namespace PdfEditorApp.ViewModels;
 
@@ -19,6 +24,7 @@ public enum SettingsCategory
     Appearance,
     Canvas,
     Notifications,
+    Shortcuts,
     Ai,
     Privacy
 }
@@ -30,7 +36,32 @@ public partial class SettingsViewModel : ViewModelBase
 {
     private readonly IUiSettingsService _uiSettingsService;
     private readonly IThemeService? _themeService;
+    private readonly IShortcutRegistry? _shortcutRegistry;
     private bool _isUpdatingFromService;
+
+    public ObservableCollection<ShortcutBindingItemViewModel> ShortcutItems { get; } = new();
+    public ObservableCollection<ShortcutBindingItemViewModel> FilteredShortcutItems { get; } = new();
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRecording))]
+    private ShortcutBindingItemViewModel? _recordingItem;
+
+    public bool IsRecording => RecordingItem != null;
+
+    [ObservableProperty]
+    private string _recordingKeystrokeText = "Press keys (e.g. Ctrl+Alt+K)...";
+
+    [ObservableProperty]
+    private string _shortcutSearchQuery = string.Empty;
+
+    [ObservableProperty]
+    private string _selectedCategoryFilter = "All";
+
+    public ObservableCollection<string> CategoryFilters { get; } = new() { "All" };
+
+    public bool HasConflict => ShortcutItems.Any(s => s.HasConflict);
+
+    public string ConflictWarning => "One or more keyboard shortcuts have conflicting key combinations in the same scope.";
 
     public void TriggerToast(string message, ToastNotificationType type = ToastNotificationType.Primary, string? icon = null)
     {
@@ -57,6 +88,10 @@ public partial class SettingsViewModel : ViewModelBase
         (SelectedCategory is SettingsCategory.All or SettingsCategory.Notifications) &&
         MatchesSearch("notification toast snackbar sound duration alert badge position placement audio dismiss playground preview");
 
+    public bool IsShortcutsVisible =>
+        (SelectedCategory is SettingsCategory.All or SettingsCategory.Shortcuts) &&
+        MatchesSearch("shortcuts hotkeys keyboard keybindings commands keys record customization debug run cell save");
+
     public bool IsAiVisible =>
         (SelectedCategory is SettingsCategory.All or SettingsCategory.Ai) &&
         MatchesSearch("ai local llm ollama openai groq model endpoint token cloud intelligence assistant provider");
@@ -66,7 +101,7 @@ public partial class SettingsViewModel : ViewModelBase
         MatchesSearch("privacy storage reset default offline telemetry data json profile factory");
 
     public bool HasSearchResults =>
-        IsAppearanceVisible || IsCanvasVisible || IsNotificationsVisible || IsAiVisible || IsPrivacyVisible;
+        IsAppearanceVisible || IsCanvasVisible || IsNotificationsVisible || IsShortcutsVisible || IsAiVisible || IsPrivacyVisible;
 
     private bool MatchesSearch(string categoryKeywords)
     {
@@ -79,6 +114,7 @@ public partial class SettingsViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(HasSearchQuery));
         RefreshCategoryVisibilities();
+        FilterShortcuts();
     }
 
     partial void OnSelectedCategoryChanged(SettingsCategory value)
@@ -91,6 +127,7 @@ public partial class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsAppearanceVisible));
         OnPropertyChanged(nameof(IsCanvasVisible));
         OnPropertyChanged(nameof(IsNotificationsVisible));
+        OnPropertyChanged(nameof(IsShortcutsVisible));
         OnPropertyChanged(nameof(IsAiVisible));
         OnPropertyChanged(nameof(IsPrivacyVisible));
         OnPropertyChanged(nameof(HasSearchResults));
@@ -290,14 +327,15 @@ public partial class SettingsViewModel : ViewModelBase
 
     public AiSettingsViewModel AiSettings { get; }
 
-    public SettingsViewModel() : this(new UiSettingsService(), new ThemeService())
+    public SettingsViewModel() : this(new UiSettingsService(), new ThemeService(), null)
     {
     }
 
-    public SettingsViewModel(IUiSettingsService uiSettingsService, IThemeService? themeService = null)
+    public SettingsViewModel(IUiSettingsService uiSettingsService, IThemeService? themeService = null, IShortcutRegistry? shortcutRegistry = null)
     {
         _uiSettingsService = uiSettingsService;
         _themeService = themeService;
+        _shortcutRegistry = shortcutRegistry ?? App.Services?.GetService<IShortcutRegistry>();
         AiSettings = new AiSettingsViewModel(_uiSettingsService, new Services.AI.AiService());
 
         LoadFromSettings(_uiSettingsService.Settings);
@@ -307,6 +345,189 @@ public partial class SettingsViewModel : ViewModelBase
         {
             _themeService.ThemeChanged += (_) => RefreshPreview();
         }
+
+        if (_shortcutRegistry != null)
+        {
+            _shortcutRegistry.ShortcutsChanged += ReloadShortcuts;
+            ReloadShortcuts();
+        }
+    }
+
+    public void ReloadShortcuts()
+    {
+        if (_shortcutRegistry == null) return;
+
+        ShortcutItems.Clear();
+        var all = _shortcutRegistry.GetAllShortcuts();
+        var custom = _uiSettingsService.Settings.CustomShortcuts;
+
+        foreach (var d in all)
+        {
+            var isCustom = custom.ContainsKey(d.Id);
+            var effective = _shortcutRegistry.GetEffectiveGesture(d.Id);
+
+            ShortcutItems.Add(new ShortcutBindingItemViewModel
+            {
+                Id = d.Id,
+                Title = d.Title,
+                Category = d.Category,
+                Description = d.Description,
+                ContextId = d.ContextId,
+                Scope = d.Scope,
+                DefaultGesture = d.DefaultGesture,
+                EffectiveGesture = effective,
+                IsCustomized = isCustom,
+                IsCustomizable = d.IsCustomizable
+            });
+        }
+
+        CategoryFilters.Clear();
+        CategoryFilters.Add("All");
+        foreach (var cat in ShortcutItems.Select(s => s.Category).Distinct().OrderBy(c => c))
+        {
+            CategoryFilters.Add(cat);
+        }
+        if (!CategoryFilters.Contains(SelectedCategoryFilter))
+        {
+            SelectedCategoryFilter = "All";
+        }
+
+        FilterShortcuts();
+    }
+
+    partial void OnShortcutSearchQueryChanged(string value) => FilterShortcuts();
+    partial void OnSelectedCategoryFilterChanged(string value) => FilterShortcuts();
+
+    public void FilterShortcuts()
+    {
+        FilteredShortcutItems.Clear();
+        ValidateShortcutConflicts();
+
+        var q = !string.IsNullOrWhiteSpace(ShortcutSearchQuery)
+            ? ShortcutSearchQuery.Trim().ToLowerInvariant()
+            : SearchQuery?.Trim().ToLowerInvariant() ?? "";
+
+        var selectedCat = SelectedCategoryFilter;
+
+        foreach (var item in ShortcutItems)
+        {
+            if (!string.IsNullOrEmpty(selectedCat) && !string.Equals(selectedCat, "All", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.Equals(item.Category, selectedCat, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                bool matches = item.Title.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                               item.Category.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                               item.Description.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                               item.EffectiveGesture.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                               item.ScopeDisplayName.Contains(q, StringComparison.OrdinalIgnoreCase);
+                if (!matches) continue;
+            }
+
+            FilteredShortcutItems.Add(item);
+        }
+    }
+
+    private void ValidateShortcutConflicts()
+    {
+        foreach (var item in ShortcutItems)
+        {
+            item.HasConflict = false;
+            item.ConflictMessage = null;
+        }
+
+        var groups = ShortcutItems
+            .Where(s => !string.IsNullOrWhiteSpace(s.EffectiveGesture))
+            .GroupBy(s => s.EffectiveGesture, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var grp in groups)
+        {
+            var list = grp.ToList();
+            if (list.Count <= 1) continue;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                for (int j = i + 1; j < list.Count; j++)
+                {
+                    var a = list[i];
+                    var b = list[j];
+
+                    bool conflict = (a.Scope == ShortcutScope.Global && b.Scope == ShortcutScope.Global) ||
+                                    (string.Equals(a.ContextId, b.ContextId, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(a.ContextId));
+
+                    if (conflict)
+                    {
+                        a.HasConflict = true;
+                        a.ConflictMessage = $"Conflicts with '{b.Title}' ({b.ScopeDisplayName})";
+                        b.HasConflict = true;
+                        b.ConflictMessage = $"Conflicts with '{a.Title}' ({a.ScopeDisplayName})";
+                    }
+                }
+            }
+        }
+
+        OnPropertyChanged(nameof(HasConflict));
+    }
+
+    [RelayCommand]
+    public void StartRecording(ShortcutBindingItemViewModel? item)
+    {
+        if (item == null || !item.IsCustomizable) return;
+
+        if (RecordingItem != null)
+        {
+            RecordingItem.IsRecording = false;
+        }
+
+        RecordingItem = item;
+        item.IsRecording = true;
+        RecordingKeystrokeText = "Press keys (e.g. Ctrl+Alt+K)...";
+    }
+
+    [RelayCommand]
+    public void CancelRecording()
+    {
+        if (RecordingItem != null)
+        {
+            RecordingItem.IsRecording = false;
+            RecordingItem = null;
+        }
+    }
+
+    [RelayCommand]
+    public void CommitRecordedGesture(string? newGesture)
+    {
+        if (RecordingItem == null || string.IsNullOrWhiteSpace(newGesture)) return;
+
+        var targetItem = RecordingItem;
+        CancelRecording();
+
+        _shortcutRegistry?.SetCustomGesture(targetItem.Id, newGesture.Trim());
+        ReloadShortcuts();
+        TriggerToast($"Shortcut for '{targetItem.Title}' updated to {newGesture.Trim()}", ToastNotificationType.Success, "KeyboardOutline");
+    }
+
+    [RelayCommand]
+    public void ResetShortcut(ShortcutBindingItemViewModel? item)
+    {
+        if (item == null) return;
+
+        _shortcutRegistry?.ResetToDefault(item.Id);
+        ReloadShortcuts();
+        TriggerToast($"Reset '{item.Title}' to default gesture", ToastNotificationType.General, "Restore");
+    }
+
+    [RelayCommand]
+    public void ResetAllShortcuts()
+    {
+        _shortcutRegistry?.ResetAllToDefaults();
+        ReloadShortcuts();
+        TriggerToast("Restored all keyboard shortcuts to system defaults", ToastNotificationType.General, "Restore");
     }
 
     private void LoadFromSettings(UiSettingsModel s)

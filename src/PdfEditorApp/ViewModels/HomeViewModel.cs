@@ -287,7 +287,9 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
         _serviceProvider = serviceProvider;
         ToolRunner = toolRunner;
 
-        Settings = new SettingsViewModel(_uiSettingsService ?? new UiSettingsService(), _themeService);
+        var shortcutRegistry = (serviceProvider?.GetService(typeof(PdfEditorApp.Core.Plugins.Descriptors.IShortcutRegistry)) as PdfEditorApp.Core.Plugins.Descriptors.IShortcutRegistry)
+            ?? (App.Services?.GetService(typeof(PdfEditorApp.Core.Plugins.Descriptors.IShortcutRegistry)) as PdfEditorApp.Core.Plugins.Descriptors.IShortcutRegistry);
+        Settings = new SettingsViewModel(_uiSettingsService ?? new UiSettingsService(), _themeService, shortcutRegistry);
         PluginsManager = (serviceProvider?.GetService(typeof(PluginsManagerViewModel)) as PluginsManagerViewModel)
             ?? new PluginsManagerViewModel(
                 serviceProvider?.GetService(typeof(PluginHost)) as PluginHost,

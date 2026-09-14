@@ -639,7 +639,7 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
-    public void NavigateToSettings()
+    public void NavigateToSettings(string? category = null)
     {
         IsAboutDialogOpen = false;
         IsShortcutsHelpDialogOpen = false;
@@ -648,6 +648,10 @@ public partial class MainViewModel
         IsEditorVisible = false;
         IsPdfViewerVisible = false;
         Home.SelectNavSectionCommand.Execute("Settings");
+        if (string.Equals(category, "Shortcuts", StringComparison.OrdinalIgnoreCase))
+        {
+            Home.Settings.SelectedCategory = SettingsCategory.Shortcuts;
+        }
     }
 
     [RelayCommand]

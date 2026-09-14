@@ -338,6 +338,8 @@ public partial class App : Application
         services.AddSingleton<ISidebarRegistry>(sp => sp.GetRequiredService<PdfEditorApp.Services.Sidebar.SidebarRegistry>());
         services.AddSingleton<PdfEditorApp.Services.Overlays.OverlayRegistry>();
         services.AddSingleton<PdfEditorApp.Core.Plugins.Descriptors.IOverlayRegistry>(sp => sp.GetRequiredService<PdfEditorApp.Services.Overlays.OverlayRegistry>());
+        services.AddSingleton<PdfEditorApp.Services.Shortcuts.ShortcutRegistry>();
+        services.AddSingleton<PdfEditorApp.Core.Plugins.Descriptors.IShortcutRegistry>(sp => sp.GetRequiredService<PdfEditorApp.Services.Shortcuts.ShortcutRegistry>());
         services.AddSingleton<PdfEditorApp.Core.Plugins.Settings.IPluginSettingsStore, PdfEditorApp.Core.Plugins.Settings.FilePluginSettingsStore>();
         services.AddSingleton<PdfEditorApp.Core.Plugins.Loading.ILoadingProgressService, PdfEditorApp.Core.Plugins.Loading.LoadingProgressService>();
 

@@ -4,6 +4,7 @@
              xmlns:converters="using:PdfEditorApp.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:coreModels="clr-namespace:PdfEditorApp.Core.Models;assembly=PdfEditorApp.Core"
+             xmlns:shortcuts="using:PdfEditorApp.ViewModels.Shortcuts"
              x:Class="PdfEditorApp.Views.SettingsPageView"
              x:DataType="vm:SettingsViewModel">
 
@@ -214,6 +215,14 @@
                             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                 <materialIcons:MaterialIcon Kind="BellRingOutline" Width="15" Height="15" />
                                 <TextBlock Text="Notifications" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="setting-nav-pill"
+                                Classes.active="{Binding SelectedCategory, Converter={StaticResource EqualityConverter}, ConverterParameter=Shortcuts}"
+                                Command="{Binding SelectCategoryCommand}" CommandParameter="Shortcuts">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="KeyboardOutline" Width="15" Height="15" />
+                                <TextBlock Text="Keyboard Shortcuts" />
                             </StackPanel>
                         </Button>
                         <Button Classes="setting-nav-pill"
@@ -932,6 +941,195 @@
                             </Grid>
                         </Border>
                     </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- ========================================== -->
+        <!-- 5.5. KEYBOARD SHORTCUTS & HOTKEYS CARD     -->
+        <!-- ========================================== -->
+        <Border Classes="setting-card" IsVisible="{Binding IsShortcutsVisible}">
+            <StackPanel Spacing="16">
+                <!-- Section Header -->
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <Border Grid.Column="0" Width="38" Height="38"
+                            Background="{DynamicResource M3PrimaryContainerBrush}"
+                            CornerRadius="10" VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="KeyboardOutline" Width="22" Height="22"
+                                                    Foreground="{DynamicResource M3OnPrimaryContainerBrush}"
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Keyboard Shortcuts &amp; Hotkeys" FontSize="14.5" FontWeight="Bold"
+                                       Foreground="{DynamicResource M3OnSurfaceBrush}" />
+                            <Border Background="{DynamicResource M3PrimaryContainerBrush}"
+                                    CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                    Padding="6,1.5" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding ShortcutItems.Count, StringFormat='{}{0} Registered'}"
+                                           FontSize="10" FontWeight="Bold"
+                                           Foreground="{DynamicResource M3OnPrimaryContainerBrush}" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="Customize keybindings for application commands, canvas tools, code editor, and interactive notebook cells."
+                                   FontSize="11.5" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Classes="m3-tonal-btn"
+                            Command="{Binding ResetAllShortcutsCommand}"
+                            ToolTip.Tip="Reset all shortcuts to factory defaults"
+                            VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="Restore" Width="14" Height="14" />
+                            <TextBlock Text="Reset All" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <!-- Recording Banner (when actively listening for keys) -->
+                <Border IsVisible="{Binding IsRecording}"
+                        Background="{DynamicResource M3PrimaryContainerBrush}"
+                        BorderBrush="{DynamicResource M3PrimaryBrush}"
+                        BorderThickness="1.5"
+                        CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                        Padding="14,10">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <materialIcons:MaterialIcon Kind="RecordRec" Width="22" Height="22"
+                                                    Foreground="{DynamicResource M3PrimaryBrush}"
+                                                    VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Recording New Shortcut..." FontWeight="Bold" FontSize="12.5"
+                                       Foreground="{DynamicResource M3OnPrimaryContainerBrush}" />
+                            <TextBlock Text="{Binding RecordingItem.Title, StringFormat='Press any key combination for: {0} (Press Esc to cancel)'}"
+                                       FontSize="11" Foreground="{DynamicResource M3OnPrimaryContainerBrush}" />
+                        </StackPanel>
+                        <Button Grid.Column="2" Classes="m3-tonal-btn"
+                                Command="{Binding CancelRecordingCommand}"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="Cancel" FontSize="11" />
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Conflict Warning Banner -->
+                <Border IsVisible="{Binding HasConflict}"
+                        Background="#FEF2F2" BorderBrush="#F87171" BorderThickness="1"
+                        CornerRadius="{StaticResource M3ShapeCornerMedium}"
+                        Padding="12,8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <materialIcons:MaterialIcon Kind="AlertCircleOutline" Width="16" Height="16"
+                                                    Foreground="#DC2626" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding ConflictWarning}"
+                                   FontSize="11.5" FontWeight="SemiBold" Foreground="#DC2626"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Filter & Search Bar -->
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <TextBox Classes="m3-search"
+                             Text="{Binding ShortcutSearchQuery, Mode=TwoWay}"
+                             PlaceholderText="Search shortcuts by command name, key, or category..." />
+
+                    <!-- Category Pills / ComboBox -->
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding CategoryFilters}"
+                              SelectedItem="{Binding SelectedCategoryFilter}"
+                              Width="150" VerticalAlignment="Center" />
+                </Grid>
+
+                <!-- Shortcuts List Items -->
+                <Border Background="{DynamicResource M3SurfaceContainerLowestBrush}"
+                        BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource M3ShapeCornerLarge}"
+                        ClipToBounds="True">
+                    <ItemsControl ItemsSource="{Binding FilteredShortcutItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="shortcuts:ShortcutBindingItemViewModel">
+                                <Border BorderBrush="{DynamicResource M3OutlineVariantBrush}"
+                                        BorderThickness="0,0,0,1"
+                                        Padding="14,10">
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+                                        <!-- Left Info -->
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{Binding Title}" FontSize="12.5" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource M3OnSurfaceBrush}" />
+                                                <!-- Category Badge -->
+                                                <Border Background="{DynamicResource M3SurfaceContainerHighestBrush}"
+                                                        CornerRadius="{StaticResource M3ShapeCornerExtraSmall}"
+                                                        Padding="5,1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Category}" FontSize="9.5" FontWeight="Medium"
+                                                               Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                                                </Border>
+                                                <!-- Scope Badge if not Global -->
+                                                <Border Background="{DynamicResource M3SecondaryContainerBrush}"
+                                                        CornerRadius="{StaticResource M3ShapeCornerExtraSmall}"
+                                                        Padding="5,1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding ScopeDisplayName}" FontSize="9.5" FontWeight="Medium"
+                                                               Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
+                                                </Border>
+                                                <!-- Custom Tag -->
+                                                <Border IsVisible="{Binding IsCustomized}"
+                                                        Background="{DynamicResource M3PrimaryContainerBrush}"
+                                                        CornerRadius="{StaticResource M3ShapeCornerExtraSmall}"
+                                                        Padding="5,1" VerticalAlignment="Center">
+                                                    <TextBlock Text="Custom" FontSize="9.5" FontWeight="Bold"
+                                                               Foreground="{DynamicResource M3OnPrimaryContainerBrush}" />
+                                                </Border>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding Description}" FontSize="11"
+                                                       Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                                            <!-- Conflict alert -->
+                                            <TextBlock IsVisible="{Binding HasConflict}"
+                                                       Text="{Binding ConflictMessage}"
+                                                       FontSize="10.5" FontWeight="SemiBold"
+                                                       Foreground="#DC2626" />
+                                        </StackPanel>
+
+                                        <!-- Shortcut Key Badge -->
+                                        <Border Grid.Column="1" VerticalAlignment="Center"
+                                                Background="{DynamicResource M3SurfaceContainerHighBrush}"
+                                                BorderBrush="{DynamicResource M3OutlineBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource M3ShapeCornerSmall}"
+                                                Padding="8,4" MinWidth="60">
+                                            <TextBlock Text="{Binding EffectiveGesture}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       FontFamily="Consolas,Menlo,Monospace"
+                                                       FontWeight="Bold" FontSize="11.5"
+                                                       Foreground="{DynamicResource M3PrimaryBrush}" />
+                                        </Border>
+
+                                        <!-- Actions -->
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <!-- Record Button -->
+                                            <Button Classes="m3-tonal-btn"
+                                                    Padding="10,4"
+                                                    Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).StartRecordingCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTip.Tip="Click then press keys to rebind">
+                                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="PencilOutline" Width="13" Height="13" />
+                                                    <TextBlock Text="Edit" FontSize="11" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+
+                                            <!-- Reset Single Shortcut Button -->
+                                            <Button Classes="m3-icon-btn" Width="28" Height="28"
+                                                    IsEnabled="{Binding IsCustomized}"
+                                                    Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).ResetShortcutCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTip.Tip="Reset to default">
+                                                <materialIcons:MaterialIcon Kind="Restore" Width="14" Height="14" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </Border>
             </StackPanel>
         </Border>

@@ -34,6 +34,7 @@ public class FryPluginContext : IFryPluginContext
     private readonly ConcurrentDictionary<string, RibbonTabDescriptor> _ribbonTabs = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, RibbonGroupDescriptor> _ribbonGroups = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, OverlayDescriptor> _overlays = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, ShortcutDescriptor> _shortcuts = new(StringComparer.OrdinalIgnoreCase);
     private readonly IPipelineManager _pipelines;
 
     private readonly IServiceProvider? _fallbackServiceProvider;
@@ -613,6 +614,33 @@ public class FryPluginContext : IFryPluginContext
         return _overlays.Values.ToList();
     }
 
+    // --- Keyboard Shortcut Registry ---
+
+    public virtual IDisposable RegisterShortcut(ShortcutDescriptor descriptor)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+        _shortcuts[descriptor.Id] = descriptor;
+
+        if (TryGetService<IShortcutRegistry>(out var reg))
+        {
+            reg.RegisterShortcut(descriptor);
+        }
+
+        return RegisterEffect(() =>
+        {
+            _shortcuts.TryRemove(descriptor.Id, out _);
+            if (TryGetService<IShortcutRegistry>(out var r))
+            {
+                r.UnregisterShortcut(descriptor.Id);
+            }
+        });
+    }
+
+    public virtual IReadOnlyList<ShortcutDescriptor> GetRegisteredShortcuts()
+    {
+        return _shortcuts.Values.ToList();
+    }
+
 
     /// <summary>
     /// Scoped context subclass wrapping a parent context with a plugin-specific <see cref="PluginScope"/>.
@@ -843,6 +871,14 @@ public class FryPluginContext : IFryPluginContext
         }
 
         public override IReadOnlyList<OverlayDescriptor> GetRegisteredOverlays() => _parent.GetRegisteredOverlays();
+
+        public override IDisposable RegisterShortcut(ShortcutDescriptor descriptor)
+        {
+            var reg = _parent.RegisterShortcut(descriptor);
+            return _pluginScope.RegisterDisposable(reg);
+        }
+
+        public override IReadOnlyList<ShortcutDescriptor> GetRegisteredShortcuts() => _parent.GetRegisteredShortcuts();
     }
 
 

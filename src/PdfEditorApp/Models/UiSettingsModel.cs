@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using PdfEditorApp.Core.Models;
 
@@ -62,6 +63,9 @@ public class UiSettingsModel
     [JsonPropertyName("showShortcutHints")]
     public bool ShowShortcutHints { get; set; } = true;
 
+    [JsonPropertyName("customShortcuts")]
+    public Dictionary<string, string> CustomShortcuts { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
     [JsonPropertyName("aiSettings")]
     public AiSettingsModel AiSettings { get; set; } = new();
 
@@ -87,6 +91,7 @@ public class UiSettingsModel
             CompactRibbonByDefault = this.CompactRibbonByDefault,
             AutoExpandInspectorOnSelect = this.AutoExpandInspectorOnSelect,
             ShowShortcutHints = this.ShowShortcutHints,
+            CustomShortcuts = new Dictionary<string, string>(this.CustomShortcuts, StringComparer.OrdinalIgnoreCase),
             AiSettings = this.AiSettings.Clone(),
             UpdatedAt = this.UpdatedAt
         };

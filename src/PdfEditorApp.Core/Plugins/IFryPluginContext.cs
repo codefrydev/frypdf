@@ -311,5 +311,17 @@ public interface IFryPluginContext : IServiceProvider
     /// Gets all registered floating overlay descriptors.
     /// </summary>
     IReadOnlyList<OverlayDescriptor> GetRegisteredOverlays();
+
+    // --- 21. Keyboard Shortcut Registry ---
+
+    /// <summary>
+    /// Registers a customizable keyboard shortcut contributed by a plugin.
+    /// </summary>
+    IDisposable RegisterShortcut(ShortcutDescriptor descriptor);
+
+    /// <summary>
+    /// Gets all registered keyboard shortcuts.
+    /// </summary>
+    IReadOnlyList<ShortcutDescriptor> GetRegisteredShortcuts();
 }
 

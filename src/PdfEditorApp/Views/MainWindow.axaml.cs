@@ -6,8 +6,10 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Microsoft.Extensions.DependencyInjection;
+using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Core.Plugins.Loading;
 using PdfEditorApp.Services;
+using PdfEditorApp.Services.Shortcuts;
 using PdfEditorApp.ViewModels;
 
 namespace PdfEditorApp.Views;
@@ -72,7 +74,14 @@ public partial class MainWindow : Window
                             return;
                     }
                 }
-                return;
+
+                // If editing text inside a TextBox, do not steal typing or standard clipboard gestures
+                bool isEditingKey = !isTextModifier && (e.Key == Key.Back || e.Key == Key.Delete || e.Key == Key.Left || e.Key == Key.Right || e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Enter || e.Key == Key.Tab || e.Key == Key.Space);
+                bool isClipboardKey = isTextModifier && (e.Key == Key.C || e.Key == Key.V || e.Key == Key.X || e.Key == Key.A || e.Key == Key.Z || e.Key == Key.Y);
+                if (isEditingKey || isClipboardKey)
+                {
+                    return;
+                }
             }
 
             bool isCtrlOrCmd = e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
@@ -83,6 +92,18 @@ public partial class MainWindow : Window
                 if (vm.CurrentPage != null && (vm.CurrentPage.SelectedElements.Count > 0 || vm.CurrentPage.SelectedElement != null))
                 {
                     vm.Inspector.DeleteSelectedElementCommand.Execute(null);
+                    e.Handled = true;
+                    return;
+                }
+            }
+
+            // Universal Shortcut Registry Dispatching
+            var shortcutRegistry = App.Services?.GetService<IShortcutRegistry>();
+            if (shortcutRegistry != null)
+            {
+                var activeContextId = GetActiveContextId(vm);
+                if (shortcutRegistry.TryDispatch(e, activeContextId))
+                {
                     e.Handled = true;
                     return;
                 }
@@ -120,6 +141,35 @@ public partial class MainWindow : Window
                 }
             }
         }, RoutingStrategies.Tunnel);
+    }
+
+    private static string GetActiveContextId(MainViewModel vm)
+    {
+        if (vm.IsHomePageVisible)
+        {
+            if (vm.Home?.ActiveNavDescriptor != null)
+            {
+                return vm.Home.ActiveNavDescriptor.Id;
+            }
+            if (vm.Home?.IsToolPageActive == true)
+            {
+                return "ToolPage";
+            }
+            return vm.Home?.SelectedNavSection.ToString() ?? "Home";
+        }
+        if (vm.IsEditorVisible)
+        {
+            return "PdfEditor";
+        }
+        if (vm.IsPdfViewerVisible)
+        {
+            return "PdfViewer";
+        }
+        if (vm.IsFryPdfViewerVisible)
+        {
+            return "FryPdfViewer";
+        }
+        return "Global";
     }
 
     private async void OnMainWindowClosing(object? sender, WindowClosingEventArgs e)

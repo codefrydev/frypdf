@@ -59,7 +59,7 @@ dotnet test
 
 ## 📚 Documentation
 
-- [Plugin Architecture](docs/PLUGIN_BASED_ARCHITECTURE.md) & [External Plugin Development](docs/EXTERNAL_PLUGIN_DEVELOPMENT_GUIDE.md)
+- [How Plugins Work](docs/howplugin.md), [Plugin Architecture](docs/PLUGIN_BASED_ARCHITECTURE.md) & [External Plugin Development](docs/EXTERNAL_PLUGIN_DEVELOPMENT_GUIDE.md)
 - [Material Design 3 Guidelines](docs/MATERIAL_DESIGN_3_EXPRESSIVE_GUIDELINES.md)
 - [Technical Architecture](docs/ARCHITECTURE.md)
 - [Feature Catalog](docs/FEATURES.md)

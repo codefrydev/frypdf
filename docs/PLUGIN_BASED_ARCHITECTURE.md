@@ -2,6 +2,7 @@
 
 > **Architectural Specification and Design Manual**  
 > Inspired by the **Cordis** Spatiotemporal Composability Framework.  
+> 💡 *Want a quick, beginner-friendly walkthrough? Read [How "Everything is a Plugin" Works](howplugin.md).*  
 > 💡 *Looking to build an external plugin? See the step-by-step [External Plugin Development Guide](EXTERNAL_PLUGIN_DEVELOPMENT_GUIDE.md).*
 
 ---

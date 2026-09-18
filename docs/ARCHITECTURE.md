@@ -124,7 +124,8 @@ FryPDF incorporates an extensible, plugin-first microkernel architecture inspire
 - **Profiles & Bundles**: Target-specific application assemblies (`desktop`, `headless-cli`, `sdk`) composed of 16 standard bundles.
 - **Dynamic Hot-Mounting**: Collectible `AssemblyLoadContext` (`FryPluginLoadContext`) supporting friction-free drag-and-drop `.fryplugin` package installation without restarting the application.
 
-For the full architectural specification, interface designs, and pipeline mechanics, see the [Plugin-Based Architecture Manual](PLUGIN_BASED_ARCHITECTURE.md).
+For the full architectural specification, interface designs, and pipeline mechanics, see the [Plugin-Based Architecture Manual](PLUGIN_BASED_ARCHITECTURE.md).  
+💡 *New to the plugin architecture? Read the gentle onboarding guide: [How Plugins Work](howplugin.md).*
 
 ---
 

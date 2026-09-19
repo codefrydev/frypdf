@@ -222,7 +222,6 @@ public class QualityAndBugFixTests
     [Fact]
     public void PdfReader_OpenPdfAndGoBack_MaintainsSidebarAndContentInSync()
     {
-        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Reset();
         using var mainVm = CreateMainViewModelWithWorkspacePages();
 
         // 1. Navigate to PDF Reader section

@@ -130,7 +130,6 @@ public class GestureAndNavigationTests
     [Fact]
     public void MainViewModel_WindowTitle_ReflectsActiveViewAndContextCorrectly()
     {
-        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Reset();
         // 1. Initial State: App opens on Home Dashboard
         var mainVm = new MainViewModel(
             new PdfExportService(),

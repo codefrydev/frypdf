@@ -111,12 +111,13 @@ public class LoadingProgressPluginTests
     public void LoadingProgressViewModel_Responds_To_PubSub_Messages()
     {
         var service = new LoadingProgressService();
-        var vm = new LoadingProgressViewModel(service);
+        var messenger = new StrongReferenceMessenger();
+        using var vm = new LoadingProgressViewModel(service, messenger);
 
         Assert.False(vm.IsActive);
 
         // Send Show message
-        WeakReferenceMessenger.Default.Send(new ShowLoadingProgressMessage(new LoadingProgressOptions
+        messenger.Send(new ShowLoadingProgressMessage(new LoadingProgressOptions
         {
             Title = "Rendering Book.pdf",
             Category = "PDF VIEWER",
@@ -129,13 +130,13 @@ public class LoadingProgressPluginTests
         Assert.True(service.IsActive);
 
         // Send Update message
-        WeakReferenceMessenger.Default.Send(new UpdateLoadingProgressMessage("Caching textures...", ProgressPercent: 90.0, ActivePhaseIndex: 2));
+        messenger.Send(new UpdateLoadingProgressMessage("Caching textures...", ProgressPercent: 90.0, ActivePhaseIndex: 2));
         Assert.Equal("Caching textures...", service.CurrentOptions?.StatusMessage);
         Assert.Equal(90.0, service.CurrentOptions?.ProgressPercent);
         Assert.Equal(2, service.CurrentOptions?.ActivePhaseIndex);
 
         // Send Hide message
-        WeakReferenceMessenger.Default.Send(new HideLoadingProgressMessage());
+        messenger.Send(new HideLoadingProgressMessage());
         Assert.False(service.IsActive);
     }
 
@@ -143,7 +144,8 @@ public class LoadingProgressPluginTests
     public void LoadingProgressViewModel_CancelCommand_Cancels_And_Resets()
     {
         var service = new LoadingProgressService();
-        var vm = new LoadingProgressViewModel(service);
+        var messenger = new StrongReferenceMessenger();
+        using var vm = new LoadingProgressViewModel(service, messenger);
         bool cancelExecuted = false;
 
         service.Show(new LoadingProgressOptions
@@ -164,5 +166,18 @@ public class LoadingProgressPluginTests
         Assert.True(cancelExecuted);
         Assert.False(vm.IsActive);
         Assert.False(service.IsActive);
+    }
+
+    [Fact]
+    public void LoadingProgressViewModel_DefaultConstructor_And_Dispose_CleanlyUnregisters()
+    {
+        var service = new LoadingProgressService();
+        var vm = new LoadingProgressViewModel(service);
+        Assert.False(vm.IsActive);
+
+        vm.Dispose();
+        // After dispose, service changes do not reactivate
+        service.Show(new LoadingProgressOptions { Title = "Post Dispose Task" });
+        Assert.False(vm.IsActive);
     }
 }

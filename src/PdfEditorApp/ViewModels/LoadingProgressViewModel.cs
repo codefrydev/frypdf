@@ -41,10 +41,13 @@ public partial class LoadingProgressViewModel : ObservableObject,
     IRecipient<ShowLoadingProgressMessage>,
     IRecipient<UpdateLoadingProgressMessage>,
     IRecipient<HideLoadingProgressMessage>,
-    IRecipient<CancelLoadingProgressMessage>
+    IRecipient<CancelLoadingProgressMessage>,
+    IDisposable
 {
     private readonly ILoadingProgressService _service;
+    private readonly IMessenger _messenger;
     private Action? _currentCancelCallback;
+    private bool _isDisposed;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
@@ -86,15 +89,28 @@ public partial class LoadingProgressViewModel : ObservableObject,
 
     public ObservableCollection<PipelinePhaseItem> PipelinePhases { get; } = new();
 
-    public LoadingProgressViewModel(ILoadingProgressService? service = null)
+    public LoadingProgressViewModel(ILoadingProgressService? service = null, IMessenger? messenger = null)
     {
         _service = service ?? new LoadingProgressService();
+        _messenger = messenger ?? WeakReferenceMessenger.Default;
         _service.StateChanged += OnServiceStateChanged;
-        WeakReferenceMessenger.Default.RegisterAll(this);
+        _messenger.RegisterAll(this);
+    }
+
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        _service.StateChanged -= OnServiceStateChanged;
+        _messenger.UnregisterAll(this);
+        GC.SuppressFinalize(this);
     }
 
     private void OnServiceStateChanged()
     {
+        if (_isDisposed) return;
+
         void Update()
         {
             var options = _service.CurrentOptions;
@@ -178,16 +194,18 @@ public partial class LoadingProgressViewModel : ObservableObject,
         }
         catch { }
 
-        WeakReferenceMessenger.Default.Send(new NavigateToHomeMessage());
+        _messenger.Send(new NavigateToHomeMessage());
     }
 
     public void Receive(ShowLoadingProgressMessage message)
     {
+        if (_isDisposed) return;
         _service.Show(message.Options);
     }
 
     public void Receive(UpdateLoadingProgressMessage message)
     {
+        if (_isDisposed) return;
         var options = _service.CurrentOptions;
         if (options != null)
         {
@@ -210,11 +228,13 @@ public partial class LoadingProgressViewModel : ObservableObject,
 
     public void Receive(HideLoadingProgressMessage message)
     {
+        if (_isDisposed) return;
         _service.Hide();
     }
 
     public void Receive(CancelLoadingProgressMessage message)
     {
+        if (_isDisposed) return;
         Cancel();
     }
 }

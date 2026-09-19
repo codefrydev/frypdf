@@ -2400,6 +2400,7 @@ public partial class MainViewModel : ViewModelBase, IServiceProvider, IDisposabl
 
         (PdfViewer as IDisposable)?.Dispose();
         (FryPdfViewer as IDisposable)?.Dispose();
+        (LoadingProgress as IDisposable)?.Dispose();
 
         WeakReferenceMessenger.Default.UnregisterAll(this);
 

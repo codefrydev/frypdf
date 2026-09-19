@@ -342,6 +342,7 @@ public partial class App : Application
         services.AddSingleton<PdfEditorApp.Core.Plugins.Descriptors.IShortcutRegistry>(sp => sp.GetRequiredService<PdfEditorApp.Services.Shortcuts.ShortcutRegistry>());
         services.AddSingleton<PdfEditorApp.Core.Plugins.Settings.IPluginSettingsStore, PdfEditorApp.Core.Plugins.Settings.FilePluginSettingsStore>();
         services.AddSingleton<PdfEditorApp.Core.Plugins.Loading.ILoadingProgressService, PdfEditorApp.Core.Plugins.Loading.LoadingProgressService>();
+        services.AddSingleton<CommunityToolkit.Mvvm.Messaging.IMessenger>(CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default);
 
         // Lets a plugin declare work with a hard deadline (e.g. an audio callback) so the host
         // can tune GC latency while it runs. Resolved by plugins through the IServiceProvider

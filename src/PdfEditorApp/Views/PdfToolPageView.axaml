@@ -16,11 +16,11 @@
     <UserControl.Styles>
         <!-- Back Button Hover Style -->
         <Style Selector="Button.back-btn">
-            <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="Foreground" Value="#475569" />
-            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
             <Setter Property="Padding" Value="12,7" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Transitions">
@@ -32,18 +32,19 @@
             </Setter>
         </Style>
         <Style Selector="Button.back-btn:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#EFF6FF" />
-            <Setter Property="BorderBrush" Value="#3B82F6" />
-            <Setter Property="Foreground" Value="#1D4ED8" />
+            <Setter Property="Background" Value="{DynamicResource WinAccentLightBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinAccentBrush}" />
         </Style>
 
         <!-- Star Button Style -->
         <Style Selector="Button.star-btn">
-            <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="Background" Value="{DynamicResource WinPanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WinTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="9,7" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
+            <Setter Property="Padding" Value="12,7" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Transitions">
                 <Transitions>
@@ -53,8 +54,8 @@
             </Setter>
         </Style>
         <Style Selector="Button.star-btn:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#FFFBEB" />
-            <Setter Property="BorderBrush" Value="#FDE68A" />
+            <Setter Property="Background" Value="{DynamicResource WinHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WinAccentBrush}" />
         </Style>
 
         <!-- Tools on the shared workspace shell (PdfToolWorkspaceView) bring their own
@@ -84,7 +85,7 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
                     <Button Classes="back-btn" Command="{Binding GoBackCommand}" ToolTip.Tip="Back to All Tools (Home)">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="ArrowLeft" Width="16" Height="16" Foreground="#3B82F6" />
+                            <materialIcons:MaterialIcon Kind="ArrowLeft" Width="16" Height="16" Foreground="{DynamicResource WinAccentBrush}" />
                             <TextBlock Text="Back to Tools" FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
@@ -111,11 +112,11 @@
                                        FontSize="18"
                                        FontWeight="Bold"
                                        Foreground="{DynamicResource WinTextBrush}" />
-                            <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="6" Padding="8,2" VerticalAlignment="Center">
+                            <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="8,2" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Tool.CategoryDisplayName}" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource WinMutedBrush}" />
                             </Border>
-                            <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Padding="6,1" IsVisible="{Binding Tool.IsNew}">
-                                <TextBlock Text="NEW" FontSize="10" FontWeight="Bold" Foreground="#0F6CBD" />
+                            <Border Background="{DynamicResource WinAccentLightBrush}" BorderBrush="{DynamicResource WinAccentBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="6,1" IsVisible="{Binding Tool.IsNew}">
+                                <TextBlock Text="NEW" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
                             </Border>
                         </StackPanel>
                         <TextBlock Text="{Binding Tool.Description}"
@@ -129,8 +130,8 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <Button Classes="star-btn" Command="{Binding OpenToolHelpGuideCommand}" ToolTip.Tip="View Step-by-Step Guide &amp; Pro Tips for this tool">
                         <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="15" Height="15" Foreground="#0284C7" />
-                            <TextBlock Text="Guide &amp; Tips" FontSize="11.5" FontWeight="SemiBold" Foreground="#0284C7" VerticalAlignment="Center" />
+                            <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="15" Height="15" Foreground="{DynamicResource WinAccentBrush}" />
+                            <TextBlock Text="Guide &amp; Tips" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
 
@@ -146,7 +147,7 @@
                         </StackPanel>
                     </Button>
 
-                    <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,6">
+                    <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="12,6">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="ShieldCheckOutline" Width="15" Height="15" Foreground="#16A34A" />
                             <TextBlock Text="Local &amp; Secure · 100% Offline" FontSize="11.5" FontWeight="Medium" Foreground="{DynamicResource WinTextBrush}" />

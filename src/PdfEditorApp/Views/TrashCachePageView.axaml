@@ -21,11 +21,11 @@
             </Grid>
 
             <!-- Cache Cleanup Card -->
-            <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="24" HorizontalAlignment="Stretch">
+            <Border Background="{DynamicResource WinPanelBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerLarge}" Padding="24" HorizontalAlignment="Stretch">
                 <StackPanel Spacing="16">
                     <StackPanel Orientation="Horizontal" Spacing="14">
-                        <Border Width="44" Height="44" Background="#FEF2F2" CornerRadius="12">
-                            <materialIcons:MaterialIcon Kind="Broom" Width="24" Height="24" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Border Width="44" Height="44" Background="{DynamicResource M3ErrorContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerMedium}">
+                            <materialIcons:MaterialIcon Kind="Broom" Width="24" Height="24" Foreground="{DynamicResource M3OnErrorContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <StackPanel VerticalAlignment="Center" Spacing="2">
                             <TextBlock Text="Clear Temporary Cache &amp; Recent Lists" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
@@ -37,7 +37,7 @@
                         <Button Command="{Binding ClearRecentCommand}"
                                 Background="#DC2626"
                                 Foreground="White"
-                                CornerRadius="8"
+                                CornerRadius="{StaticResource M3ShapeCornerFull}"
                                 Padding="14,7"
                                 FontSize="12"
                                 FontWeight="SemiBold"
@@ -75,7 +75,7 @@
                     Background="{DynamicResource WinPanelBrush}"
                     BorderBrush="{DynamicResource WinBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="12"
+                    CornerRadius="{StaticResource M3ShapeCornerLarge}"
                     Padding="36,32">
                 <StackPanel HorizontalAlignment="Center" Spacing="8">
                     <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="40" Height="40" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" />
@@ -92,13 +92,13 @@
                         <Border Background="{DynamicResource WinPanelBrush}"
                                 BorderBrush="{DynamicResource WinBorderBrush}"
                                 BorderThickness="1"
-                                CornerRadius="10"
+                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
                                 Padding="16,12"
                                 Margin="0,0,0,8"
-                                BoxShadow="0 1 3 #06000000">
+                                BoxShadow="{StaticResource M3ElevationLevel1}">
                             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14" VerticalAlignment="Center">
                                 <!-- File Icon -->
-                                <Border Grid.Column="0" Width="38" Height="38" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" VerticalAlignment="Center">
+                                <Border Grid.Column="0" Width="38" Height="38" Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" VerticalAlignment="Center">
                                     <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="20" Height="20" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
 
@@ -107,7 +107,7 @@
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <TextBlock Text="{Binding FileName}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" MaxWidth="400" />
                                         <TextBlock Text="{Binding FormattedFileSize}" FontSize="11" Foreground="{DynamicResource WinSubtleBrush}" VerticalAlignment="Center" />
-                                        <Border Background="{DynamicResource WinInputBgBrush}" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
+                                        <Border Background="{DynamicResource WinInputBgBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding RelativeTime}" FontSize="10" Foreground="{DynamicResource WinMutedBrush}" />
                                         </Border>
                                     </StackPanel>
@@ -122,7 +122,7 @@
                                             Background="{DynamicResource WinInputBgBrush}"
                                             BorderBrush="{DynamicResource WinBorderBrush}"
                                             BorderThickness="1"
-                                            CornerRadius="6"
+                                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                                             Padding="8,5"
                                             Cursor="Hand"
                                             ToolTip.Tip="Open in Studio Editor">
@@ -135,7 +135,7 @@
                                             Background="{DynamicResource WinInputBgBrush}"
                                             BorderBrush="{DynamicResource WinBorderBrush}"
                                             BorderThickness="1"
-                                            CornerRadius="6"
+                                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                                             Padding="8,5"
                                             Cursor="Hand"
                                             ToolTip.Tip="Rename Document (F2)">
@@ -148,7 +148,7 @@
                                             Background="{DynamicResource WinInputBgBrush}"
                                             BorderBrush="{DynamicResource WinBorderBrush}"
                                             BorderThickness="1"
-                                            CornerRadius="6"
+                                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                                             Padding="8,5"
                                             Cursor="Hand"
                                             ToolTip.Tip="Duplicate / Make a Copy">
@@ -161,7 +161,7 @@
                                             Background="{DynamicResource WinInputBgBrush}"
                                             BorderBrush="{DynamicResource WinBorderBrush}"
                                             BorderThickness="1"
-                                            CornerRadius="6"
+                                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                                             Padding="8,5"
                                             Cursor="Hand"
                                             ToolTip.Tip="Reveal in Finder / Explorer">
@@ -174,7 +174,7 @@
                                             Background="{DynamicResource WinInputBgBrush}"
                                             BorderBrush="{DynamicResource WinBorderBrush}"
                                             BorderThickness="1"
-                                            CornerRadius="6"
+                                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                                             Padding="8,5"
                                             Cursor="Hand"
                                             ToolTip.Tip="Remove from recent documents">
@@ -184,14 +184,14 @@
                                     <!-- Delete File on Disk -->
                                     <Button Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).PromptDeleteCommand}"
                                             CommandParameter="{Binding FilePath}"
-                                            Background="#FEE2E2"
-                                            BorderBrush="#FECACA"
+                                            Background="{DynamicResource M3ErrorContainerBrush}"
+                                            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                                             BorderThickness="1"
-                                            CornerRadius="6"
+                                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                                             Padding="8,5"
                                             Cursor="Hand"
                                             ToolTip.Tip="Delete file from disk...">
-                                        <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="14" Height="14" Foreground="#DC2626" />
+                                        <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="14" Height="14" Foreground="{DynamicResource M3OnErrorContainerBrush}" />
                                     </Button>
                                 </StackPanel>
                             </Grid>

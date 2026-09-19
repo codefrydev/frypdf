@@ -98,7 +98,7 @@
                     <Border Width="{Binding Width}" Height="{Binding Height}"
                             Background="{DynamicResource WinPanelBrush}"
                             BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
-                            BorderThickness="1" CornerRadius="4" ClipToBounds="True">
+                            BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" ClipToBounds="True">
                         <Grid RowDefinitions="Auto,*">
                             <Border Grid.Row="0" Background="{Binding HeaderBackgroundHex, Converter={StaticResource HexToBrushConverter}}" Padding="8,6">
                                 <ItemsControl ItemsSource="{Binding Headers}">
@@ -142,7 +142,7 @@
                     <Border Width="{Binding Width}" Height="{Binding Height}"
                             Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
                             BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
-                            BorderThickness="1" CornerRadius="6" Padding="10,8">
+                            BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerMedium}" Padding="10,8">
                         <Grid RowDefinitions="Auto,*">
                             <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
                             <ItemsControl Grid.Row="1" ItemsSource="{Binding Bars}" Margin="0,6,0,0">
@@ -154,7 +154,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="elvm:ChartBarItem">
                                         <Grid RowDefinitions="*,Auto" Margin="2,0" VerticalAlignment="Bottom">
-                                            <Border Grid.Row="0" Height="{Binding BarHeightPx}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="2,2,0,0" />
+                                            <Border Grid.Row="0" Height="{Binding BarHeightPx}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="{StaticResource M3ShapeCornerExtraSmall}" />
                                             <TextBlock Grid.Row="1" Text="{Binding Category}" FontSize="8.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                                         </Grid>
                                     </DataTemplate>
@@ -181,7 +181,7 @@
                 </DataTemplate>
                 <!-- QR Code Element -->
                 <DataTemplate DataType="elvm:QrCodeElementViewModel">
-                    <Border Width="{Binding Width}" Height="{Binding Height}" Background="{Binding LightColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="4">
+                    <Border Width="{Binding Width}" Height="{Binding Height}" Background="{Binding LightColorHex, Converter={StaticResource HexToBrushConverter}}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="4">
                         <Image Source="{Binding QrBitmap}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                 </DataTemplate>

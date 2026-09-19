@@ -19,7 +19,7 @@
             <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
             <Setter Property="Padding" Value="14,6" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="Medium" />
@@ -110,7 +110,7 @@
                                FontSize="18"
                                FontWeight="Bold"
                                Foreground="{DynamicResource WinTextBrush}" />
-                    <Border Background="{DynamicResource WinAccentLightBrush}" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource WinAccentLightBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="6,1" VerticalAlignment="Center">
                         <TextBlock Text="32 TOOLS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
                     </Border>
                 </StackPanel>
@@ -175,7 +175,7 @@
                     Background="{DynamicResource WinInputBgBrush}"
                     BorderBrush="{DynamicResource WinBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="6"
+                    CornerRadius="{StaticResource M3ShapeCornerFull}"
                     Padding="10,5"
                     VerticalAlignment="Center">
                 <TextBlock Text="{Binding MatchingToolsCount, StringFormat='{}{0} Tools'}"
@@ -238,7 +238,7 @@
                                 <Border Grid.Column="0"
                                         Width="36" Height="36"
                                         Background="{Binding BackgroundAccentHex, Converter={StaticResource HexToBrushConverter}}"
-                                        CornerRadius="8"
+                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                         Margin="0,0,12,0"
                                         VerticalAlignment="Top">
                                     <materialIcons:MaterialIcon Kind="{Binding IconKind}"
@@ -252,7 +252,7 @@
                                 <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                                     <Grid ColumnDefinitions="*,Auto,Auto">
                                         <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" />
-                                        <Border Grid.Column="1" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="3" Padding="4,1" Margin="4,0,0,0" IsVisible="{Binding IsNew}">
+                                        <Border Grid.Column="1" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="4,1" Margin="4,0,0,0" IsVisible="{Binding IsNew}">
                                             <TextBlock Text="NEW" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource WinAccentBrush}" />
                                         </Border>
                                         <Button Grid.Column="2"

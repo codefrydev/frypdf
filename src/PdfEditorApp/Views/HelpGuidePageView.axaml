@@ -20,7 +20,7 @@
             <Setter Property="Foreground" Value="{DynamicResource WinMutedBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource WinBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="CornerRadius" Value="{StaticResource M3ShapeCornerFull}" />
             <Setter Property="Padding" Value="14,6" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="Medium" />
@@ -108,14 +108,14 @@
             <!-- Left: Icon & Title -->
             <StackPanel Grid.Column="0" Spacing="3">
                 <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <Border Width="38" Height="38" Background="#E0F2FE" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="9">
-                        <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="22" Height="22" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Border Width="38" Height="38" Background="{DynamicResource M3SecondaryContainerBrush}" BorderBrush="{DynamicResource M3OutlineVariantBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerMedium}">
+                        <materialIcons:MaterialIcon Kind="HelpCircleOutline" Width="22" Height="22" Foreground="{DynamicResource M3OnSecondaryContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <TextBlock Text="Help &amp; User Guides" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
-                    <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="6" Padding="8,2" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource M3SuccessContainerBrush}" BorderBrush="{DynamicResource M3OutlineVariantBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="8,2" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                            <Ellipse Width="6" Height="6" Fill="#16A34A" />
-                            <TextBlock Text="100% OFFLINE GUIDES" FontSize="10" FontWeight="Bold" Foreground="#15803D" />
+                            <Ellipse Width="6" Height="6" Fill="{DynamicResource M3SuccessBrush}" />
+                            <TextBlock Text="100% OFFLINE GUIDES" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource M3OnSuccessContainerBrush}" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -131,7 +131,7 @@
                         BorderBrush="{DynamicResource WinBorderBrush}"
                         BorderThickness="1"
                         Foreground="{DynamicResource WinTextBrush}"
-                        CornerRadius="8"
+                        CornerRadius="{StaticResource M3ShapeCornerFull}"
                         Padding="12,7"
                         FontSize="11.5"
                         FontWeight="SemiBold"
@@ -151,7 +151,7 @@
         <Border Background="{DynamicResource WinInputBgBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="10"
+                CornerRadius="{StaticResource M3ShapeCornerFull}"
                 Padding="14,0"
                 Height="44">
             <Grid ColumnDefinitions="Auto,*,Auto">
@@ -226,7 +226,7 @@
                             BorderBrush="{DynamicResource WinBorderBrush}"
                             BorderThickness="1"
                             Foreground="{DynamicResource WinTextBrush}"
-                            CornerRadius="8"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                             Padding="12,6"
                             Cursor="Hand"
                             ToolTip.Tip="Return to all guides grid">
@@ -242,7 +242,7 @@
                             CommandParameter="{Binding SelectedGuide}"
                             Background="{DynamicResource WinAccentBrush}"
                             Foreground="White"
-                            CornerRadius="8"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                             Padding="14,6"
                             Cursor="Hand"
                             ToolTip.Tip="Open and launch this tool workspace">
@@ -259,7 +259,7 @@
                 <Grid ColumnDefinitions="Auto,*" Margin="0,4,0,0">
                     <Border Grid.Column="0" Width="52" Height="52"
                             Background="{Binding SelectedGuide.BackgroundAccentHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#E0F2FE'}"
-                            CornerRadius="12" Margin="0,0,16,0" VerticalAlignment="Top">
+                            CornerRadius="{StaticResource M3ShapeCornerMedium}" Margin="0,0,16,0" VerticalAlignment="Top">
                         <materialIcons:MaterialIcon Kind="{Binding SelectedGuide.IconKind, FallbackValue=HelpCircleOutline}"
                                                     Width="28" Height="28"
                                                     Foreground="{Binding SelectedGuide.IconColorHex, Converter={StaticResource HexToBrushConverter}, FallbackValue='#0284C7'}"
@@ -269,12 +269,12 @@
                     <StackPanel Grid.Column="1" Spacing="4">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                             <TextBlock Text="{Binding SelectedGuide.Title}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                            <Border Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,1">
+                            <Border Background="{DynamicResource WinHoverBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="6,1">
                                 <TextBlock Text="{Binding SelectedGuide.Badge}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                             </Border>
-                            <Border Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="4" Padding="6,1"
+                            <Border Background="{DynamicResource M3SecondaryContainerBrush}" BorderBrush="{DynamicResource M3OutlineVariantBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="6,1"
                                     IsVisible="{Binding SelectedGuide.HasShortcut, FallbackValue=False}">
-                                <TextBlock Text="{Binding SelectedGuide.KeyboardShortcut}" FontSize="10.5" FontWeight="Bold" Foreground="#4F46E5" />
+                                <TextBlock Text="{Binding SelectedGuide.KeyboardShortcut}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
                             </Border>
                         </StackPanel>
 
@@ -283,7 +283,7 @@
                 </Grid>
 
                 <!-- Detailed Narrative Description -->
-                <Border Background="{DynamicResource WinInputBgBrush}" CornerRadius="8" Padding="14" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1">
+                <Border Background="{DynamicResource WinInputBgBrush}" CornerRadius="{StaticResource M3ShapeCornerMedium}" Padding="14" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1">
                     <TextBlock Text="{Binding SelectedGuide.Description}" FontSize="12.5" LineHeight="20" Foreground="{DynamicResource WinTextBrush}" TextWrapping="Wrap" />
                 </Border>
 
@@ -300,11 +300,11 @@
                                 <Border Background="{DynamicResource WinInputBgBrush}"
                                         BorderBrush="{DynamicResource WinBorderBrush}"
                                         BorderThickness="1"
-                                        CornerRadius="8"
+                                        CornerRadius="{StaticResource M3ShapeCornerMedium}"
                                         Padding="12,10"
                                         Margin="0,0,0,6">
                                     <Grid ColumnDefinitions="Auto,*">
-                                        <Border Grid.Column="0" Width="22" Height="22" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="11" Margin="0,0,10,0" VerticalAlignment="Top">
+                                        <Border Grid.Column="0" Width="22" Height="22" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Margin="0,0,10,0" VerticalAlignment="Top">
                                             <materialIcons:MaterialIcon Kind="Check" Width="13" Height="13" Foreground="{DynamicResource WinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Border>
                                         <TextBlock Grid.Column="1" Text="{Binding}" FontSize="12.5" Foreground="{DynamicResource WinTextBrush}" TextWrapping="Wrap" LineHeight="18" VerticalAlignment="Center" />
@@ -335,22 +335,22 @@
                 </StackPanel>
 
                 <!-- Pro Tips Callout Box -->
-                <Border Background="#FFFBEB"
-                        BorderBrush="#FDE68A"
+                <Border Background="{DynamicResource M3WarningContainerBrush}"
+                        BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                         BorderThickness="1"
-                        CornerRadius="10"
+                        CornerRadius="{StaticResource M3ShapeCornerLarge}"
                         Padding="16"
                         IsVisible="{Binding SelectedGuide.HasProTips, FallbackValue=False}">
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="LightbulbOutline" Width="18" Height="18" Foreground="#D97706" />
-                            <TextBlock Text="PRO TIPS &amp; BEST PRACTICES" FontSize="11.5" FontWeight="Bold" Foreground="#92400E" />
+                            <materialIcons:MaterialIcon Kind="LightbulbOutline" Width="18" Height="18" Foreground="{DynamicResource M3OnWarningContainerBrush}" />
+                            <TextBlock Text="PRO TIPS &amp; BEST PRACTICES" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource M3OnWarningContainerBrush}" />
                         </StackPanel>
 
                         <ItemsControl ItemsSource="{Binding SelectedGuide.ProTips}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="x:String">
-                                    <TextBlock Text="{Binding StringFormat='•  {0}'}" FontSize="12" Foreground="#78350F" TextWrapping="Wrap" Margin="4,2,0,2" LineHeight="18" />
+                                    <TextBlock Text="{Binding StringFormat='•  {0}'}" FontSize="12" Foreground="{DynamicResource M3OnWarningContainerBrush}" TextWrapping="Wrap" Margin="4,2,0,2" LineHeight="18" />
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -358,7 +358,7 @@
                 </Border>
 
                 <!-- Technical Specifications & Supported Formats -->
-                <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                <Border Background="{DynamicResource WinInputBgBrush}" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerMedium}" Padding="12"
                         IsVisible="{Binding SelectedGuide.HasFormats, FallbackValue=False}">
                     <Grid ColumnDefinitions="Auto,*">
                         <materialIcons:MaterialIcon Grid.Column="0" Kind="FileCogOutline" Width="16" Height="16" Foreground="{DynamicResource WinSubtleBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
@@ -385,12 +385,12 @@
             <Border Background="{DynamicResource WinPanelBrush}"
                     BorderBrush="{DynamicResource WinBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="12"
+                    CornerRadius="{StaticResource M3ShapeCornerLarge}"
                     Padding="48"
                     HorizontalAlignment="Stretch"
                     IsVisible="{Binding HasNoMatchingGuides}">
                 <StackPanel HorizontalAlignment="Center" Spacing="12">
-                    <Border Width="64" Height="64" Background="{DynamicResource WinHoverBrush}" CornerRadius="32" HorizontalAlignment="Center">
+                    <Border Width="64" Height="64" Background="{DynamicResource WinHoverBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" HorizontalAlignment="Center">
                         <materialIcons:MaterialIcon Kind="MagnifyRemoveOutline" Width="32" Height="32" Foreground="{DynamicResource WinSubtleBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <TextBlock Text="No guide topics match your search" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" HorizontalAlignment="Center" />
@@ -398,7 +398,7 @@
                     <Button Command="{Binding ClearSearchCommand}"
                             Background="{DynamicResource WinAccentBrush}"
                             Foreground="White"
-                            CornerRadius="8"
+                            CornerRadius="{StaticResource M3ShapeCornerFull}"
                             Padding="16,8"
                             FontSize="12"
                             FontWeight="SemiBold"
@@ -430,7 +430,7 @@
                                     <!-- Icon -->
                                     <Border Grid.Column="0" Width="36" Height="36"
                                             Background="{Binding BackgroundAccentHex, Converter={StaticResource HexToBrushConverter}}"
-                                            CornerRadius="8">
+                                            CornerRadius="{StaticResource M3ShapeCornerSmall}">
                                         <materialIcons:MaterialIcon Kind="{Binding IconKind}" Width="20" Height="20"
                                                                     Foreground="{Binding IconColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                                     HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -441,7 +441,7 @@
                                             Background="{DynamicResource WinHoverBrush}"
                                             BorderBrush="{DynamicResource WinBorderBrush}"
                                             BorderThickness="1"
-                                            CornerRadius="4"
+                                            CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                             Padding="6,2"
                                             VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Category}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinSubtleBrush}" />
@@ -450,13 +450,13 @@
                                     <!-- Shortcut Pill (if available) -->
                                     <Border Grid.Column="2"
                                             IsVisible="{Binding HasShortcut}"
-                                            Background="#EEF2FF"
-                                            BorderBrush="#C7D2FE"
+                                            Background="{DynamicResource M3SecondaryContainerBrush}"
+                                            BorderBrush="{DynamicResource M3OutlineVariantBrush}"
                                             BorderThickness="1"
-                                            CornerRadius="4"
+                                            CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                             Padding="6,1"
                                             VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding KeyboardShortcut}" FontSize="9.5" FontWeight="Bold" Foreground="#4F46E5" />
+                                        <TextBlock Text="{Binding KeyboardShortcut}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
                                     </Border>
                                 </Grid>
 
@@ -482,7 +482,7 @@
                                 <Border Grid.Row="3"
                                         IsVisible="{Binding HasFormats}"
                                         Background="{DynamicResource WinInputBgBrush}"
-                                        CornerRadius="4"
+                                        CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                         Padding="6,3"
                                         Margin="0,0,0,12">
                                     <TextBlock Text="{Binding SupportedFormats}" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" TextTrimming="CharacterEllipsis" />

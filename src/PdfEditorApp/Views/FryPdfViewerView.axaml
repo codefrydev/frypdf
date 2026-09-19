@@ -685,8 +685,8 @@
                                                                                 </Border>
                                                                             </StackPanel>
                                                                         </Grid>
-                                                                        <Border Height="10" CornerRadius="5" Background="{DynamicResource M3SurfaceContainerHighBrush}">
-                                                                            <Border HorizontalAlignment="Left" Width="{Binding AnimatedWidthPx}" Height="10" CornerRadius="5" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" />
+                                                                         <Border Height="10" CornerRadius="{StaticResource M3ShapeCornerFull}" Background="{DynamicResource M3SurfaceContainerHighBrush}">
+                                                                            <Border HorizontalAlignment="Left" Width="{Binding AnimatedWidthPx}" Height="10" CornerRadius="{StaticResource M3ShapeCornerFull}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" />
                                                                         </Border>
                                                                     </StackPanel>
                                                                 </DataTemplate>
@@ -713,7 +713,7 @@
                                                                     <DataTemplate DataType="vm:InteractiveChartItem">
                                                                         <Border Padding="4,4" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" ToolTip.Tip="{Binding TooltipText}">
                                                                             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                                                                                <Border Grid.Column="0" Width="10" Height="10" CornerRadius="5" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                                                <Border Grid.Column="0" Width="10" Height="10" CornerRadius="{StaticResource M3ShapeCornerFull}" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" Margin="0,0,8,0" VerticalAlignment="Center" />
                                                                                 <TextBlock Grid.Column="1" Text="{Binding Category}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                                                                 <TextBlock Grid.Column="2" Text="{Binding ValueLabel}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" Margin="8,0" />
                                                                                 <Border Grid.Column="3" Background="{DynamicResource M3SecondaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="6,1" VerticalAlignment="Center">
@@ -757,7 +757,7 @@
                                                             <DataTemplate DataType="vm:InteractiveChartItem">
                                                                 <Border BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="0,0,0,1" Padding="6,4">
                                                                     <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                                                                        <Border Grid.Column="0" Width="10" Height="10" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="2" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                                        <Border Grid.Column="0" Width="10" Height="10" Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" CornerRadius="{StaticResource M3ShapeCornerFull}" Margin="0,0,8,0" VerticalAlignment="Center" />
                                                                         <TextBlock Grid.Column="1" Text="{Binding Category}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinTextBrush}" VerticalAlignment="Center" />
                                                                         <TextBlock Grid.Column="2" Text="{Binding ValueLabel}" FontSize="11" Foreground="{DynamicResource WinMutedBrush}" VerticalAlignment="Center" Margin="12,0" />
                                                                         <Border Grid.Column="3" Background="{DynamicResource M3SecondaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="6,1">
@@ -781,7 +781,7 @@
                                                 Background="{Binding BackgroundColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderThickness="1.5"
-                                                CornerRadius="6"
+                                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
                                                 Padding="8,4">
                                             <Panel>
                                                 <!-- Checkbox Field -->
@@ -806,7 +806,7 @@
                                                              PlaceholderText="{Binding Placeholder}"
                                                              FontSize="{Binding FontSize}"
                                                              Height="28" Padding="6,2"
-                                                             CornerRadius="4" />
+                                                             CornerRadius="{StaticResource M3ShapeCornerSmall}" />
                                                 </StackPanel>
 
                                                 <!-- Verified Digital Signature Badge -->
@@ -817,8 +817,8 @@
                                                         <materialIcons:MaterialIcon Kind="DrawPen" Width="18" Height="18" Foreground="{DynamicResource M3PrimaryBrush}" VerticalAlignment="Center" />
                                                         <TextBlock Text="Digitally Verified Document Signature" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource M3PrimaryBrush}" VerticalAlignment="Center" />
                                                     </StackPanel>
-                                                    <Border Grid.Row="1" Margin="0,4,0,0" Background="#DCFCE7" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="8,2" HorizontalAlignment="Left">
-                                                        <TextBlock Text="✓ Certified Authentic · Tamper-evident" FontSize="9" FontWeight="Bold" Foreground="#15803D" />
+                                                    <Border Grid.Row="1" Margin="0,4,0,0" Background="{DynamicResource M3SuccessContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerFull}" Padding="8,2" HorizontalAlignment="Left">
+                                                        <TextBlock Text="✓ Certified Authentic · Tamper-evident" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource M3OnSuccessContainerBrush}" />
                                                     </Border>
                                                 </Grid>
                                             </Panel>
@@ -827,7 +827,7 @@
 
                                     <!-- 8. MATH ELEMENT: Formulas -->
                                     <DataTemplate DataType="elvm:MathElementViewModel">
-                                        <Border Width="{Binding Width}" Height="{Binding Height}" Padding="8,4" Background="#0A000000" CornerRadius="6">
+                                        <Border Width="{Binding Width}" Height="{Binding Height}" Padding="8,4" Background="{DynamicResource M3SurfaceContainerLowBrush}" CornerRadius="{StaticResource M3ShapeCornerMedium}">
                                             <views:MathFormulaControl Formula="{Binding Formula}"
                                                                       FontSize="{Binding FontSize}"
                                                                       TextColor="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}"
@@ -859,7 +859,7 @@
                                                 Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderThickness="1"
-                                                CornerRadius="6"
+                                                CornerRadius="{StaticResource M3ShapeCornerMedium}"
                                                 BoxShadow="0 4 12 #20000000"
                                                 Padding="10">
                                             <Grid RowDefinitions="Auto,*,Auto">
@@ -869,8 +869,8 @@
                                                     <TextBlock Grid.Column="2" Text="{Binding Timestamp}" FontSize="8.5" Foreground="#92400E" VerticalAlignment="Center" />
                                                 </Grid>
                                                 <TextBlock Grid.Row="1" Text="{Binding NoteText}" FontSize="10.5" Foreground="#78350F" TextWrapping="Wrap" />
-                                                <Border Grid.Row="2" Background="#FEF3C7" CornerRadius="3" Padding="4,2" HorizontalAlignment="Left" Margin="0,4,0,0">
-                                                    <TextBlock Text="{Binding Status}" FontSize="9" FontWeight="SemiBold" Foreground="#B45309" />
+                                                <Border Grid.Row="2" Background="{DynamicResource M3WarningContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="4,2" HorizontalAlignment="Left" Margin="0,4,0,0">
+                                                    <TextBlock Text="{Binding Status}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource M3OnWarningContainerBrush}" />
                                                 </Border>
                                             </Grid>
                                         </Border>
@@ -878,7 +878,7 @@
 
                                     <!-- 11. QR CODE ELEMENT -->
                                     <DataTemplate DataType="elvm:QrCodeElementViewModel">
-                                        <Border Width="{Binding Width}" Height="{Binding Height}" Background="White" CornerRadius="4" Padding="6">
+                                        <Border Width="{Binding Width}" Height="{Binding Height}" Background="White" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="6">
                                             <Image Source="{Binding QrBitmap}" RenderOptions.BitmapInterpolationMode="None" Stretch="Uniform" />
                                         </Border>
                                     </DataTemplate>
@@ -889,7 +889,7 @@
                                                 Background="{DynamicResource WinPanelBrush}"
                                                 BorderBrush="{DynamicResource WinBorderBrush}"
                                                 BorderThickness="1"
-                                                CornerRadius="4"
+                                                CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                                 Padding="8,4">
                                             <Grid RowDefinitions="*,Auto">
                                                 <materialIcons:MaterialIcon Grid.Row="0" Kind="Barcode" Width="180" Height="36" Foreground="{Binding BarColorHex, Converter={StaticResource HexToBrushConverter}}" HorizontalAlignment="Center" />
@@ -929,7 +929,7 @@
                                                 Background="{Binding FillColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderBrush="{Binding BorderColorHex, Converter={StaticResource HexToBrushConverter}}"
                                                 BorderThickness="{Binding BorderThickness, Converter={StaticResource DoubleToThickness}}"
-                                                CornerRadius="2"
+                                                CornerRadius="{StaticResource M3ShapeCornerExtraSmall}"
                                                 Padding="4">
                                             <TextBlock Text="{Binding ExemptionCode}" FontSize="10" FontWeight="Bold" Foreground="{Binding TextColorHex, Converter={StaticResource HexToBrushConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Border>

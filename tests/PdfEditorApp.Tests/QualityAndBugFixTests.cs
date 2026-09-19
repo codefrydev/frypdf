@@ -148,4 +148,53 @@ public class QualityAndBugFixTests
         var imageVm = new ImageElementViewModel();
         Assert.Equal(8.0, imageVm.CornerRadius);
     }
+
+    private static string GetProjectRoot()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null)
+        {
+            if (File.Exists(Path.Combine(dir.FullName, "FryPDF.sln")) || Directory.Exists(Path.Combine(dir.FullName, "src", "PdfEditorApp")))
+            {
+                return dir.FullName;
+            }
+            dir = dir.Parent;
+        }
+        throw new InvalidOperationException("Project root could not be located.");
+    }
+
+    [Fact]
+    public void Views_AdhereToMaterial3ExpressiveTokensAndNoLegacyArbitraryRadii()
+    {
+        var root = GetProjectRoot();
+        var viewsDir = Path.Combine(root, "src", "PdfEditorApp", "Views");
+
+        // 1. PdfToolsStudioView.axaml
+        var toolsStudio = File.ReadAllText(Path.Combine(viewsDir, "PdfToolsStudioView.axaml"));
+        Assert.DoesNotContain("CornerRadius=\"20\"", toolsStudio);
+        Assert.Contains("CornerRadius=\"{StaticResource M3ShapeCornerFull}\"", toolsStudio);
+
+        // 2. PdfToolPageView.axaml
+        var toolPage = File.ReadAllText(Path.Combine(viewsDir, "PdfToolPageView.axaml"));
+        Assert.DoesNotContain("Setter Property=\"CornerRadius\" Value=\"8\"", toolPage);
+        Assert.Contains("CornerRadius=\"{StaticResource M3ShapeCornerFull}\"", toolPage);
+        Assert.DoesNotContain("Background\" Value=\"#EFF6FF\"", toolPage);
+
+        // 3. HelpGuidePageView.axaml
+        var helpGuide = File.ReadAllText(Path.Combine(viewsDir, "HelpGuidePageView.axaml"));
+        Assert.DoesNotContain("Background=\"#E0F2FE\"", helpGuide);
+        Assert.DoesNotContain("CornerRadius=\"20\"", helpGuide);
+        Assert.Contains("M3SecondaryContainerBrush", helpGuide);
+        Assert.Contains("M3SuccessContainerBrush", helpGuide);
+
+        // 4. InspectorSidebarView.axaml
+        var inspector = File.ReadAllText(Path.Combine(viewsDir, "InspectorSidebarView.axaml"));
+        Assert.DoesNotContain("CornerRadius=\"9\"", inspector);
+
+        // 5. TrashCachePageView.axaml
+        var trashPage = File.ReadAllText(Path.Combine(viewsDir, "TrashCachePageView.axaml"));
+        Assert.DoesNotContain("Background=\"#FEF2F2\"", trashPage);
+        Assert.Contains("M3ErrorContainerBrush", trashPage);
+        Assert.Contains("CornerRadius=\"{StaticResource M3ShapeCornerFull}\"", trashPage);
+    }
 }

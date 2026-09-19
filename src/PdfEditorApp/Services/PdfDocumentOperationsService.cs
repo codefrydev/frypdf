@@ -240,11 +240,19 @@ public class PdfDocumentOperationsService : IPdfDocumentOperationsService
                     return await WorkflowEngine.ExecuteWorkflowAsync(wfDef, new string[0], null, ct);
 
                 default:
+                {
+                    var customTool = ToolRegistry.GetTool(toolId) ?? ToolRegistry.GetTool(toolId.ToString());
+                    if (customTool?.ExecutionHandler != null)
+                    {
+                        return await customTool.ExecutionHandler(options, progress, ct);
+                    }
+
                     return new ToolExecutionResult
                     {
                         Success = false,
                         ErrorMessage = $"No execution handler mapped for tool '{toolId}' with options '{options?.GetType().Name}'."
                     };
+                }
             }
         }
         catch (OperationCanceledException)

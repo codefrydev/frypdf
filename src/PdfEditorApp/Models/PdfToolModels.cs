@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PdfEditorApp.Core.Models;
 using PdfEditorApp.Services;
@@ -139,6 +141,7 @@ public class PdfToolDefinition
     }
 
     public Func<IServiceProvider, object>? ViewModelFactory { get; set; }
+    public Func<object, IProgress<double>?, CancellationToken, Task<ToolExecutionResult>>? ExecutionHandler { get; set; }
 }
 
 public record ToolExecutionResult

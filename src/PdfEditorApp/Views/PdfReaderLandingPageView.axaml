@@ -59,13 +59,13 @@
                 <!-- Left Info & CTA -->
                 <StackPanel Grid.Column="0" Spacing="10" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Border Background="#FEE2E2" CornerRadius="6" Padding="8,3">
+                        <Border Background="{DynamicResource M3ErrorContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="8,3">
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="FilePdfBox" Width="16" Height="16" Foreground="#DC2626" />
-                                <TextBlock Text="PDF Reader Mode" FontSize="11" FontWeight="Bold" Foreground="#DC2626" />
+                                <materialIcons:MaterialIcon Kind="FilePdfBox" Width="16" Height="16" Foreground="{DynamicResource M3OnErrorContainerBrush}" />
+                                <TextBlock Text="PDF Reader Mode" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource M3OnErrorContainerBrush}" />
                             </StackPanel>
                         </Border>
-                        <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="6" Padding="8,3">
+                        <Border Background="{DynamicResource WinHoverBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="8,3">
                             <TextBlock Text="Adobe Acrobat Style" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" />
                         </Border>
                     </StackPanel>
@@ -287,12 +287,11 @@
                 <TextBlock Text="No recent PDF documents" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
                 <Button Command="{Binding OpenInViewerCommand}"
                         Content="Open a PDF to start reading"
-                        Background="{DynamicResource WinAccentLightBrush}"
-                        Foreground="{DynamicResource WinAccentBrush}"
+                        Classes="m3-tonal-btn"
                         FontWeight="SemiBold"
                         FontSize="12"
                         Padding="14,6"
-                        CornerRadius="6"
+                        CornerRadius="{StaticResource M3ShapeCornerFull}"
                         HorizontalAlignment="Center"
                         Margin="0,4,0,0" />
             </StackPanel>
@@ -374,9 +373,9 @@
                                 <MenuItem Header="Delete File..."
                                           Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).PromptDeleteCommand}"
                                           CommandParameter="{Binding FilePath}"
-                                          Foreground="#DC2626">
+                                          Foreground="{DynamicResource M3ErrorBrush}">
                                     <MenuItem.Icon>
-                                        <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="16" Height="16" Foreground="#DC2626" />
+                                        <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="16" Height="16" Foreground="{DynamicResource M3ErrorBrush}" />
                                     </MenuItem.Icon>
                                 </MenuItem>
                             </ContextMenu>
@@ -385,17 +384,18 @@
                         <Grid RowDefinitions="Auto,Auto">
                             <!-- Top Document Info -->
                             <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
-                                <Border Grid.Column="0" Width="34" Height="34" Background="#FEE2E2" CornerRadius="8" Margin="0,0,10,0" VerticalAlignment="Center">
-                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Width="34" Height="34" Background="{DynamicResource M3ErrorContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Margin="0,0,10,0" VerticalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="{DynamicResource M3OnErrorContainerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                                     <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" TextTrimming="CharacterEllipsis" />
                                     <TextBlock Text="{Binding RelativeTime}" FontSize="10" Foreground="{DynamicResource WinSubtleBrush}" />
                                 </StackPanel>
                                 <Button Grid.Column="2"
+                                        Classes="m3-icon-btn"
                                         Width="26" Height="26"
                                         Padding="0"
-                                        CornerRadius="6"
+                                        CornerRadius="{StaticResource M3ShapeCornerFull}"
                                         Background="Transparent"
                                         BorderThickness="0"
                                         VerticalAlignment="Center"
@@ -459,9 +459,9 @@
                                             <MenuItem Header="Delete File..."
                                                       Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).PromptDeleteCommand}"
                                                       CommandParameter="{Binding FilePath}"
-                                                      Foreground="#DC2626">
+                                                      Foreground="{DynamicResource M3ErrorBrush}">
                                                 <MenuItem.Icon>
-                                                    <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="16" Height="16" Foreground="#DC2626" />
+                                                    <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="16" Height="16" Foreground="{DynamicResource M3ErrorBrush}" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
                                         </MenuFlyout>

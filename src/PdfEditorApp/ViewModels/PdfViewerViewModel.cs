@@ -24,7 +24,7 @@ namespace PdfEditorApp.ViewModels;
 /// eye-comfort reading themes (Sepia, Night/Dark, High Contrast), real page thumbnails,
 /// document outline / bookmarks, in-document search, annotations, and seamless bridge to FryPDF Editor.
 /// </summary>
-public partial class PdfViewerViewModel : ViewModelBase
+public partial class PdfViewerViewModel : ViewModelBase, IDisposable
 {
     private CancellationTokenSource? _renderCts;
     private CancellationTokenSource? _zoomDebounceCts;
@@ -585,4 +585,42 @@ public partial class PdfViewerViewModel : ViewModelBase
         }
     }
 
+    private bool _isDisposed;
+
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        _renderCts?.Cancel();
+        _renderCts?.Dispose();
+        _renderCts = null;
+
+        _backgroundRenderCts?.Cancel();
+        _backgroundRenderCts?.Dispose();
+        _backgroundRenderCts = null;
+
+        _zoomDebounceCts?.Cancel();
+        _zoomDebounceCts?.Dispose();
+        _zoomDebounceCts = null;
+
+        lock (_renderLock)
+        {
+            _openDocument?.Dispose();
+            _openDocument = null;
+        }
+
+        foreach (var page in Pages)
+        {
+            page.Dispose();
+        }
+        Pages.Clear();
+        PageSpreads.Clear();
+        Bookmarks.Clear();
+        Annotations.Clear();
+        SearchResults.Clear();
+
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+        GC.SuppressFinalize(this);
+    }
 }

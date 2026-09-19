@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using PdfEditorApp.Models;
 
 namespace PdfEditorApp.Services.Tools.Core;
@@ -503,7 +505,11 @@ public class PdfToolRegistry : IPdfToolRegistry
                 BackgroundAccentHex = pt.BackgroundAccentHex,
                 SupportsMultiFile = pt.SupportsMultiFile,
                 AcceptedFileExtensions = pt.AcceptedFileExtensions,
-                ViewModelFactory = pt.CreateViewModel
+                ViewModelFactory = pt.CreateViewModel,
+                ExecutionHandler = pt.Metadata.TryGetValue("ExecutionHandler", out var handler) &&
+                                   handler is Func<object, IProgress<double>?, CancellationToken, Task<ToolExecutionResult>> execHandler
+                    ? execHandler
+                    : null
             };
 
             if (existingIndex >= 0)

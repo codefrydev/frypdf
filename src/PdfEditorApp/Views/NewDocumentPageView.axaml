@@ -269,7 +269,7 @@
 
                                         <!-- Blank Canvas Special Clean Sheet View -->
                                         <Grid IsVisible="{Binding IsBlank}" Background="{DynamicResource WinPanelBrush}">
-                                            <Border Margin="10" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1.5" CornerRadius="4" Background="{DynamicResource WinInputBgBrush}">
+                                            <Border Margin="10" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1.5" CornerRadius="{StaticResource M3ShapeCornerSmall}" Background="{DynamicResource WinInputBgBrush}">
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
                                                     <materialIcons:MaterialIcon Kind="FilePlusOutline" Width="28" Height="28" Foreground="#0F6CBD" HorizontalAlignment="Center" />
                                                     <TextBlock Text="Blank Canvas" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
@@ -386,7 +386,7 @@
 
                                                 <!-- Blank Canvas Clean Sheet -->
                                                 <Grid IsVisible="{Binding IsBlank}" Background="{DynamicResource WinPanelBrush}">
-                                                    <Border Margin="12" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1.5" CornerRadius="4" Background="{DynamicResource WinInputBgBrush}">
+                                                    <Border Margin="12" BorderBrush="{DynamicResource WinBorderBrush}" BorderThickness="1.5" CornerRadius="{StaticResource M3ShapeCornerSmall}" Background="{DynamicResource WinInputBgBrush}">
                                                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
                                                             <materialIcons:MaterialIcon Kind="FilePlusOutline" Width="30" Height="30" Foreground="#0F6CBD" HorizontalAlignment="Center" />
                                                             <TextBlock Text="Blank Canvas" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource WinMutedBrush}" HorizontalAlignment="Center" />
@@ -410,7 +410,7 @@
                                                             Background="{DynamicResource WinAccentLightBrush}"
                                                             BorderBrush="{DynamicResource WinAccentBorderBrush}"
                                                             BorderThickness="1"
-                                                            CornerRadius="4"
+                                                            CornerRadius="{StaticResource M3ShapeCornerSmall}"
                                                             Padding="6,1"
                                                             Margin="4,0,0,0">
                                                         <TextBlock Text="{Binding Badge}"
@@ -443,7 +443,7 @@
                 Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="12"
+                CornerRadius="{StaticResource M3ShapeCornerMedium}"
                 Padding="32,24"
                 Margin="0,8,0,0">
             <StackPanel HorizontalAlignment="Center" Spacing="10">
@@ -458,10 +458,9 @@
                            Foreground="{DynamicResource WinSubtleBrush}"
                            HorizontalAlignment="Center" />
                 <Button Command="{Binding ClearTemplateSearchCommand}"
+                        Classes="m3-tonal-btn"
                         HorizontalAlignment="Center"
-                        Background="{DynamicResource WinAccentLightBrush}"
-                        Foreground="{DynamicResource WinAccentBrush}"
-                        CornerRadius="6"
+                        CornerRadius="{StaticResource M3ShapeCornerFull}"
                         Padding="14,6"
                         FontSize="12"
                         FontWeight="SemiBold"

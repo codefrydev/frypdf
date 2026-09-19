@@ -493,11 +493,12 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
                 OnPropertyChanged(nameof(SizeReductionBadgeText));
 
                 // Load rich in-app preview for the output document
+                // Load rich in-app preview for the output document asynchronously off the UI thread
                 if (!string.IsNullOrEmpty(LastOutputFilePath) && File.Exists(LastOutputFilePath))
                 {
-                    int pages = PdfFileHelper.InspectPageCountSafely(LastOutputFilePath);
+                    int pages = await Task.Run(() => PdfFileHelper.InspectPageCountSafely(LastOutputFilePath), _cts?.Token ?? CancellationToken.None);
                     OutputFilePreview = PdfFilePreviewItem.CreateFromFile(LastOutputFilePath, 1, pages);
-                    LoadOutputPreviewThumbnails(LastOutputFilePath);
+                    await LoadOutputPreviewThumbnailsAsync(LastOutputFilePath, _cts?.Token ?? CancellationToken.None);
                     _ = Preview.LoadDocumentAsync(LastOutputFilePath);
                 }
             }
@@ -521,63 +522,75 @@ public abstract partial class PdfToolViewModelBase : ViewModelBase
         finally
         {
             IsRunning = false;
+            _cts?.Dispose();
+            _cts = null;
         }
     }
 
-    private void LoadOutputPreviewThumbnails(string filePath)
+    private async Task LoadOutputPreviewThumbnailsAsync(string filePath, CancellationToken ct)
     {
         OutputPageThumbnails.Clear();
         if (!File.Exists(filePath)) return;
 
-        try
+        var thumbnails = await Task.Run(() =>
         {
-            using var pig = UglyToad.PdfPig.PdfDocument.Open(filePath);
-            int total = pig.NumberOfPages;
-            for (int i = 1; i <= total; i++)
+            var list = new List<PdfPagePreviewThumbnail>();
+            try
             {
-                var page = pig.GetPage(i);
-                bool isLandscape = page.Width > page.Height;
-                string summary = string.Empty;
-                if (!string.IsNullOrWhiteSpace(page.Text))
+                using var pig = UglyToad.PdfPig.PdfDocument.Open(filePath);
+                int total = pig.NumberOfPages;
+                for (int i = 1; i <= total; i++)
                 {
-                    string firstLine = page.Text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
-                    if (firstLine.Length > 40) firstLine = firstLine.Substring(0, 40) + "...";
-                    summary = firstLine;
-                }
+                    if (ct.IsCancellationRequested) break;
+                    var page = pig.GetPage(i);
+                    bool isLandscape = page.Width > page.Height;
+                    string summary = string.Empty;
+                    if (!string.IsNullOrWhiteSpace(page.Text))
+                    {
+                        string firstLine = page.Text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+                        if (firstLine.Length > 40) firstLine = firstLine.Substring(0, 40) + "...";
+                        summary = firstLine;
+                    }
 
-                var thumb = new PdfPagePreviewThumbnail
-                {
-                    PageNumber = i,
-                    PageLabel = $"Page {i} of {total}",
-                    WidthPoints = Math.Round(page.Width, 1),
-                    HeightPoints = Math.Round(page.Height, 1),
-                    IsLandscape = isLandscape,
-                    DimensionsText = $"{Math.Round(page.Width):F0} × {Math.Round(page.Height):F0} pt",
-                    PageSummary = summary,
-                    IsSelected = (i == 1)
-                };
-                OutputPageThumbnails.Add(thumb);
+                    var thumb = new PdfPagePreviewThumbnail
+                    {
+                        PageNumber = i,
+                        PageLabel = $"Page {i} of {total}",
+                        WidthPoints = Math.Round(page.Width, 1),
+                        HeightPoints = Math.Round(page.Height, 1),
+                        IsLandscape = isLandscape,
+                        DimensionsText = $"{Math.Round(page.Width):F0} × {Math.Round(page.Height):F0} pt",
+                        PageSummary = summary,
+                        IsSelected = (i == 1)
+                    };
+                    list.Add(thumb);
+                }
             }
-            SelectedOutputPage = OutputPageThumbnails.FirstOrDefault();
-        }
-        catch
-        {
-            int pageCount = PdfFileHelper.InspectPageCountSafely(filePath);
-            for (int i = 1; i <= Math.Max(1, pageCount); i++)
+            catch
             {
-                OutputPageThumbnails.Add(new PdfPagePreviewThumbnail
+                int pageCount = PdfFileHelper.InspectPageCountSafely(filePath);
+                for (int i = 1; i <= Math.Max(1, pageCount); i++)
                 {
-                    PageNumber = i,
-                    PageLabel = $"Page {i} of {pageCount}",
-                    WidthPoints = 595,
-                    HeightPoints = 842,
-                    IsLandscape = false,
-                    DimensionsText = "595 × 842 pt",
-                    IsSelected = (i == 1)
-                });
+                    list.Add(new PdfPagePreviewThumbnail
+                    {
+                        PageNumber = i,
+                        PageLabel = $"Page {i} of {pageCount}",
+                        WidthPoints = 595,
+                        HeightPoints = 842,
+                        IsLandscape = false,
+                        DimensionsText = "595 × 842 pt",
+                        IsSelected = (i == 1)
+                    });
+                }
             }
-            SelectedOutputPage = OutputPageThumbnails.FirstOrDefault();
+            return list;
+        }, ct);
+
+        foreach (var thumb in thumbnails)
+        {
+            OutputPageThumbnails.Add(thumb);
         }
+        SelectedOutputPage = OutputPageThumbnails.FirstOrDefault();
     }
 
     [RelayCommand]

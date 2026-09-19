@@ -271,10 +271,10 @@
                                     Command="{Binding SelectNavSectionCommand}"
                                     CommandParameter="PdfReader">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="BookOpenPageVariantOutline" Width="18" Height="18" Foreground="#DC2626" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="BookOpenPageVariantOutline" Width="18" Height="18" Foreground="{DynamicResource M3ErrorBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="PDF Reader" VerticalAlignment="Center" />
-                                    <Border Grid.Column="2" Background="#FEE2E2" CornerRadius="4" Padding="5,1">
-                                        <TextBlock Text="Read" FontSize="10" FontWeight="Bold" Foreground="#DC2626" />
+                                    <Border Grid.Column="2" Background="{DynamicResource M3ErrorContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1">
+                                        <TextBlock Text="Read" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource M3OnErrorContainerBrush}" />
                                     </Border>
                                 </Grid>
                             </Button>
@@ -285,10 +285,10 @@
                                     Command="{Binding SelectNavSectionCommand}"
                                     CommandParameter="NewDocument">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="FileDocumentPlusOutline" Width="18" Height="18" Foreground="#10B981" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="FileDocumentPlusOutline" Width="18" Height="18" Foreground="{DynamicResource M3SuccessBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="New Document" VerticalAlignment="Center" />
-                                    <Border Grid.Column="2" Background="#ECFDF5" CornerRadius="4" Padding="5,1">
-                                        <TextBlock Text="19" FontSize="10" FontWeight="Bold" Foreground="#059669" />
+                                    <Border Grid.Column="2" Background="{DynamicResource M3SuccessContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1">
+                                        <TextBlock Text="19" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource M3OnSuccessContainerBrush}" />
                                     </Border>
                                 </Grid>
                             </Button>
@@ -299,10 +299,10 @@
                                     Command="{Binding SelectNavSectionCommand}"
                                     CommandParameter="AllTools">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="ViewGridOutline" Width="18" Height="18" Foreground="#6366F1" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="ViewGridOutline" Width="18" Height="18" Foreground="{DynamicResource M3PrimaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="All Tools" VerticalAlignment="Center" />
-                                    <Border Grid.Column="2" Background="#EEF2FF" CornerRadius="4" Padding="5,1">
-                                        <TextBlock Text="32" FontSize="10" FontWeight="Bold" Foreground="#4F46E5" />
+                                    <Border Grid.Column="2" Background="{DynamicResource M3PrimaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1">
+                                        <TextBlock Text="32" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource M3OnPrimaryContainerBrush}" />
                                     </Border>
                                 </Grid>
                             </Button>
@@ -391,10 +391,10 @@
                                     Command="{Binding SelectNavSectionCommand}"
                                     CommandParameter="Starred">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="StarOutline" Width="18" Height="18" Foreground="#EAB308" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="StarOutline" Width="18" Height="18" Foreground="{DynamicResource M3WarningBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="Starred Tools" VerticalAlignment="Center" />
-                                    <Border Grid.Column="2" Background="#FEF08A" CornerRadius="4" Padding="5,1" IsVisible="{Binding StarredTools.Count}">
-                                        <TextBlock Text="{Binding StarredTools.Count}" FontSize="9.5" FontWeight="Bold" Foreground="#854D0E" />
+                                    <Border Grid.Column="2" Background="{DynamicResource M3WarningContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1" IsVisible="{Binding StarredTools.Count}">
+                                        <TextBlock Text="{Binding StarredTools.Count}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnWarningContainerBrush}" />
                                     </Border>
                                 </Grid>
                             </Button>
@@ -405,10 +405,10 @@
                                     Command="{Binding SelectNavSectionCommand}"
                                     CommandParameter="FontPackages">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="Translate" Width="18" Height="18" Foreground="#0284C7" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="Translate" Width="18" Height="18" Foreground="{DynamicResource M3SecondaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="Language &amp; Fonts" VerticalAlignment="Center" />
-                                    <Border Grid.Column="2" Background="#E0F2FE" CornerRadius="4" Padding="5,1">
-                                        <TextBlock Text="10" FontSize="9.5" FontWeight="Bold" Foreground="#0284C7" />
+                                    <Border Grid.Column="2" Background="{DynamicResource M3SecondaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1">
+                                        <TextBlock Text="10" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
                                     </Border>
                                 </Grid>
                             </Button>
@@ -419,10 +419,10 @@
                                     Command="{Binding SelectNavSectionCommand}"
                                     CommandParameter="TesseractData">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="TextRecognition" Width="18" Height="18" Foreground="#10B981" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="TextRecognition" Width="18" Height="18" Foreground="{DynamicResource M3SuccessBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="OCR Models" VerticalAlignment="Center" />
-                                    <Border Grid.Column="2" Background="#DCFCE7" CornerRadius="4" Padding="5,1">
-                                        <TextBlock Text="{Binding TesseractManager.InstalledCount}" FontSize="9.5" FontWeight="Bold" Foreground="#15803D" />
+                                    <Border Grid.Column="2" Background="{DynamicResource M3SuccessContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1">
+                                        <TextBlock Text="{Binding TesseractManager.InstalledCount}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnSuccessContainerBrush}" />
                                     </Border>
                                 </Grid>
                             </Button>
@@ -444,10 +444,10 @@
                                     Command="{Binding SelectNavSectionCommand}"
                                     CommandParameter="Help">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="HelpCircleOutline" Width="18" Height="18" Foreground="#0284C7" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="HelpCircleOutline" Width="18" Height="18" Foreground="{DynamicResource M3SecondaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="Help &amp; Guides" VerticalAlignment="Center" />
-                                    <Border Grid.Column="2" Background="#E0F2FE" CornerRadius="4" Padding="5,1">
-                                        <TextBlock Text="Guides" FontSize="9.5" FontWeight="Bold" Foreground="#0284C7" />
+                                    <Border Grid.Column="2" Background="{DynamicResource M3SecondaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1">
+                                        <TextBlock Text="Guides" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnSecondaryContainerBrush}" />
                                     </Border>
                                 </Grid>
                             </Button>
@@ -458,10 +458,10 @@
                                     Command="{Binding SelectNavSectionCommand}"
                                     CommandParameter="Licensing">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="CertificateOutline" Width="18" Height="18" Foreground="#4F46E5" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="CertificateOutline" Width="18" Height="18" Foreground="{DynamicResource M3PrimaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="Licenses &amp; Tools" VerticalAlignment="Center" />
-                                    <Border Grid.Column="2" Background="#EEF2FF" CornerRadius="4" Padding="5,1">
-                                        <TextBlock Text="12" FontSize="9.5" FontWeight="Bold" Foreground="#4F46E5" />
+                                    <Border Grid.Column="2" Background="{DynamicResource M3PrimaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1">
+                                        <TextBlock Text="12" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnPrimaryContainerBrush}" />
                                     </Border>
                                 </Grid>
                             </Button>
@@ -475,10 +475,10 @@
                                     Command="{Binding SelectNavSectionCommand}"
                                     CommandParameter="Settings">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="TuneVariant" Width="18" Height="18" Foreground="#8B5CF6" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="TuneVariant" Width="18" Height="18" Foreground="{DynamicResource M3TertiaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="Settings &amp; UI" VerticalAlignment="Center" />
-                                    <Border Grid.Column="2" Background="#EDE9FE" CornerRadius="4" Padding="5,1">
-                                        <TextBlock Text="UI" FontSize="9.5" FontWeight="Bold" Foreground="#7C3AED" />
+                                    <Border Grid.Column="2" Background="{DynamicResource M3TertiaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1">
+                                        <TextBlock Text="UI" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnTertiaryContainerBrush}" />
                                     </Border>
                                 </Grid>
                             </Button>
@@ -489,10 +489,10 @@
                                     Command="{Binding SelectNavSectionCommand}"
                                     CommandParameter="Plugins">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="PuzzleOutline" Width="18" Height="18" Foreground="#7C3AED" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="PuzzleOutline" Width="18" Height="18" Foreground="{DynamicResource M3TertiaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="Plugins &amp; Extensions" VerticalAlignment="Center" />
-                                    <Border Grid.Column="2" Background="#EDE9FE" CornerRadius="4" Padding="5,1">
-                                        <TextBlock Text="Store" FontSize="9.5" FontWeight="Bold" Foreground="#7C3AED" />
+                                    <Border Grid.Column="2" Background="{DynamicResource M3TertiaryContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1">
+                                        <TextBlock Text="Store" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnTertiaryContainerBrush}" />
                                     </Border>
                                 </Grid>
                             </Button>

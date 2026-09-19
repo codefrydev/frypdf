@@ -35,7 +35,7 @@ using PdfEditorApp.ViewModels.ElementViewModels;
 
 namespace PdfEditorApp.ViewModels;
 
-public partial class MainViewModel : ViewModelBase, IDisposable
+public partial class MainViewModel : ViewModelBase, IServiceProvider, IDisposable
 {
     private readonly IPdfExportService _exportService;
     private readonly ITemplateService _templateService;
@@ -2360,8 +2360,20 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         _toastCts?.Dispose();
         _toastCts = null;
 
+        (PdfViewer as IDisposable)?.Dispose();
+        (FryPdfViewer as IDisposable)?.Dispose();
+
         WeakReferenceMessenger.Default.UnregisterAll(this);
 
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Resolves requested application and plugin services via the active plugin context or default DI provider.
+    /// </summary>
+    public object? GetService(Type serviceType)
+    {
+        if (serviceType == typeof(MainViewModel)) return this;
+        return _pluginHost?.Context?.GetService(serviceType) ?? App.Services?.GetService(serviceType);
     }
 }

@@ -531,7 +531,7 @@
                                                     <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,8">
                                                         <materialIcons:MaterialIcon Grid.Column="0" Kind="FileDocumentOutline" Width="18" Height="18" Foreground="#0F6CBD" VerticalAlignment="Center" />
                                                         <TextBlock Grid.Column="1" Text="PDF" FontSize="9" FontWeight="Bold" Foreground="#0F6CBD" Margin="4,0,0,0" VerticalAlignment="Center" />
-                                                        <Border Grid.Column="2" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="3" Padding="4,1">
+                                                        <Border Grid.Column="2" Background="{DynamicResource WinAccentLightBrush}" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="4,1">
                                                             <TextBlock Text="Project" FontSize="8.5" FontWeight="SemiBold" Foreground="{DynamicResource WinAccentBrush}" />
                                                         </Border>
                                                     </Grid>
@@ -562,12 +562,13 @@
 
                             <!-- Document Options Button (...) in top-right of preview -->
                             <Button Grid.Row="0"
+                                    Classes="m3-icon-btn"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Top"
                                     Margin="0,6,6,0"
                                     Width="26" Height="26"
                                     Padding="0"
-                                    CornerRadius="6"
+                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
                                     Background="{DynamicResource WinPanelBrush}"
                                     BorderBrush="{DynamicResource WinBorderBrush}"
                                     BorderThickness="1"
@@ -690,20 +691,18 @@
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock Text="Worldwide Language &amp; Font Packs" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                        <Border Background="#DCFCE7" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
-                            <TextBlock Text="On-Demand" FontSize="9.5" FontWeight="Bold" Foreground="#16A34A" />
+                        <Border Background="{DynamicResource M3SuccessContainerBrush}" BorderBrush="{DynamicResource M3OutlineVariantBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1" VerticalAlignment="Center">
+                            <TextBlock Text="On-Demand" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnSuccessContainerBrush}" />
                         </Border>
                     </StackPanel>
                     <TextBlock Text="Download Chinese, Japanese, Korean, Indic, Arabic, Hebrew, Thai, and Eurasian font packages for crisp rendering while keeping the app ultra-lightweight."
                                FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
                 </StackPanel>
                 <Button Grid.Column="2"
+                        Classes="m3-tonal-btn"
                         Command="{Binding SelectNavSectionCommand}"
                         CommandParameter="FontPackages"
-                        Background="{DynamicResource WinAccentLightBrush}"
-                        Foreground="{DynamicResource WinAccentBrush}"
-                        BorderThickness="0"
-                        CornerRadius="8"
+                        CornerRadius="{StaticResource M3ShapeCornerFull}"
                         Padding="14,8"
                         FontSize="12"
                         FontWeight="SemiBold"
@@ -721,30 +720,28 @@
         <Border Background="{DynamicResource WinPanelBrush}"
                 BorderBrush="{DynamicResource WinBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="14"
+                CornerRadius="{StaticResource M3ShapeCornerLarge}"
                 Padding="20,16"
                 Margin="0,12,0,0">
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
-                <Border Grid.Column="0" Width="44" Height="44" Background="#DCFCE7" CornerRadius="10" VerticalAlignment="Center">
-                    <materialIcons:MaterialIcon Kind="TextRecognition" Width="24" Height="24" Foreground="#10B981" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Border Grid.Column="0" Width="44" Height="44" Background="{DynamicResource M3SuccessContainerBrush}" CornerRadius="{StaticResource M3ShapeCornerMedium}" VerticalAlignment="Center">
+                    <materialIcons:MaterialIcon Kind="TextRecognition" Width="24" Height="24" Foreground="{DynamicResource M3SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock Text="On-Demand Tesseract OCR Models" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource WinTextBrush}" />
-                        <Border Background="#DCFCE7" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
-                            <TextBlock Text="Offline Neural Models" FontSize="9.5" FontWeight="Bold" Foreground="#16A34A" />
+                        <Border Background="{DynamicResource M3SuccessContainerBrush}" BorderBrush="{DynamicResource M3OutlineVariantBrush}" BorderThickness="1" CornerRadius="{StaticResource M3ShapeCornerSmall}" Padding="5,1" VerticalAlignment="Center">
+                            <TextBlock Text="Offline Neural Models" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource M3OnSuccessContainerBrush}" />
                         </Border>
                     </StackPanel>
                     <TextBlock Text="Download fast trained models (.traineddata) for English, CJK, Indic, Arabic, and 35+ languages for high-accuracy document scanning and searchable PDFs."
                                FontSize="11.5" Foreground="{DynamicResource WinMutedBrush}" TextWrapping="Wrap" />
                 </StackPanel>
                 <Button Grid.Column="2"
+                        Classes="m3-tonal-btn"
                         Command="{Binding SelectNavSectionCommand}"
                         CommandParameter="TesseractData"
-                        Background="#DCFCE7"
-                        Foreground="#15803D"
-                        BorderThickness="0"
-                        CornerRadius="8"
+                        CornerRadius="{StaticResource M3ShapeCornerFull}"
                         Padding="14,8"
                         FontSize="12"
                         FontWeight="SemiBold"

@@ -455,7 +455,7 @@
                                                 ToolTip.Tip="Drag vertically to resize editor • Double-click to toggle">
                                             <Border Classes="m3-grip-pill"
                                                     Width="28" Height="3.5"
-                                                    CornerRadius="2"
+                                                    CornerRadius="{StaticResource M3ShapeCornerFull}"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center" />
                                         </Border>

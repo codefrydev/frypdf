@@ -64,7 +64,10 @@ public class UndoRedoService : IUndoRedoService
             OnDiscarded = onDiscarded
         });
 
-        _redoStack.Clear();
+        while (_redoStack.Count > 0)
+        {
+            DiscardAction(_redoStack.Pop());
+        }
         StateChanged?.Invoke(this, EventArgs.Empty);
     }
 

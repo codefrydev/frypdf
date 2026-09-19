@@ -40,7 +40,7 @@ public partial class ImageElementViewModel : ElementViewModelBase
     private bool _keepAspectRatio = true;
 
     [ObservableProperty]
-    private double _cornerRadius = 4;
+    private double _cornerRadius = 8;
 
     [ObservableProperty]
     private string _borderColorHex = "#E1DFDD";

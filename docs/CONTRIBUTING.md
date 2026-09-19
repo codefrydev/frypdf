@@ -76,3 +76,12 @@ When adding support for new PDF document types (invoices, ID cards, tax forms, m
 1. Review the detailed architecture and continuous improvement guide: [PDF Deconstruction & Editing Guide](PDF_DECONSTRUCTION_AND_EDITING.md).
 2. Run the visual side-by-side verification test (`GenerateVisualComparison_SideBySide_SavesArtifacts`) to compare ground-truth PDF rendering vs deconstructed canvas elements.
 3. Validate that all 770+ unit tests pass without regressions (`dotnet test`).
+
+---
+
+## 6. Versioning & Release Workflow
+When releasing a new version of FryPDF or the `FryPdf.PluginSdk` NuGet package:
+- Always follow the exact step-by-step checklist documented in [Versioning & Release Guide](VERSIONING_AND_RELEASE_GUIDE.md).
+- **CRITICAL**: Never bump `AssemblyVersion` in `PdfEditorApp.Core.csproj` unless introducing an intentional, breaking plugin contract ABI change.
+- Verify tests with `dotnet test -c release` and CLI version output with `dotnet run --project src/PdfEditorApp -- --version`.
+- Tag releases as `vMAJOR.MINOR.PATCH` and push to trigger automated CI/CD builds for Windows and macOS.

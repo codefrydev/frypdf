@@ -99,3 +99,4 @@ FryPDF is an interactive real-time document studio. **LAG, FRAME DROPS, AND UI T
 - **M3 Expressive Guidelines**: [`docs/MATERIAL_DESIGN_3_EXPRESSIVE_GUIDELINES.md`](docs/MATERIAL_DESIGN_3_EXPRESSIVE_GUIDELINES.md)
 - **M3 Tokens**: [`src/PdfEditorApp/Styles/Material3ExpressiveTokens.axaml`](src/PdfEditorApp/Styles/Material3ExpressiveTokens.axaml)
 - **M3 Styles**: [`src/PdfEditorApp/Styles/Material3ExpressiveStyles.axaml`](src/PdfEditorApp/Styles/Material3ExpressiveStyles.axaml)
+- **Versioning & Release Guide**: [`docs/VERSIONING_AND_RELEASE_GUIDE.md`](docs/VERSIONING_AND_RELEASE_GUIDE.md)

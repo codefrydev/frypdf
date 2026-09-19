@@ -429,3 +429,27 @@ When adding support for a new or complex PDF type:
 4. **Local Artifact & PDF Exclusion**:
    - All real-world test PDFs, generated side-by-side visual comparison bitmaps, and test exports must be excluded via `.gitignore` (`*.pdf`, `VisualArtifacts/`, `*_side_by_side.png`).
    - Prior to making commits or pushing to remote, always verify with `git status` and `git diff` that no untracked PDFs or sensitive data are being introduced.
+
+---
+
+## 8. Versioning & Release Procedures
+
+When bumping product version or cutting a new release:
+1. **Full Step-by-Step Guide**: Follow [`docs/VERSIONING_AND_RELEASE_GUIDE.md`](../docs/VERSIONING_AND_RELEASE_GUIDE.md).
+2. **Plugin Contract ABI Stability**: Never bump `<AssemblyVersion>` in `src/PdfEditorApp.Core/PdfEditorApp.Core.csproj` unless making an intentional breaking change to the plugin contract. Keep it at `1.0.0.0`.
+3. **Synchronize Fallback Properties**:
+   - `src/PdfEditorApp/PdfEditorApp.csproj` (`<Version Condition=...>`)
+   - `src/PdfEditorApp.Core/PdfEditorApp.Core.csproj` (`<Version Condition=...>`)
+   - `src/PdfEditorApp/Plugins/Cli/HeadlessCliRunner.cs` (fallback version)
+   - `src/PdfEditorApp/ViewModels/HomeViewModel.cs` (fallback in `AppVersion`)
+   - `src/PdfEditorApp/ViewModels/MainViewModel.Palette.cs` (fallback in `AppVersion`)
+   - `packaging/windows/installer.iss` (`#define MyAppVersion`)
+   - `packaging/windows/msix/build-msix.ps1` (`param ([string]$Version = ...)`)
+4. **Local Verification**:
+   - Test CLI version: `dotnet run --project src/PdfEditorApp -- --version`
+   - Test full suite: `dotnet test -c release`
+5. **Git Tag & Push**:
+   - Commit: `git add -A && git commit -m "chore: bump product version to X.Y.Z for release"`
+   - Tag: `git tag -a vX.Y.Z -m "Release vX.Y.Z: ..."`
+   - Push: `git push origin main && git push origin vX.Y.Z` (triggers `.github/workflows/release.yml`)
+

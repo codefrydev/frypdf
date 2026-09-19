@@ -95,29 +95,7 @@ public class TicTacToePlugin : IFryPlugin
             }
         });
 
-        // 3. Register Footer Status Bar Widget (Clickable 🎮 Tic-Tac-Toe pill)
-        var statusReg = ctx.RegisterStatusBarWidget(new StatusBarWidgetDescriptor
-        {
-            WidgetId = "frypdf.status.tictactoe",
-            Alignment = StatusBarAlignment.Right,
-            Order = 16,
-            ToolTip = "Play Tic-Tac-Toe (Floating Shell Overlay)",
-            Factory = sp =>
-            {
-                var reg = sp.GetService(typeof(IOverlayRegistry)) as IOverlayRegistry;
-                return new StatusBarWidgetViewModel
-                {
-                    WidgetId = "frypdf.status.tictactoe",
-                    Label = "🎮 Tic-Tac-Toe",
-                    IconKind = "GamepadVariantOutline",
-                    ToolTip = "Toggle floating Tic-Tac-Toe game",
-                    IsActive = true,
-                    Command = new RelayCommand(() => reg?.ToggleOverlay(Id))
-                };
-            }
-        });
-
-        // 4. Register Quick-Action Pill in the Ribbon's 'View' Tab
+        // 3. Register Quick-Action Pill in the Ribbon's 'View' Tab
         var ribbonReg = ctx.RegisterRibbonAction(new RibbonActionDescriptor
         {
             Id = "frypdf.ribbon.action.tictactoe",
@@ -136,12 +114,11 @@ public class TicTacToePlugin : IFryPlugin
             }
         });
 
-        // 5. Register Reversible Effects for 100% Clean Teardown
+        // 4. Register Reversible Effects for 100% Clean Teardown
         ctx.RegisterEffect(() =>
         {
             overlayReg.Dispose();
             cmdReg.Dispose();
-            statusReg.Dispose();
             ribbonReg.Dispose();
 
             if (ctx.TryGetService<IOverlayRegistry>(out var reg))

@@ -1903,6 +1903,24 @@ public partial class MainViewModel : ViewModelBase, IServiceProvider, IDisposabl
     }
 
 
+    /// <summary>
+    /// Filters status bar widgets for the document editor footer.
+    /// The document editor status bar is strictly reserved for document and engine telemetry (e.g. Skia memory),
+    /// not an application launcher taskbar for external plugins, mini-games, or floating overlays.
+    /// </summary>
+    public static bool IsAllowedInDocumentEditorStatusBar(PdfEditorApp.Core.Plugins.Descriptors.StatusBarWidgetDescriptor? widget)
+    {
+        if (widget == null || string.IsNullOrWhiteSpace(widget.WidgetId))
+            return false;
+
+        // External 3rd-party/user-installed plugins are never injected into the document editor footer
+        if (widget.IsExternal)
+            return false;
+
+        // Only widgets explicitly scoped for the DocumentEditor surface are allowed
+        return widget.Scope == PdfEditorApp.Core.Plugins.Descriptors.StatusBarScope.DocumentEditor;
+    }
+
     private void RefreshStatusBarWidgets()
     {
         if (_statusBarRegistry == null) return;
@@ -1914,12 +1932,14 @@ public partial class MainViewModel : ViewModelBase, IServiceProvider, IDisposabl
             var left = _statusBarRegistry.GetWidgets(PdfEditorApp.Core.Plugins.Descriptors.StatusBarAlignment.Left);
             foreach (var w in left)
             {
+                if (!IsAllowedInDocumentEditorStatusBar(w)) continue;
+
                 var item = w.Factory(_pluginHost?.Context ?? (IServiceProvider)this);
                 if (item is StatusBarWidgetViewModel vm)
                 {
                     LeftStatusBarWidgets.Add(vm);
                 }
-                else if (item != null)
+                else if (item != null && item is not Avalonia.Controls.Control)
                 {
                     LeftStatusBarWidgets.Add(new StatusBarWidgetViewModel
                     {
@@ -1933,12 +1953,14 @@ public partial class MainViewModel : ViewModelBase, IServiceProvider, IDisposabl
             var right = _statusBarRegistry.GetWidgets(PdfEditorApp.Core.Plugins.Descriptors.StatusBarAlignment.Right);
             foreach (var w in right)
             {
+                if (!IsAllowedInDocumentEditorStatusBar(w)) continue;
+
                 var item = w.Factory(_pluginHost?.Context ?? (IServiceProvider)this);
                 if (item is StatusBarWidgetViewModel vm)
                 {
                     RightStatusBarWidgets.Add(vm);
                 }
-                else if (item != null)
+                else if (item != null && item is not Avalonia.Controls.Control)
                 {
                     RightStatusBarWidgets.Add(new StatusBarWidgetViewModel
                     {

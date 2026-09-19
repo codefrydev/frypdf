@@ -96,6 +96,7 @@ public class MemoryMonitorWidgetPlugin : IFryPlugin
         {
             WidgetId = "frypdf.status.memory",
             Alignment = StatusBarAlignment.Right,
+            Scope = StatusBarScope.DocumentEditor,
             Order = 90,
             ToolTip = "SkiaSharp 64-Bit Graphics Engine",
             Factory = sp => new ViewModels.StatusBarWidgetViewModel

@@ -68,29 +68,7 @@ public class DocumentTelemetryPlugin : IFryPlugin
             }
         });
 
-        // 3. Register Footer Status Bar Widget
-        ctx.RegisterStatusBarWidget(new StatusBarWidgetDescriptor
-        {
-            WidgetId = "frypdf.status.telemetry",
-            Alignment = StatusBarAlignment.Right,
-            Order = 13,
-            ToolTip = "Toggle Document Telemetry HUD",
-            Factory = sp =>
-            {
-                var reg = sp.GetService(typeof(IOverlayRegistry)) as IOverlayRegistry;
-                return new StatusBarWidgetViewModel
-                {
-                    WidgetId = "frypdf.status.telemetry",
-                    Label = "⚡ HUD",
-                    IconKind = "ChartTimelineVariant",
-                    ToolTip = "Toggle real-time engine telemetry",
-                    IsActive = true,
-                    Command = new RelayCommand(() => reg?.ToggleOverlay(Id))
-                };
-            }
-        });
-
-        // 4. Register Ribbon Action in View Tab
+        // 3. Register Ribbon Action in View Tab
         ctx.RegisterRibbonAction(new RibbonActionDescriptor
         {
             Id = "frypdf.ribbon.action.telemetry",

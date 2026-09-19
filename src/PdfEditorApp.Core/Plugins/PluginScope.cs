@@ -12,6 +12,16 @@ public sealed class PluginScope : IDisposable
 {
     private readonly object _lock = new();
 
+    /// <summary>
+    /// The plugin instance associated with this scope, if known.
+    /// </summary>
+    public IFryPlugin? Plugin { get; }
+
+    public PluginScope(IFryPlugin? plugin = null)
+    {
+        Plugin = plugin;
+    }
+
     // A List (unwound in reverse) rather than a Stack, so that a token returned by
     // RegisterEffect can remove its own effect without disturbing the others' LIFO order.
     private readonly List<Action> _disposers = new();

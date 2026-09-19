@@ -77,29 +77,7 @@ public class ScratchpadPlugin : IFryPlugin
             }
         });
 
-        // 3. Register Footer Status Bar Widget
-        ctx.RegisterStatusBarWidget(new StatusBarWidgetDescriptor
-        {
-            WidgetId = "frypdf.status.scratchpad",
-            Alignment = StatusBarAlignment.Right,
-            Order = 14,
-            ToolTip = "Toggle Review Scratchpad",
-            Factory = sp =>
-            {
-                var reg = sp.GetService(typeof(IOverlayRegistry)) as IOverlayRegistry;
-                return new StatusBarWidgetViewModel
-                {
-                    WidgetId = "frypdf.status.scratchpad",
-                    Label = "📝 Notes",
-                    IconKind = "NotebookEditOutline",
-                    ToolTip = "Toggle floating review scratchpad",
-                    IsActive = true,
-                    Command = new RelayCommand(() => reg?.ToggleOverlay(Id))
-                };
-            }
-        });
-
-        // 4. Register Ribbon Action in View Tab
+        // 3. Register Ribbon Action in View Tab
         ctx.RegisterRibbonAction(new RibbonActionDescriptor
         {
             Id = "frypdf.ribbon.action.scratchpad",

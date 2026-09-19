@@ -322,4 +322,136 @@ public class QualityAndBugFixTests
         Assert.NotNull(helpItem);
         Assert.True(helpItem.IsActive);
     }
+
+    [Fact]
+    public void DocumentEditor_StatusBar_AllowsOnlyDocumentEditorScopedCoreTelemetry()
+    {
+        // 1. External plugin widget -> must be rejected
+        var externalWidget = new PdfEditorApp.Core.Plugins.Descriptors.StatusBarWidgetDescriptor
+        {
+            WidgetId = "com.frypdf.plugin.snake",
+            IsExternal = true,
+            Scope = PdfEditorApp.Core.Plugins.Descriptors.StatusBarScope.DocumentEditor
+        };
+        Assert.False(MainViewModel.IsAllowedInDocumentEditorStatusBar(externalWidget));
+
+        // 2. Global scope widget (e.g. general app extension or unneeded baseline stub) -> must be rejected
+        var globalWidget = new PdfEditorApp.Core.Plugins.Descriptors.StatusBarWidgetDescriptor
+        {
+            WidgetId = "frypdf.status.ready",
+            IsExternal = false,
+            Scope = PdfEditorApp.Core.Plugins.Descriptors.StatusBarScope.Global
+        };
+        Assert.False(MainViewModel.IsAllowedInDocumentEditorStatusBar(globalWidget));
+
+        // 3. Core DocumentEditor scoped telemetry (e.g. Skia engine monitor) -> must be allowed
+        var coreEditorWidget = new PdfEditorApp.Core.Plugins.Descriptors.StatusBarWidgetDescriptor
+        {
+            WidgetId = "frypdf.status.memory",
+            IsExternal = false,
+            Scope = PdfEditorApp.Core.Plugins.Descriptors.StatusBarScope.DocumentEditor
+        };
+        Assert.True(MainViewModel.IsAllowedInDocumentEditorStatusBar(coreEditorWidget));
+
+        // 4. Null or empty widget -> must be rejected
+        Assert.False(MainViewModel.IsAllowedInDocumentEditorStatusBar(null));
+        Assert.False(MainViewModel.IsAllowedInDocumentEditorStatusBar(new PdfEditorApp.Core.Plugins.Descriptors.StatusBarWidgetDescriptor()));
+    }
+
+    [Fact]
+    public void DocumentEditor_StatusBar_ExcludesExternalPluginsAndGlobalStubs()
+    {
+        var registry = new PdfEditorApp.Services.StatusBar.StatusBarRegistry(seedDefaults: false);
+
+        // Register core document editor widget
+        registry.RegisterWidget(new PdfEditorApp.Core.Plugins.Descriptors.StatusBarWidgetDescriptor
+        {
+            WidgetId = "frypdf.status.memory",
+            Alignment = PdfEditorApp.Core.Plugins.Descriptors.StatusBarAlignment.Right,
+            Scope = PdfEditorApp.Core.Plugins.Descriptors.StatusBarScope.DocumentEditor,
+            IsExternal = false,
+            Factory = _ => new StatusBarWidgetViewModel
+            {
+                WidgetId = "frypdf.status.memory",
+                Label = "Skia 64-bit"
+            }
+        });
+
+        // Register global stub widget (should be filtered out)
+        registry.RegisterWidget(new PdfEditorApp.Core.Plugins.Descriptors.StatusBarWidgetDescriptor
+        {
+            WidgetId = "frypdf.status.pagestats",
+            Alignment = PdfEditorApp.Core.Plugins.Descriptors.StatusBarAlignment.Left,
+            Scope = PdfEditorApp.Core.Plugins.Descriptors.StatusBarScope.Global,
+            IsExternal = false,
+            Factory = _ => new StatusBarWidgetViewModel
+            {
+                WidgetId = "frypdf.status.pagestats",
+                Label = "Pages"
+            }
+        });
+
+        // Register external plugin widget (e.g. Snake/TicTacToe/ImageEditor, should be filtered out)
+        registry.RegisterWidget(new PdfEditorApp.Core.Plugins.Descriptors.StatusBarWidgetDescriptor
+        {
+            WidgetId = "frypdf.overlay.imageeditor",
+            Alignment = PdfEditorApp.Core.Plugins.Descriptors.StatusBarAlignment.Left,
+            Scope = PdfEditorApp.Core.Plugins.Descriptors.StatusBarScope.Global,
+            IsExternal = true,
+            Factory = _ => new StatusBarWidgetViewModel
+            {
+                WidgetId = "frypdf.overlay.imageeditor",
+                Label = "Image Editor"
+            }
+        });
+
+        var allowedLeft = registry.GetWidgets(PdfEditorApp.Core.Plugins.Descriptors.StatusBarAlignment.Left)
+            .Where(MainViewModel.IsAllowedInDocumentEditorStatusBar)
+            .ToList();
+
+        var allowedRight = registry.GetWidgets(PdfEditorApp.Core.Plugins.Descriptors.StatusBarAlignment.Right)
+            .Where(MainViewModel.IsAllowedInDocumentEditorStatusBar)
+            .ToList();
+
+        // Left has no editor-scoped widgets (page count and status message are native editor chips)
+        Assert.Empty(allowedLeft);
+
+        // Right only contains the core Skia memory monitor
+        Assert.Single(allowedRight);
+        Assert.Equal("frypdf.status.memory", allowedRight[0].WidgetId);
+    }
+
+    [Fact]
+    public void ScopedPluginContext_AutomaticallyDetectsAndMarksExternalPlugins()
+    {
+        var parentContext = new PdfEditorApp.Core.Plugins.FryPluginContext();
+        var externalPlugin = new SampleExternalPlugin();
+        var scope = new PdfEditorApp.Core.Plugins.PluginScope(externalPlugin);
+        var scopedContext = parentContext.CreateScopedContext(scope);
+
+        var widget = new PdfEditorApp.Core.Plugins.Descriptors.StatusBarWidgetDescriptor
+        {
+            WidgetId = "com.sample.external.widget",
+            // Even if the external plugin author attempted to declare DocumentEditor scope:
+            Scope = PdfEditorApp.Core.Plugins.Descriptors.StatusBarScope.DocumentEditor
+        };
+
+        // Act: Plugin registers widget through its scoped context
+        scopedContext.RegisterStatusBarWidget(widget);
+
+        // Assert 1: The infrastructure automatically and tamper-proofly marks IsExternal = true
+        Assert.True(widget.IsExternal, "ScopedPluginContext must automatically mark widgets from external assemblies as IsExternal=true");
+
+        // Assert 2: MainViewModel document editor status bar rejects it immediately
+        Assert.False(MainViewModel.IsAllowedInDocumentEditorStatusBar(widget), "Document editor status bar must reject all external plugin widgets");
+    }
+
+    private sealed class SampleExternalPlugin : PdfEditorApp.Core.Plugins.IFryPlugin
+    {
+        public string Id => "com.sample.external";
+        public string Name => "Sample External Plugin";
+        public Version Version => new(1, 0, 0);
+        public IReadOnlyList<Type> RequiredServices => Array.Empty<Type>();
+        public Task ApplyAsync(PdfEditorApp.Core.Plugins.IFryPluginContext ctx, CancellationToken ct = default) => Task.CompletedTask;
+    }
 }

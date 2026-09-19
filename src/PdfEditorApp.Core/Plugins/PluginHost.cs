@@ -378,7 +378,7 @@ public class PluginHost : IAsyncDisposable, IDisposable
 
     private async Task MountPluginCoreAsync(IFryPlugin plugin, CancellationToken ct)
     {
-        PluginScope scope = new();
+        PluginScope scope = new(plugin);
         var scopedContext = _context.CreateScopedContext(scope);
 
         lock (_lock)

@@ -85,32 +85,7 @@ public class SnakeGamePlugin : IFryPlugin
             }
         });
 
-        // 3. Register Footer Status Bar Widget (Clickable 🐍 Snake pill)
-        ctx.RegisterStatusBarWidget(new StatusBarWidgetDescriptor
-        {
-            WidgetId = "frypdf.status.snake",
-            Alignment = StatusBarAlignment.Right,
-            Order = 15,
-            ToolTip = "Play Snake Game (Floating Shell Overlay)",
-            Factory = sp =>
-            {
-                var reg = sp.GetService(typeof(IOverlayRegistry)) as IOverlayRegistry;
-                return new StatusBarWidgetViewModel
-                {
-                    WidgetId = "frypdf.status.snake",
-                    Label = "🐍 Snake",
-                    IconKind = "GamepadVariantOutline",
-                    ToolTip = "Launch floating Snake game overlay",
-                    IsActive = true,
-                    Command = new RelayCommand(() =>
-                    {
-                        reg?.ToggleOverlay(Id);
-                    })
-                };
-            }
-        });
-
-        // 4. Register Ribbon Action in View Tab
+        // 3. Register Ribbon Action in View Tab
         ctx.RegisterRibbonAction(new RibbonActionDescriptor
         {
             Id = "frypdf.ribbon.action.snake",

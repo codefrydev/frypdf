@@ -814,6 +814,15 @@ public class FryPluginContext : IFryPluginContext
 
         public override IDisposable RegisterStatusBarWidget(StatusBarWidgetDescriptor widget)
         {
+            if (_pluginScope.Plugin != null)
+            {
+                var pluginAsm = _pluginScope.Plugin.GetType().Assembly;
+                var asmName = pluginAsm.GetName().Name ?? "";
+                widget.IsExternal = pluginAsm != typeof(IFryPlugin).Assembly
+                                 && !asmName.Equals("PdfEditorApp", StringComparison.OrdinalIgnoreCase)
+                                 && !asmName.Equals("PdfEditorApp.Core", StringComparison.OrdinalIgnoreCase);
+            }
+
             var reg = _parent.RegisterStatusBarWidget(widget);
             return _pluginScope.RegisterDisposable(reg);
         }

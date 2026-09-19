@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,7 +61,13 @@ public static class HeadlessCliRunner
 
         if (parsedArgs.ContainsKey("--version") || parsedArgs.ContainsKey("-v"))
         {
-            Console.WriteLine("FryPDF version 1.0.0 (Plugin Architecture Edition)");
+            var assembly = typeof(HeadlessCliRunner).Assembly;
+            var infoVer = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+            var versionString = !string.IsNullOrWhiteSpace(infoVer)
+                ? infoVer.Split('+')[0]
+                : (assembly.GetName().Version?.ToString(3) ?? "0.1.1");
+
+            Console.WriteLine($"FryPDF version {versionString} (Plugin Architecture Edition)");
             return 0;
         }
 

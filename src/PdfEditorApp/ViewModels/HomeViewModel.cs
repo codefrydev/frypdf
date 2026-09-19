@@ -196,7 +196,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
 
     public string TopSearchPlaceholder => string.Empty;
 
-    public string AppVersionDisplay
+    public string AppVersion
     {
         get
         {
@@ -206,13 +206,13 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
                 var infoVer = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
                 if (!string.IsNullOrWhiteSpace(infoVer))
                 {
-                    return $"FryPDF v{infoVer.Split('+')[0]} · Privacy-first PDF Studio";
+                    return infoVer.Split('+')[0];
                 }
 
                 var ver = assembly.GetName().Version;
                 if (ver != null)
                 {
-                    return $"FryPDF v{ver.Major}.{ver.Minor}.{ver.Build} · Privacy-first PDF Studio";
+                    return $"{ver.Major}.{ver.Minor}.{ver.Build}";
                 }
             }
             catch
@@ -220,9 +220,13 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
                 // fallback
             }
 
-            return "FryPDF · Privacy-first PDF Studio";
+            return "0.1.1";
         }
     }
+
+    public string AppVersionShort => $"v{AppVersion}";
+
+    public string AppVersionDisplay => $"FryPDF {AppVersionShort} · Privacy-first PDF Studio";
 
     public bool IsSidebarCompactRail => !IsToolPageActive && ActiveNavDescriptor?.DisplayMode == PdfEditorApp.Core.Plugins.Descriptors.NavigationDisplayMode.ImmersiveStudio;
 

@@ -1,5 +1,5 @@
 param (
-    [string]$Version = "1.0.0",
+    [string]$Version = "0.1.1",
     [string]$PublishDir = "$PSScriptRoot\..\..\publish\win-x64",
     [string]$OutputDir = "$PSScriptRoot\..",
     [string]$Publisher = "CN=7E83DE15-E15F-41B6-B068-989D9548D0BF"

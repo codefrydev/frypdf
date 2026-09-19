@@ -44,7 +44,7 @@ public partial class MainViewModel
                 // fallback
             }
 
-            return "1.0.0";
+            return "0.1.1";
         }
     }
 

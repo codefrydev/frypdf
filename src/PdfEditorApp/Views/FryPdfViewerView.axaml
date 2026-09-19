@@ -35,8 +35,8 @@
         <KeyBinding Gesture="Space" Command="{Binding NextPageCommand}" />
         <KeyBinding Gesture="PageUp" Command="{Binding PreviousPageCommand}" />
         <KeyBinding Gesture="Left" Command="{Binding PreviousPageCommand}" />
-        <KeyBinding Gesture="Cmd+W" Command="{Binding BackToHomeCommand}" />
-        <KeyBinding Gesture="Ctrl+W" Command="{Binding BackToHomeCommand}" />
+        <KeyBinding Gesture="Cmd+W" Command="{Binding CloseViewerCommand}" />
+        <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseViewerCommand}" />
         <KeyBinding Gesture="Cmd+OemPlus" Command="{Binding ZoomInCommand}" />
         <KeyBinding Gesture="Ctrl+OemPlus" Command="{Binding ZoomInCommand}" />
         <KeyBinding Gesture="Cmd+OemMinus" Command="{Binding ZoomOutCommand}" />
@@ -65,8 +65,8 @@
                     <Button Classes="mini-tool-btn"
                             Width="32" Height="32"
                             CornerRadius="{StaticResource M3ShapeCornerFull}"
-                            Command="{Binding BackToHomeCommand}"
-                            ToolTip.Tip="Back to Home Dashboard (⌘W)">
+                            Command="{Binding CloseViewerCommand}"
+                            ToolTip.Tip="Close Document / Back (⌘W)">
                         <materialIcons:MaterialIcon Kind="ArrowLeft" Width="18" Height="18" Foreground="{DynamicResource WinTextBrush}" />
                     </Button>
 

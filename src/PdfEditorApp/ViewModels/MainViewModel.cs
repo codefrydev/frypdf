@@ -1021,6 +1021,7 @@ public partial class MainViewModel : ViewModelBase, IServiceProvider, IDisposabl
     {
         WeakReferenceMessenger.Default.Register<MainViewModel, ShowToastMessage>(this, (r, m) => r.ShowToast(m.Message, m.Type, m.ActionLabel));
         WeakReferenceMessenger.Default.Register<MainViewModel, NavigateToHomeMessage>(this, (r, m) => r.NavigateToHome());
+        WeakReferenceMessenger.Default.Register<MainViewModel, CloseViewerMessage>(this, (r, m) => r.CloseViewer());
         WeakReferenceMessenger.Default.Register<MainViewModel, OpenInEditorMessage>(this, (r, m) => r.OpenEditorWithFile(m.FilePath));
         WeakReferenceMessenger.Default.Register<MainViewModel, OpenInViewerMessage>(this, (r, m) => r.OpenInViewer(m.FilePath));
         WeakReferenceMessenger.Default.Register<MainViewModel, OpenInFryPdfViewerMessage>(this, (r, m) => r.OpenInFryPdfViewer(m.FilePath));
@@ -1571,13 +1572,28 @@ public partial class MainViewModel : ViewModelBase, IServiceProvider, IDisposabl
         }
     }
 
-    /// <summary>Returns to the Home page from the editor or viewer.</summary>
+    /// <summary>Closes the active viewer and returns to the previous workspace section.</summary>
+    [RelayCommand]
+    public void CloseViewer()
+    {
+        Home.RefreshRecent();
+        Home.BackToTools();
+        Home.SelectNavSection(Home.SelectedNavSection.ToString());
+        IsPdfViewerVisible = false;
+        IsFryPdfViewerVisible = false;
+        IsHomePageVisible = true;
+    }
+
+    /// <summary>Alias for CloseViewer to preserve backward compatibility.</summary>
+    public void ReturnToHomeShell() => CloseViewer();
+
+    /// <summary>Explicitly returns to the Home overview dashboard from the editor or viewer.</summary>
     [RelayCommand]
     public void NavigateToHome()
     {
         Home.RefreshRecent();
         Home.BackToTools();
-        Home.SelectedNavSection = HomeNavSection.Home;
+        Home.SelectNavSection("Home");
         IsEditorVisible = false;
         IsPdfViewerVisible = false;
         IsFryPdfViewerVisible = false;

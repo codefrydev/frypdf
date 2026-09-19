@@ -404,13 +404,19 @@ public partial class FryPdfViewerViewModel : ViewModelBase
     // --- APPLICATION WORKFLOW COMMANDS ---
 
     /// <summary>
-    /// Navigates back to the Home Dashboard.
+    /// Closes the interactive viewer and returns to the workspace shell.
     /// </summary>
     [RelayCommand]
-    public void BackToHome()
+    public void CloseViewer()
     {
-        WeakReferenceMessenger.Default.Send(new NavigateToHomeMessage());
+        WeakReferenceMessenger.Default.Send(new CloseViewerMessage());
     }
+
+    /// <summary>
+    /// Alias for CloseViewer for backward compatibility.
+    /// </summary>
+    [RelayCommand]
+    public void BackToHome() => CloseViewer();
 
     /// <summary>
     /// Switches from read-only Interactive Viewer into full Studio Editor for the active document.

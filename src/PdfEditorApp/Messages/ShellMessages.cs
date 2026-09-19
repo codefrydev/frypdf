@@ -9,9 +9,14 @@ namespace PdfEditorApp.Messages;
 public record ShowToastMessage(string Message, ToastNotificationType Type = ToastNotificationType.Primary, string? ActionLabel = null);
 
 /// <summary>
-/// Request to return to the Home dashboard view.
+/// Request to return to the Home overview dashboard view.
 /// </summary>
 public record NavigateToHomeMessage();
+
+/// <summary>
+/// Request to close the active document viewer and return to the workspace shell.
+/// </summary>
+public record CloseViewerMessage();
 
 /// <summary>
 /// Request to open a PDF project or file in the Studio Editor.

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using PdfEditorApp.Core.Models;
 using PdfEditorApp.Core.Plugins;
 using PdfEditorApp.Core.Plugins.Descriptors;
 using PdfEditorApp.Models;
@@ -196,5 +198,128 @@ public class QualityAndBugFixTests
         Assert.DoesNotContain("Background=\"#FEF2F2\"", trashPage);
         Assert.Contains("M3ErrorContainerBrush", trashPage);
         Assert.Contains("CornerRadius=\"{StaticResource M3ShapeCornerFull}\"", trashPage);
+    }
+
+    private static MainViewModel CreateMainViewModelWithWorkspacePages()
+    {
+        var navReg = new PdfEditorApp.Services.Navigation.NavigationRegistry();
+        var context = new FryPluginContext();
+        context.RegisterService<INavigationRegistry>(navReg);
+
+        var host = new PluginHost(context);
+        var bundle = new PdfEditorApp.Plugins.Bundles.WorkspacePagesBundle();
+        host.RegisterPlugins(bundle.Plugins);
+        host.StartAsync().GetAwaiter().GetResult();
+
+        return new MainViewModel(
+            new PdfExportService(),
+            new TemplateService(),
+            new ProjectPersistenceService(),
+            navigationRegistry: navReg,
+            pluginHost: host);
+    }
+
+    [Fact]
+    public void PdfReader_OpenPdfAndGoBack_MaintainsSidebarAndContentInSync()
+    {
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Reset();
+        using var mainVm = CreateMainViewModelWithWorkspacePages();
+
+        // 1. Navigate to PDF Reader section
+        mainVm.Home.SelectNavSectionCommand.Execute("PdfReader");
+        Assert.Equal(HomeNavSection.PdfReader, mainVm.Home.SelectedNavSection);
+        Assert.True(mainVm.Home.IsPdfReaderSection);
+        Assert.False(mainVm.Home.IsHomeSection);
+
+        var pdfReaderItem = mainVm.Home.DynamicNavigationItems.FirstOrDefault(i => i.Id == "PdfReader");
+        Assert.NotNull(pdfReaderItem);
+        Assert.True(pdfReaderItem.IsActive);
+
+        var homeItem = mainVm.Home.DynamicNavigationItems.FirstOrDefault(i => i.Id == "Home");
+        Assert.NotNull(homeItem);
+        Assert.False(homeItem.IsActive);
+
+        // 2. Open a PDF document in PDF Viewer Mode
+        mainVm.PdfViewer.DocumentTitle = "SampleReport.pdf";
+        mainVm.OpenInViewer("dummy/SampleReport.pdf");
+        Assert.True(mainVm.IsPdfViewerVisible);
+        Assert.False(mainVm.IsHomePageVisible);
+
+        // 3. User clicks Back / Close (CloseViewerCommand in PdfViewer sends CloseViewerMessage)
+        mainVm.PdfViewer.CloseViewerCommand.Execute(null);
+
+        // 4. Assert: Should return to PDF Reader, with BOTH sidebar and content synchronized
+        Assert.True(mainVm.IsHomePageVisible);
+        Assert.False(mainVm.IsPdfViewerVisible);
+        Assert.Equal(HomeNavSection.PdfReader, mainVm.Home.SelectedNavSection);
+        Assert.True(mainVm.Home.IsPdfReaderSection);
+        Assert.False(mainVm.Home.IsHomeSection);
+        Assert.True(pdfReaderItem.IsActive, "Sidebar PDF Reader tab must remain active after returning from viewer");
+        Assert.False(homeItem.IsActive, "Sidebar Home tab must not be active when returning to PDF Reader");
+    }
+
+    [Fact]
+    public void HomeViewModel_DirectSelectedNavSectionAssignment_SynchronizesDynamicNavigationItems()
+    {
+        using var mainVm = CreateMainViewModelWithWorkspacePages();
+        var home = mainVm.Home;
+
+        // Directly setting SelectedNavSection to Help
+        home.SelectedNavSection = HomeNavSection.Help;
+        var helpItem = home.DynamicNavigationItems.FirstOrDefault(i => i.Id == "Help");
+        var homeItem = home.DynamicNavigationItems.FirstOrDefault(i => i.Id == "Home");
+
+        Assert.NotNull(helpItem);
+        Assert.True(helpItem.IsActive);
+        Assert.NotNull(homeItem);
+        Assert.False(homeItem.IsActive);
+        Assert.Equal("Help", home.ActiveNavDescriptor?.Id);
+
+        // Directly setting SelectedNavSection to Settings
+        home.SelectedNavSection = HomeNavSection.Settings;
+        var settingsItem = home.DynamicNavigationItems.FirstOrDefault(i => i.Id == "Settings");
+
+        Assert.NotNull(settingsItem);
+        Assert.True(settingsItem.IsActive);
+        Assert.False(helpItem.IsActive);
+        Assert.Equal("Settings", home.ActiveNavDescriptor?.Id);
+    }
+
+    [Fact]
+    public void MainViewModel_NavigateToHome_Explicit_SynchronizesBothContentAndSidebar()
+    {
+        using var mainVm = CreateMainViewModelWithWorkspacePages();
+        mainVm.Home.SelectNavSectionCommand.Execute("PdfReader");
+        Assert.Equal(HomeNavSection.PdfReader, mainVm.Home.SelectedNavSection);
+
+        // Explicitly invoke NavigateToHome (e.g. from editor title bar home icon)
+        mainVm.NavigateToHomeCommand.Execute(null);
+
+        Assert.Equal(HomeNavSection.Home, mainVm.Home.SelectedNavSection);
+        Assert.True(mainVm.Home.IsHomeSection);
+        Assert.False(mainVm.Home.IsPdfReaderSection);
+
+        var homeItem = mainVm.Home.DynamicNavigationItems.FirstOrDefault(i => i.Id == "Home");
+        var pdfReaderItem = mainVm.Home.DynamicNavigationItems.FirstOrDefault(i => i.Id == "PdfReader");
+
+        Assert.NotNull(homeItem);
+        Assert.True(homeItem.IsActive);
+        Assert.NotNull(pdfReaderItem);
+        Assert.False(pdfReaderItem.IsActive);
+    }
+
+    [Fact]
+    public void HomeViewModel_OpenHelpGuide_SynchronizesSidebarHighlight()
+    {
+        using var mainVm = CreateMainViewModelWithWorkspacePages();
+        mainVm.Home.SelectNavSectionCommand.Execute("Home");
+
+        mainVm.Home.OpenHelpGuideCommand.Execute(null);
+
+        Assert.Equal(HomeNavSection.Help, mainVm.Home.SelectedNavSection);
+        Assert.True(mainVm.Home.IsHelpSection);
+        var helpItem = mainVm.Home.DynamicNavigationItems.FirstOrDefault(i => i.Id == "Help");
+        Assert.NotNull(helpItem);
+        Assert.True(helpItem.IsActive);
     }
 }

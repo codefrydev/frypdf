@@ -596,10 +596,13 @@ public partial class PdfViewerViewModel
     }
 
     [RelayCommand]
-    public void BackToHome()
+    public void CloseViewer()
     {
-        WeakReferenceMessenger.Default.Send(new NavigateToHomeMessage());
+        WeakReferenceMessenger.Default.Send(new CloseViewerMessage());
     }
+
+    [RelayCommand]
+    public void BackToHome() => CloseViewer();
 
     [RelayCommand]
     public void CancelLoading()
@@ -609,7 +612,7 @@ public partial class PdfViewerViewModel
         IsOpeningDocument = false;
         IsLoading = false;
         WeakReferenceMessenger.Default.Send(new HideLoadingProgressMessage());
-        WeakReferenceMessenger.Default.Send(new NavigateToHomeMessage());
+        CloseViewer();
     }
 }
 

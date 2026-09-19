@@ -532,6 +532,22 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
 
     partial void OnSelectedNavSectionChanged(HomeNavSection value)
     {
+        var sectionName = value.ToString();
+        foreach (var item in DynamicNavigationItems)
+        {
+            item.IsActive = string.Equals(item.Id, sectionName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (_navigationRegistry != null)
+        {
+            ActiveNavDescriptor = _navigationRegistry.GetItem(sectionName);
+        }
+
+        if (ActiveNavDescriptor?.ViewFactory == null)
+        {
+            DynamicPageView = null;
+        }
+
         OnPropertyChanged(nameof(IsHomeSection));
         OnPropertyChanged(nameof(IsNewDocumentSection));
         OnPropertyChanged(nameof(IsPdfReaderSection));
@@ -562,9 +578,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
     [RelayCommand]
     public void OpenHelpGuide(string? topicId = null)
     {
-        SelectedNavSection = HomeNavSection.Help;
-        IsToolPageActive = false;
-        DynamicPageView = null;
+        SelectNavSection("Help");
         if (!string.IsNullOrWhiteSpace(topicId))
         {
             HelpGuide.OpenTopicById(topicId);
@@ -578,9 +592,7 @@ public partial class HomeViewModel : ViewModelBase, IServiceProvider, IDisposabl
     [RelayCommand]
     public void OpenHelpForTool(PdfToolId toolId)
     {
-        SelectedNavSection = HomeNavSection.Help;
-        IsToolPageActive = false;
-        DynamicPageView = null;
+        SelectNavSection("Help");
         HelpGuide.OpenGuideForTool(toolId);
     }
 

@@ -28,8 +28,8 @@
     <UserControl.KeyBindings>
         <KeyBinding Gesture="F2" Command="{Binding RenameDocumentCommand}" />
         <KeyBinding Gesture="Escape" Command="{Binding CancelLoadingCommand}" />
-        <KeyBinding Gesture="Cmd+W" Command="{Binding BackToHomeCommand}" />
-        <KeyBinding Gesture="Ctrl+W" Command="{Binding BackToHomeCommand}" />
+        <KeyBinding Gesture="Cmd+W" Command="{Binding CloseViewerCommand}" />
+        <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseViewerCommand}" />
         <KeyBinding Gesture="Cmd+F1" Command="{Binding ToggleRibbonCollapseCommand}" />
         <KeyBinding Gesture="Ctrl+F1" Command="{Binding ToggleRibbonCollapseCommand}" />
         <KeyBinding Gesture="Cmd+B" Command="{Binding ToggleSidebarCommand}" />
@@ -71,11 +71,11 @@
 
                         <!-- Left: Back, Document Brand, Name & Options -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <!-- Back to Dashboard -->
+                            <!-- Back to Home / Navigation Section -->
                             <Button Classes="m3-icon-btn"
                                     Width="30" Height="30"
-                                    Command="{Binding BackToHomeCommand}"
-                                    ToolTip.Tip="Back to Home Dashboard (⌘W / Ctrl+W)">
+                                    Command="{Binding CloseViewerCommand}"
+                                    ToolTip.Tip="Close Document / Back (⌘W / Ctrl+W)">
                                 <materialIcons:MaterialIcon Kind="ArrowLeft" Width="17" Height="17" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
                             </Button>
 
